@@ -1,19 +1,23 @@
 import { Ionicons } from "@expo/vector-icons";
-import { Tabs } from "expo-router";
+import { Redirect, Tabs } from "expo-router";
 import React from "react";
 import { Platform, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { AuthLoadingScreen } from "@/components/auth/auth-loading-screen";
 import {
   ticketColors,
   ticketRadii,
   ticketSpacing,
   ticketTypography,
 } from "@/constants/ticket-theme";
+import { useProtectedRoute } from "@/hooks/use-protected-route";
+import { AUTH_ROUTES } from "@/lib/auth/routes";
 
 type IconName = React.ComponentProps<typeof Ionicons>["name"];
 
 type TabRouteName =
+  | "index"
   | "discover"
   | "for-you"
   | "my-tickets"
@@ -27,6 +31,11 @@ type TabConfig = {
 };
 
 const TAB_CONFIG: Record<TabRouteName, TabConfig> = {
+  index: {
+    title: "Home",
+    icon: "home-outline",
+    activeIcon: "home",
+  },
   discover: {
     title: "Discover",
     icon: "search-outline",
@@ -55,6 +64,7 @@ const TAB_CONFIG: Record<TabRouteName, TabConfig> = {
 };
 
 export default function PremiumTabsLayout() {
+  const { isLoaded, isSignedIn } = useProtectedRoute();
   const insets = useSafeAreaInsets();
   const bottomPadding = Math.max(
     insets.bottom,
@@ -62,9 +72,17 @@ export default function PremiumTabsLayout() {
   );
   const tabBarHeight = 60 + bottomPadding;
 
+  if (!isLoaded) {
+    return <AuthLoadingScreen />;
+  }
+
+  if (!isSignedIn) {
+    return <Redirect href={AUTH_ROUTES.signIn} />;
+  }
+
   return (
     <Tabs
-      initialRouteName="my-tickets"
+      initialRouteName="index"
       screenOptions={({ route }) => {
         const config =
           TAB_CONFIG[route.name as TabRouteName] ?? TAB_CONFIG["my-tickets"];
@@ -110,6 +128,10 @@ export default function PremiumTabsLayout() {
         };
       }}
     >
+      <Tabs.Screen
+        name="index"
+        options={{ title: TAB_CONFIG.index.title }}
+      />
       <Tabs.Screen
         name="discover"
         options={{ title: TAB_CONFIG.discover.title }}
