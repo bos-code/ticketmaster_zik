@@ -9,7 +9,10 @@
     "userInterfaceStyle": "light",
     "ios": {
       "bundleIdentifier": "com.johnderadev.ticketmasterzik",
-      "icon": "./assets/expo.icon"
+      "icon": "./assets/expo.icon",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "package": "com.johnderadev.ticketmasterzik",
@@ -63,6 +66,12 @@
         "projectId": "e9f5dfc6-fbab-4402-bf28-057f180c7b3f"
       }
     },
-    "owner": "johnderadev"
+    "owner": "johnderadev",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/e9f5dfc6-fbab-4402-bf28-057f180c7b3f"
+    }
   }
 }
