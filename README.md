@@ -1,56 +1,243 @@
-# Welcome to your Expo app 👋
+# 🎟️ Ticketing App (Mobile + Web)
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+A full-featured event ticketing platform that allows organizers to create events and users to discover, purchase, and validate tickets using QR codes.
 
-## Get started
+---
 
-1. Install dependencies
+## 🚀 Overview
 
-   ```bash
-   npm install
-   ```
+This application is a **Ticketmaster-inspired system** built for modern mobile-first usage. It focuses on:
 
-2. Start the app
+* Simple event creation
+* Seamless ticket purchasing
+* Secure QR-based entry validation
+* Lightweight admin control via web dashboard
 
-   ```bash
-   npx expo start
-   ```
+---
 
-In the output, you'll find options to open the app in a
+## 🧱 Architecture
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+The system is composed of two main applications:
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+### 📱 Mobile App (User App)
 
-## Get a fresh project
+* Browse and discover events
+* View event details
+* Purchase tickets
+* Store and display QR tickets
+* Share tickets (e.g., WhatsApp)
+* View past and upcoming tickets
 
-When you're ready, run:
+---
 
-```bash
-npm run reset-project
+### 🌐 Web App (Admin Dashboard)
+
+* Create and manage events
+* Upload event banners
+* Define ticket types and pricing
+* Monitor ticket sales
+* Manage users and roles
+
+---
+
+### ☁️ Backend (BaaS)
+
+* Authentication (users, admins, organizers)
+* Database (events, tickets, users)
+* Storage (images, QR codes)
+* Server-side validation (ticket verification)
+
+---
+
+## ⚙️ Tech Stack
+
+### Frontend
+
+* React Native (Expo) – Mobile app
+* Next.js – Web dashboard
+* Tailwind / NativeWind – Styling
+
+### Backend / Services
+
+* Firebase or Supabase (BaaS)
+* Cloud Functions / Edge Functions
+
+### Payments
+
+* Paystack (planned integration)
+
+### Utilities
+
+* QR Code generation & scanning
+* Image upload & storage
+* Notifications (optional)
+
+---
+
+## 🎯 Core Features
+
+### 1. Event Discovery
+
+* Browse available events
+* Filter by category, date, or location
+
+### 2. Event Creation
+
+* Add event title, description, date, venue
+* Upload banner image
+* Set ticket types and pricing
+
+### 3. Ticket System
+
+* Unique ticket per purchase
+* QR code generation
+* Ticket stored in user account
+
+### 4. QR Validation
+
+* Scan QR code at entry
+* Verify ticket status
+* Prevent duplicate use
+
+### 5. Admin Dashboard
+
+* Manage events and tickets
+* Track sales and activity
+
+---
+
+## 🧩 Data Model (Simplified)
+
+### Users
+
+* id
+* name
+* email
+* role (user | organizer | admin)
+
+### Events
+
+* id
+* title
+* description
+* date
+* venue
+* banner
+* organizerId
+
+### Tickets
+
+* id
+* eventId
+* userId
+* type
+* used (boolean)
+
+### Orders
+
+* id
+* userId
+* eventId
+* status
+
+---
+
+## 🔐 Security Considerations
+
+* QR codes store only `ticketId`
+* All validation happens on backend
+* Tickets are marked as used after scan
+* Role-based access control enforced
+
+---
+
+## 📂 Project Structure (Example)
+
+```
+/mobile-app
+  /src
+    /screens
+    /components
+    /services
+    /store
+
+/web-app
+  /app
+  /components
+  /lib
+
+/backend
+  /functions
+  /config
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+---
 
-### Other setup steps
+## 🧪 Testing Focus
 
-- To set up ESLint for linting, run `npx expo lint`, or follow our guide on ["Using ESLint and Prettier"](https://docs.expo.dev/guides/using-eslint/)
-- If you'd like to set up unit testing, follow our guide on ["Unit Testing with Jest"](https://docs.expo.dev/develop/unit-testing/)
-- Learn more about the TypeScript setup in this template in our guide on ["Using TypeScript"](https://docs.expo.dev/guides/typescript/)
+* Ticket generation & uniqueness
+* QR scan validation
+* Duplicate scan prevention
+* Image upload reliability
+* Role access enforcement
 
-## Learn more
+---
 
-To learn more about developing your project with Expo, look at the following resources:
+## 📦 Deployment
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+### Mobile
 
-## Join the community
+* Built with Expo
+* Deployed via EAS (Android/iOS)
 
-Join our community of developers creating universal apps.
+### Web
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+* Deployed on Vercel
+
+### Backend
+
+* Firebase / Supabase hosting
+
+---
+
+## 🛠️ Future Improvements
+
+* Payment integration (Paystack)
+* Push notifications
+* Ticket resale marketplace
+* Analytics dashboard
+* Offline scanning mode
+* Event recommendation system
+
+---
+
+## 💡 Design Philosophy
+
+* Keep MVP simple and functional
+* Prioritize security over complexity
+* Build modular systems for scaling
+* Optimize for low-cost infrastructure
+
+---
+
+## 🧠 Developer Notes
+
+* Avoid over-engineering early
+* Focus on QR validation reliability
+* Use cloud services to reduce backend overhead
+* Optimize images before upload
+* Maintain clean database relationships
+
+---
+
+## 📌 Status
+
+🚧 In Development – Core features being implemented
+
+---
+
+## 👨‍💻 Author
+
+Built as a scalable ticketing solution inspired by modern event platforms.
+
+---

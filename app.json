@@ -6,7 +6,7 @@
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "ticketmasterzik",
-    "userInterfaceStyle": "automatic",
+    "userInterfaceStyle": "light",
     "ios": {
       "icon": "./assets/expo.icon"
     },
@@ -20,6 +20,7 @@
       "predictiveBackGestureEnabled": false
     },
     "web": {
+      "bundler": "metro",
       "output": "static",
       "favicon": "./assets/images/favicon.png"
     },
@@ -28,13 +29,25 @@
       [
         "expo-splash-screen",
         {
-          "backgroundColor": "#208AEF",
+          "backgroundColor": "#F8FAFC",
+          "image": "./assets/images/splash-t-mark.png",
+          "imageWidth": 180,
+          "resizeMode": "contain",
           "android": {
-            "image": "./assets/images/splash-icon.png",
-            "imageWidth": 76
+            "backgroundColor": "#F8FAFC",
+            "image": "./assets/images/splash-t-mark.png",
+            "imageWidth": 180,
+            "resizeMode": "contain"
+          },
+          "ios": {
+            "backgroundColor": "#F8FAFC",
+            "image": "./assets/images/splash-t-mark.png",
+            "imageWidth": 180,
+            "resizeMode": "contain"
           }
         }
-      ]
+      ],
+      "expo-secure-store"
     ],
     "experiments": {
       "typedRoutes": true,
