@@ -1,7 +1,5 @@
 import '@/global.css';
 
-import { ClerkProvider, useAuth } from '@clerk/expo';
-import { tokenCache } from '@clerk/expo/token-cache';
 import { ThemeProvider } from '@react-navigation/native';
 import Constants from 'expo-constants';
 import { Stack } from 'expo-router';
@@ -11,10 +9,8 @@ import * as SystemUI from 'expo-system-ui';
 import React, { useCallback, useEffect, useRef } from 'react';
 import { View } from 'react-native';
 
-import { AuthLoadingScreen } from '@/components/auth/auth-loading-screen';
 import { PremiumStartupScreen } from '@/components/premium-startup-screen';
 import { ticketColors, ticketNavigationTheme } from '@/constants/ticket-theme';
-import { clerkPublishableKey } from '@/lib/clerk';
 import { QueryProvider } from '@/providers/query-provider';
 import { useAppStore } from '@/store/use-app-store';
 
@@ -24,12 +20,6 @@ if (Constants.expoGoConfig === null) {
 void SplashScreen.preventAutoHideAsync().catch(() => {});
 
 function RootStack() {
-  const { isLoaded } = useAuth();
-
-  if (!isLoaded) {
-    return <AuthLoadingScreen />;
-  }
-
   return (
     <Stack
       screenOptions={{
@@ -38,8 +28,10 @@ function RootStack() {
         animation: 'fade',
       }}>
       <Stack.Screen name="index" options={{ animation: 'none' }} />
-      <Stack.Screen name="(auth)" />
       <Stack.Screen name="(tabs)" />
+      <Stack.Screen name="events/[id]" options={{ animation: 'slide_from_right' }} />
+      <Stack.Screen name="settings/index" options={{ animation: 'slide_from_right' }} />
+      <Stack.Screen name="settings/app" options={{ animation: 'slide_from_right' }} />
     </Stack>
   );
 }
@@ -67,16 +59,14 @@ export default function RootLayout() {
   }, [finishStartup]);
 
   return (
-    <ClerkProvider publishableKey={clerkPublishableKey} tokenCache={tokenCache}>
-      <QueryProvider>
-        <ThemeProvider value={ticketNavigationTheme}>
-          <View style={{ flex: 1, backgroundColor: ticketColors.background }} onLayout={handleRootLayout}>
-            <StatusBar style="dark" backgroundColor={ticketColors.background} />
-            <RootStack />
-            {!hasFinishedStartup ? <PremiumStartupScreen onFinish={handleStartupFinish} /> : null}
-          </View>
-        </ThemeProvider>
-      </QueryProvider>
-    </ClerkProvider>
+    <QueryProvider>
+      <ThemeProvider value={ticketNavigationTheme}>
+        <View style={{ flex: 1, backgroundColor: ticketColors.background }} onLayout={handleRootLayout}>
+          <StatusBar style="dark" backgroundColor={ticketColors.background} />
+          <RootStack />
+          {!hasFinishedStartup ? <PremiumStartupScreen onFinish={handleStartupFinish} /> : null}
+        </View>
+      </ThemeProvider>
+    </QueryProvider>
   );
 }

@@ -54,7 +54,16 @@
           }
         }
       ],
-      "expo-secure-store"
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Allow ticketmaster_zik to access your location so you can preview routes to venues."
+        }
+      ],
+      "expo-notifications",
+      "expo-secure-store",
+      "expo-font",
+      "expo-web-browser"
     ],
     "experiments": {
       "typedRoutes": true,

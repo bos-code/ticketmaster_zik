@@ -1,0 +1,13 @@
+
+> ticketmaster_zik@1.0.0 web
+> expo start --web --port 8082
+
+env: load .env
+env: export EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY
+✅ Clerk iOS plugin loaded
+✅ Clerk Android plugin loaded
+Starting project at C:\Users\JohnDera\Desktop\ticketmaster_zik
+✅ Clerk iOS plugin loaded
+✅ Clerk Android plugin loaded
+› Port 8082 is being used by another process
+› Skipping dev server

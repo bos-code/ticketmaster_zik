@@ -1,27 +1,19 @@
 export type SocialProviderId = 'google';
 
-export type OAuthStrategy = 'oauth_google';
-
-export type SocialProviderConfig = {
+type SocialProvider = {
   id: SocialProviderId;
   label: string;
-  shortLabel: string;
-  strategy: OAuthStrategy;
+  strategy: 'oauth_google';
 };
 
-export const SOCIAL_PROVIDERS: SocialProviderConfig[] = [
+export const SOCIAL_PROVIDERS: SocialProvider[] = [
   {
     id: 'google',
     label: 'Continue with Google',
-    shortLabel: 'Google',
     strategy: 'oauth_google',
   },
 ];
 
-export const socialProviderById = SOCIAL_PROVIDERS.reduce(
-  (result, provider) => {
-    result[provider.id] = provider;
-    return result;
-  },
-  {} as Record<SocialProviderId, SocialProviderConfig>,
-);
+export const socialProviderById: Record<SocialProviderId, SocialProvider> = {
+  google: SOCIAL_PROVIDERS[0],
+};

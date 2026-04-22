@@ -1,0 +1,18 @@
+=1 : The term '=1' is not recognized as the name of a cmdlet, function, script file, or operable program. Check the 
+spelling of the name, or if a path was included, verify that the path is correct and try again.
+At line:1 char:1
++ ='1'; npm.cmd run web -- --port 19007
++ ~~~~
+    + CategoryInfo          : ObjectNotFound: (=1:String) [], CommandNotFoundException
+    + FullyQualifiedErrorId : CommandNotFoundException
+ 
+Error: spawn EPERM
+Error: spawn EPERM
+    at ChildProcess.spawn (node:internal/child_process:421:11)
+    at Object.spawn (node:child_process:796:9)
+    at baseOpen (C:\Users\JohnDera\Desktop\ticketmaster_zik\node_modules\better-opn\node_modules\open\index.js:224:34)
+    at openBrowserAsync (C:\Users\JohnDera\Desktop\ticketmaster_zik\node_modules\expo\node_modules\@expo\cli\src\utils\open.ts:20:12)
+    at MetroBundlerDevServer.openPlatformAsync (C:\Users\JohnDera\Desktop\ticketmaster_zik\node_modules\expo\node_modules\@expo\cli\src\start\server\BundlerDevServer.ts:427:7)
+    at async Promise.allSettled (index 2)
+    at openPlatformsAsync (C:\Users\JohnDera\Desktop\ticketmaster_zik\node_modules\expo\node_modules\@expo\cli\src\start\server\openPlatforms.ts:10:19)
+    at startAsync (C:\Users\JohnDera\Desktop\ticketmaster_zik\node_modules\expo\node_modules\@expo\cli\src\start\startAsync.ts:114:3)

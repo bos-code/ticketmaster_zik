@@ -7,13 +7,13 @@ export default function SellScreen() {
   return (
     <PremiumTabScreen
       accentColor={ticketColors.warning}
-      icon="pricetag"
-      eyebrow="Sell"
-      title="List seats with confidence."
+      actions={['Create listing', 'Active listings', 'Payouts']}
       body="Resale tools, pricing signals, and payout status can plug into this screen."
+      eyebrow="Sell"
+      icon="pricetag"
       primaryMetric="Sell smarter"
       secondaryMetric="Keep listings clear, verified, and easy to manage."
-      actions={['Create listing', 'Active listings', 'Payouts']}
+      title="List seats with confidence."
     />
   );
 }

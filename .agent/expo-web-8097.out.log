@@ -1,0 +1,29 @@
+env: load .env
+env: export EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY
+✅ Clerk iOS plugin loaded
+✅ Clerk Android plugin loaded
+Starting project at C:\Users\JohnDera\Desktop\ticketmaster_zik
+✅ Clerk iOS plugin loaded
+✅ Clerk Android plugin loaded
+✅ Clerk iOS plugin loaded
+✅ Clerk Android plugin loaded
+✅ Clerk iOS plugin loaded
+✅ Clerk Android plugin loaded
+✅ Clerk iOS plugin loaded
+✅ Clerk Android plugin loaded
+Using src/app as the root directory for Expo Router.
+✅ Clerk iOS plugin loaded
+✅ Clerk Android plugin loaded
+React Compiler enabled
+Metro is running in CI mode, reloads are disabled. Remove CI=true to enable watch mode.
+Starting Metro Bundler
+✅ Clerk iOS plugin loaded
+✅ Clerk Android plugin loaded
+✅ Clerk iOS plugin loaded
+✅ Clerk Android plugin loaded
+✅ Clerk iOS plugin loaded
+✅ Clerk Android plugin loaded
+✅ Clerk iOS plugin loaded
+✅ Clerk Android plugin loaded
+Waiting on http://localhost:8097
+Logs for your project will appear below.

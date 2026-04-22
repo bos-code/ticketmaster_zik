@@ -1,9 +1,5 @@
-import * as AuthSession from 'expo-auth-session';
-
-export const OAUTH_CALLBACK_PATH = 'sso-callback';
+import * as Linking from 'expo-linking';
 
 export function getOAuthRedirectUrl() {
-  return AuthSession.makeRedirectUri({
-    path: OAUTH_CALLBACK_PATH,
-  });
+  return Linking.createURL('/sso-callback');
 }

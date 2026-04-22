@@ -1,0 +1,30 @@
+
+> ticketmaster_zik@1.0.0 web
+> expo start --web --port 19007
+
+env: load .env
+env: export EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY
+✅ Clerk iOS plugin loaded
+✅ Clerk Android plugin loaded
+Starting project at C:\Users\JohnDera\Desktop\ticketmaster_zik
+✅ Clerk iOS plugin loaded
+✅ Clerk Android plugin loaded
+✅ Clerk iOS plugin loaded
+✅ Clerk Android plugin loaded
+✅ Clerk iOS plugin loaded
+✅ Clerk Android plugin loaded
+✅ Clerk iOS plugin loaded
+✅ Clerk Android plugin loaded
+Using src/app as the root directory for Expo Router.
+✅ Clerk iOS plugin loaded
+✅ Clerk Android plugin loaded
+React Compiler enabled
+Starting Metro Bundler
+✅ Clerk iOS plugin loaded
+✅ Clerk Android plugin loaded
+✅ Clerk iOS plugin loaded
+✅ Clerk Android plugin loaded
+✅ Clerk iOS plugin loaded
+✅ Clerk Android plugin loaded
+✅ Clerk iOS plugin loaded
+✅ Clerk Android plugin loaded
