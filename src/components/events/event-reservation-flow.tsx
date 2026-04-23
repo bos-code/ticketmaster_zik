@@ -1,7 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import { router } from "expo-router";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Pressable,
   ScrollView,
@@ -25,17 +25,22 @@ import {
 } from "@/constants/ticket-theme";
 import {
   formatCurrency,
-  getFeaturedEvent,
   type EventSeatOption,
   type EventSeatSection,
-} from "@/lib/mock-events";
+} from "@/lib/data";
+import {
+  selectEventById,
+  selectTicketReservationById,
+  useEventStore,
+} from "@/store/use-event-store";
 
 type FlowStep = "detail" | "seats" | "review" | "confirmation";
 
 const MAX_RESERVED_SEATS = 3;
 
 export function EventReservationFlow({ eventId }: { eventId: string }) {
-  const event = getFeaturedEvent(eventId);
+  const event = useEventStore((state) => selectEventById(state, eventId));
+  const reserveTickets = useEventStore((state) => state.reserveTickets);
   const { height } = useWindowDimensions();
 
   const [step, setStep] = useState<FlowStep>("detail");
@@ -44,6 +49,22 @@ export function EventReservationFlow({ eventId }: { eventId: string }) {
   );
   const [selectedSeatIds, setSelectedSeatIds] = useState<string[]>([]);
   const [seatLimitMessage, setSeatLimitMessage] = useState<string | null>(null);
+  const [confirmedReservationId, setConfirmedReservationId] = useState<string | null>(null);
+  const confirmedReservation = useEventStore((state) =>
+    confirmedReservationId
+      ? selectTicketReservationById(state, confirmedReservationId)
+      : undefined,
+  );
+
+  useEffect(() => {
+    if (!event?.seatSections.length) {
+      return;
+    }
+
+    if (!event.seatSections.some((section) => section.id === focusedSectionId)) {
+      setFocusedSectionId(event.seatSections[0]?.id ?? "");
+    }
+  }, [event, focusedSectionId]);
 
   if (!event) {
     return <ReservationNotFound />;
@@ -56,14 +77,14 @@ export function EventReservationFlow({ eventId }: { eventId: string }) {
   const visibleSeats = event.seatOptions.filter(
     (seat) => seat.sectionId === focusedSection.id,
   );
-  const selectedSeats = event.seatOptions.filter((seat) =>
+  const selectedSeats = event.allSeatOptions.filter((seat) =>
     selectedSeatIds.includes(seat.id),
   );
   const reservationTotal = selectedSeats.reduce(
     (sum, seat) => sum + seat.price,
     0,
   );
-  const reservationCode = `RSV-${event.id
+  const reservationCode = confirmedReservation?.reservationCode ?? `RSV-${event.id
     .replace(/-/g, "")
     .slice(0, 6)
     .toUpperCase()}-${String(selectedSeats.length).padStart(2, "0")}`;
@@ -107,11 +128,31 @@ export function EventReservationFlow({ eventId }: { eventId: string }) {
     setFocusedSectionId(firstSectionId);
     setSelectedSeatIds([]);
     setSeatLimitMessage(null);
+    setConfirmedReservationId(null);
   }
 
   function handleFocusSection(sectionId: string) {
     setFocusedSectionId(sectionId);
     setSeatLimitMessage(null);
+  }
+
+  function handleConfirmReservation() {
+    if (!event) {
+      return;
+    }
+
+    const reservation = reserveTickets({
+      eventId: event.id,
+      reservationId: confirmedReservationId ?? undefined,
+      seatIds: selectedSeatIds,
+    });
+
+    if (!reservation) {
+      return;
+    }
+
+    setConfirmedReservationId(reservation.id);
+    setStep("confirmation");
   }
 
   const header = (
@@ -136,7 +177,6 @@ export function EventReservationFlow({ eventId }: { eventId: string }) {
       city={event.city}
       date={event.date}
       imageUrl={event.imageUrl}
-      priceFrom={event.priceFrom}
       title={event.title}
       venue={event.venue}
     />
@@ -198,6 +238,7 @@ export function EventReservationFlow({ eventId }: { eventId: string }) {
           {step === "detail" ? (
             <DetailStep
               description={event.description}
+              eventId={event.id}
               highlights={event.highlights}
               onChooseSeats={() => setStep("seats")}
               priceFrom={event.priceFrom}
@@ -214,7 +255,7 @@ export function EventReservationFlow({ eventId }: { eventId: string }) {
               eventDate={event.date}
               eventTitle={event.title}
               eventVenue={event.venue}
-              onConfirm={() => setStep("confirmation")}
+              onConfirm={handleConfirmReservation}
               onEditSeats={() => setStep("seats")}
               reservationNote={event.reservationNote}
               reservationTotal={reservationTotal}
@@ -279,14 +320,12 @@ function EventHero({
   city,
   date,
   imageUrl,
-  priceFrom,
   title,
   venue,
 }: {
   city: string;
   date: string;
   imageUrl: string;
-  priceFrom: number;
   title: string;
   venue: string;
 }) {
@@ -299,12 +338,6 @@ function EventHero({
       />
       <View style={styles.heroOverlay} />
 
-      <View style={styles.heroPricePill}>
-        <Text
-          style={styles.heroPriceText}
-        >{`From ${formatCurrency(priceFrom)}`}</Text>
-      </View>
-
       <View style={styles.heroContent}>
         <Text style={styles.heroDate}>{date}</Text>
         <Text style={styles.heroTitle}>{title}</Text>
@@ -316,6 +349,7 @@ function EventHero({
 
 function DetailStep({
   description,
+  eventId,
   highlights,
   latitude,
   longitude,
@@ -326,6 +360,7 @@ function DetailStep({
   venueSummary,
 }: {
   description: string;
+  eventId: string;
   highlights: string[];
   latitude?: number | null;
   longitude?: number | null;
@@ -373,6 +408,7 @@ function DetailStep({
 
       <Animated.View entering={FadeInUp.duration(280)}>
         <VenueMapCard
+          eventId={eventId}
           latitude={latitude}
           longitude={longitude}
           venueAddress={venueAddress}
@@ -898,21 +934,6 @@ const styles = StyleSheet.create({
   heroOverlay: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: "rgba(10, 17, 34, 0.44)",
-  },
-  heroPricePill: {
-    backgroundColor: "#FFFFFF",
-    borderRadius: ticketRadii.pill,
-    paddingHorizontal: ticketSpacing.xs,
-    paddingVertical: ticketSpacing.xxs,
-    position: "absolute",
-    right: ticketSpacing.md,
-    top: ticketSpacing.md,
-  },
-  heroPriceText: {
-    color: ticketColors.text,
-    fontSize: 12,
-    fontWeight: "800",
-    lineHeight: 16,
   },
   heroContent: {
     bottom: ticketSpacing.md,

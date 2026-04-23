@@ -4,7 +4,7 @@ import React from 'react';
 import { Platform, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { ticketColors, ticketSpacing, ticketTypography } from '@/constants/ticket-theme';
+import { ticketColors, ticketRadii } from '@/constants/ticket-theme';
 
 type IconName = React.ComponentProps<typeof Ionicons>['name'];
 
@@ -46,8 +46,8 @@ const TAB_CONFIG: Record<TabRouteName, TabConfig> = {
 
 export default function PremiumTabsLayout() {
   const insets = useSafeAreaInsets();
-  const bottomPadding = Math.max(insets.bottom, Platform.OS === 'android' ? 10 : 14);
-  const tabBarHeight = 50 + bottomPadding;
+  const bottomPadding = Math.max(insets.bottom, Platform.OS === 'android' ? 6 : 10);
+  const tabBarHeight = 52 + bottomPadding;
 
   return (
     <Tabs
@@ -60,7 +60,7 @@ export default function PremiumTabsLayout() {
           lazy: true,
           sceneStyle: { backgroundColor: ticketColors.background },
           tabBarAccessibilityLabel: config.title,
-          tabBarActiveTintColor: ticketColors.text,
+          tabBarActiveTintColor: ticketColors.primary,
           tabBarHideOnKeyboard: true,
           tabBarInactiveTintColor: ticketColors.textSubtle,
           tabBarItemStyle: styles.tabItem,
@@ -73,10 +73,20 @@ export default function PremiumTabsLayout() {
           ],
           tabBarIcon: ({ color, focused }) => (
             <View style={styles.iconWrap}>
+              <View
+                style={[
+                  styles.activeIndicator,
+                  focused && styles.activeIndicatorActive,
+                ]}
+              />
               <Ionicons
                 name={focused ? config.activeIcon : config.icon}
                 color={color}
                 size={focused ? 22 : 20}
+                style={[
+                  styles.tabIcon,
+                  focused && styles.tabIconActive,
+                ]}
               />
             </View>
           ),
@@ -107,33 +117,51 @@ export default function PremiumTabsLayout() {
 const styles = StyleSheet.create({
   tabBar: {
     backgroundColor: ticketColors.chrome,
-    borderTopColor: ticketColors.border,
+    borderTopColor: ticketColors.borderStrong,
     borderTopWidth: StyleSheet.hairlineWidth,
     elevation: 0,
-    paddingTop: ticketSpacing.xs,
+    paddingTop: 4,
     shadowColor: '#000000',
-    shadowOffset: { width: 0, height: -4 },
-    shadowOpacity: 0.06,
-    shadowRadius: 8,
+    shadowOffset: { width: 0, height: -10 },
+    shadowOpacity: 0.08,
+    shadowRadius: 16,
   },
   tabItem: {
     paddingHorizontal: 0,
-    paddingTop: ticketSpacing.xxs,
+    paddingTop: 0,
   },
   iconWrap: {
     alignItems: 'center',
+    gap: 2,
     justifyContent: 'center',
-    minHeight: 22,
+    minHeight: 26,
+  },
+  activeIndicator: {
+    backgroundColor: 'transparent',
+    borderRadius: ticketRadii.pill,
+    height: 2,
+    width: 14,
+  },
+  activeIndicatorActive: {
+    backgroundColor: ticketColors.primary,
+  },
+  tabIcon: {
+    borderRadius: ticketRadii.pill,
+    paddingHorizontal: 6,
+    paddingVertical: 3,
+  },
+  tabIconActive: {
+    backgroundColor: ticketColors.primarySoft,
   },
   tabLabel: {
-    marginTop: 2,
-    fontSize: ticketTypography.labelSize,
+    marginTop: 1,
+    fontSize: 9,
     lineHeight: 12,
     fontWeight: '600',
-    letterSpacing: ticketTypography.letterSpacing,
+    letterSpacing: 0.1,
     textAlign: 'center',
   },
   tabLabelActive: {
-    fontWeight: '700',
+    fontWeight: '800',
   },
 });

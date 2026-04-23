@@ -6,6 +6,7 @@ export type MapCoordinate = {
 };
 
 export type VenueMapData = {
+  eventId?: string;
   venueName: string;
   venueAddress?: string;
   venueSummary?: string;

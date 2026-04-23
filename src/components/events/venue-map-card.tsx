@@ -1,4 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
@@ -8,12 +9,12 @@ import {
   Text,
   View,
 } from 'react-native';
-import MapView, { Marker, Polyline } from 'react-native-maps';
+import MapView, { Marker } from 'react-native-maps';
 
-import { premiumMapPalette, premiumMapStyle } from '@/constants/premium-map-style';
+import { VenueMapMarker } from '@/components/events/venue-map-marker';
+import { premiumMapStyle } from '@/constants/premium-map-style';
 import { ticketColors, ticketRadii, ticketSpacing } from '@/constants/ticket-theme';
 import { useCurrentLocation } from '@/hooks/use-current-location';
-import { getRoutePreview } from '@/lib/directions';
 import {
   getMapEdgePadding,
   getRegionForCoordinates,
@@ -22,27 +23,23 @@ import {
   type VenueMapData,
 } from '@/lib/map-utils';
 
-type RouteState = Awaited<ReturnType<typeof getRoutePreview>>;
-
 export function VenueMapCard({
+  eventId,
   latitude,
   longitude,
   venueAddress,
   venueName,
   venueSummary,
 }: VenueMapData) {
+  const router = useRouter();
   const venueCoordinate = useMemo(
     () => toCoordinate(latitude, longitude),
     [latitude, longitude],
   );
   const mapRef = useRef<MapView | null>(null);
   const [mapReady, setMapReady] = useState(false);
-  const [routePreview, setRoutePreview] = useState<RouteState | null>(null);
-  const [routeError, setRouteError] = useState<string | null>(null);
-  const [isRouting, setIsRouting] = useState(false);
   const {
     currentLocation,
-    ensureCurrentLocation,
     error: locationError,
     isCheckingPermission,
     isLoadingLocation,
@@ -55,11 +52,9 @@ export function VenueMapCard({
       return;
     }
 
-    const coordinates = routePreview?.coordinates?.length
-      ? routePreview.coordinates
-      : currentLocation
-        ? [currentLocation, venueCoordinate]
-        : [venueCoordinate];
+    const coordinates = currentLocation
+      ? [currentLocation, venueCoordinate]
+      : [venueCoordinate];
 
     if (coordinates.length > 1) {
       mapRef.current.fitToCoordinates(coordinates, {
@@ -70,7 +65,7 @@ export function VenueMapCard({
     }
 
     mapRef.current.animateToRegion(getRegionForCoordinates(coordinates), 350);
-  }, [currentLocation, mapReady, routePreview, venueCoordinate]);
+  }, [currentLocation, mapReady, venueCoordinate]);
 
   async function handleOpenExternalMaps() {
     if (!venueCoordinate) {
@@ -84,40 +79,20 @@ export function VenueMapCard({
     });
   }
 
-  async function handleGetDirections() {
+  function handleOpenDirections() {
     if (!venueCoordinate) {
-      setRouteError('Venue coordinates are unavailable for this event.');
       return;
     }
 
-    setRouteError(null);
-    setIsRouting(true);
-
-    try {
-      const origin = await ensureCurrentLocation(true);
-
-      if (!origin) {
-        setRouteError(
-          locationError ??
-            'Current location is unavailable. You can still open directions in your maps app.',
-        );
-        return;
-      }
-
-      const preview = await getRoutePreview({
-        origin,
-        destination: venueCoordinate,
+    if (eventId) {
+      router.push({
+        pathname: '/event-directions/[id]',
+        params: { id: eventId },
       });
-
-      setRoutePreview(preview);
-      if (preview.notice) {
-        setRouteError(preview.notice);
-      }
-    } catch {
-      setRouteError('Unable to build a route preview right now.');
-    } finally {
-      setIsRouting(false);
+      return;
     }
+
+    void handleOpenExternalMaps();
   }
 
   async function handleRetryLocation() {
@@ -126,14 +101,20 @@ export function VenueMapCard({
 
   const helperState =
     permissionStatus === 'denied'
-      ? 'Location blocked'
+      ? 'Venue preview only'
       : permissionStatus === 'granted' && currentLocation
         ? 'Current location active'
-        : 'Venue preview ready';
+        : isCheckingPermission || isLoadingLocation
+          ? 'Checking location'
+          : 'Venue preview ready';
+
   const mapPresentationProps =
     Platform.OS === 'android'
-      ? { customMapStyle: premiumMapStyle }
-      : { mapType: 'mutedStandard' as const };
+      ? { customMapStyle: premiumMapStyle, mapType: 'standard' as const }
+      : {
+          mapType: 'standard' as const,
+          userInterfaceStyle: 'dark' as const,
+        };
 
   return (
     <View style={styles.card}>
@@ -144,7 +125,7 @@ export function VenueMapCard({
           {venueAddress ? <Text style={styles.address}>{venueAddress}</Text> : null}
           <Text style={styles.body}>
             {venueSummary ??
-              'Zoom in, preview the venue location, and pull directions without leaving the event flow.'}
+              'Preview the venue, center yourself on the map, and open a cleaner in-app directions view.'}
           </Text>
         </View>
 
@@ -161,8 +142,10 @@ export function VenueMapCard({
             loadingEnabled
             mapPadding={getMapEdgePadding()}
             onMapReady={() => setMapReady(true)}
+            pitchEnabled={false}
             ref={mapRef}
             rotateEnabled={false}
+            scrollEnabled
             showsBuildings={false}
             showsCompass={false}
             showsIndoorLevelPicker={false}
@@ -170,15 +153,10 @@ export function VenueMapCard({
             showsPointsOfInterest={false}
             showsTraffic={false}
             style={styles.map}
-            toolbarEnabled={false}>
-            <Marker coordinate={venueCoordinate} identifier="venue" tracksViewChanges={false}>
-              <View style={styles.venueMarker}>
-                <View style={styles.venueMarkerHalo}>
-                  <View style={styles.venueMarkerDot}>
-                    <Ionicons color="#FFFFFF" name="location-sharp" size={12} />
-                  </View>
-                </View>
-              </View>
+            toolbarEnabled={false}
+            zoomEnabled>
+            <Marker coordinate={venueCoordinate} identifier="venue" tracksViewChanges>
+              <VenueMapMarker />
             </Marker>
 
             {currentLocation ? (
@@ -188,19 +166,9 @@ export function VenueMapCard({
                 </View>
               </Marker>
             ) : null}
-
-            {routePreview?.coordinates?.length ? (
-              <Polyline
-                coordinates={routePreview.coordinates}
-                lineCap="round"
-                lineJoin="round"
-                strokeColor={premiumMapPalette.routeStroke}
-                strokeWidth={5}
-              />
-            ) : null}
           </MapView>
 
-          {isCheckingPermission || isLoadingLocation || isRouting ? (
+          {isCheckingPermission || isLoadingLocation ? (
             <View style={styles.loadingOverlay}>
               <View style={styles.loadingCard}>
                 <ActivityIndicator color={ticketColors.primary} size="small" />
@@ -214,9 +182,7 @@ export function VenueMapCard({
 
           <View style={styles.overlayBadge}>
             <Ionicons color="#FFFFFF" name="navigate-outline" size={14} />
-            <Text style={styles.overlayBadgeText}>
-              {routePreview?.source === 'google' ? 'Live route preview' : 'Interactive venue map'}
-            </Text>
+            <Text style={styles.overlayBadgeText}>Premium venue preview</Text>
           </View>
         </View>
       ) : (
@@ -230,41 +196,21 @@ export function VenueMapCard({
         </View>
       )}
 
-      {routePreview ? (
-        <View style={styles.routeSummaryCard}>
-          <View style={styles.routeMetricRow}>
-            <RouteMetric label="Distance" value={routePreview.distanceLabel} />
-            <RouteMetric label="ETA" value={routePreview.durationLabel} />
-            <RouteMetric
-              label="Route"
-              value={routePreview.source === 'google' ? 'In app' : 'Approx.'}
-            />
-          </View>
-
-          {routePreview.steps.length ? (
-            <View style={styles.stepsWrap}>
-              <Text style={styles.stepsTitle}>Next steps</Text>
-              {routePreview.steps.map((step, index) => (
-                <View key={`${step}-${index}`} style={styles.stepRow}>
-                  <Text style={styles.stepIndex}>{`${index + 1}.`}</Text>
-                  <Text style={styles.stepText}>{step}</Text>
-                </View>
-              ))}
-            </View>
-          ) : null}
-        </View>
-      ) : null}
-
-      {routeError ? (
+      {locationError ? (
         <View style={styles.messageBanner}>
-          <Ionicons color={ticketColors.warning} name="alert-circle-outline" size={18} />
-          <Text style={styles.messageBannerText}>{routeError}</Text>
-        </View>
-      ) : null}
-
-      {!routeError && locationError && permissionStatus === 'granted' ? (
-        <View style={styles.messageBanner}>
-          <Ionicons color={ticketColors.textSubtle} name="locate-outline" size={18} />
+          <Ionicons
+            color={
+              permissionStatus === 'denied'
+                ? ticketColors.warning
+                : ticketColors.textSubtle
+            }
+            name={
+              permissionStatus === 'denied'
+                ? 'alert-circle-outline'
+                : 'locate-outline'
+            }
+            size={18}
+          />
           <Text style={styles.messageBannerText}>{locationError}</Text>
         </View>
       ) : null}
@@ -272,19 +218,10 @@ export function VenueMapCard({
       <View style={styles.buttonRow}>
         <Pressable
           accessibilityRole="button"
-          disabled={!venueCoordinate || isRouting}
-          onPress={handleGetDirections}
-          style={[
-            styles.primaryButton,
-            (!venueCoordinate || isRouting) && styles.primaryButtonDisabled,
-          ]}>
-          <Text style={styles.primaryButtonText}>
-            {isRouting
-              ? 'Loading Route...'
-              : routePreview
-                ? 'Refresh Directions'
-                : 'Get Directions'}
-          </Text>
+          disabled={!venueCoordinate}
+          onPress={handleOpenDirections}
+          style={[styles.primaryButton, !venueCoordinate && styles.primaryButtonDisabled]}>
+          <Text style={styles.primaryButtonText}>Get Directions</Text>
         </Pressable>
 
         <Pressable
@@ -297,19 +234,13 @@ export function VenueMapCard({
       </View>
 
       {permissionStatus === 'granted' && !currentLocation && !isLoadingLocation ? (
-        <Pressable accessibilityRole="button" onPress={handleRetryLocation} style={styles.inlineAction}>
+        <Pressable
+          accessibilityRole="button"
+          onPress={handleRetryLocation}
+          style={styles.inlineAction}>
           <Text style={styles.inlineActionText}>Retry current location</Text>
         </Pressable>
       ) : null}
-    </View>
-  );
-}
-
-function RouteMetric({ label, value }: { label: string; value: string }) {
-  return (
-    <View style={styles.routeMetricCard}>
-      <Text style={styles.routeMetricLabel}>{label}</Text>
-      <Text style={styles.routeMetricValue}>{value}</Text>
     </View>
   );
 }
@@ -368,11 +299,11 @@ const styles = StyleSheet.create({
     lineHeight: 16,
   },
   mapShell: {
-    backgroundColor: ticketColors.chromeElevated,
+    backgroundColor: '#0B1220',
     borderColor: ticketColors.border,
     borderRadius: ticketRadii.md,
     borderWidth: 1,
-    height: 280,
+    height: 300,
     overflow: 'hidden',
     position: 'relative',
   },
@@ -383,42 +314,16 @@ const styles = StyleSheet.create({
     height: '100%',
     width: '100%',
   },
-  venueMarker: {
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  venueMarkerHalo: {
-    alignItems: 'center',
-    backgroundColor: premiumMapPalette.venueMarkerGlow,
-    borderRadius: ticketRadii.pill,
-    height: 42,
-    justifyContent: 'center',
-    shadowColor: premiumMapPalette.venueMarkerShadow,
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 1,
-    shadowRadius: 16,
-    width: 42,
-  },
-  venueMarkerDot: {
-    alignItems: 'center',
-    backgroundColor: premiumMapPalette.venueMarkerFill,
-    borderColor: '#FFFFFF',
-    borderRadius: ticketRadii.pill,
-    borderWidth: 3,
-    height: 28,
-    justifyContent: 'center',
-    width: 28,
-  },
   userMarker: {
     alignItems: 'center',
-    backgroundColor: premiumMapPalette.routeStrokeMuted,
+    backgroundColor: 'rgba(94, 161, 255, 0.26)',
     borderRadius: ticketRadii.pill,
     height: 24,
     justifyContent: 'center',
     width: 24,
   },
   userMarkerDot: {
-    backgroundColor: premiumMapPalette.userMarkerFill,
+    backgroundColor: '#8BC0FF',
     borderColor: '#FFFFFF',
     borderRadius: ticketRadii.pill,
     borderWidth: 3,
@@ -427,7 +332,7 @@ const styles = StyleSheet.create({
   },
   overlayBadge: {
     alignItems: 'center',
-    backgroundColor: 'rgba(15, 23, 42, 0.78)',
+    backgroundColor: 'rgba(8, 13, 24, 0.82)',
     borderRadius: ticketRadii.pill,
     flexDirection: 'row',
     gap: ticketSpacing.xs,
@@ -446,7 +351,7 @@ const styles = StyleSheet.create({
   loadingOverlay: {
     ...StyleSheet.absoluteFillObject,
     alignItems: 'center',
-    backgroundColor: 'rgba(248, 250, 252, 0.72)',
+    backgroundColor: 'rgba(8, 13, 24, 0.38)',
     justifyContent: 'center',
   },
   loadingCard: {
@@ -472,64 +377,6 @@ const styles = StyleSheet.create({
     borderRadius: ticketRadii.pill,
     height: 8,
     width: 128,
-  },
-  routeSummaryCard: {
-    backgroundColor: ticketColors.chromeElevated,
-    borderColor: ticketColors.border,
-    borderRadius: ticketRadii.md,
-    borderWidth: 1,
-    gap: ticketSpacing.sm,
-    padding: ticketSpacing.sm,
-  },
-  routeMetricRow: {
-    flexDirection: 'row',
-    gap: ticketSpacing.sm,
-  },
-  routeMetricCard: {
-    backgroundColor: ticketColors.chrome,
-    borderRadius: ticketRadii.md,
-    flex: 1,
-    gap: ticketSpacing.xxs,
-    padding: ticketSpacing.xs,
-  },
-  routeMetricLabel: {
-    color: ticketColors.textSubtle,
-    fontSize: 11,
-    fontWeight: '700',
-    lineHeight: 15,
-  },
-  routeMetricValue: {
-    color: ticketColors.text,
-    fontSize: 14,
-    fontWeight: '900',
-    lineHeight: 18,
-  },
-  stepsWrap: {
-    gap: ticketSpacing.xs,
-  },
-  stepsTitle: {
-    color: ticketColors.text,
-    fontSize: 14,
-    fontWeight: '800',
-    lineHeight: 18,
-  },
-  stepRow: {
-    alignItems: 'flex-start',
-    flexDirection: 'row',
-    gap: ticketSpacing.xs,
-  },
-  stepIndex: {
-    color: ticketColors.primaryBright,
-    fontSize: 12,
-    fontWeight: '800',
-    lineHeight: 18,
-  },
-  stepText: {
-    color: ticketColors.textMuted,
-    flex: 1,
-    fontSize: 12,
-    fontWeight: '600',
-    lineHeight: 18,
   },
   messageBanner: {
     alignItems: 'flex-start',

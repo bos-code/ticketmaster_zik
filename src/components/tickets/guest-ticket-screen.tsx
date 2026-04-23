@@ -9,11 +9,12 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { ticketRadii, ticketSpacing } from '@/constants/ticket-theme';
 import { GradientSurface } from '@/components/ui/gradient-surface';
 import { shellColors, shellGradients } from '@/constants/shell-theme';
-import { featuredEvents } from '@/lib/mock-events';
-
-const ticketHeroImage = featuredEvents[0]?.imageUrl;
+import { selectDiscoverEvents, useEventStore } from '@/store/use-event-store';
 
 export function GuestTicketScreen() {
+  const discoverEvents = useEventStore(selectDiscoverEvents);
+  const ticketHeroImage = discoverEvents[0]?.imageUrl;
+
   function handleAuthPress() {
     Alert.alert('Sign-in flow next', 'This guest tickets screen is ready to connect to real auth.');
   }

@@ -2,7 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { Image } from 'expo-image';
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import QRCode from 'react-native-qrcode-svg';
 import Animated, {
   Easing,
@@ -22,7 +22,6 @@ import Animated, {
 import {
   ActivityIndicator,
   FlatList,
-  Linking,
   Modal,
   Pressable,
   ScrollView,
@@ -34,6 +33,7 @@ import {
   useWindowDimensions,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { selectPrimaryTicketReservation, selectTicketReservationById, useEventStore } from '@/store/use-event-store';
 
 type FlowScreen = 'list' | 'select' | 'recipientChoice' | 'recipientForm' | 'viewer';
 type PanelTab = 'tickets' | 'extras';
@@ -42,6 +42,7 @@ type DeliveryMode = 'email' | 'mobile';
 
 type Seat = {
   id: string;
+  note: string;
   seat: string;
   row: string;
   section: string;
@@ -54,24 +55,7 @@ type RecipientFormState = {
   note: string;
 };
 
-const EVENT = {
-  title: 'DON TOLIVER: OCTANE TOUR',
-  shortTitle: 'Don Toliver: Octane Tour',
-  venue: 'Madison Square Garden',
-  dateTime: 'MON, JUN 01, 7:30 PM',
-  headerSubtitle: 'Madison Square Garden',
-};
-
-const ORDER = {
-  id: 'Order #29-14766/DON',
-  ticketCount: 'x3 Tickets',
-};
-
-const SEATS: Seat[] = [
-  { id: 'seat-2', section: '102', row: '12', seat: '2' },
-  { id: 'seat-3', section: '102', row: '12', seat: '3' },
-  { id: 'seat-4', section: '102', row: '12', seat: '4' },
-];
+const EMPTY_SEATS: Seat[] = [];
 
 const EXTRA_CARDS = [
   {
@@ -93,11 +77,6 @@ const EXTRA_CARDS = [
     body: 'Bag rules and door times can change. Check venue updates before you leave.',
   },
 ];
-
-const HERO_IMAGE =
-  'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=1400&q=80';
-const MAP_IMAGE =
-  'https://maps.geoapify.com/v1/staticmap?style=osm-bright-smooth&width=1200&height=700&center=lonlat:-73.9934,40.7505&zoom=14&marker=lonlat:-73.9934,40.7505;type:awesome;color:%23ef4444;size:large';
 
 const KEYPAD_KEYS = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '', '0', 'back'] as const;
 
@@ -133,12 +112,84 @@ function cx(...parts: (string | false | null | undefined)[]) {
   return parts.filter(Boolean).join(' ');
 }
 
-export function TicketTransferFlow() {
+type TicketFlowContextValue = {
+  event: {
+    id: string;
+    title: string;
+    shortTitle: string;
+    venue: string;
+    dateTime: string;
+    headerSubtitle: string;
+    imageUrl: string;
+    mapImageUrl: string;
+  };
+  order: {
+    id: string;
+    ticketCount: string;
+  };
+  reservationId: string;
+  seats: Seat[];
+};
+
+const TicketFlowContext = createContext<TicketFlowContextValue | null>(null);
+
+function useTicketFlowData() {
+  const context = useContext(TicketFlowContext);
+
+  if (!context) {
+    throw new Error('Ticket flow data is unavailable.');
+  }
+
+  return context;
+}
+
+export function TicketTransferFlow({ reservationId }: { reservationId?: string }) {
+  const reservation = useEventStore((state) =>
+    reservationId
+      ? selectTicketReservationById(state, reservationId)
+      : selectPrimaryTicketReservation(state),
+  );
   const { width } = useWindowDimensions();
   const frameWidth = Math.min(width, 430);
   const carouselCardWidth = Math.max(frameWidth - 52, 286);
   const carouselGap = 14;
   const carouselSnapInterval = carouselCardWidth + carouselGap;
+  const ticketFlowData = useMemo(() => {
+    if (!reservation) {
+      return null;
+    }
+
+    return {
+      event: {
+        id: reservation.event.id,
+        title: reservation.event.title,
+        shortTitle: reservation.event.shortTitle ?? reservation.event.title,
+        venue: reservation.event.venue,
+        dateTime: reservation.event.date,
+        headerSubtitle: reservation.event.venue,
+        imageUrl: reservation.event.imageUrl,
+        mapImageUrl: buildStaticMapPreviewUrl(
+          reservation.event.longitude,
+          reservation.event.latitude,
+        ),
+      },
+      order: {
+        id: reservation.orderId,
+        ticketCount: `x${reservation.ticketCount} Tickets`,
+      },
+      reservationId: reservation.id,
+      seats: reservation.seats.map((seat) => ({
+        id: seat.id,
+        note: seat.note,
+        row: seat.row,
+        seat: seat.seat,
+        section: seat.section,
+      })),
+    } satisfies TicketFlowContextValue;
+  }, [reservation]);
+
+  const seats = ticketFlowData?.seats ?? EMPTY_SEATS;
+  const seatSummary = useMemo(() => buildSeatSummary(seats), [seats]);
 
   const [screen, setScreen] = useState<FlowScreen>('list');
   const [activePanel, setActivePanel] = useState<PanelTab>('tickets');
@@ -147,7 +198,7 @@ export function TicketTransferFlow() {
   const [deliveryMode, setDeliveryMode] = useState<DeliveryMode>('email');
   const [selectedSeatIds, setSelectedSeatIds] = useState<string[]>([]);
   const [otpCode, setOtpCode] = useState('');
-  const [viewerIndex, setViewerIndex] = useState(SEATS.length - 1);
+  const [viewerIndex, setViewerIndex] = useState(Math.max(seats.length - 1, 0));
   const [recipientForm, setRecipientForm] = useState<RecipientFormState>({
     destination: '',
     firstName: '',
@@ -162,11 +213,11 @@ export function TicketTransferFlow() {
 
   const transferredSeats = useMemo(() => {
     if (!selectedSeatIds.length) {
-      return SEATS;
+      return seats;
     }
 
-    return SEATS.filter((seat) => selectedSeatIds.includes(seat.id));
-  }, [selectedSeatIds]);
+    return seats.filter((seat) => selectedSeatIds.includes(seat.id));
+  }, [seats, selectedSeatIds]);
 
   const recipientLabel = deliveryMode === 'email' ? 'Email' : 'Mobile Number';
   const recipientPlaceholder =
@@ -204,6 +255,11 @@ export function TicketTransferFlow() {
   }, []);
 
   useEffect(() => {
+    setViewerIndex(Math.max(seats.length - 1, 0));
+    setSelectedSeatIds([]);
+  }, [seats.length, ticketFlowData?.reservationId]);
+
+  useEffect(() => {
     if (screen !== 'viewer') {
       return;
     }
@@ -215,6 +271,10 @@ export function TicketTransferFlow() {
       });
     });
   }, [carouselSnapInterval, screen, viewerIndex]);
+
+  if (!ticketFlowData) {
+    return <TicketsUnavailable />;
+  }
 
   const updateRecipientForm = (field: keyof RecipientFormState, value: string) => {
     setRecipientForm((current) => ({
@@ -241,7 +301,7 @@ export function TicketTransferFlow() {
   };
 
   const handleOpenViewer = () => {
-    setViewerIndex(SEATS.length - 1);
+    setViewerIndex(Math.max(seats.length - 1, 0));
     setScreen('viewer');
   };
 
@@ -272,7 +332,7 @@ export function TicketTransferFlow() {
       clearTimeout(loadingTimerRef.current);
     }
 
-    const nextLength = selectedSeatIds.length || SEATS.length;
+    const nextLength = selectedSeatIds.length || seats.length;
     loadingTimerRef.current = setTimeout(() => {
       setTransferModal('none');
       setViewerIndex(Math.max(nextLength - 1, 0));
@@ -286,15 +346,17 @@ export function TicketTransferFlow() {
   };
 
   const handleOpenDirections = () => {
-    void Linking.openURL(
-      'https://www.google.com/maps/search/?api=1&query=Madison%20Square%20Garden',
-    ).catch(() => {});
+    router.push({
+      pathname: '/event-directions/[id]',
+      params: { id: ticketFlowData.event.id },
+    });
   };
 
   return (
-    <View className="flex-1 bg-[#ECE9E5]">
-      <StatusBar style={screen === 'viewer' ? 'dark' : 'light'} />
-      <View className="mx-auto flex-1 w-full bg-white" style={{ maxWidth: frameWidth }}>
+    <TicketFlowContext.Provider value={ticketFlowData}>
+      <View className="flex-1 bg-[#ECE9E5]">
+        <StatusBar style={screen === 'viewer' ? 'dark' : 'light'} />
+        <View className="mx-auto flex-1 w-full bg-white" style={{ maxWidth: frameWidth }}>
         {screen === 'list' ? (
           <SafeAreaView edges={['left', 'right']} style={{ flex: 1, backgroundColor: '#F5F2EF' }}>
             <View className="flex-1 overflow-hidden bg-[#F5F2EF]">
@@ -337,15 +399,15 @@ export function TicketTransferFlow() {
 
               <View className="mt-10 flex-row items-center justify-between">
                 <Text className="text-[12px] font-normal leading-[15px] text-[#444B55]">
-                  Sec 102, Row 12
+                  {seatSummary}
                 </Text>
                 <Text className="text-[12px] font-normal leading-[15px] text-[#444B55]">
-                  3 Tickets
+                  {ticketFlowData.order.ticketCount}
                 </Text>
               </View>
 
               <View className="mt-5 flex-row gap-[14px]">
-                {SEATS.map((seat) => {
+                {seats.map((seat) => {
                   const selected = selectedSeatIds.includes(seat.id);
 
                   return (
@@ -733,8 +795,66 @@ export function TicketTransferFlow() {
           </View>
         </View>
       </Modal>
-    </View>
+      </View>
+    </TicketFlowContext.Provider>
   );
+}
+
+function TicketsUnavailable() {
+  return (
+    <SafeAreaView edges={['left', 'right']} style={{ flex: 1, backgroundColor: '#F5F2EF' }}>
+      <View className="flex-1 items-center justify-center px-6">
+        <View className="w-full max-w-[360px] rounded-[16px] border border-[#E6DFD9] bg-white px-5 py-6">
+          <Text className="text-[13px] font-bold uppercase leading-[16px] text-[#0B55F5]">
+            My Tickets
+          </Text>
+          <Text className="mt-3 text-[22px] font-extrabold leading-7 text-[#111111]">
+            No reservation is available yet.
+          </Text>
+          <Text className="mt-3 text-[14px] font-medium leading-5 text-[#5B6470]">
+            Reserve a ticket from discovery first, then open it from My Tickets to view the full
+            details flow.
+          </Text>
+          <Pressable
+            accessibilityRole="button"
+            className="mt-6 min-h-[46px] items-center justify-center rounded-[10px] bg-[#0B55F5]"
+            onPress={() => router.replace('/discover')}>
+            <Text className="text-[14px] font-semibold leading-[18px] text-white">
+              Back to Discover
+            </Text>
+          </Pressable>
+        </View>
+      </View>
+    </SafeAreaView>
+  );
+}
+
+function buildStaticMapPreviewUrl(longitude?: number, latitude?: number) {
+  if (typeof longitude !== 'number' || typeof latitude !== 'number') {
+    return 'https://maps.geoapify.com/v1/staticmap?style=osm-bright-smooth&width=1200&height=700&center=lonlat:-73.9934,40.7505&zoom=14&marker=lonlat:-73.9934,40.7505;type:awesome;color:%23ef4444;size:large';
+  }
+
+  return `https://maps.geoapify.com/v1/staticmap?style=osm-bright-smooth&width=1200&height=700&center=lonlat:${longitude},${latitude}&zoom=14&marker=lonlat:${longitude},${latitude};type:awesome;color:%23ef4444;size:large`;
+}
+
+function buildSeatSummary(seats: Seat[]) {
+  if (!seats.length) {
+    return 'No ticket seats';
+  }
+
+  const firstSeat = seats[0];
+  const sameRow = seats.every((seat) => seat.row === firstSeat.row);
+  const sameSection = seats.every((seat) => seat.section === firstSeat.section);
+
+  if (sameRow && sameSection) {
+    return `Sec ${firstSeat.section}, Row ${firstSeat.row}`;
+  }
+
+  if (sameSection) {
+    return `Sec ${firstSeat.section}`;
+  }
+
+  return `${seats.length} Ticket Seats`;
 }
 
 function CollapsibleEventHero({
@@ -748,6 +868,7 @@ function CollapsibleEventHero({
   onOpenViewer: () => void;
   scrollY: SharedValue<number>;
 }) {
+  const { event, order } = useTicketFlowData();
   const heroHeightStyle = useAnimatedStyle(() => ({
     height: interpolate(
       scrollY.value,
@@ -784,7 +905,7 @@ function CollapsibleEventHero({
     <Animated.View
       className="absolute inset-x-0 top-0 z-20 overflow-hidden bg-[#050505]"
       style={heroHeightStyle}>
-      <Image contentFit="cover" source={{ uri: HERO_IMAGE }} style={absoluteFill} />
+      <Image contentFit="cover" source={{ uri: event.imageUrl }} style={absoluteFill} />
       <View className="absolute inset-0 bg-[rgba(2,2,4,0.48)]" />
       <View className="absolute inset-x-0 bottom-0 h-24 bg-[rgba(0,0,0,0.18)]" />
 
@@ -806,12 +927,12 @@ function CollapsibleEventHero({
               <Text
                 numberOfLines={1}
                 className="text-center text-[13px] font-extrabold leading-[16px] text-white">
-                {EVENT.title}
+                {event.title}
               </Text>
               <Text
                 numberOfLines={1}
                 className="mt-[2px] text-center text-[11px] font-normal leading-[13px] text-[rgba(255,255,255,0.84)]">
-                {EVENT.venue}
+                {event.venue}
               </Text>
             </Animated.View>
 
@@ -836,22 +957,24 @@ function CollapsibleEventHero({
                 <Text
                   className="text-[11px] font-extrabold uppercase leading-[13px] text-[rgba(255,255,255,0.92)]"
                   style={{ letterSpacing: 1 }}>
-                  {EVENT.dateTime}
+                  {event.dateTime}
                 </Text>
               </View>
 
               <Text className="mt-4 text-[18px] font-extrabold leading-6 text-white">
-                {EVENT.title}
+                {event.title}
               </Text>
 
               <View className="mt-4 flex-row items-center justify-between pb-4">
                 <Text className="text-[13px] font-normal leading-[17px] text-[rgba(255,255,255,0.76)]">
-                  {EVENT.venue}
+                  {event.venue}
                 </Text>
 
                 <View className="flex-row items-center gap-[5px]">
                   <Ionicons color="#E6E8EC" name="ticket-outline" size={15} />
-                  <Text className="text-[17px] font-bold leading-[19px] text-[#F2F4F7]">x3</Text>
+                  <Text className="text-[17px] font-bold leading-[19px] text-[#F2F4F7]">
+                    {order.ticketCount.replace(' Tickets', '')}
+                  </Text>
                 </View>
               </View>
             </View>
@@ -928,16 +1051,18 @@ function TicketListPanel({
 }: {
   onOpenDirections: () => void;
 }) {
+  const { order, seats } = useTicketFlowData();
+
   return (
     <View className="bg-white pb-4">
       <View className="border-b border-[#F1ECE8] px-5 py-6">
         <View className="flex-row items-start justify-between">
           <View className="gap-[6px]">
             <Text className="text-[17px] font-extrabold leading-[22px] text-[#141414]">
-              {ORDER.id}
+              {order.id}
             </Text>
             <Text className="text-[13px] font-medium leading-[17px] text-[#6D727A]">
-              {ORDER.ticketCount}
+              {order.ticketCount}
             </Text>
           </View>
 
@@ -948,7 +1073,7 @@ function TicketListPanel({
       </View>
 
       <View className="gap-4 px-4 pb-1 pt-4">
-        {SEATS.map((seat, index) => (
+        {seats.map((seat, index) => (
           <TicketSeatCard index={index} key={seat.id} seat={seat} />
         ))}
       </View>
@@ -970,7 +1095,7 @@ function TicketSeatCard({
     <Animated.View
       entering={FadeInDown.duration(220).delay(40 + index * 60)}
       className="overflow-hidden rounded-[4px] border border-[#F0EAE6] bg-[#F7F4F2] px-4 py-5">
-      <Text className="text-[15px] font-semibold leading-[19px] text-[#111111]">Arist presale</Text>
+      <Text className="text-[15px] font-semibold leading-[19px] text-[#111111]">{seat.note}</Text>
 
       <View className="mt-[20px] flex-row justify-between gap-3">
         <TicketMetaCell label="SECTION" value={seat.section} />
@@ -986,16 +1111,18 @@ function MapPreviewCard({
 }: {
   onOpenDirections: () => void;
 }) {
+  const { event } = useTicketFlowData();
+
   return (
     <Animated.View entering={FadeInUp.duration(240)} className="mx-4 mt-5 overflow-hidden bg-[#F4F1EE]">
       <View className="relative">
-        <Image contentFit="cover" source={{ uri: MAP_IMAGE }} style={{ height: 252, width: '100%' }} />
+        <Image contentFit="cover" source={{ uri: event.mapImageUrl }} style={{ height: 252, width: '100%' }} />
 
         <View className="absolute inset-0 items-center justify-center">
           <Ionicons color="#F3182E" name="location" size={42} />
           <View className="mt-1 rounded-full bg-[rgba(255,255,255,0.93)] px-3 py-[6px]">
             <Text className="text-[12px] font-semibold leading-[15px] text-[#1A1A1A]">
-              {EVENT.venue}
+              {event.venue}
             </Text>
           </View>
         </View>
@@ -1012,9 +1139,11 @@ function MapPreviewCard({
 }
 
 function PromoCard() {
+  const { event } = useTicketFlowData();
+
   return (
     <Animated.View entering={FadeInUp.duration(280)} className="mx-4 mt-5 overflow-hidden bg-black">
-      <Image contentFit="cover" source={{ uri: HERO_IMAGE }} style={{ height: 190, width: '100%' }} />
+      <Image contentFit="cover" source={{ uri: event.imageUrl }} style={{ height: 190, width: '100%' }} />
       <View className="absolute inset-0 bg-[rgba(7,7,9,0.52)]" />
 
       <View className="absolute inset-0 px-4 py-4">
@@ -1027,16 +1156,16 @@ function PromoCard() {
             <Text
               className="text-[10px] font-extrabold uppercase leading-3 text-[rgba(255,255,255,0.9)]"
               style={{ letterSpacing: 0.8 }}>
-              {EVENT.dateTime}
+              {event.dateTime}
             </Text>
           </View>
 
           <View className="mt-2 bg-[rgba(20,20,24,0.94)] px-3 py-3">
             <Text className="text-[15px] font-extrabold leading-[18px] text-white">
-              {EVENT.title}
+              {event.title}
             </Text>
             <Text className="mt-2 text-[12px] font-medium leading-[15px] text-[rgba(255,255,255,0.74)]">
-              {EVENT.venue}
+              {event.venue}
             </Text>
           </View>
         </View>
@@ -1087,11 +1216,13 @@ function CompactHeroHeader({
   onBack: () => void;
   onOpenViewer?: () => void;
 }) {
+  const { event } = useTicketFlowData();
+
   return (
     <View className="overflow-hidden bg-[#050505]">
       <SafeAreaView edges={['top']} style={{ backgroundColor: '#050505' }}>
         <View className="relative min-h-[106px] overflow-hidden">
-          <Image contentFit="cover" source={{ uri: HERO_IMAGE }} style={absoluteFill} />
+          <Image contentFit="cover" source={{ uri: event.imageUrl }} style={absoluteFill} />
           <View className="absolute inset-0 bg-[rgba(3,3,6,0.56)]" />
 
           <View className="relative flex-1 justify-center px-4">
@@ -1108,12 +1239,12 @@ function CompactHeroHeader({
                 <Text
                   numberOfLines={1}
                   className="text-center text-[13px] font-extrabold leading-[16px] text-white">
-                  {EVENT.title}
+                  {event.title}
                 </Text>
                 <Text
                   numberOfLines={1}
                   className="mt-[2px] text-center text-[11px] font-normal leading-[13px] text-[rgba(255,255,255,0.84)]">
-                  {EVENT.venue}
+                  {event.venue}
                 </Text>
               </View>
 
@@ -1305,6 +1436,8 @@ function TicketCard({
   index: number;
   seat: Seat;
 }) {
+  const { event } = useTicketFlowData();
+
   return (
     <Animated.View
       entering={FadeInDown.duration(280).delay(40 + index * 70)}
@@ -1322,10 +1455,10 @@ function TicketCard({
         <TicketQrBand seat={seat} />
       </View>
 
-      <Image contentFit="cover" source={{ uri: HERO_IMAGE }} style={{ height: 300, width: '100%' }} />
+      <Image contentFit="cover" source={{ uri: event.imageUrl }} style={{ height: 300, width: '100%' }} />
 
       <View className="px-[14px] pb-[14px] pt-3">
-        <Text className="text-[17px] font-bold leading-5 text-[#202020]">Arist presale</Text>
+        <Text className="text-[17px] font-bold leading-5 text-[#202020]">{seat.note}</Text>
         <Text className="mt-[3px] text-[12px] font-medium leading-[15px] text-[#8B8F96]">
           LOWER BOWL SEATING
         </Text>
@@ -1352,7 +1485,8 @@ function TicketCard({
 }
 
 function TicketQrBand({ seat }: { seat: Seat }) {
-  const qrValue = `${EVENT.shortTitle}-${seat.section}-${seat.row}-${seat.seat}`;
+  const { event } = useTicketFlowData();
+  const qrValue = `${event.shortTitle}-${seat.section}-${seat.row}-${seat.seat}`;
   const beamProgress = useSharedValue(0);
 
   useEffect(() => {

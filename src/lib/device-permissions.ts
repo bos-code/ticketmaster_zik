@@ -1,5 +1,6 @@
 import * as Location from 'expo-location';
-import * as Notifications from 'expo-notifications';
+import Constants, { ExecutionEnvironment } from 'expo-constants';
+import type * as NotificationsModule from 'expo-notifications';
 import { Platform } from 'react-native';
 
 export type AppPermissionStatus = 'granted' | 'denied' | 'undetermined';
@@ -15,6 +16,8 @@ export type HomeLocationResult = PermissionResult & {
 };
 
 export const DEFAULT_HOME_LOCATION = 'Igbesa, Ogun State, NG';
+
+let notificationsModule: typeof NotificationsModule | null = null;
 
 export async function getLocationPermissionStatus(): Promise<AppPermissionStatus> {
   const permission = await Location.getForegroundPermissionsAsync();
@@ -82,12 +85,28 @@ export async function resolveHomeLocation({
 }
 
 export async function getNotificationPermissionStatus(): Promise<AppPermissionStatus> {
+  const Notifications = await loadNotificationsModule();
+
+  if (!Notifications) {
+    return 'denied';
+  }
+
   const permission = await Notifications.getPermissionsAsync();
   return permission.granted ? 'granted' : permission.canAskAgain ? 'undetermined' : 'denied';
 }
 
 export async function requestNotificationPermission(): Promise<PermissionResult> {
   try {
+    const Notifications = await loadNotificationsModule();
+
+    if (!Notifications) {
+      return {
+        granted: false,
+        status: 'denied',
+        error: 'Push notifications require a development build.',
+      };
+    }
+
     if (Platform.OS === 'android') {
       await Notifications.setNotificationChannelAsync('default', {
         name: 'default',
@@ -126,6 +145,15 @@ export async function requestNotificationPermission(): Promise<PermissionResult>
           : 'Unable to update notification access right now.',
     };
   }
+}
+
+async function loadNotificationsModule() {
+  if (Constants.executionEnvironment === ExecutionEnvironment.StoreClient) {
+    return null;
+  }
+
+  notificationsModule ??= await import('expo-notifications');
+  return notificationsModule;
 }
 
 function normalizePermissionStatus(status: Location.PermissionStatus): AppPermissionStatus {

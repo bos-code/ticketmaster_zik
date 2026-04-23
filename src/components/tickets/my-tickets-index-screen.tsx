@@ -12,38 +12,9 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ticketRadii, ticketSpacing } from '@/constants/ticket-theme';
+import { selectTicketReservations, useEventStore } from '@/store/use-event-store';
 
 type TicketIndexTab = 'upcoming' | 'past';
-
-type MyEventRecord = {
-  id: string;
-  title: string;
-  dateTime: string;
-  venue: string;
-  imageUrl: string;
-  status: TicketIndexTab;
-};
-
-const ownedEvents: MyEventRecord[] = [
-  {
-    id: 'ticket-don-toliver-1',
-    title: 'DON TOLIVER:\nOCTANE TOUR',
-    dateTime: 'MON, JUN 01, 7:30 PM',
-    venue: 'Madison Square Garden',
-    imageUrl:
-      'https://images.unsplash.com/photo-1501386761578-eac5c94b800a?auto=format&fit=crop&w=1200&q=80',
-    status: 'upcoming',
-  },
-  {
-    id: 'ticket-don-toliver-2',
-    title: 'DON TOLIVER:\nOCTANE TOUR',
-    dateTime: 'MON, JUN 01, 7:30 PM',
-    venue: 'Madison Square Garden',
-    imageUrl:
-      'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?auto=format&fit=crop&w=1200&q=80',
-    status: 'upcoming',
-  },
-];
 
 const screenPalette = {
   background: '#050505',
@@ -61,27 +32,31 @@ const screenPalette = {
 
 export function MyTicketsIndexScreen() {
   const router = useRouter();
+  const reservations = useEventStore(selectTicketReservations);
   const [activeTab, setActiveTab] = useState<TicketIndexTab>('upcoming');
 
   const upcomingEvents = useMemo(
-    () => ownedEvents.filter((event) => event.status === 'upcoming'),
-    [],
+    () => reservations.filter((reservation) => reservation.status === 'upcoming'),
+    [reservations],
   );
   const pastEvents = useMemo(
-    () => ownedEvents.filter((event) => event.status === 'past'),
-    [],
+    () => reservations.filter((reservation) => reservation.status === 'past'),
+    [reservations],
   );
   const visibleEvents = activeTab === 'upcoming' ? upcomingEvents : pastEvents;
+  const backdropImage = visibleEvents[0]?.event.imageUrl ?? reservations[0]?.event.imageUrl;
 
   return (
     <View style={styles.root}>
       <StatusBar style="light" />
 
-      <Image
-        contentFit="cover"
-        source={{ uri: ownedEvents[0]?.imageUrl }}
-        style={styles.backdropImage}
-      />
+      {backdropImage ? (
+        <Image
+          contentFit="cover"
+          source={{ uri: backdropImage }}
+          style={styles.backdropImage}
+        />
+      ) : null}
       <View style={styles.backdropOverlay} />
 
       <SafeAreaView edges={['top', 'left', 'right']} style={styles.safeArea}>
@@ -90,7 +65,7 @@ export function MyTicketsIndexScreen() {
           <Text style={styles.headerTitle}>My Events</Text>
           <Pressable
             accessibilityRole="button"
-            onPress={() => router.push('/settings/index')}
+            onPress={() => router.push('/settings')}
             style={styles.helpButton}>
             <Text style={styles.helpText}>Help</Text>
           </Pressable>
@@ -119,22 +94,27 @@ export function MyTicketsIndexScreen() {
               <Pressable
                 accessibilityRole="button"
                 key={event.id}
-                onPress={() => router.push('/tickets')}
+                onPress={() =>
+                  router.push({
+                    pathname: '/tickets',
+                    params: { reservationId: event.id },
+                  })
+                }
                 style={styles.eventCard}>
                 <Image
                   contentFit="cover"
-                  source={{ uri: event.imageUrl }}
+                  source={{ uri: event.event.imageUrl }}
                   style={styles.eventImage}
                 />
 
                 <View style={styles.infoPanel}>
                   <View style={styles.dateChip}>
-                    <Text style={styles.dateChipText}>{event.dateTime}</Text>
+                    <Text style={styles.dateChipText}>{event.event.date}</Text>
                   </View>
 
-                  <Text style={styles.eventTitle}>{event.title}</Text>
+                  <Text style={styles.eventTitle}>{event.event.title}</Text>
                   <View style={styles.titleAccent} />
-                  <Text style={styles.eventVenue}>{event.venue}</Text>
+                  <Text style={styles.eventVenue}>{event.event.venue}</Text>
                 </View>
               </Pressable>
             ))

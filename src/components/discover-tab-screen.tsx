@@ -22,8 +22,8 @@ import {
   DEFAULT_HOME_LOCATION,
   resolveHomeLocation,
 } from '@/lib/device-permissions';
-import { featuredEvents, formatCurrency } from '@/lib/mock-events';
 import { useAppStore } from '@/store/use-app-store';
+import { selectDiscoverEvents, useEventStore } from '@/store/use-event-store';
 
 type EventWindow = 'All Dates' | 'Today' | 'This Week';
 
@@ -35,27 +35,11 @@ type GenreCard = {
 
 const eventWindows: EventWindow[] = ['All Dates', 'Today', 'This Week'];
 
-const genreCards: GenreCard[] = [
-  {
-    label: 'Music',
-    tint: 'rgba(126, 65, 255, 0.32)',
-    imageUrl:
-      featuredEvents[0]?.imageUrl ??
-      'https://images.unsplash.com/photo-1501386761578-eac5c94b800a?auto=format&fit=crop&w=900&q=80',
-  },
-  {
-    label: 'Sports',
-    tint: 'rgba(17, 168, 138, 0.30)',
-    imageUrl:
-      featuredEvents[1]?.imageUrl ??
-      'https://images.unsplash.com/photo-1471295253337-3ceaaedca402?auto=format&fit=crop&w=900&q=80',
-  },
-];
-
 export function DiscoverTabScreen() {
   const router = useRouter();
   const { width } = useWindowDimensions();
   const cardWidth = Math.min(width - 68, 318);
+  const discoverEvents = useEventStore(selectDiscoverEvents);
   const homeLocationLabel = useAppStore((state) => state.homeLocationLabel);
   const setHomeLocationLabel = useAppStore((state) => state.setHomeLocationLabel);
   const locationEnabled = useAppStore((state) => state.locationEnabled);
@@ -65,6 +49,25 @@ export function DiscoverTabScreen() {
   const [isResolvingLocation, setIsResolvingLocation] = useState(false);
   const [locationMessage, setLocationMessage] = useState<string | null>(null);
   const normalizedSearch = searchValue.trim().toLowerCase();
+  const genreCards = useMemo<GenreCard[]>(
+    () => [
+      {
+        label: 'Music',
+        tint: 'rgba(126, 65, 255, 0.32)',
+        imageUrl:
+          discoverEvents[0]?.imageUrl ??
+          'https://images.unsplash.com/photo-1501386761578-eac5c94b800a?auto=format&fit=crop&w=900&q=80',
+      },
+      {
+        label: 'Sports',
+        tint: 'rgba(17, 168, 138, 0.30)',
+        imageUrl:
+          discoverEvents[1]?.imageUrl ??
+          'https://images.unsplash.com/photo-1471295253337-3ceaaedca402?auto=format&fit=crop&w=900&q=80',
+      },
+    ],
+    [discoverEvents],
+  );
 
   useEffect(() => {
     let isActive = true;
@@ -98,7 +101,7 @@ export function DiscoverTabScreen() {
   }, [setHomeLocationLabel, setLocationEnabled]);
 
   const visibleEvents = useMemo(() => {
-    return featuredEvents.filter((event) => {
+    return discoverEvents.filter((event) => {
       if (!normalizedSearch) {
         return true;
       }
@@ -107,7 +110,7 @@ export function DiscoverTabScreen() {
         value.toLowerCase().includes(normalizedSearch),
       );
     });
-  }, [normalizedSearch]);
+  }, [discoverEvents, normalizedSearch]);
 
   const filteredEvents = useMemo(() => {
     if (selectedWindow === 'All Dates') {
@@ -117,7 +120,7 @@ export function DiscoverTabScreen() {
     const now = new Date();
 
     return visibleEvents.filter((event) => {
-      const eventDate = new Date(event.date);
+      const eventDate = new Date(event.startsAt);
 
       if (Number.isNaN(eventDate.getTime())) {
         return false;
@@ -165,7 +168,7 @@ export function DiscoverTabScreen() {
 
             <Pressable
               accessibilityRole="button"
-              onPress={() => router.push('/settings/index')}
+              onPress={() => router.push('/settings')}
               style={styles.avatarButton}>
               <Ionicons color={ticketColors.primaryBright} name="person-circle-outline" size={34} />
             </Pressable>
@@ -237,10 +240,6 @@ export function DiscoverTabScreen() {
                 style={[styles.featuredCard, { width: cardWidth }]}>
                 <Image contentFit="cover" source={{ uri: item.imageUrl }} style={styles.featuredImage} />
                 <GradientSurface colors={shellGradients.ticket} style={styles.featuredOverlay} />
-
-                <View style={styles.pricePill}>
-                  <Text style={styles.pricePillText}>{`From ${formatCurrency(item.priceFrom)}`}</Text>
-                </View>
 
                 <View style={styles.featuredCopy}>
                   <Text style={styles.featuredDate}>{item.date}</Text>
@@ -518,21 +517,6 @@ const styles = StyleSheet.create({
   },
   featuredOverlay: {
     ...StyleSheet.absoluteFillObject,
-  },
-  pricePill: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: ticketRadii.pill,
-    paddingHorizontal: ticketSpacing.sm,
-    paddingVertical: 6,
-    position: 'absolute',
-    right: ticketSpacing.md,
-    top: ticketSpacing.md,
-  },
-  pricePillText: {
-    color: ticketColors.text,
-    fontSize: 12,
-    fontWeight: '800',
-    lineHeight: 16,
   },
   featuredCopy: {
     bottom: ticketSpacing.lg,
