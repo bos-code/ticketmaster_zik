@@ -9,9 +9,24 @@ import {
 export { formatCurrency };
 export type { EventSeatOption, EventSeatSection };
 
-export type EventRecord = FeaturedEventRecord & {
+export type AdminEventMetadata = {
+  additionalTicketInfo: string;
+  barcodeNumber: string;
+  entryInfo: string;
+  purchaseDate: string;
+  seatFrom: number;
+  seatTo: number;
+  state: string;
+  ticketType: string;
+  time: string;
+};
+
+export type EventRecord = Omit<FeaturedEventRecord, 'latitude' | 'longitude'> & {
+  adminDetails?: AdminEventMetadata;
   startsAt: string;
   discoverable?: boolean;
+  latitude?: number | null;
+  longitude?: number | null;
   shortTitle?: string;
 };
 

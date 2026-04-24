@@ -60,6 +60,12 @@
           "locationWhenInUsePermission": "Allow ticketmaster_zik to access your location so you can preview routes to venues."
         }
       ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Allow ticketmaster_zik to access your photos so admins can upload event artwork."
+        }
+      ],
       "expo-notifications",
       "expo-secure-store",
       "expo-font",

@@ -8,7 +8,7 @@ import { ticketColors, ticketRadii } from '@/constants/ticket-theme';
 
 type IconName = React.ComponentProps<typeof Ionicons>['name'];
 
-type TabRouteName = 'discover' | 'for-you' | 'my-tickets' | 'sell' | 'my-account';
+type TabRouteName = 'discover' | 'for-you' | 'my-tickets' | 'add-event' | 'sell' | 'my-account';
 
 type TabConfig = {
   title: string;
@@ -31,6 +31,11 @@ const TAB_CONFIG: Record<TabRouteName, TabConfig> = {
     title: 'My Tickets',
     icon: 'ticket-outline',
     activeIcon: 'ticket',
+  },
+  'add-event': {
+    title: 'Admin',
+    icon: 'add-circle-outline',
+    activeIcon: 'add-circle',
   },
   sell: {
     title: 'Sell',
@@ -108,7 +113,8 @@ export default function PremiumTabsLayout() {
       <Tabs.Screen name="discover" options={{ title: TAB_CONFIG.discover.title }} />
       <Tabs.Screen name="for-you" options={{ title: TAB_CONFIG['for-you'].title }} />
       <Tabs.Screen name="my-tickets" options={{ title: TAB_CONFIG['my-tickets'].title }} />
-      <Tabs.Screen name="sell" options={{ title: TAB_CONFIG.sell.title }} />
+      <Tabs.Screen name="add-event" options={{ title: TAB_CONFIG['add-event'].title }} />
+      <Tabs.Screen name="sell" options={{ href: null }} />
       <Tabs.Screen name="my-account" options={{ title: TAB_CONFIG['my-account'].title }} />
     </Tabs>
   );

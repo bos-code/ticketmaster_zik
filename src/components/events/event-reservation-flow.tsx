@@ -80,6 +80,7 @@ export function EventReservationFlow({ eventId }: { eventId: string }) {
   const selectedSeats = event.allSeatOptions.filter((seat) =>
     selectedSeatIds.includes(seat.id),
   );
+  const isPastEvent = new Date(event.startsAt).getTime() < Date.now();
   const reservationTotal = selectedSeats.reduce(
     (sum, seat) => sum + seat.price,
     0,
@@ -240,6 +241,7 @@ export function EventReservationFlow({ eventId }: { eventId: string }) {
               description={event.description}
               eventId={event.id}
               highlights={event.highlights}
+              isPastEvent={isPastEvent}
               onChooseSeats={() => setStep("seats")}
               priceFrom={event.priceFrom}
               venueAddress={event.venueAddress}
@@ -267,7 +269,7 @@ export function EventReservationFlow({ eventId }: { eventId: string }) {
             <ConfirmationStep
               city={event.city}
               date={event.date}
-              onBackHome={() => router.replace("/discover")}
+              onViewMyTickets={() => router.replace("/my-tickets")}
               onReserveMore={handleRestartFlow}
               reservationCode={reservationCode}
               reservationTotal={reservationTotal}
@@ -351,6 +353,7 @@ function DetailStep({
   description,
   eventId,
   highlights,
+  isPastEvent,
   latitude,
   longitude,
   onChooseSeats,
@@ -362,6 +365,7 @@ function DetailStep({
   description: string;
   eventId: string;
   highlights: string[];
+  isPastEvent: boolean;
   latitude?: number | null;
   longitude?: number | null;
   onChooseSeats: () => void;
@@ -421,17 +425,23 @@ function DetailStep({
         entering={FadeInUp.duration(300)}
         style={[styles.actionPanel, styles.detailActionPanel]}
       >
-        <Text style={styles.actionTitle}>Seat selection comes next.</Text>
+        <Text style={styles.actionTitle}>
+          {isPastEvent ? 'This event date has passed.' : 'Seat selection comes next.'}
+        </Text>
         <Text style={styles.actionBody}>
-          Pick a section, tap the seats you want, and review the reservation
-          before confirming it.
+          {isPastEvent
+            ? 'You can still view the event details in Discover, but new reservations are disabled for events that have already happened.'
+            : 'Pick a section, tap the seats you want, and review the reservation before confirming it.'}
         </Text>
         <Pressable
           accessibilityRole="button"
+          disabled={isPastEvent}
           onPress={onChooseSeats}
-          style={styles.primaryButton}
+          style={[styles.primaryButton, isPastEvent && styles.primaryButtonDisabled]}
         >
-          <Text style={styles.primaryButtonText}>Choose Seats</Text>
+          <Text style={styles.primaryButtonText}>
+            {isPastEvent ? 'Reservations Closed' : 'Choose Seats'}
+          </Text>
         </Pressable>
       </Animated.View>
     </View>
@@ -772,7 +782,7 @@ function ReviewStep({
 function ConfirmationStep({
   city,
   date,
-  onBackHome,
+  onViewMyTickets,
   onReserveMore,
   reservationCode,
   reservationTotal,
@@ -782,7 +792,7 @@ function ConfirmationStep({
 }: {
   city: string;
   date: string;
-  onBackHome: () => void;
+  onViewMyTickets: () => void;
   onReserveMore: () => void;
   reservationCode: string;
   reservationTotal: number;
@@ -848,10 +858,10 @@ function ConfirmationStep({
         </Pressable>
         <Pressable
           accessibilityRole="button"
-          onPress={onBackHome}
+          onPress={onViewMyTickets}
           style={styles.primaryButton}
         >
-          <Text style={styles.primaryButtonText}>Back to Discover</Text>
+          <Text style={styles.primaryButtonText}>View My Tickets</Text>
         </Pressable>
       </Animated.View>
     </View>

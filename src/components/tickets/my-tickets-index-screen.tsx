@@ -1,7 +1,7 @@
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   Pressable,
   ScrollView,
@@ -33,8 +33,6 @@ const screenPalette = {
 export function MyTicketsIndexScreen() {
   const router = useRouter();
   const reservations = useEventStore(selectTicketReservations);
-  const [activeTab, setActiveTab] = useState<TicketIndexTab>('upcoming');
-
   const upcomingEvents = useMemo(
     () => reservations.filter((reservation) => reservation.status === 'upcoming'),
     [reservations],
@@ -43,8 +41,28 @@ export function MyTicketsIndexScreen() {
     () => reservations.filter((reservation) => reservation.status === 'past'),
     [reservations],
   );
+  const [activeTab, setActiveTab] = useState<TicketIndexTab>(() =>
+    upcomingEvents.length > 0 || pastEvents.length === 0 ? 'upcoming' : 'past',
+  );
+
+  useEffect(() => {
+    if (activeTab === 'upcoming' && upcomingEvents.length === 0 && pastEvents.length > 0) {
+      setActiveTab('past');
+      return;
+    }
+
+    if (activeTab === 'past' && pastEvents.length === 0 && upcomingEvents.length > 0) {
+      setActiveTab('upcoming');
+    }
+  }, [activeTab, pastEvents.length, upcomingEvents.length]);
+
   const visibleEvents = activeTab === 'upcoming' ? upcomingEvents : pastEvents;
   const backdropImage = visibleEvents[0]?.event.imageUrl ?? reservations[0]?.event.imageUrl;
+  const emptyTitle = activeTab === 'upcoming' ? 'No upcoming events yet.' : 'No past events yet.';
+  const emptyBody =
+    activeTab === 'upcoming'
+      ? 'Reservations for events that have not happened yet will show up here.'
+      : 'Tickets you have already used will show up here.';
 
   return (
     <View style={styles.root}>
@@ -120,10 +138,8 @@ export function MyTicketsIndexScreen() {
             ))
           ) : (
             <View style={styles.emptyCard}>
-              <Text style={styles.emptyTitle}>No past events yet.</Text>
-              <Text style={styles.emptyBody}>
-                Tickets you have already used will show up here.
-              </Text>
+              <Text style={styles.emptyTitle}>{emptyTitle}</Text>
+              <Text style={styles.emptyBody}>{emptyBody}</Text>
             </View>
           )}
         </ScrollView>

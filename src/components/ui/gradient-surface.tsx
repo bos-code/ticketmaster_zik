@@ -1,11 +1,6 @@
-import React, { useId } from 'react';
-import { StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
-import Svg, {
-  Defs,
-  LinearGradient as SvgLinearGradient,
-  Rect,
-  Stop,
-} from 'react-native-svg';
+import { LinearGradient } from 'expo-linear-gradient';
+import React from 'react';
+import { type StyleProp, type ViewStyle } from 'react-native';
 
 type GradientPoint = {
   x: number;
@@ -27,44 +22,9 @@ export function GradientSurface({
   start = { x: 0, y: 0.5 },
   style,
 }: GradientSurfaceProps) {
-  const gradientId = useId().replace(/:/g, '');
-
   return (
-    <View style={style}>
-      <Svg pointerEvents="none" style={StyleSheet.absoluteFillObject}>
-        <Defs>
-          <SvgLinearGradient
-            id={gradientId}
-            x1={formatCoordinate(start.x)}
-            x2={formatCoordinate(end.x)}
-            y1={formatCoordinate(start.y)}
-            y2={formatCoordinate(end.y)}>
-            {colors.map((color, index) => (
-              <Stop
-                key={`${gradientId}-${color}-${index}`}
-                offset={formatStopOffset(index, colors.length)}
-                stopColor={color}
-              />
-            ))}
-          </SvgLinearGradient>
-        </Defs>
-
-        <Rect fill={`url(#${gradientId})`} height="100%" width="100%" x="0" y="0" />
-      </Svg>
-
+    <LinearGradient colors={[...colors]} end={end} start={start} style={style}>
       {children}
-    </View>
+    </LinearGradient>
   );
-}
-
-function formatCoordinate(value: number) {
-  return `${Math.max(0, Math.min(1, value)) * 100}%`;
-}
-
-function formatStopOffset(index: number, total: number) {
-  if (total <= 1) {
-    return '0%';
-  }
-
-  return `${(index / (total - 1)) * 100}%`;
 }
