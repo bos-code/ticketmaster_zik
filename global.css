@@ -1,0 +1,21 @@
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/preflight.css" layer(base);
+@import "tailwindcss/utilities.css";
+@import "nativewind/theme";
+
+@theme {
+  --color-primary: #024ddf;
+  --font-sans: Inter-Regular;
+  --font-regular: Inter-Regular;
+  --font-medium: Inter-Medium;
+  --font-semibold: Inter-SemiBold;
+  --font-bold: Inter-Bold;
+  --font-extrabold: Inter-ExtraBold;
+  --font-black: Inter-Black;
+  --font-display: SpaceGrotesk-Bold;
+  --font-space-grotesk: SpaceGrotesk-Bold;
+  --font-mono: JetBrainsMono-Regular;
+  --font-jetbrains: JetBrainsMono-ExtraBold;
+  --font-averta: Inter-Black;
+  --font-bespoke: SpaceGrotesk-Bold;
+}

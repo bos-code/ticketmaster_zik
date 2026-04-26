@@ -1,6 +1,6 @@
 import { LinearGradient } from 'expo-linear-gradient';
 import React from 'react';
-import { type StyleProp, type ViewStyle } from 'react-native';
+import { type ColorValue, type StyleProp, type ViewStyle } from 'react-native';
 
 type GradientPoint = {
   x: number;
@@ -9,7 +9,7 @@ type GradientPoint = {
 
 type GradientSurfaceProps = {
   children?: React.ReactNode;
-  colors: readonly string[];
+  colors: readonly [ColorValue, ColorValue, ...ColorValue[]];
   end?: GradientPoint;
   start?: GradientPoint;
   style?: StyleProp<ViewStyle>;
@@ -23,7 +23,7 @@ export function GradientSurface({
   style,
 }: GradientSurfaceProps) {
   return (
-    <LinearGradient colors={[...colors]} end={end} start={start} style={style}>
+    <LinearGradient colors={colors} end={end} start={start} style={style}>
       {children}
     </LinearGradient>
   );
