@@ -169,6 +169,75 @@ const donToliverEvent: EventRecord = {
   ],
 };
 
+const pastTicketSeeds: DummyEventSeed[] = [
+  {
+    id: 'past-harry-styles-love-on-tour',
+    title: 'HARRY STYLES: LOVE ON TOUR',
+    shortTitle: 'Harry Styles Love On Tour',
+    date: 'FRI, MAY 10, 8:00 PM',
+    startsAt: '2025-05-10T20:00:00-04:00',
+    venue: 'Madison Square Garden',
+    venueAddress: '4 Pennsylvania Plaza, New York, NY 10001',
+    venueSummary: 'A past Madison Square Garden concert kept in My Events history.',
+    latitude: 40.7505,
+    longitude: -73.9934,
+    city: 'New York, NY',
+    priceFrom: 118,
+    imageUrl:
+      'https://images.unsplash.com/photo-1501386761578-eac5c94b800a?auto=format&fit=crop&w=1200&q=80',
+    description: 'A saved ticket record for a previous arena concert.',
+    highlights: ['Past mobile ticket', 'Madison Square Garden', 'Saved event history'],
+    sectionPrefix: 'hs-past',
+    sections: [
+      {
+        id: 'lower-102',
+        label: '102',
+        name: 'Lower Bowl 102',
+        priceFrom: 118,
+        availableCount: 0,
+        availability: 'open',
+        summary: 'Past lower bowl ticket record.',
+        row: '12',
+        seats: ['8', '9'],
+        note: 'Past event ticket',
+      },
+    ],
+  },
+  {
+    id: 'past-weeknd-after-hours',
+    title: 'THE WEEKND: AFTER HOURS',
+    shortTitle: 'The Weeknd After Hours',
+    date: 'SAT, APR 12, 7:30 PM',
+    startsAt: '2025-04-12T19:30:00-04:00',
+    venue: 'Barclays Center',
+    venueAddress: '620 Atlantic Ave, Brooklyn, NY 11217',
+    venueSummary: 'A past Barclays Center concert kept in My Events history.',
+    latitude: 40.6826,
+    longitude: -73.9754,
+    city: 'Brooklyn, NY',
+    priceFrom: 104,
+    imageUrl:
+      'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?auto=format&fit=crop&w=1200&q=80',
+    description: 'A saved ticket record for a previous arena show.',
+    highlights: ['Past mobile ticket', 'Barclays Center', 'Saved event history'],
+    sectionPrefix: 'wknd-past',
+    sections: [
+      {
+        id: 'club-17',
+        label: '17',
+        name: 'Club 17',
+        priceFrom: 104,
+        availableCount: 0,
+        availability: 'open',
+        summary: 'Past club level ticket record.',
+        row: '7',
+        seats: ['3', '4'],
+        note: 'Past event ticket',
+      },
+    ],
+  },
+];
+
 const extraDiscoverEvents: EventRecord[] = [
   buildDummyEvent({
     id: 'burna-boy-stadium-night',
@@ -561,9 +630,32 @@ const donToliverReservationSeats: ReservationSeatRecord[] = donToliverEvent.seat
   note: seat.note,
 }));
 
+const pastTicketEvents: EventRecord[] = pastTicketSeeds.map((seed) => ({
+  ...buildDummyEvent(seed),
+  discoverable: false,
+}));
+
+const pastTicketReservations: ReservationRecord[] = pastTicketEvents.map((event, index) => {
+  const seats = buildReservationSeatsForEvent(event);
+
+  return {
+    id: `reservation-${event.id}`,
+    eventId: event.id,
+    orderId: `Order #PAST-${index + 1}`,
+    reservationCode: `RSV-PAST-${index + 1}`,
+    reservedAt: event.startsAt,
+    seatIds: seats.map((seat) => seat.id),
+    seats,
+    reservationTotal: seats.reduce((sum, seat) => sum + seat.price, 0),
+    ticketCount: seats.length,
+    source: 'reservation',
+  };
+});
+
 export const eventCatalog: EventRecord[] = [
   ...curatedEvents,
   ...extraDiscoverEvents,
+  ...pastTicketEvents,
   donToliverEvent,
 ];
 
@@ -578,8 +670,9 @@ export const initialReservations: ReservationRecord[] = [
     seats: donToliverReservationSeats,
     reservationTotal: donToliverReservationSeats.reduce((sum, seat) => sum + seat.price, 0),
     ticketCount: donToliverReservationSeats.length,
-    source: 'seed',
+    source: 'reservation',
   },
+  ...pastTicketReservations,
 ];
 
 function buildDummyEvent(seed: DummyEventSeed): EventRecord {
@@ -624,4 +717,19 @@ function buildDummyEvent(seed: DummyEventSeed): EventRecord {
       })),
     ),
   };
+}
+
+function buildReservationSeatsForEvent(event: EventRecord): ReservationSeatRecord[] {
+  return event.seatOptions.map((seat) => ({
+    id: seat.id,
+    label: seat.label,
+    row: seat.row,
+    seat: seat.seat,
+    section:
+      event.seatSections.find((section) => section.id === seat.sectionId)?.label ??
+      seat.sectionId,
+    price: seat.price,
+    availability: seat.availability,
+    note: seat.note,
+  }));
 }

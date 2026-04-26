@@ -56,7 +56,7 @@ export default function PremiumTabsLayout() {
 
   return (
     <Tabs
-      initialRouteName="discover"
+      initialRouteName="my-tickets"
       screenOptions={({ route }) => {
         const config = TAB_CONFIG[route.name as TabRouteName] ?? TAB_CONFIG.discover;
 
