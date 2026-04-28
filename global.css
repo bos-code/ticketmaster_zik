@@ -4,7 +4,17 @@
 @import "nativewind/theme";
 
 @theme {
-  --color-primary: #024ddf;
+  --color-primary: #007AFF;
+  --color-account-primary: #007AFF;
+  --color-account-background: #FFFFFF;
+  --color-account-header: #000000;
+  --color-account-text-primary: #000000;
+  --color-account-text-secondary: #8E8E93;
+  --color-account-divider: #E5E5E5;
+  --color-account-toggle-off: #D1D1D6;
+  --color-account-toggle-on: #34C759;
+
+  --font-account: "SF Pro Display", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   --font-sans: Inter-Regular;
   --font-regular: Inter-Regular;
   --font-medium: Inter-Medium;

@@ -1,0 +1,4 @@
+
+> ticketmaster_zik@1.0.0 web
+> expo start --web --port 8082 --host 127.0.0.1
+

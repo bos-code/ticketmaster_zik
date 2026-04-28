@@ -50,8 +50,6 @@ export function MyTicketsIndexScreen() {
   }, [activeTab, pastEvents.length, upcomingEvents.length]);
 
   const visibleEvents = activeTab === "upcoming" ? upcomingEvents : pastEvents;
-  const backdropImage =
-    visibleEvents[0]?.event.imageUrl ?? reservations[0]?.event.imageUrl;
 
   const emptyTitle =
     activeTab === "upcoming"
@@ -64,24 +62,11 @@ export function MyTicketsIndexScreen() {
       : "Tickets you have already used will show up here.";
 
   return (
-    <View className="flex-1 bg-[#fbf7fcc5]">
-      <StatusBar backgroundColor="#050505" style="light" />
+    <View className="flex-1 ">
+      <StatusBar backgroundColor="#050505"  />
 
       <SafeAreaView edges={["top", "left", "right"]} className="flex-1">
-        <View className="relative z-10 h-[128px] overflow-visible bg-[#050505]">
-          <View className="absolute inset-0 overflow-hidden">
-            {backdropImage ? (
-              <Image
-                blurRadius={9}
-                className="absolute inset-x-0 -top-10 h-[260px] opacity-50"
-                resizeMode="cover"
-                source={{ uri: backdropImage }}
-              />
-            ) : null}
-
-            <View className="absolute inset-0 bg-[rgba(5,5,5,0.9)]" />
-          </View>
-
+        <View className="relative z-10 h-[128px] bg-[#050505] overflow-visible ">
           <View className="relative min-h-[52px] flex-row items-center justify-end px-5 pt-3">
             <View className="w-12" />
 
@@ -118,7 +103,7 @@ export function MyTicketsIndexScreen() {
         </View>
 
         <ScrollView
-          contentContainerClassName="gap-5 px-4 pb-30 pt-5"
+          contentContainerClassName="gap-5 px-4 pb-44 pt-5"
           showsVerticalScrollIndicator={true}
         >
           {visibleEvents.length ? (
@@ -136,11 +121,11 @@ export function MyTicketsIndexScreen() {
               >
                 <View className="relative ">
                   <Image
-                    className="h-[250px] w-full bg-[#1A1A1A]"
+                    className="h-64 w-full bg-[#1A1A1A]"
                     resizeMode="cover"
                     source={{ uri: event.event.imageUrl }}
                   />
-                  <View className="absolute bottom-0 left-0 bg-black p-3">
+                  <View className="absolute bottom-0 left-0 bg-[#101010] p-3">
                     <Text className="text-base font-black uppercase leading-3 tracking-[0.6px] text-white">
                       {event.event.date}
                     </Text>
@@ -196,7 +181,7 @@ function TicketFilterTab({
       className="h-11 flex-1 items-center justify-end pb-[10px]"
     >
       <Text
-        className={`text-center text-[12px] font-black uppercase leading-4 ${
+        className={`text-center text-sm font-black uppercase leading-4 ${
           active ? "text-white" : "text-[rgba(255,255,255,0.56)]"
         }`}
       >
@@ -204,8 +189,8 @@ function TicketFilterTab({
       </Text>
 
       <View
-        className={`mt-[9px] h-[2px] w-[118px] ${
-          active ? "bg-[#B79E6A]" : "bg-transparent"
+        className={`mt-[9px] -m-3  h-[2px] w-[120%] ${
+          active ? "bg-white" : "bg-transparent"
         }`}
       />
     </Pressable>

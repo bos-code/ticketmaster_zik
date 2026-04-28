@@ -1,710 +1,506 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { Image } from 'expo-image';
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useState } from 'react';
 import {
-  ActivityIndicator,
   FlatList,
+  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
   Text,
   TextInput,
   View,
-  useWindowDimensions,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-
-import { GradientSurface } from '@/components/ui/gradient-surface';
-import { ticketColors, ticketRadii, ticketSpacing } from '@/constants/ticket-theme';
-import { shellGradients } from '@/constants/shell-theme';
-import {
-  DEFAULT_HOME_LOCATION,
-  resolveHomeLocation,
-} from '@/lib/device-permissions';
-import { useAppStore } from '@/store/use-app-store';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { ticketColors } from '@/constants/ticket-theme';
 import { selectDiscoverEvents, useEventStore } from '@/store/use-event-store';
 
-type EventWindow = 'All Dates' | 'Today' | 'This Week';
+const fontStack = Platform.select({
+  ios: 'SF Pro Display',
+  android: 'sans-serif',
+  web: 'SF Pro Display, -apple-system, sans-serif',
+});
 
-type GenreCard = {
-  label: string;
-  tint: string;
-  imageUrl: string;
+const DC = {
+  black: '#111111',
+  white: '#FFFFFF',
+  greyText: '#A1A1AA',
+  searchBg: '#FFFFFF',
+  purpleBtn: '#9C6AD3',
+  blueBtn: '#004CD7',
+  filterBorder: '#555555',
 };
-
-const eventWindows: EventWindow[] = ['All Dates', 'Today', 'This Week'];
 
 export function DiscoverTabScreen() {
   const router = useRouter();
-  const { width } = useWindowDimensions();
-  const cardWidth = Math.min(width - 68, 318);
+  const insets = useSafeAreaInsets();
   const discoverEvents = useEventStore(selectDiscoverEvents);
-  const homeLocationLabel = useAppStore((state) => state.homeLocationLabel);
-  const setHomeLocationLabel = useAppStore((state) => state.setHomeLocationLabel);
-  const locationEnabled = useAppStore((state) => state.locationEnabled);
-  const setLocationEnabled = useAppStore((state) => state.setLocationEnabled);
   const [searchValue, setSearchValue] = useState('');
-  const [selectedWindow, setSelectedWindow] = useState<EventWindow>('All Dates');
-  const [isResolvingLocation, setIsResolvingLocation] = useState(false);
-  const [locationMessage, setLocationMessage] = useState<string | null>(null);
-  const normalizedSearch = searchValue.trim().toLowerCase();
-  const genreCards = useMemo<GenreCard[]>(
-    () => [
-      {
-        label: 'Music',
-        tint: 'rgba(126, 65, 255, 0.32)',
-        imageUrl:
-          discoverEvents[0]?.imageUrl ??
-          'https://images.unsplash.com/photo-1501386761578-eac5c94b800a?auto=format&fit=crop&w=900&q=80',
-      },
-      {
-        label: 'Sports',
-        tint: 'rgba(17, 168, 138, 0.30)',
-        imageUrl:
-          discoverEvents[1]?.imageUrl ??
-          'https://images.unsplash.com/photo-1471295253337-3ceaaedca402?auto=format&fit=crop&w=900&q=80',
-      },
-    ],
-    [discoverEvents],
-  );
 
-  useEffect(() => {
-    let isActive = true;
-
-    async function loadCurrentLocation() {
-      setIsResolvingLocation(true);
-      setLocationMessage(null);
-
-      const result = await resolveHomeLocation({ requestIfNeeded: true });
-
-      if (!isActive) {
-        return;
-      }
-
-      if (result.granted && result.label) {
-        setLocationEnabled(true);
-        setHomeLocationLabel(result.label);
-      } else {
-        setLocationEnabled(false);
-        setLocationMessage(result.error ?? 'Location access is currently unavailable.');
-      }
-
-      setIsResolvingLocation(false);
-    }
-
-    void loadCurrentLocation();
-
-    return () => {
-      isActive = false;
-    };
-  }, [setHomeLocationLabel, setLocationEnabled]);
-
-  const visibleEvents = useMemo(() => {
-    return discoverEvents.filter((event) => {
-      if (!normalizedSearch) {
-        return true;
-      }
-
-      return [event.title, event.venue, event.city].some((value) =>
-        value.toLowerCase().includes(normalizedSearch),
-      );
-    });
-  }, [discoverEvents, normalizedSearch]);
-
-  const filteredEvents = useMemo(() => {
-    if (selectedWindow === 'All Dates') {
-      return visibleEvents;
-    }
-
-    const now = new Date();
-
-    return visibleEvents.filter((event) => {
-      const eventDate = new Date(event.startsAt);
-
-      if (Number.isNaN(eventDate.getTime())) {
-        return false;
-      }
-
-      if (selectedWindow === 'Today') {
-        return isSameDay(eventDate, now);
-      }
-
-      const weekBoundary = new Date(now);
-      weekBoundary.setDate(now.getDate() + 7);
-      return eventDate >= startOfDay(now) && eventDate <= weekBoundary;
-    });
-  }, [selectedWindow, visibleEvents]);
-
-  async function handleRefreshLocation() {
-    setIsResolvingLocation(true);
-    setLocationMessage(null);
-
-    const result = await resolveHomeLocation({ requestIfNeeded: true });
-
-    if (result.granted && result.label) {
-      setLocationEnabled(true);
-      setHomeLocationLabel(result.label);
-    } else {
-      setLocationEnabled(false);
-      setLocationMessage(result.error ?? 'Location access is currently unavailable.');
-    }
-
-    setIsResolvingLocation(false);
-  }
+  const featuredEvent = discoverEvents[0];
+  const standardEvents = discoverEvents.slice(1);
 
   return (
     <View style={styles.root}>
-      <SafeAreaView edges={['top', 'left', 'right']} style={styles.safeArea}>
-        <ScrollView
-          contentContainerStyle={styles.content}
-          showsVerticalScrollIndicator={false}
-          style={styles.scroll}>
-          <View style={styles.header}>
-            <View style={styles.headerCopy}>
-              <Text style={styles.greeting}>{getGreeting()}</Text>
-              <Text style={styles.subtitle}>Find events around you and reserve faster.</Text>
+      {/* Top Black Area uses standard View + SafeArea inside */}
+      <View style={[styles.darkHeaderBg, { paddingTop: insets.top }]}>
+        
+        {/* Logo and New Button Row */}
+        <View style={styles.topNavRow}>
+          <View style={{ flex: 1 }} />
+          <Text style={styles.logoText}>ticketmaster</Text>
+          <View style={styles.topRightActions}>
+            <View style={styles.speechBubble}>
+              <View style={styles.speechBubbleTail} />
+              <View style={styles.newPill}>
+                <Text style={styles.newPillText}>NEW!</Text>
+              </View>
+              <View style={styles.usFlagCircle}>
+                <Text style={{ fontSize: 13, lineHeight: 16 }}>🇺🇸</Text>
+              </View>
             </View>
-
-            <Pressable
-              accessibilityRole="button"
-              onPress={() => router.push('/settings')}
-              style={styles.avatarButton}>
-              <Ionicons color={ticketColors.primaryBright} name="person-circle-outline" size={34} />
-            </Pressable>
           </View>
+        </View>
 
-          <View style={styles.searchShell}>
-            <Ionicons color={ticketColors.textSubtle} name="search-outline" size={20} />
-            <TextInput
-              accessibilityLabel="Search events, performers, or venues"
-              onChangeText={setSearchValue}
-              placeholder="Search events, performers, or venues"
-              placeholderTextColor={ticketColors.textSubtle}
-              style={styles.searchInput}
-              value={searchValue}
-            />
-          </View>
-
-          <Pressable
-            accessibilityRole="button"
-            onPress={handleRefreshLocation}
-            style={styles.locationCard}>
-            <View style={styles.locationIconWrap}>
-              {isResolvingLocation ? (
-                <ActivityIndicator color={ticketColors.primaryBright} size="small" />
-              ) : (
-                <Ionicons color={ticketColors.primaryBright} name="location" size={20} />
-              )}
+        {/* Location & Dates Selector */}
+        <View style={styles.locDateContainer}>
+          <Pressable style={styles.locBlock}>
+            <Ionicons name="location-outline" size={24} color={DC.white} />
+            <View style={styles.locDateCopy}>
+              <Text style={styles.locDateLabel}>LOCATION</Text>
+              <Text style={styles.locDateValue} numberOfLines={1}>Los Angeles,...</Text>
             </View>
-
-            <View style={styles.locationCopy}>
-              <Text style={styles.locationLabel}>Current Location</Text>
-              <Text numberOfLines={1} style={styles.locationValue}>
-                {locationEnabled ? homeLocationLabel : DEFAULT_HOME_LOCATION}
-              </Text>
-              {locationMessage ? (
-                <Text numberOfLines={2} style={styles.locationHint}>
-                  {locationMessage}
-                </Text>
-              ) : (
-                <Text style={styles.locationHint}>Tap to refresh your live location.</Text>
-              )}
-            </View>
-
-            <Ionicons color={ticketColors.textSubtle} name="chevron-forward" size={18} />
+            <Ionicons name="close-circle-outline" size={20} color={DC.white} style={styles.iconRight} />
           </Pressable>
 
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Featured Events</Text>
-            <Pressable accessibilityRole="button" onPress={() => setSelectedWindow('All Dates')}>
-              <Text style={styles.sectionAction}>See all</Text>
+          <View style={styles.divider} />
+
+          <Pressable style={styles.dateBlock}>
+            <Ionicons name="calendar-outline" size={24} color={DC.white} />
+            <View style={styles.locDateCopy}>
+              <Text style={styles.locDateLabel}>DATES</Text>
+              <Text style={styles.locDateValue} numberOfLines={1}>All Dates</Text>
+            </View>
+            <Ionicons name="chevron-down" size={20} color={DC.white} style={styles.iconRight} />
+          </Pressable>
+        </View>
+
+        {/* Search Bar */}
+        <View style={styles.searchWrapper}>
+          <View style={styles.searchInner}>
+            <View style={styles.searchCopy}>
+              <Text style={styles.searchLabel}>SEARCH</Text>
+              <TextInput
+                style={styles.searchInput}
+                placeholder="Artist, Event or Venue"
+                placeholderTextColor="#666666"
+                value={searchValue}
+                onChangeText={setSearchValue}
+              />
+            </View>
+            <Ionicons name="search-outline" size={22} color={DC.blueBtn} />
+          </View>
+        </View>
+
+        {/* Filter Pills */}
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.filterScroll}
+          style={styles.filterContainer}
+        >
+          {['Concerts', 'Sports', 'Arts, Theater & Comedy'].map((cat, idx) => (
+            <Pressable key={cat} style={styles.filterChip}>
+              <Text style={styles.filterChipText}>{cat}</Text>
             </Pressable>
-          </View>
-
-          <FlatList
-            contentContainerStyle={styles.carouselContent}
-            data={visibleEvents.slice(0, 4)}
-            decelerationRate="fast"
-            horizontal
-            keyExtractor={(item) => item.id}
-            renderItem={({ item }) => (
-              <Pressable
-                accessibilityRole="button"
-                onPress={() =>
-                  router.push({
-                    pathname: '/events/[id]',
-                    params: { id: item.id },
-                  })
-                }
-                style={[styles.featuredCard, { width: cardWidth }]}>
-                <Image contentFit="cover" source={{ uri: item.imageUrl }} style={styles.featuredImage} />
-                <GradientSurface colors={shellGradients.ticket} style={styles.featuredOverlay} />
-
-                <View style={styles.featuredCopy}>
-                  <Text style={styles.featuredDate}>{item.date}</Text>
-                  <Text numberOfLines={1} style={styles.featuredTitle}>
-                    {item.title}
-                  </Text>
-                  <Text numberOfLines={1} style={styles.featuredVenue}>
-                    {item.venue}
-                  </Text>
-                </View>
-              </Pressable>
-            )}
-            showsHorizontalScrollIndicator={false}
-            snapToAlignment="start"
-            snapToInterval={cardWidth + ticketSpacing.md}
-          />
-
-       
-
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Explore Event Genres</Text>
-
-            <View style={styles.genreRow}>
-              {genreCards.map((genre) => (
-                <Pressable
-                  accessibilityRole="button"
-                  key={genre.label}
-                  onPress={() => setSearchValue(genre.label)}
-                  style={styles.genreCard}>
-                  <Image contentFit="cover" source={{ uri: genre.imageUrl }} style={styles.genreImage} />
-                  <View style={[styles.genreTint, { backgroundColor: genre.tint }]} />
-                  <Text style={styles.genreLabel}>{genre.label}</Text>
-                </Pressable>
-              ))}
-            </View>
-          </View>
-
-          <View style={styles.section}>
-            <Text style={styles.largeSectionTitle}>Discover Events</Text>
-            <Text style={styles.subsectionTitle}>Events Happening</Text>
-
-            <View style={styles.filterRow}>
-              {eventWindows.map((window) => {
-                const active = selectedWindow === window;
-
-                return (
-                  <Pressable
-                    accessibilityRole="button"
-                    key={window}
-                    onPress={() => setSelectedWindow(window)}
-                    style={[styles.filterChip, active && styles.filterChipActive]}>
-                    <Text style={[styles.filterChipText, active && styles.filterChipTextActive]}>
-                      {window}
-                    </Text>
-                  </Pressable>
-                );
-              })}
-            </View>
-
-            {filteredEvents.length === 0 ? (
-              <View style={styles.emptyState}>
-                <Text style={styles.emptyTitle}>No events available for {selectedWindow}.</Text>
-                <Text style={styles.emptyBody}>
-                  Try another time range or search a performer, venue, or city.
-                </Text>
-              </View>
-            ) : (
-              <View style={styles.eventList}>
-                {filteredEvents.map((event) => (
-                  <Pressable
-                    accessibilityRole="button"
-                    key={event.id}
-                    onPress={() =>
-                      router.push({
-                        pathname: '/events/[id]',
-                        params: { id: event.id },
-                      })
-                    }
-                    style={styles.eventCard}>
-                    <Image contentFit="cover" source={{ uri: event.imageUrl }} style={styles.eventImage} />
-
-                    <View style={styles.eventCopy}>
-                      <Text style={styles.eventDate}>{event.date}</Text>
-                      <Text numberOfLines={2} style={styles.eventTitle}>
-                        {event.title}
-                      </Text>
-                      <Text numberOfLines={1} style={styles.eventVenue}>
-                        {`${event.venue} - ${event.city}`}
-                      </Text>
-                    </View>
-                  </Pressable>
-                ))}
-              </View>
-            )}
-          </View>
+          ))}
         </ScrollView>
-      </SafeAreaView>
+      </View>
+
+      <ScrollView showsVerticalScrollIndicator={false} style={styles.contentScroll}>
+        <View style={styles.sectionContainer}>
+          <View style={styles.sectionIndicator} />
+          <Text style={styles.sectionTitle}>SPONSORED PRESALES AND{'\n'}OFFERS</Text>
+          
+          <View style={styles.nearRow}>
+             <Ionicons name="location-outline" size={20} color="#000" />
+             <Text style={styles.nearText}>Near </Text>
+             <Pressable style={styles.nearAction}>
+               <Text style={styles.nearLink}>Los Angeles, CA</Text>
+               <Ionicons name="chevron-down" size={18} color="#0066FF" />
+             </Pressable>
+          </View>
+
+          {/* Presale Featured Card */}
+          <View style={styles.presaleCard}>
+            <View style={styles.presaleImageWrapper}>
+              <Image 
+                source={{ uri: 'https://images.unsplash.com/photo-1598387181032-a3103a2db5b3?auto=format&fit=crop&w=1200' }} 
+                style={styles.presaleImage} 
+                contentFit="cover"
+              />
+              <View style={styles.presaleTag}>
+                <Text style={styles.presaleTagText}>PRESALE</Text>
+              </View>
+              {/* Carousel Arrows */}
+              <View style={styles.arrowLeft}>
+                <Ionicons name="arrow-back" size={24} color="#888" />
+              </View>
+              <View style={styles.arrowRight}>
+                <Ionicons name="arrow-forward" size={24} color="#FFF" />
+              </View>
+            </View>
+
+            <View style={styles.presaleInfo}>
+              <Text style={styles.presaleDate}>THU • AUG 13 • 7:00 PM</Text>
+              <Text style={styles.presaleName}>Santana & The Doobie Brothers - Oneness Tour 2026</Text>
+              <Text style={styles.presaleLocation}>Hollywood, CA • Hollywood Bowl</Text>
+            </View>
+            
+            <View style={styles.sponsorRow}>
+               <View style={styles.citiLogo}>
+                 <Text style={styles.citiLogoText}>citi</Text>
+               </View>
+               <View style={styles.sponsorDetails}>
+                 <Text style={styles.sponsorName}>Citi</Text>
+                 <Text style={styles.sponsorDate}>TUE • FEB 17 • 10:00 AM</Text>
+               </View>
+            </View>
+          </View>
+        </View>
+
+        <View style={[styles.sectionContainer, styles.sectionContainerDivider]}>
+          <View style={styles.sectionIndicator} />
+          <Text style={styles.sectionTitle}>POPULAR NEAR YOU</Text>
+          {/* Placeholder for standard list continuation */}
+          <View style={{ height: 100 }} />
+        </View>
+
+      </ScrollView>
     </View>
-  );
-}
-
-function getGreeting() {
-  const hour = new Date().getHours();
-
-  if (hour < 12) {
-    return 'Good Morning!';
-  }
-
-  if (hour < 18) {
-    return 'Good Afternoon!';
-  }
-
-  return 'Good Evening!';
-}
-
-function startOfDay(value: Date) {
-  const copy = new Date(value);
-  copy.setHours(0, 0, 0, 0);
-  return copy;
-}
-
-function isSameDay(left: Date, right: Date) {
-  return (
-    left.getFullYear() === right.getFullYear() &&
-    left.getMonth() === right.getMonth() &&
-    left.getDate() === right.getDate()
   );
 }
 
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: ticketColors.background,
+    backgroundColor: '#F5F6F8', // Standard light gray backdrop matches image
   },
-  safeArea: {
-    flex: 1,
+  darkHeaderBg: {
+    backgroundColor: DC.black,
+    paddingBottom: 16,
   },
-  scroll: {
-    flex: 1,
-  },
-  content: {
-    paddingBottom: 108,
-  },
-  header: {
-    alignItems: 'center',
+  topNavRow: {
     flexDirection: 'row',
-    gap: ticketSpacing.md,
-    justifyContent: 'space-between',
-    paddingHorizontal: ticketSpacing.lg,
-    paddingTop: ticketSpacing.lg,
-  },
-  headerCopy: {
-    flex: 1,
-    gap: 2,
-  },
-  greeting: {
-    color: ticketColors.text,
-    fontSize: 24,
-    fontWeight: '900',
-    lineHeight: 30,
-  },
-  subtitle: {
-    color: ticketColors.textMuted,
-    fontSize: 14,
-    fontWeight: '600',
-    lineHeight: 19,
-  },
-  avatarButton: {
     alignItems: 'center',
-    backgroundColor: ticketColors.chrome,
-    borderColor: ticketColors.border,
-    borderRadius: ticketRadii.pill,
-    borderWidth: 1,
-    height: 44,
-    justifyContent: 'center',
-    width: 44,
+    paddingHorizontal: 16,
+    height: 50,
   },
-  searchShell: {
-    alignItems: 'center',
-    backgroundColor: ticketColors.chrome,
-    borderColor: ticketColors.border,
-    borderRadius: ticketRadii.pill,
-    borderWidth: 1,
-    flexDirection: 'row',
-    gap: ticketSpacing.sm,
-    marginHorizontal: ticketSpacing.lg,
-    marginTop: ticketSpacing.lg,
-    minHeight: 56,
-    paddingHorizontal: ticketSpacing.md,
-  },
-  searchInput: {
-    color: ticketColors.text,
-    flex: 1,
-    fontSize: 15,
-    fontWeight: '600',
-    lineHeight: 20,
-    padding: 0,
-  },
-  locationCard: {
-    alignItems: 'center',
-    backgroundColor: ticketColors.chrome,
-    borderColor: ticketColors.border,
-    borderRadius: ticketRadii.md,
-    borderWidth: 1,
-    flexDirection: 'row',
-    gap: ticketSpacing.sm,
-    marginHorizontal: ticketSpacing.lg,
-    marginTop: ticketSpacing.md,
-    paddingHorizontal: ticketSpacing.md,
-    paddingVertical: ticketSpacing.md,
-  },
-  locationIconWrap: {
-    alignItems: 'center',
-    backgroundColor: ticketColors.primarySoft,
-    borderRadius: ticketRadii.pill,
-    height: 36,
-    justifyContent: 'center',
-    width: 36,
-  },
-  locationCopy: {
-    flex: 1,
-    gap: 2,
-  },
-  locationLabel: {
-    color: ticketColors.textSubtle,
-    fontSize: 12,
+  logoText: {
+    flex: 2,
+    color: DC.white,
+    fontFamily: fontStack,
+    fontSize: 22,
     fontWeight: '800',
-    lineHeight: 16,
-    textTransform: 'uppercase',
+    fontStyle: 'italic',
+    textAlign: 'center',
+    letterSpacing: -0.5,
   },
-  locationValue: {
-    color: ticketColors.text,
-    fontSize: 15,
-    fontWeight: '800',
-    lineHeight: 20,
-  },
-  locationHint: {
-    color: ticketColors.textMuted,
-    fontSize: 12,
-    fontWeight: '600',
-    lineHeight: 17,
-  },
-  sectionHeader: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: ticketSpacing.xl,
-    paddingHorizontal: ticketSpacing.lg,
-  },
-  sectionTitle: {
-    color: ticketColors.text,
-    fontSize: 19,
-    fontWeight: '900',
-    lineHeight: 24,
-  },
-  sectionAction: {
-    color: ticketColors.primaryBright,
-    fontSize: 13,
-    fontWeight: '800',
-    lineHeight: 18,
-  },
-  carouselContent: {
-    gap: ticketSpacing.md,
-    paddingHorizontal: ticketSpacing.lg,
-    paddingTop: ticketSpacing.md,
-  },
-  featuredCard: {
-    borderRadius: 20,
-    height: 360,
-    overflow: 'hidden',
-  },
-  featuredImage: {
-    height: '100%',
-    width: '100%',
-  },
-  featuredOverlay: {
-    ...StyleSheet.absoluteFillObject,
-  },
-  featuredCopy: {
-    bottom: ticketSpacing.lg,
-    left: ticketSpacing.lg,
-    position: 'absolute',
-    right: ticketSpacing.lg,
-  },
-  featuredDate: {
-    color: 'rgba(255, 255, 255, 0.92)',
-    fontSize: 13,
-    fontWeight: '800',
-    lineHeight: 17,
-  },
-  featuredTitle: {
-    color: '#FFFFFF',
-    fontSize: 24,
-    fontWeight: '900',
-    lineHeight: 30,
-    marginTop: ticketSpacing.sm,
-  },
-  featuredVenue: {
-    color: 'rgba(255, 255, 255, 0.84)',
-    fontSize: 15,
-    fontWeight: '600',
-    lineHeight: 20,
-    marginTop: 6,
-  },
-  promoCard: {
-    alignItems: 'center',
-    borderRadius: 18,
-    flexDirection: 'row',
-    gap: ticketSpacing.md,
-    marginHorizontal: ticketSpacing.lg,
-    marginTop: ticketSpacing.xl,
-    overflow: 'hidden',
-    paddingHorizontal: ticketSpacing.lg,
-    paddingVertical: ticketSpacing.lg,
-  },
-  promoCopy: {
+  topRightActions: {
     flex: 1,
-    gap: 4,
-  },
-  promoTitle: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: '800',
-    lineHeight: 21,
-  },
-  promoBody: {
-    color: 'rgba(255, 255, 255, 0.86)',
-    fontSize: 13,
-    fontWeight: '600',
-    lineHeight: 18,
-  },
-  section: {
-    marginTop: ticketSpacing.xl,
-    paddingHorizontal: ticketSpacing.lg,
-  },
-  genreRow: {
     flexDirection: 'row',
-    gap: ticketSpacing.md,
-    marginTop: ticketSpacing.md,
+    justifyContent: 'flex-end',
+    alignItems: 'center',
+    gap: 8,
   },
-  genreCard: {
-    borderRadius: 18,
-    flex: 1,
-    height: 160,
-    overflow: 'hidden',
+  speechBubble: {
+    backgroundColor: DC.white,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 6,
+    paddingVertical: 4,
+    borderRadius: 6,
+    gap: 6,
     position: 'relative',
   },
-  genreImage: {
-    height: '100%',
-    width: '100%',
-  },
-  genreTint: {
-    ...StyleSheet.absoluteFillObject,
-  },
-  genreLabel: {
-    bottom: ticketSpacing.md,
-    color: '#FFFFFF',
-    fontSize: 22,
-    fontWeight: '900',
-    left: ticketSpacing.md,
+  speechBubbleTail: {
     position: 'absolute',
+    left: -5,
+    top: '50%',
+    marginTop: -5,
+    width: 0,
+    height: 0,
+    borderTopWidth: 5,
+    borderBottomWidth: 5,
+    borderRightWidth: 5,
+    borderTopColor: 'transparent',
+    borderBottomColor: 'transparent',
+    borderRightColor: DC.white,
   },
-  largeSectionTitle: {
-    color: ticketColors.text,
-    fontSize: 34,
-    fontWeight: '900',
-    lineHeight: 39,
+  newPill: {
+    backgroundColor: '#8B5CF6', // Purple color matching the design
+    borderRadius: 4,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
   },
-  subsectionTitle: {
-    color: ticketColors.textMuted,
-    fontSize: 18,
+  newPillText: {
+    color: DC.white,
     fontWeight: '800',
-    lineHeight: 23,
-    marginTop: ticketSpacing.sm,
+    fontSize: 10,
   },
-  filterRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: ticketSpacing.sm,
-    marginTop: ticketSpacing.lg,
-  },
-  filterChip: {
-    backgroundColor: ticketColors.chromeElevated,
-    borderColor: ticketColors.border,
-    borderRadius: ticketRadii.pill,
-    borderWidth: 1,
-    paddingHorizontal: ticketSpacing.md,
-    paddingVertical: ticketSpacing.xs,
-  },
-  filterChipActive: {
-    backgroundColor: ticketColors.primarySoft,
-    borderColor: 'rgba(18, 119, 255, 0.18)',
-  },
-  filterChipText: {
-    color: ticketColors.textMuted,
-    fontSize: 13,
-    fontWeight: '700',
-    lineHeight: 18,
-  },
-  filterChipTextActive: {
-    color: ticketColors.primaryBright,
-  },
-  emptyState: {
+  usFlagCircle: {
+    width: 20,
+    height: 20,
+    backgroundColor: '#000',
+    borderRadius: 10,
     alignItems: 'center',
-    backgroundColor: ticketColors.chrome,
-    borderColor: ticketColors.border,
-    borderRadius: ticketRadii.md,
-    borderWidth: 1,
-    gap: ticketSpacing.xs,
-    marginTop: ticketSpacing.lg,
-    padding: ticketSpacing.lg,
-  },
-  emptyTitle: {
-    color: ticketColors.text,
-    fontSize: 16,
-    fontWeight: '800',
-    lineHeight: 21,
-    textAlign: 'center',
-  },
-  emptyBody: {
-    color: ticketColors.textMuted,
-    fontSize: 13,
-    fontWeight: '600',
-    lineHeight: 19,
-    textAlign: 'center',
-  },
-  eventList: {
-    gap: ticketSpacing.md,
-    marginTop: ticketSpacing.lg,
-  },
-  eventCard: {
-    backgroundColor: ticketColors.chrome,
-    borderColor: ticketColors.border,
-    borderRadius: ticketRadii.md,
-    borderWidth: 1,
-    flexDirection: 'row',
+    justifyContent: 'center',
     overflow: 'hidden',
   },
-  eventImage: {
-    height: 112,
-    width: 112,
+  locDateContainer: {
+    flexDirection: 'row',
+    paddingHorizontal: 16,
+    paddingVertical: 16,
   },
-  eventCopy: {
+  locBlock: {
+    flex: 1.2,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  dateBlock: {
     flex: 1,
-    gap: 6,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  divider: {
+    width: 1,
+    backgroundColor: '#333',
+    marginHorizontal: 12,
+  },
+  locDateCopy: {
+    flex: 1,
     justifyContent: 'center',
-    paddingHorizontal: ticketSpacing.md,
-    paddingVertical: ticketSpacing.md,
+    gap: 2,
   },
-  eventDate: {
-    color: ticketColors.textSubtle,
-    fontSize: 12,
+  locDateLabel: {
+    color: DC.greyText,
+    fontSize: 10,
     fontWeight: '700',
-    lineHeight: 16,
+    letterSpacing: 0.5,
   },
-  eventTitle: {
-    color: ticketColors.text,
-    fontSize: 16,
+  locDateValue: {
+    color: DC.white,
+    fontSize: 15,
+    fontWeight: '500',
+  },
+  iconRight: {
+    marginLeft: 'auto',
+  },
+  searchWrapper: {
+    paddingHorizontal: 16,
+    marginVertical: 4,
+  },
+  searchInner: {
+    backgroundColor: DC.searchBg,
+    borderRadius: 3,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  searchCopy: {
+    flex: 1,
+  },
+  searchLabel: {
+    color: '#000000',
+    fontSize: 10,
     fontWeight: '800',
-    lineHeight: 21,
+    letterSpacing: 0.5,
+    marginBottom: 2,
   },
-  eventVenue: {
-    color: ticketColors.textMuted,
-    fontSize: 13,
+  searchInput: {
+    fontSize: 16,
+    fontWeight: '400',
+    color: '#333333',
+    padding: 0,
+  },
+  filterContainer: {
+    marginTop: 16,
+  },
+  filterScroll: {
+    paddingHorizontal: 16,
+    gap: 10,
+  },
+  filterChip: {
+    borderWidth: 1,
+    borderColor: DC.white,
+    borderRadius: 3,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+  },
+  filterChipText: {
+    color: DC.white,
+    fontSize: 15,
     fontWeight: '600',
-    lineHeight: 18,
+  },
+  contentScroll: {
+    flex: 1,
+  },
+  sectionContainer: {
+    paddingHorizontal: 20,
+    paddingTop: 36,
+  },
+  sectionContainerDivider: {
+    paddingTop: 12,
+  },
+  sectionIndicator: {
+    width: 26,
+    height: 4,
+    backgroundColor: '#000000',
+    marginBottom: 8,
+  },
+  sectionTitle: {
+    color: '#000000',
+    fontSize: 18,
+    fontWeight: '800',
+    letterSpacing: 0.5,
+    lineHeight: 24,
+  },
+  nearRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 20,
+    marginBottom: 24,
+  },
+  nearText: {
+    color: '#000000',
+    fontSize: 15,
+    fontWeight: '700',
+    marginLeft: 6,
+  },
+  nearAction: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderBottomWidth: 1,
+    borderBottomColor: '#0066FF',
+    paddingBottom: 2,
+    marginLeft: 2,
+  },
+  nearLink: {
+    color: '#0066FF',
+    fontSize: 15,
+    fontWeight: '700',
+  },
+  presaleCard: {
+    marginBottom: 24,
+  },
+  presaleImageWrapper: {
+    width: '100%',
+    aspectRatio: 16 / 9,
+    position: 'relative',
+    backgroundColor: '#EAEAEA',
+    borderRadius: 2,
+    overflow: 'hidden',
+  },
+  presaleImage: {
+    width: '100%',
+    height: '100%',
+  },
+  presaleTag: {
+    position: 'absolute',
+    bottom: 12,
+    left: 12,
+    backgroundColor: '#9534FF',
+    paddingHorizontal: 8,
+    paddingVertical: 5,
+    borderRadius: 2,
+  },
+  presaleTagText: {
+    color: '#FFFFFF',
+    fontWeight: '800',
+    fontSize: 10,
+    letterSpacing: 0.5,
+  },
+  arrowLeft: {
+    position: 'absolute',
+    left: 0,
+    top: '50%',
+    marginTop: -22,
+    width: 44,
+    height: 44,
+    backgroundColor: 'rgba(240, 240, 240, 0.9)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  arrowRight: {
+    position: 'absolute',
+    right: 0,
+    top: '50%',
+    marginTop: -22,
+    width: 44,
+    height: 44,
+    backgroundColor: '#005CEE',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  presaleInfo: {
+    paddingVertical: 16,
+  },
+  presaleDate: {
+    color: '#767676',
+    fontSize: 11,
+    fontWeight: '700',
+    letterSpacing: 0.5,
+    marginBottom: 8,
+  },
+  presaleName: {
+    color: '#111111',
+    fontSize: 18,
+    fontWeight: '800',
+    lineHeight: 24,
+    marginBottom: 6,
+  },
+  presaleLocation: {
+    color: '#555555',
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  sponsorRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: '#DDDDDD',
+    paddingVertical: 16,
+  },
+  citiLogo: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#005CEE',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  citiLogoText: {
+    color: '#FFFFFF',
+    fontWeight: '700',
+    fontSize: 12,
+    fontStyle: 'italic',
+  },
+  sponsorDetails: {
+    marginLeft: 12,
+  },
+  sponsorName: {
+    color: '#111111',
+    fontSize: 15,
+    fontWeight: '700',
+    marginBottom: 2,
+  },
+  sponsorDate: {
+    color: '#333333',
+    fontSize: 12,
+    fontWeight: '600',
   },
 });

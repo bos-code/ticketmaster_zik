@@ -1,53 +1,265 @@
-import { Ionicons } from '@expo/vector-icons';
-import React from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useRouter } from 'expo-router';
+import React, { useState } from 'react';
+import {
+  Platform,
+  ScrollView,
+  StatusBar,
+  StyleSheet,
+  Switch,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { ticketColors, ticketRadii, ticketSpacing } from '@/constants/ticket-theme';
+import {
+  AccountIcon,
+  type AccountIconName,
+} from '@/components/account/account-icon';
 
-function DetailRow({ label, value }: { label: string; value: string }) {
+const C = {
+  headerBg: '#161616',
+  headerTitle: '#FFFFFF',
+  bodyBg: '#FFFFFF',
+  sectionBg: '#FFFFFF',
+  sectionHeader: '#000000',
+  rowLabel: '#000000',
+  rowIcon: '#000000',
+  rowSeparator: '#E5E5E5',
+  sectionDivider: '#E5E5E5',
+  chevron: '#C7C7CC',
+  primary: '#007AFF',
+  switchThumb: '#FFFFFF',
+  switchTrackOff: '#D1D1D6',
+  switchTrackOn: '#34C759',
+} as const;
+
+const accountFont = Platform.select({
+  ios: 'SF Pro Display',
+  android: 'sans-serif',
+  web: 'SF Pro Display, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif',
+  default: undefined,
+});
+
+function RowIconSlot({ icon, customElement }: { icon?: AccountIconName; customElement?: React.ReactNode }) {
+  if (customElement) {
+    return (
+      <View style={styles.rowIcon}>
+        {customElement}
+      </View>
+    );
+  }
   return (
-    <View style={styles.detailRow}>
-      <Text style={styles.detailLabel}>{label}</Text>
-      <Text style={styles.detailValue}>{value}</Text>
+    <View style={styles.rowIcon}>
+      {icon && <AccountIcon color={C.rowIcon} name={icon} size={21} />}
     </View>
   );
 }
 
+function SectionHeader({ label }: { label: string }) {
+  return <Text style={styles.sectionHeader}>{label}</Text>;
+}
+
+function Divider() {
+  return <View style={styles.divider} />;
+}
+
+function ChevronRow({
+  icon,
+  customIcon,
+  label,
+  isLast = false,
+  onPress,
+}: {
+  icon?: AccountIconName;
+  customIcon?: React.ReactNode;
+  label: string;
+  isLast?: boolean;
+  onPress?: () => void;
+}) {
+  return (
+    <TouchableOpacity
+      activeOpacity={0.55}
+      onPress={onPress}
+      style={[styles.row, !isLast && styles.rowBorder]}
+    >
+      <View style={styles.rowLeft}>
+        <RowIconSlot customElement={customIcon} icon={icon} />
+        <Text style={styles.rowLabel}>{label}</Text>
+      </View>
+      <View style={styles.trailingIcon}>
+        <AccountIcon color={C.chevron} name="chevron-forward" size={17} />
+      </View>
+    </TouchableOpacity>
+  );
+}
+
+function ToggleRow({
+  icon,
+  label,
+  value,
+  onChange,
+  isLast = false,
+}: {
+  icon: AccountIconName;
+  label: string;
+  value: boolean;
+  onChange: (v: boolean) => void;
+  isLast?: boolean;
+}) {
+  return (
+    <View style={[styles.row, !isLast && styles.rowBorder]}>
+      <View style={styles.rowLeft}>
+        <RowIconSlot icon={icon} />
+        <Text style={styles.rowLabel}>{label}</Text>
+      </View>
+      <Switch
+        ios_backgroundColor={C.switchTrackOff}
+        onValueChange={onChange}
+        thumbColor={C.switchThumb}
+        trackColor={{ false: C.switchTrackOff, true: C.switchTrackOn }}
+        value={value}
+        style={styles.toggle}
+      />
+    </View>
+  );
+}
+
+function ValueRow({
+  icon,
+  customIcon,
+  label,
+  value,
+  isLast = false,
+}: {
+  icon?: AccountIconName;
+  customIcon?: React.ReactNode;
+  label: string;
+  value: string;
+  isLast?: boolean;
+}) {
+  return (
+    <TouchableOpacity
+      activeOpacity={0.55}
+      style={[styles.row, !isLast && styles.rowBorder]}
+    >
+      <View style={styles.rowLeft}>
+        <RowIconSlot customElement={customIcon} icon={icon} />
+        <Text style={styles.rowLabel}>{label}</Text>
+      </View>
+      <View style={styles.valueRight}>
+        <Text style={styles.rowValue}>{value}</Text>
+        <View style={styles.editIcon}>
+          <AccountIcon color={C.primary} name="edit-outline" size={16} />
+        </View>
+      </View>
+    </TouchableOpacity>
+  );
+}
+
 export default function MyAccountScreen() {
+  const router = useRouter();
+  const [receiveNotifs, setReceiveNotifs] = useState(false);
+  const [locationContent, setLocationContent] = useState(false);
+
   return (
     <View style={styles.root}>
-      <View pointerEvents="none" style={styles.spotlight} />
-      <SafeAreaView edges={['top', 'left', 'right']} style={styles.safeArea}>
-        <ScrollView
-          contentContainerStyle={styles.content}
-          showsVerticalScrollIndicator={false}
-          style={styles.scroll}>
-          <View style={styles.header}>
-            <View style={styles.iconShell}>
-              <Ionicons name="person" color={ticketColors.text} size={26} />
-            </View>
+      <StatusBar barStyle="light-content" backgroundColor={C.headerBg} />
 
-            <View style={styles.titleBlock}>
-              <Text style={styles.eyebrow}>My Account</Text>
-              <Text style={styles.title}>Guest mode</Text>
-              <Text style={styles.subtitle}>Browse now. We can bring sign-in back once the core flow settles.</Text>
-            </View>
-          </View>
-
-          <View style={styles.panel}>
-            <Text style={styles.panelLabel}>Status</Text>
-            <Text style={styles.metric}>No sign-in required</Text>
-            <Text style={styles.metricSub}>Everything is open while we keep account work on the bench.</Text>
-          </View>
-
-          <View style={styles.card}>
-            <DetailRow label="Access" value="Open browsing and discovery" />
-            <DetailRow label="Saved profile" value="Coming back in a later pass" />
-            <DetailRow label="Tickets" value="Ready for the next real account flow" />
-          </View>
-        </ScrollView>
+      <SafeAreaView edges={['top']} style={styles.headerSafe}>
+        <View style={styles.header}>
+          <Text style={styles.headerTitle}>Account</Text>
+        </View>
       </SafeAreaView>
+
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        contentOffset={{ x: 0, y: 130 }}
+        showsVerticalScrollIndicator={false}
+        style={styles.scroll}
+      >
+        <View style={styles.hiddenHeader}>
+          <View style={styles.welcomeContainer}>
+            <Text style={styles.welcomeText}>
+              Welcome to <Text style={styles.logoText}>ticketmaster</Text>
+            </Text>
+            <TouchableOpacity style={styles.signInButton} activeOpacity={0.8}>
+              <Text style={styles.signInButtonText}>Sign In</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+        <View style={{ height: 24 }} />
+        <SectionHeader label="Notifications" />
+        <View style={styles.group}>
+          <ChevronRow icon="envelope-outline" label="My Notifications" />
+          <ToggleRow
+            icon="bell-outline"
+            isLast
+            label="Receive Notifications?"
+            onChange={setReceiveNotifs}
+            value={receiveNotifs}
+          />
+        </View>
+
+        <Divider />
+
+        <SectionHeader label="Location Settings" />
+        <View style={styles.group}>
+          <ValueRow
+            icon="location-outline"
+            label="My Location"
+            value="Los Angeles, CA"
+          />
+          <ValueRow
+            customIcon={
+              <View style={styles.usFlagIcon}>
+                <Text style={{ fontSize: 13, lineHeight: 18 }}>🇺🇸</Text>
+              </View>
+            }
+            label="My Country"
+            value="United States"
+          />
+          <ToggleRow
+            icon="paper-plane-outline"
+            isLast
+            label="Location Based Content"
+            onChange={setLocationContent}
+            value={locationContent}
+          />
+        </View>
+
+        <Divider />
+
+        <SectionHeader label="Preferences" />
+        <View style={styles.group}>
+          <ChevronRow icon="heart-outline" label="My Favourites" />
+          <ChevronRow
+            icon="create-outline"
+            label="Edit Details"
+            onPress={() => router.push('/admin')}
+          />
+          <ChevronRow icon="shield-checkmark-outline" label="Security" />
+          <ChevronRow icon="card-outline" label="Saved Payment Methods" />
+          <ChevronRow
+            customIcon={
+              <View style={styles.appIconWrapper}>
+                <Text style={styles.appIconLetter}>t</Text>
+              </View>
+            }
+            isLast
+            label="Change App Icon"
+          />
+        </View>
+
+        <Divider />
+
+        <SectionHeader label="Help & Guidance" />
+        <View style={styles.group}>
+          <ChevronRow icon="help-circle-outline" label="Help Center" isLast />
+        </View>
+
+        <View style={{ height: 32 }} />
+      </ScrollView>
     </View>
   );
 }
@@ -55,122 +267,173 @@ export default function MyAccountScreen() {
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: ticketColors.background,
+    backgroundColor: C.bodyBg,
   },
-  spotlight: {
-    position: 'absolute',
-    top: -120,
-    right: -90,
-    width: 280,
-    height: 280,
-    borderRadius: 140,
-    opacity: 0.18,
-    backgroundColor: ticketColors.primaryBright,
+  headerSafe: {
+    backgroundColor: C.headerBg,
   },
-  safeArea: {
-    flex: 1,
+  header: {
+    height: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: C.headerBg,
+    paddingHorizontal: 16,
+  },
+  headerTitle: {
+    color: C.headerTitle,
+    fontFamily: accountFont,
+    fontSize: 16,
+    fontWeight: '600',
+    letterSpacing: 0,
+    textAlign: 'center',
+  },
+  hiddenHeader: {
+    backgroundColor: C.headerBg,
+    width: '100%',
+  },
+  welcomeContainer: {
+    paddingHorizontal: 20,
+    paddingTop: 16,
+    paddingBottom: 24,
+    alignItems: 'center',
+  },
+  welcomeText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontFamily: accountFont,
+    marginBottom: 20,
+  },
+  logoText: {
+    fontWeight: '800',
+    fontStyle: 'italic',
+    fontSize: 18,
+    letterSpacing: -0.5,
+  },
+  signInButton: {
+    backgroundColor: '#026CDF',
+    width: '100%',
+    height: 48,
+    borderRadius: 4,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  signInButtonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '600',
   },
   scroll: {
     flex: 1,
+    backgroundColor: C.bodyBg,
   },
-  content: {
-    paddingHorizontal: ticketSpacing.lg,
-    paddingTop: ticketSpacing.xl,
-    paddingBottom: ticketSpacing.xxl,
-    gap: ticketSpacing.lg,
+  scrollContent: {
+    paddingBottom: 32,
   },
-  header: {
-    gap: ticketSpacing.lg,
-  },
-  iconShell: {
-    width: 56,
-    height: 56,
-    borderRadius: ticketRadii.md,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: ticketColors.chromeElevated,
-    borderWidth: 1,
-    borderColor: ticketColors.border,
-  },
-  titleBlock: {
-    gap: ticketSpacing.sm,
-  },
-  eyebrow: {
-    color: ticketColors.primaryBright,
-    fontSize: 12,
-    lineHeight: 16,
-    fontWeight: '800',
-    letterSpacing: 0,
-    textTransform: 'uppercase',
-  },
-  title: {
-    color: ticketColors.text,
-    fontSize: 34,
-    lineHeight: 39,
-    fontWeight: '900',
-    letterSpacing: 0,
-  },
-  subtitle: {
-    color: ticketColors.textMuted,
-    fontSize: 16,
-    lineHeight: 24,
-    fontWeight: '500',
-    letterSpacing: 0,
-  },
-  panel: {
-    padding: ticketSpacing.lg,
-    borderRadius: ticketRadii.md,
-    backgroundColor: ticketColors.chrome,
-    borderWidth: 1,
-    borderColor: ticketColors.border,
-    gap: ticketSpacing.xs,
-  },
-  panelLabel: {
-    color: ticketColors.textSubtle,
-    fontSize: 12,
-    lineHeight: 16,
-    fontWeight: '800',
-    letterSpacing: 0,
-    textTransform: 'uppercase',
-  },
-  metric: {
-    color: ticketColors.text,
-    fontSize: 28,
-    lineHeight: 34,
-    fontWeight: '900',
-    letterSpacing: 0,
-  },
-  metricSub: {
-    color: ticketColors.textMuted,
-    fontSize: 14,
-    lineHeight: 20,
-    fontWeight: '600',
-    letterSpacing: 0,
-  },
-  card: {
-    padding: ticketSpacing.lg,
-    borderRadius: ticketRadii.md,
-    backgroundColor: ticketColors.chromeElevated,
-    borderWidth: 1,
-    borderColor: ticketColors.border,
-    gap: ticketSpacing.md,
-  },
-  detailRow: {
-    gap: ticketSpacing.xs,
-  },
-  detailLabel: {
-    color: ticketColors.textSubtle,
-    fontSize: 12,
-    lineHeight: 16,
-    fontWeight: '800',
-    letterSpacing: 0,
-    textTransform: 'uppercase',
-  },
-  detailValue: {
-    color: ticketColors.text,
-    fontSize: 15,
-    lineHeight: 22,
+  sectionHeader: {
+    color: C.sectionHeader,
+    fontFamily: accountFont,
+    fontSize: 17,
     fontWeight: '700',
     letterSpacing: 0,
+    marginBottom: 12,
+    paddingHorizontal: 20,
+  },
+  group: {
+    backgroundColor: C.sectionBg,
+  },
+  row: {
+    minHeight: 46,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: C.sectionBg,
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+  },
+  rowBorder: {
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: C.rowSeparator,
+  },
+  rowLeft: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 14,
+  },
+  rowIcon: {
+    width: 28,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  trailingIcon: {
+    width: 24,
+    alignItems: 'flex-end',
+    justifyContent: 'center',
+    overflow: 'visible',
+  },
+  rowLabel: {
+    flex: 1,
+    color: C.rowLabel,
+    fontFamily: accountFont,
+    fontSize: 15,
+    fontWeight: '400',
+    letterSpacing: 0,
+  },
+  valueRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingRight: 2,
+  },
+  editIcon: {
+    width: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+    overflow: 'visible',
+  },
+  rowValue: {
+    color: C.primary,
+    fontFamily: accountFont,
+    fontSize: 15,
+    fontWeight: '400',
+    letterSpacing: 0,
+  },
+  toggle: {
+    ...Platform.select({ android: { transform: [{ scale: 0.85 }] } }),
+  },
+  divider: {
+    height: StyleSheet.hairlineWidth,
+    backgroundColor: C.sectionDivider,
+    marginHorizontal: 20,
+    marginTop: 12,
+    marginBottom: 20,
+  },
+  usFlagIcon: {
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    backgroundColor: '#E5E5E5',
+    alignItems: 'center',
+    justifyContent: 'center',
+    overflow: 'hidden',
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: '#CCCCCC',
+  },
+  appIconWrapper: {
+    width: 20,
+    height: 20,
+    borderRadius: 4,
+    borderWidth: 1.5,
+    borderColor: C.rowIcon,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  appIconLetter: {
+    fontFamily: accountFont,
+    fontSize: 14,
+    fontWeight: '700',
+    color: C.rowIcon,
+    includeFontPadding: false,
+    lineHeight: 16,
   },
 });

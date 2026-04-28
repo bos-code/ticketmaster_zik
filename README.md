@@ -227,6 +227,7 @@ The system is composed of two main applications:
 * Use cloud services to reduce backend overhead
 * Optimize images before upload
 * Maintain clean database relationships
+* Keep `src/components/tickets/ticket-transfer-flow.tsx` under 500 lines. Split ticket detail UI, transfer steps, viewer cards, shared context, helpers, and modal flows into focused files instead of growing this file.
 
 ---
 

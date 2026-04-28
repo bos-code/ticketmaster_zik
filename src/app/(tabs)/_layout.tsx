@@ -1,58 +1,65 @@
-import { Ionicons } from '@expo/vector-icons';
 import { Tabs } from 'expo-router';
 import React from 'react';
 import { Platform, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import {
+  TicketmasterTabIcon,
+  type TicketmasterTabIconName,
+} from '@/components/ticketmaster-tab-icon';
 
-import { ticketColors, ticketRadii } from '@/constants/ticket-theme';
-
-type IconName = React.ComponentProps<typeof Ionicons>['name'];
 
 type TabRouteName = 'discover' | 'for-you' | 'my-tickets' | 'add-event' | 'sell' | 'my-account';
 
 type TabConfig = {
   title: string;
-  icon: IconName;
-  activeIcon: IconName;
+  icon: TicketmasterTabIconName;
 };
+
+const C = {
+  active: '#0F56F4',
+  inactive: '#7F8280',
+  background: '#F2F2F7',
+  border: '#D1D1D6', // Standard iOS separator color
+} as const;
+
+const accountFont = Platform.select({
+  ios: 'SF Pro Text',
+  android: 'sans-serif',
+  web: 'SF Pro Text, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif',
+  default: undefined,
+});
 
 const TAB_CONFIG: Record<TabRouteName, TabConfig> = {
   discover: {
     title: 'Discover',
-    icon: 'search-outline',
-    activeIcon: 'search',
+    icon: 'discover',
   },
   'for-you': {
     title: 'For You',
-    icon: 'heart-outline',
-    activeIcon: 'heart',
+    icon: 'for-you',
   },
   'my-tickets': {
     title: 'My Tickets',
-    icon: 'ticket-outline',
-    activeIcon: 'ticket',
+    icon: 'my-tickets',
   },
   'add-event': {
     title: 'Admin',
-    icon: 'add-circle-outline',
-    activeIcon: 'add-circle',
+    icon: 'my-account',
   },
   sell: {
     title: 'Sell',
-    icon: 'pricetag-outline',
-    activeIcon: 'pricetag',
+    icon: 'sell',
   },
   'my-account': {
-    title: 'My Account',
-    icon: 'person-outline',
-    activeIcon: 'person',
+    title: 'Account',
+    icon: 'my-account',
   },
 };
 
 export default function PremiumTabsLayout() {
   const insets = useSafeAreaInsets();
-  const bottomPadding = Math.max(insets.bottom, Platform.OS === 'android' ? 6 : 10);
-  const tabBarHeight = 52 + bottomPadding;
+  const bottomPadding = Math.max(insets.bottom, Platform.OS === 'android' ? 8 : 12);
+  const tabBarHeight = 54 + bottomPadding;
 
   return (
     <Tabs
@@ -63,58 +70,47 @@ export default function PremiumTabsLayout() {
         return {
           headerShown: false,
           lazy: true,
-          sceneStyle: { backgroundColor: ticketColors.background },
+          sceneStyle: { backgroundColor: C.background },
           tabBarAccessibilityLabel: config.title,
-          tabBarActiveTintColor: ticketColors.primary,
+          tabBarActiveTintColor: C.active,
           tabBarHideOnKeyboard: true,
-          tabBarInactiveTintColor: ticketColors.textSubtle,
+          tabBarInactiveTintColor: C.inactive,
           tabBarItemStyle: styles.tabItem,
           tabBarStyle: [
             styles.tabBar,
-            {
-              height: tabBarHeight,
-              paddingBottom: bottomPadding,
-            },
+            { height: tabBarHeight, paddingBottom: bottomPadding },
           ],
-          tabBarIcon: ({ color, focused }) => (
+          tabBarIcon: ({ focused }) => (
             <View style={styles.iconWrap}>
-              <View
-                style={[
-                  styles.activeIndicator,
-                  focused && styles.activeIndicatorActive,
-                ]}
-              />
-              <Ionicons
-                name={focused ? config.activeIcon : config.icon}
-                color={color}
-                size={focused ? 22 : 20}
-                style={[
-                  styles.tabIcon,
-                  focused && styles.tabIconActive,
-                ]}
+              <TicketmasterTabIcon
+                focused={focused}
+                name={config.icon}
+                size={25}
               />
             </View>
           ),
-          tabBarLabel: ({ color, focused }) => (
+          tabBarLabel: ({ focused }) => (
             <Text
               allowFontScaling={false}
               numberOfLines={1}
               style={[
                 styles.tabLabel,
                 focused && styles.tabLabelActive,
-                { color },
-              ]}>
+                { color: focused ? C.active : C.inactive },
+              ]}
+            >
               {config.title}
             </Text>
           ),
         };
-      }}>
+      }}
+    >
       <Tabs.Screen name="index" options={{ href: null }} />
       <Tabs.Screen name="discover" options={{ title: TAB_CONFIG.discover.title }} />
       <Tabs.Screen name="for-you" options={{ title: TAB_CONFIG['for-you'].title }} />
       <Tabs.Screen name="my-tickets" options={{ title: TAB_CONFIG['my-tickets'].title }} />
-      <Tabs.Screen name="add-event" options={{ title: TAB_CONFIG['add-event'].title }} />
-      <Tabs.Screen name="sell" options={{ href: null }} />
+      <Tabs.Screen name="add-event" options={{ href: null }} />
+      <Tabs.Screen name="sell" options={{ title: TAB_CONFIG.sell.title }} />
       <Tabs.Screen name="my-account" options={{ title: TAB_CONFIG['my-account'].title }} />
     </Tabs>
   );
@@ -122,15 +118,11 @@ export default function PremiumTabsLayout() {
 
 const styles = StyleSheet.create({
   tabBar: {
-    backgroundColor: ticketColors.chrome,
-    borderTopColor: ticketColors.borderStrong,
+    backgroundColor: C.background,
+    borderTopColor: C.border,
     borderTopWidth: StyleSheet.hairlineWidth,
     elevation: 0,
-    paddingTop: 4,
-    shadowColor: '#000000',
-    shadowOffset: { width: 0, height: -10 },
-    shadowOpacity: 0.08,
-    shadowRadius: 16,
+    paddingTop: 6,
   },
   tabItem: {
     paddingHorizontal: 0,
@@ -138,36 +130,20 @@ const styles = StyleSheet.create({
   },
   iconWrap: {
     alignItems: 'center',
-    gap: 2,
     justifyContent: 'center',
-    minHeight: 26,
-  },
-  activeIndicator: {
-    backgroundColor: 'transparent',
-    borderRadius: ticketRadii.pill,
-    height: 2,
-    width: 14,
-  },
-  activeIndicatorActive: {
-    backgroundColor: ticketColors.primary,
-  },
-  tabIcon: {
-    borderRadius: ticketRadii.pill,
-    paddingHorizontal: 6,
-    paddingVertical: 3,
-  },
-  tabIconActive: {
-    backgroundColor: ticketColors.primarySoft,
+    marginBottom: 2,
+    minHeight: 28,
   },
   tabLabel: {
     marginTop: 1,
+    fontFamily: accountFont,
     fontSize: 9,
+    fontWeight: '500',
+    letterSpacing: 0,
     lineHeight: 12,
-    fontWeight: '600',
-    letterSpacing: 0.1,
     textAlign: 'center',
   },
   tabLabelActive: {
-    fontWeight: '800',
+    fontWeight: '700',
   },
 });

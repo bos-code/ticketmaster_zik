@@ -18,11 +18,30 @@ import {
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { ticketColors, ticketRadii, ticketSpacing } from '@/constants/ticket-theme';
+import { StatusBar } from 'expo-status-bar';
+
+import { ticketRadii, ticketSpacing, ticketColors as defaultTicketColors } from '@/constants/ticket-theme';
 import {
   type CreateAdminEventInput,
   useEventStore,
 } from '@/store/use-event-store';
+
+const ticketColors = {
+  ...defaultTicketColors,
+  backgroundDeep: '#050505',
+  background: '#050505',
+  chrome: '#101010',
+  chromeElevated: '#1A1A1A',
+  chromeSoft: '#202020',
+  border: 'rgba(255, 255, 255, 0.08)',
+  borderStrong: 'rgba(255, 255, 255, 0.16)',
+  text: '#FFFFFF',
+  textMuted: 'rgba(255, 255, 255, 0.68)',
+  textSubtle: 'rgba(255, 255, 255, 0.45)',
+  primary: '#005BD3',
+  primaryBright: '#005BD3',
+  primarySoft: 'rgba(0, 91, 211, 0.2)',
+};
 
 const TICKET_TYPE_OPTIONS = [
   'Standard Ticket',
@@ -329,155 +348,131 @@ export function AddEventAdminScreen() {
 
   return (
     <View style={styles.root}>
-      <SafeAreaView edges={['top', 'left', 'right']} style={styles.safeArea}>
+      <StatusBar style="light" backgroundColor="#050505" />
+
+      {/* ── Header ── */}
+      <SafeAreaView edges={['top', 'left', 'right']} style={{ backgroundColor: '#050505' }}>
+        <View style={styles.headerBar}>
+          <View style={styles.headerBarInner}>
+            <View style={styles.headerBarLeft} />
+            <View style={styles.headerBarCenter}>
+              <Text style={styles.headerEyebrow}>ADMIN</Text>
+              <Text style={styles.headerTitle}>Add Event</Text>
+            </View>
+            <Pressable
+              accessibilityRole="button"
+              onPress={() => router.replace('/discover')}
+              style={styles.headerCloseBtn}
+            >
+              <Ionicons color="rgba(255,255,255,0.8)" name="close" size={18} />
+            </Pressable>
+          </View>
+        </View>
+      </SafeAreaView>
+
+      <View style={{ flex: 1 }}>
         <KeyboardAvoidingView
           behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-          style={styles.keyboardAvoid}
+          style={{ flex: 1 }}
         >
           <ScrollView
-            contentContainerStyle={[
-              styles.content,
-              { paddingBottom: 132 + footerPadding },
-            ]}
+            contentContainerStyle={{ paddingBottom: 140 + footerPadding }}
             keyboardShouldPersistTaps="handled"
             showsVerticalScrollIndicator={false}
-            style={styles.scroll}
           >
-            <View style={styles.header}>
-              <View style={styles.headerIcon}>
-                <Ionicons color={ticketColors.primaryBright} name="add-circle-outline" size={24} />
+            {/* Admin notice */}
+            <View style={styles.adminBanner}>
+              <View style={styles.adminBannerAccent} />
+              <View style={styles.adminBannerIcon}>
+                <Ionicons color="#005BD3" name="shield-checkmark-outline" size={16} />
               </View>
-              <View style={styles.headerCopy}>
-                <Text style={styles.eyebrow}>Admin</Text>
-                <Text style={styles.title}>Add Event</Text>
-                <Text style={styles.subtitle}>
-                  Create an event and ticket block with a form that stays clear and easy to finish.
-                </Text>
-              </View>
-              <Pressable
-                accessibilityRole="button"
-                onPress={() => router.replace('/discover')}
-                style={styles.headerCloseButton}
-              >
-                <Ionicons color={ticketColors.text} name="close" size={18} />
-              </Pressable>
-            </View>
-
-            <View style={styles.adminNotice}>
-              <View style={styles.adminNoticeIcon}>
-                <Ionicons color={ticketColors.primaryBright} name="shield-checkmark-outline" size={18} />
-              </View>
-              <View style={styles.adminNoticeCopy}>
-                <Text style={styles.adminNoticeTitle}>Admin-only route</Text>
-                <Text style={styles.adminNoticeBody}>
-                  This screen is meant for admins and will be protected when auth roles are wired up.
-                </Text>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.adminBannerTitle}>Admin-only route</Text>
+                <Text style={styles.adminBannerBody}>Protected when auth roles are wired up.</Text>
               </View>
             </View>
 
-            <FormSection
-              description="Upload the hero artwork that should appear on the featured card and event details."
-              title="Event Artwork"
-            >
-              <FieldShell
-                helperText={
-                  form.eventImage
-                    ? 'Custom artwork is ready and will override the default ticket-type image.'
-                    : 'Optional for now. If you skip this, the event uses a default image based on ticket type.'
-                }
-                label="Featured Image"
-              >
-                <View style={styles.imageFieldCard}>
-                  {form.eventImage ? (
-                    <Image
-                      contentFit="cover"
-                      source={{ uri: form.eventImage.uri }}
-                      style={styles.uploadedImagePreview}
-                    />
-                  ) : (
-                    <View style={styles.imagePlaceholder}>
-                      <View style={styles.imagePlaceholderIcon}>
-                        <Ionicons color={ticketColors.primaryBright} name="image-outline" size={20} />
-                      </View>
-                      <Text style={styles.imagePlaceholderTitle}>No custom image uploaded</Text>
-                      <Text style={styles.imagePlaceholderBody}>
-                        Select a cover image from the device library for this event.
-                      </Text>
-                    </View>
-                  )}
-
-                  <View style={styles.imageMetaRow}>
-                    <View style={styles.imageMetaCopy}>
-                      <Text style={styles.imageMetaTitle}>
-                        {form.eventImage?.fileName || 'Ticket-type fallback artwork'}
-                      </Text>
-                      <Text style={styles.imageMetaBody}>
-                        {form.eventImage
-                          ? formatImageDetails(form.eventImage)
-                          : 'A fallback hero image will be used until you upload one.'}
-                      </Text>
-                    </View>
-                    {isPickingImage ? (
-                      <ActivityIndicator color={ticketColors.primaryBright} size="small" />
-                    ) : null}
+            {/* ── Event Artwork ── */}
+            <FormSection title="Event Artwork">
+              {form.eventImage ? (
+                <Image
+                  contentFit="cover"
+                  source={{ uri: form.eventImage.uri }}
+                  style={styles.uploadedImage}
+                />
+              ) : (
+                <Pressable
+                  accessibilityRole="button"
+                  disabled={isPickingImage}
+                  onPress={handlePickImage}
+                  style={styles.uploadZone}
+                >
+                  <View style={styles.uploadIconCircle}>
+                    <Ionicons color="#FFFFFF" name="cloud-upload-outline" size={22} />
                   </View>
-                </View>
+                  <Text style={styles.uploadZoneTitle}>Tap to upload event photo</Text>
+                  <Text style={styles.uploadZoneHint}>16:9 recommended · JPG or PNG</Text>
+                </Pressable>
+              )}
 
-                <View style={styles.imageActionRow}>
+              <View style={styles.imageMetaRow}>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.imageMetaTitle}>
+                    {form.eventImage?.fileName ?? 'Ticket-type fallback artwork'}
+                  </Text>
+                  <Text style={styles.imageMetaBody}>
+                    {form.eventImage
+                      ? formatImageDetails(form.eventImage)
+                      : 'A fallback hero image will be used until you upload one.'}
+                  </Text>
+                </View>
+                {isPickingImage ? (
+                  <ActivityIndicator color="#005BD3" size="small" />
+                ) : null}
+              </View>
+
+              <View style={styles.imageActionRow}>
+                <Pressable
+                  accessibilityRole="button"
+                  disabled={isPickingImage}
+                  onPress={handlePickImage}
+                  style={[styles.imgBtn, styles.imgBtnPrimary, isPickingImage && { opacity: 0.6 }]}
+                >
+                  <Ionicons color="#FFF" name={form.eventImage ? 'refresh-outline' : 'cloud-upload-outline'} size={15} />
+                  <Text style={styles.imgBtnPrimaryText}>
+                    {isPickingImage ? 'Opening…' : form.eventImage ? 'Replace' : 'Upload Image'}
+                  </Text>
+                </Pressable>
+                {form.eventImage ? (
                   <Pressable
                     accessibilityRole="button"
-                    disabled={isPickingImage}
-                    onPress={handlePickImage}
-                    style={[
-                      styles.imageActionButton,
-                      styles.imageActionButtonPrimary,
-                      isPickingImage && styles.imageActionButtonDisabled,
-                    ]}
+                    onPress={handleRemoveImage}
+                    style={[styles.imgBtn, styles.imgBtnGhost]}
                   >
-                    <Ionicons color="#FFFFFF" name={form.eventImage ? 'refresh-outline' : 'cloud-upload-outline'} size={16} />
-                    <Text style={styles.imageActionButtonPrimaryText}>
-                      {isPickingImage
-                        ? 'Opening library...'
-                        : form.eventImage
-                          ? 'Replace image'
-                          : 'Upload image'}
-                    </Text>
+                    <Ionicons color="rgba(255,255,255,0.7)" name="trash-outline" size={15} />
+                    <Text style={styles.imgBtnGhostText}>Remove</Text>
                   </Pressable>
-
-                  {form.eventImage ? (
-                    <Pressable
-                      accessibilityRole="button"
-                      onPress={handleRemoveImage}
-                      style={[styles.imageActionButton, styles.imageActionButtonSecondary]}
-                    >
-                      <Ionicons color={ticketColors.text} name="trash-outline" size={16} />
-                      <Text style={styles.imageActionButtonSecondaryText}>Remove</Text>
-                    </Pressable>
-                  ) : null}
-                </View>
-              </FieldShell>
+                ) : null}
+              </View>
             </FormSection>
 
-            <FormSection
-              description="The main venue details that help identify the event quickly."
-              title="Event Details"
-            >
+            {/* ── Event Details ── */}
+            <FormSection title="Event Details">
               <TextField
                 error={errors.venueName}
-                helperText="Use the full stadium or venue name."
-                label="Stadium/Venue Name"
-                onChangeText={(value) => updateField('venueName', value)}
+                helperText="Full stadium or venue name."
+                label="Stadium / Venue Name"
+                onChangeText={(v) => updateField('venueName', v)}
                 placeholder="e.g. Madison Square Garden"
                 value={form.venueName}
               />
-
               <View style={styles.row}>
                 <View style={styles.rowField}>
                   <TextField
                     error={errors.city}
-                    helperText="City where the event takes place."
+                    helperText="City of the event."
                     label="City"
-                    onChangeText={(value) => updateField('city', value)}
+                    onChangeText={(v) => updateField('city', v)}
                     placeholder="e.g. New York"
                     value={form.city}
                   />
@@ -486,9 +481,9 @@ export function AddEventAdminScreen() {
                   <TextField
                     autoCapitalize="characters"
                     error={errors.state}
-                    helperText="State or region abbreviation works well."
+                    helperText="State abbreviation."
                     label="State"
-                    onChangeText={(value) => updateField('state', value)}
+                    onChangeText={(v) => updateField('state', v)}
                     placeholder="e.g. NY"
                     value={form.state}
                   />
@@ -496,55 +491,50 @@ export function AddEventAdminScreen() {
               </View>
             </FormSection>
 
-            <FormSection
-              description="Pick the event timing with clear date and time controls."
-              title="Schedule"
-            >
+            {/* ── Schedule ── */}
+            <FormSection title="Schedule">
               <View style={styles.row}>
                 <View style={styles.rowField}>
                   <PickerField
                     error={errors.eventDate}
-                    helperText="Choose the event date."
+                    helperText="Event date."
                     label="Date"
                     onPress={() => setActiveDateField('eventDate')}
-                    placeholder="e.g. Jun 18, 2026"
+                    placeholder="Jun 18, 2026"
                     value={form.eventDate ? formatDisplayDate(form.eventDate) : ''}
                   />
                 </View>
                 <View style={styles.rowField}>
                   <PickerField
                     error={errors.time}
-                    helperText="Select the event time."
+                    helperText="Event time."
                     label="Time"
                     onPress={() => setTimePickerVisible(true)}
-                    placeholder="e.g. 7:30 PM"
+                    placeholder="7:30 PM"
                     value={form.time ? formatDisplayTime(form.time) : ''}
                   />
                 </View>
               </View>
-
               <PickerField
                 error={errors.purchaseDate}
                 helperText="When was this ticket purchased?"
                 label="Purchase Date"
                 onPress={() => setActiveDateField('purchaseDate')}
-                placeholder="e.g. Apr 20, 2026"
+                placeholder="Apr 20, 2026"
                 value={form.purchaseDate ? formatPurchaseDate(form.purchaseDate) : ''}
               />
             </FormSection>
 
-            <FormSection
-              description="Keep the seat block tidy so tickets are easy to generate and review."
-              title="Seat Details"
-            >
+            {/* ── Seat Details ── */}
+            <FormSection title="Seat Details">
               <View style={styles.row}>
                 <View style={styles.rowField}>
                   <TextField
                     autoCapitalize="characters"
                     error={errors.section}
-                    helperText="Section label shown on the ticket."
+                    helperText="Section label."
                     label="Section"
-                    onChangeText={(value) => updateField('section', value)}
+                    onChangeText={(v) => updateField('section', v)}
                     placeholder="e.g. 102"
                     value={form.section}
                   />
@@ -553,23 +543,22 @@ export function AddEventAdminScreen() {
                   <TextField
                     autoCapitalize="characters"
                     error={errors.row}
-                    helperText="Row label shown on the ticket."
+                    helperText="Row label."
                     label="Row"
-                    onChangeText={(value) => updateField('row', value)}
+                    onChangeText={(v) => updateField('row', v)}
                     placeholder="e.g. B"
                     value={form.row}
                   />
                 </View>
               </View>
-
               <View style={styles.row}>
                 <View style={styles.rowField}>
                   <TextField
                     error={errors.seatFrom}
-                    helperText="First seat number in this ticket block."
+                    helperText="First seat number."
                     keyboardType="number-pad"
-                    label="Seat Range From"
-                    onChangeText={(value) => updateField('seatFrom', value.replace(/[^0-9]/g, ''))}
+                    label="Seat From"
+                    onChangeText={(v) => updateField('seatFrom', v.replace(/[^0-9]/g, ''))}
                     placeholder="e.g. 12"
                     value={form.seatFrom}
                   />
@@ -577,31 +566,28 @@ export function AddEventAdminScreen() {
                 <View style={styles.rowField}>
                   <TextField
                     error={errors.seatTo}
-                    helperText="Last seat number in this ticket block."
+                    helperText="Last seat number."
                     keyboardType="number-pad"
-                    label="Seat Range To"
-                    onChangeText={(value) => updateField('seatTo', value.replace(/[^0-9]/g, ''))}
+                    label="Seat To"
+                    onChangeText={(v) => updateField('seatTo', v.replace(/[^0-9]/g, ''))}
                     placeholder="e.g. 15"
                     value={form.seatTo}
                   />
                 </View>
               </View>
-
               <TextField
                 error={errors.barcodeNumber}
-                helperText="Use the barcode or internal ticket reference number."
+                helperText="Barcode or internal reference number."
                 keyboardType="number-pad"
                 label="Barcode Number"
-                onChangeText={(value) => updateField('barcodeNumber', value.replace(/[^0-9]/g, ''))}
+                onChangeText={(v) => updateField('barcodeNumber', v.replace(/[^0-9]/g, ''))}
                 placeholder="e.g. 100234567890"
                 value={form.barcodeNumber}
               />
             </FormSection>
 
-            <FormSection
-              description="Ticket-specific details that help the next person understand exactly what was added."
-              title="Ticket Info"
-            >
+            {/* ── Ticket Info ── */}
+            <FormSection title="Ticket Info">
               <PickerField
                 error={errors.ticketType}
                 helperText="Choose the ticket category."
@@ -610,48 +596,52 @@ export function AddEventAdminScreen() {
                 placeholder="Select a ticket type"
                 value={form.ticketType}
               />
-
               <TextField
-                helperText="Optional notes such as transfer rules, premium perks, or special wording."
-                label="Additional Ticket Info"
+                helperText="Transfer rules, perks, special notes."
+                label="Additional Info"
                 multiline
-                onChangeText={(value) => updateField('additionalTicketInfo', value)}
+                onChangeText={(v) => updateField('additionalTicketInfo', v)}
                 placeholder="e.g. Includes lounge access and mobile transfer only"
                 value={form.additionalTicketInfo}
               />
             </FormSection>
 
-            <FormSection
-              description="Anything the ticket holder should know before arriving."
-              title="Additional Info"
-            >
+            {/* ── Entry Info ── */}
+            <FormSection title="Entry Info">
               <TextField
                 error={errors.entryInfo}
-                helperText="Explain gate, check-in, age limits, or anything important for entry."
-                label="Entry Info"
+                helperText="Gate, check-in, age limits, or other entry notes."
+                label="Entry Instructions"
                 multiline
-                onChangeText={(value) => updateField('entryInfo', value)}
+                onChangeText={(v) => updateField('entryInfo', v)}
                 placeholder="e.g. Enter through Gate C with a matching photo ID"
                 value={form.entryInfo}
               />
             </FormSection>
           </ScrollView>
         </KeyboardAvoidingView>
-      </SafeAreaView>
+      </View>
 
-      <View style={[styles.footerShell, { paddingBottom: footerPadding }]}>
-        {draftSavedAt ? (
-          <Text style={styles.footerNote}>{`Draft saved at ${formatSavedTime(draftSavedAt)}`}</Text>
-        ) : (
-          <Text style={styles.footerNote}>
-            Save progress, preview everything, or add the event when it looks right.
-          </Text>
-        )}
-
+      {/* ── Sticky Footer ── */}
+      <View style={[styles.footer, { paddingBottom: Math.max(footerPadding, 16) }]}>
+        <View style={styles.footerMeta}>
+          {draftSavedAt ? (
+            <Text style={styles.footerNote}>{`Draft saved at ${formatSavedTime(draftSavedAt)}`}</Text>
+          ) : (
+            <Text style={styles.footerNote}>Save, preview, or publish when ready.</Text>
+          )}
+        </View>
         <View style={styles.footerActions}>
-          <ActionButton label="Save Draft" onPress={handleSaveDraft} variant="secondary" />
-          <ActionButton label="Preview" onPress={handlePreview} variant="secondary" />
-          <ActionButton label="Add Event" onPress={handleAddEvent} variant="primary" />
+          <Pressable accessibilityRole="button" onPress={handleSaveDraft} style={styles.footerGhostBtn}>
+            <Text style={styles.footerGhostBtnText}>SAVE DRAFT</Text>
+          </Pressable>
+          <Pressable accessibilityRole="button" onPress={handlePreview} style={styles.footerGhostBtn}>
+            <Text style={styles.footerGhostBtnText}>PREVIEW</Text>
+          </Pressable>
+          <Pressable accessibilityRole="button" onPress={handleAddEvent} style={styles.footerPrimaryBtn}>
+            <Ionicons color="#FFFFFF" name="add" size={16} />
+            <Text style={styles.footerPrimaryBtnText}>ADD EVENT</Text>
+          </Pressable>
         </View>
       </View>
 
@@ -661,35 +651,24 @@ export function AddEventAdminScreen() {
         visible={Boolean(activeDateField)}
         onClose={() => setActiveDateField(null)}
         onConfirm={(value) => {
-          if (activeDateField) {
-            updateField(activeDateField, value);
-          }
+          if (activeDateField) updateField(activeDateField, value);
           setActiveDateField(null);
         }}
       />
-
       <TimePickerModal
         value={form.time}
         visible={timePickerVisible}
         onClose={() => setTimePickerVisible(false)}
-        onConfirm={(value) => {
-          updateField('time', value);
-          setTimePickerVisible(false);
-        }}
+        onConfirm={(value) => { updateField('time', value); setTimePickerVisible(false); }}
       />
-
       <OptionPickerModal
         options={TICKET_TYPE_OPTIONS}
         title="Choose Ticket Type"
         value={form.ticketType}
         visible={ticketTypeVisible}
         onClose={() => setTicketTypeVisible(false)}
-        onSelect={(value) => {
-          updateField('ticketType', value);
-          setTicketTypeVisible(false);
-        }}
+        onSelect={(value) => { updateField('ticketType', value); setTicketTypeVisible(false); }}
       />
-
       <PreviewModal
         imageUri={previewImageUri}
         sections={previewSections}
@@ -701,68 +680,38 @@ export function AddEventAdminScreen() {
   );
 }
 
-function FormSection({
-  children,
-  description,
-  title,
-}: {
-  children: React.ReactNode;
-  description: string;
-  title: string;
-}) {
+function FormSection({ children, title }: { children: React.ReactNode; title: string }) {
   return (
-    <View style={styles.sectionCard}>
+    <View style={styles.section}>
       <View style={styles.sectionHeader}>
-        <Text style={styles.sectionTitle}>{title}</Text>
-        <Text style={styles.sectionDescription}>{description}</Text>
+        <Text style={styles.sectionLabel}>{title.toUpperCase()}</Text>
+        <View style={styles.sectionAccent} />
       </View>
       <View style={styles.sectionBody}>{children}</View>
     </View>
   );
 }
 
-function FieldShell({
-  children,
-  error,
-  helperText,
-  label,
-}: {
-  children: React.ReactNode;
-  error?: string;
-  helperText?: string;
-  label: string;
-}) {
+function FieldShell({ children, error, helperText, label }: { children: React.ReactNode; error?: string; helperText?: string; label: string }) {
   return (
     <View style={styles.fieldBlock}>
-      <Text style={styles.fieldLabel}>{label}</Text>
+      <Text style={styles.fieldLabel}>{label.toUpperCase()}</Text>
       {children}
-      <Text style={[styles.fieldHelper, error && styles.fieldHelperError]}>
-        {error ?? helperText ?? ' '}
-      </Text>
+      {(error ?? helperText) ? (
+        <Text style={[styles.fieldHelper, error ? styles.fieldHelperError : null]}>
+          {error ?? helperText}
+        </Text>
+      ) : null}
     </View>
   );
 }
 
-function TextField({
-  error,
-  helperText,
-  label,
-  multiline,
-  ...props
-}: React.ComponentProps<typeof TextInput> & {
-  error?: string;
-  helperText?: string;
-  label: string;
-}) {
+function TextField({ error, helperText, label, multiline, ...props }: React.ComponentProps<typeof TextInput> & { error?: string; helperText?: string; label: string }) {
   return (
     <FieldShell error={error} helperText={helperText} label={label}>
       <TextInput
-        placeholderTextColor={ticketColors.textSubtle}
-        style={[
-          styles.input,
-          multiline && styles.inputMultiline,
-          error && styles.inputError,
-        ]}
+        placeholderTextColor="rgba(255,255,255,0.3)"
+        style={[styles.input, multiline && styles.inputMultiline, error && styles.inputError]}
         textAlignVertical={multiline ? 'top' : 'center'}
         {...props}
       />
@@ -770,63 +719,25 @@ function TextField({
   );
 }
 
-function PickerField({
-  error,
-  helperText,
-  label,
-  onPress,
-  placeholder,
-  value,
-}: {
-  error?: string;
-  helperText?: string;
-  label: string;
-  onPress: () => void;
-  placeholder: string;
-  value: string;
-}) {
+function PickerField({ error, helperText, label, onPress, placeholder, value }: { error?: string; helperText?: string; label: string; onPress: () => void; placeholder: string; value: string }) {
   return (
     <FieldShell error={error} helperText={helperText} label={label}>
-      <Pressable
-        accessibilityRole="button"
-        onPress={onPress}
-        style={[styles.pickerField, error && styles.inputError]}
-      >
-        <Text style={[styles.pickerValue, !value && styles.pickerPlaceholder]}>
-          {value || placeholder}
-        </Text>
-        <Ionicons color={ticketColors.textSubtle} name="chevron-down" size={18} />
+      <Pressable accessibilityRole="button" onPress={onPress} style={[styles.pickerField, error && styles.inputError]}>
+        <Text style={[styles.pickerValue, !value && styles.pickerPlaceholder]}>{value || placeholder}</Text>
+        <Ionicons color="rgba(255,255,255,0.4)" name="chevron-down" size={18} />
       </Pressable>
     </FieldShell>
   );
 }
 
-function ActionButton({
-  label,
-  onPress,
-  variant,
-}: {
-  label: string;
-  onPress: () => void;
-  variant: 'primary' | 'secondary';
-}) {
+function ActionButton({ label, onPress, variant }: { label: string; onPress: () => void; variant: 'primary' | 'secondary' }) {
   return (
     <Pressable
       accessibilityRole="button"
       onPress={onPress}
-      style={[
-        styles.actionButton,
-        variant === 'primary' ? styles.actionButtonPrimary : styles.actionButtonSecondary,
-      ]}
+      style={[styles.actionButton, variant === 'primary' ? styles.actionButtonPrimary : styles.actionButtonSecondary]}
     >
-      <Text
-        style={[
-          styles.actionButtonText,
-          variant === 'primary'
-            ? styles.actionButtonTextPrimary
-            : styles.actionButtonTextSecondary,
-        ]}
-      >
+      <Text style={[styles.actionButtonText, variant === 'primary' ? styles.actionButtonTextPrimary : styles.actionButtonTextSecondary]}>
         {label}
       </Text>
     </Pressable>
@@ -1389,599 +1300,123 @@ function startOfMonth(value: Date) {
 }
 
 const styles = StyleSheet.create({
-  root: {
-    backgroundColor: ticketColors.backgroundDeep,
-    flex: 1,
-  },
-  safeArea: {
-    flex: 1,
-  },
-  keyboardAvoid: {
-    flex: 1,
-  },
-  scroll: {
-    flex: 1,
-  },
-  content: {
-    gap: ticketSpacing.md,
-    paddingHorizontal: ticketSpacing.md,
-    paddingTop: ticketSpacing.lg,
-  },
-  header: {
-    alignItems: 'flex-start',
-    flexDirection: 'row',
-    gap: ticketSpacing.md,
-    paddingBottom: ticketSpacing.xs,
-  },
-  headerIcon: {
-    alignItems: 'center',
-    backgroundColor: ticketColors.primarySoft,
-    borderRadius: ticketRadii.md,
-    height: 48,
-    justifyContent: 'center',
-    width: 48,
-  },
-  headerCopy: {
-    flex: 1,
-    gap: 4,
-  },
-  headerCloseButton: {
-    alignItems: 'center',
-    backgroundColor: ticketColors.chrome,
-    borderColor: ticketColors.border,
-    borderRadius: ticketRadii.pill,
-    borderWidth: 1,
-    height: 38,
-    justifyContent: 'center',
-    width: 38,
-  },
-  eyebrow: {
-    color: ticketColors.primaryBright,
-    fontSize: 12,
-    fontWeight: '800',
-    lineHeight: 16,
-    textTransform: 'uppercase',
-  },
-  title: {
-    color: ticketColors.text,
-    fontSize: 30,
-    fontWeight: '900',
-    lineHeight: 34,
-  },
-  subtitle: {
-    color: ticketColors.textMuted,
-    fontSize: 14,
-    fontWeight: '600',
-    lineHeight: 20,
-  },
-  adminNotice: {
-    backgroundColor: ticketColors.chrome,
-    borderColor: ticketColors.border,
-    borderRadius: ticketRadii.md,
-    borderWidth: 1,
-    flexDirection: 'row',
-    gap: ticketSpacing.sm,
-    padding: ticketSpacing.md,
-  },
-  adminNoticeIcon: {
-    alignItems: 'center',
-    backgroundColor: ticketColors.primarySoft,
-    borderRadius: ticketRadii.pill,
-    height: 32,
-    justifyContent: 'center',
-    width: 32,
-  },
-  adminNoticeCopy: {
-    flex: 1,
-    gap: 2,
-  },
-  adminNoticeTitle: {
-    color: ticketColors.text,
-    fontSize: 14,
-    fontWeight: '800',
-    lineHeight: 18,
-  },
-  adminNoticeBody: {
-    color: ticketColors.textMuted,
-    fontSize: 12,
-    fontWeight: '600',
-    lineHeight: 18,
-  },
-  sectionCard: {
-    backgroundColor: ticketColors.chrome,
-    borderColor: ticketColors.border,
-    borderRadius: ticketRadii.md,
-    borderWidth: 1,
-    gap: ticketSpacing.md,
-    padding: ticketSpacing.md,
-    shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.05,
-    shadowRadius: 18,
-  },
-  sectionHeader: {
-    gap: 4,
-  },
-  sectionTitle: {
-    color: ticketColors.text,
-    fontSize: 18,
-    fontWeight: '900',
-    lineHeight: 22,
-  },
-  sectionDescription: {
-    color: ticketColors.textMuted,
-    fontSize: 13,
-    fontWeight: '600',
-    lineHeight: 19,
-  },
-  sectionBody: {
-    gap: ticketSpacing.xs,
-  },
-  row: {
-    flexDirection: 'row',
-    gap: ticketSpacing.sm,
-  },
-  rowField: {
-    flex: 1,
-  },
-  fieldBlock: {
-    gap: 6,
-  },
-  fieldLabel: {
-    color: ticketColors.text,
-    fontSize: 13,
-    fontWeight: '800',
-    lineHeight: 18,
-  },
-  fieldHelper: {
-    color: ticketColors.textSubtle,
-    fontSize: 11,
-    fontWeight: '600',
-    lineHeight: 16,
-    minHeight: 16,
-  },
-  fieldHelperError: {
-    color: '#C93A2D',
-  },
-  input: {
-    backgroundColor: ticketColors.chromeElevated,
-    borderColor: ticketColors.border,
-    borderRadius: ticketRadii.md,
-    borderWidth: 1,
-    color: ticketColors.text,
-    fontSize: 14,
-    fontWeight: '600',
-    minHeight: 52,
-    paddingHorizontal: ticketSpacing.sm,
-  },
-  inputMultiline: {
-    minHeight: 108,
-    paddingTop: ticketSpacing.sm,
-  },
-  inputError: {
-    borderColor: '#C93A2D',
-  },
-  pickerField: {
-    alignItems: 'center',
-    backgroundColor: ticketColors.chromeElevated,
-    borderColor: ticketColors.border,
-    borderRadius: ticketRadii.md,
-    borderWidth: 1,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    minHeight: 52,
-    paddingHorizontal: ticketSpacing.sm,
-  },
-  pickerValue: {
-    color: ticketColors.text,
-    flex: 1,
-    fontSize: 14,
-    fontWeight: '600',
-    paddingRight: ticketSpacing.sm,
-  },
-  pickerPlaceholder: {
-    color: ticketColors.textSubtle,
-  },
-  imageFieldCard: {
-    backgroundColor: ticketColors.chromeElevated,
-    borderColor: ticketColors.border,
-    borderRadius: ticketRadii.md,
-    borderWidth: 1,
-    overflow: 'hidden',
-  },
-  uploadedImagePreview: {
-    height: 188,
-    width: '100%',
-  },
-  imagePlaceholder: {
-    alignItems: 'center',
-    gap: ticketSpacing.xs,
-    justifyContent: 'center',
-    minHeight: 188,
-    paddingHorizontal: ticketSpacing.lg,
-    paddingVertical: ticketSpacing.lg,
-  },
-  imagePlaceholderIcon: {
-    alignItems: 'center',
-    backgroundColor: ticketColors.primarySoft,
-    borderRadius: ticketRadii.pill,
-    height: 42,
-    justifyContent: 'center',
-    width: 42,
-  },
-  imagePlaceholderTitle: {
-    color: ticketColors.text,
-    fontSize: 15,
-    fontWeight: '800',
-    lineHeight: 20,
-    textAlign: 'center',
-  },
-  imagePlaceholderBody: {
-    color: ticketColors.textMuted,
-    fontSize: 12,
-    fontWeight: '600',
-    lineHeight: 18,
-    textAlign: 'center',
-  },
-  imageMetaRow: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    gap: ticketSpacing.sm,
-    padding: ticketSpacing.sm,
-  },
-  imageMetaCopy: {
-    flex: 1,
-    gap: 2,
-  },
-  imageMetaTitle: {
-    color: ticketColors.text,
-    fontSize: 13,
-    fontWeight: '800',
-    lineHeight: 18,
-  },
-  imageMetaBody: {
-    color: ticketColors.textMuted,
-    fontSize: 12,
-    fontWeight: '600',
-    lineHeight: 17,
-  },
-  imageActionRow: {
-    flexDirection: 'row',
-    gap: ticketSpacing.sm,
-    marginTop: ticketSpacing.xs,
-  },
-  imageActionButton: {
-    alignItems: 'center',
-    borderRadius: ticketRadii.md,
-    flexDirection: 'row',
-    gap: 6,
-    justifyContent: 'center',
-    minHeight: 46,
-    paddingHorizontal: ticketSpacing.md,
-  },
-  imageActionButtonPrimary: {
-    backgroundColor: ticketColors.primary,
-    flex: 1,
-  },
-  imageActionButtonDisabled: {
-    opacity: 0.72,
-  },
-  imageActionButtonSecondary: {
-    backgroundColor: ticketColors.chrome,
-    borderColor: ticketColors.borderStrong,
-    borderWidth: 1,
-  },
-  imageActionButtonPrimaryText: {
-    color: '#FFFFFF',
-    fontSize: 13,
-    fontWeight: '800',
-    lineHeight: 18,
-  },
-  imageActionButtonSecondaryText: {
-    color: ticketColors.text,
-    fontSize: 13,
-    fontWeight: '800',
-    lineHeight: 18,
-  },
-  footerShell: {
-    backgroundColor: 'rgba(248, 250, 252, 0.98)',
-    borderTopColor: ticketColors.borderStrong,
-    borderTopWidth: StyleSheet.hairlineWidth,
-    bottom: 0,
-    gap: ticketSpacing.sm,
-    left: 0,
-    paddingHorizontal: ticketSpacing.md,
-    paddingTop: ticketSpacing.sm,
-    position: 'absolute',
-    right: 0,
-  },
-  footerNote: {
-    color: ticketColors.textSubtle,
-    fontSize: 12,
-    fontWeight: '600',
-    lineHeight: 16,
-  },
-  footerActions: {
-    flexDirection: 'row',
-    gap: ticketSpacing.xs,
-  },
-  actionButton: {
-    alignItems: 'center',
-    borderRadius: ticketRadii.md,
-    flex: 1,
-    justifyContent: 'center',
-    minHeight: 48,
-    paddingHorizontal: ticketSpacing.sm,
-  },
-  actionButtonPrimary: {
-    backgroundColor: ticketColors.primary,
-    shadowColor: ticketColors.primary,
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.18,
-    shadowRadius: 18,
-  },
-  actionButtonSecondary: {
-    backgroundColor: ticketColors.chrome,
-    borderColor: ticketColors.borderStrong,
-    borderWidth: 1,
-  },
-  actionButtonText: {
-    fontSize: 13,
-    fontWeight: '800',
-    lineHeight: 18,
-  },
-  actionButtonTextPrimary: {
-    color: '#FFFFFF',
-  },
-  actionButtonTextSecondary: {
-    color: ticketColors.text,
-  },
-  modalBackdrop: {
-    backgroundColor: 'rgba(15, 23, 42, 0.32)',
-    flex: 1,
-    justifyContent: 'flex-end',
-    padding: ticketSpacing.md,
-  },
-  modalSafeArea: {
-    flex: 1,
-    justifyContent: 'flex-end',
-  },
-  modalCard: {
-    backgroundColor: ticketColors.chrome,
-    borderRadius: ticketRadii.md,
-    maxHeight: '90%',
-    padding: ticketSpacing.md,
-  },
-  modalHeader: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  modalEyebrow: {
-    color: ticketColors.primaryBright,
-    fontSize: 12,
-    fontWeight: '800',
-    lineHeight: 16,
-    textTransform: 'uppercase',
-  },
-  modalTitle: {
-    color: ticketColors.text,
-    fontSize: 20,
-    fontWeight: '900',
-    lineHeight: 24,
-    marginTop: 2,
-  },
-  modalCloseButton: {
-    alignItems: 'center',
-    backgroundColor: ticketColors.chromeElevated,
-    borderColor: ticketColors.border,
-    borderRadius: ticketRadii.pill,
-    borderWidth: 1,
-    height: 34,
-    justifyContent: 'center',
-    width: 34,
-  },
-  previewContent: {
-    gap: ticketSpacing.sm,
-    paddingBottom: ticketSpacing.md,
-    paddingTop: ticketSpacing.md,
-  },
-  previewHeroImage: {
-    borderRadius: ticketRadii.md,
-    height: 180,
-    width: '100%',
-  },
-  previewSection: {
-    backgroundColor: ticketColors.chromeElevated,
-    borderColor: ticketColors.border,
-    borderRadius: ticketRadii.md,
-    borderWidth: 1,
-    gap: ticketSpacing.xs,
-    padding: ticketSpacing.sm,
-  },
-  previewSectionTitle: {
-    color: ticketColors.text,
-    fontSize: 15,
-    fontWeight: '800',
-    lineHeight: 20,
-  },
-  previewRow: {
-    gap: 2,
-  },
-  previewLabel: {
-    color: ticketColors.textSubtle,
-    fontSize: 11,
-    fontWeight: '800',
-    lineHeight: 15,
-    textTransform: 'uppercase',
-  },
-  previewValue: {
-    color: ticketColors.text,
-    fontSize: 14,
-    fontWeight: '700',
-    lineHeight: 19,
-  },
-  modalActions: {
-    flexDirection: 'row',
-    gap: ticketSpacing.sm,
-  },
-  sheetCard: {
-    backgroundColor: ticketColors.chrome,
-    borderRadius: ticketRadii.md,
-    padding: ticketSpacing.md,
-  },
-  sheetHeader: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: ticketSpacing.sm,
-  },
-  sheetTitle: {
-    color: ticketColors.text,
-    fontSize: 18,
-    fontWeight: '900',
-    lineHeight: 22,
-  },
-  sheetOptions: {
-    gap: ticketSpacing.xs,
-    marginBottom: ticketSpacing.sm,
-  },
-  optionRow: {
-    alignItems: 'center',
-    backgroundColor: ticketColors.chromeElevated,
-    borderColor: ticketColors.border,
-    borderRadius: ticketRadii.md,
-    borderWidth: 1,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    minHeight: 48,
-    paddingHorizontal: ticketSpacing.sm,
-  },
-  optionRowActive: {
-    borderColor: ticketColors.primary,
-    backgroundColor: ticketColors.primarySoft,
-  },
-  optionText: {
-    color: ticketColors.text,
-    fontSize: 14,
-    fontWeight: '700',
-    lineHeight: 19,
-  },
-  optionTextActive: {
-    color: ticketColors.primaryBright,
-  },
-  timeGrid: {
-    flexDirection: 'row',
-    gap: ticketSpacing.sm,
-    marginBottom: ticketSpacing.md,
-  },
-  timeColumn: {
-    flex: 1,
-  },
-  timeColumnLabel: {
-    color: ticketColors.textSubtle,
-    fontSize: 11,
-    fontWeight: '800',
-    lineHeight: 15,
-    marginBottom: ticketSpacing.xs,
-    textAlign: 'center',
-    textTransform: 'uppercase',
-  },
-  timeColumnScroll: {
-    maxHeight: 220,
-  },
-  timeOptionList: {
-    gap: ticketSpacing.xs,
-  },
-  timeOption: {
-    alignItems: 'center',
-    backgroundColor: ticketColors.chromeElevated,
-    borderColor: ticketColors.border,
-    borderRadius: ticketRadii.md,
-    borderWidth: 1,
-    minHeight: 42,
-    justifyContent: 'center',
-  },
-  timeOptionActive: {
-    backgroundColor: ticketColors.primarySoft,
-    borderColor: ticketColors.primary,
-  },
-  timeOptionText: {
-    color: ticketColors.text,
-    fontSize: 14,
-    fontWeight: '700',
-    lineHeight: 18,
-  },
-  timeOptionTextActive: {
-    color: ticketColors.primaryBright,
-  },
-  calendarCard: {
-    backgroundColor: ticketColors.chrome,
-    borderRadius: ticketRadii.md,
-    padding: ticketSpacing.md,
-  },
-  calendarHeader: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: ticketSpacing.sm,
-  },
-  monthButton: {
-    alignItems: 'center',
-    backgroundColor: ticketColors.chromeElevated,
-    borderColor: ticketColors.border,
-    borderRadius: ticketRadii.pill,
-    borderWidth: 1,
-    height: 34,
-    justifyContent: 'center',
-    width: 34,
-  },
-  calendarMonthLabel: {
-    color: ticketColors.text,
-    fontSize: 16,
-    fontWeight: '800',
-    lineHeight: 20,
-  },
-  dayLabelRow: {
-    flexDirection: 'row',
-    marginBottom: ticketSpacing.xs,
-  },
-  dayLabel: {
-    color: ticketColors.textSubtle,
-    flex: 1,
-    fontSize: 12,
-    fontWeight: '800',
-    lineHeight: 16,
-    textAlign: 'center',
-  },
-  calendarGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    marginBottom: ticketSpacing.md,
-  },
-  dateCell: {
-    alignItems: 'center',
-    borderRadius: ticketRadii.md,
-    height: 40,
-    justifyContent: 'center',
-    marginBottom: ticketSpacing.xs,
-    width: '14.28%',
-  },
-  dateCellActive: {
-    backgroundColor: ticketColors.primary,
-  },
-  dateCellText: {
-    color: ticketColors.text,
-    fontSize: 14,
-    fontWeight: '700',
-    lineHeight: 18,
-  },
-  dateCellTextActive: {
-    color: '#FFFFFF',
-  },
-  dateCellBlank: {
-    height: 40,
-    marginBottom: ticketSpacing.xs,
-    width: '14.28%',
-  },
+  // ── Root ──
+  root: { backgroundColor: '#050505', flex: 1 },
+
+  // ── Header ──
+  headerBar: { backgroundColor: '#050505', paddingHorizontal: 16, paddingTop: 4, paddingBottom: 14 },
+  headerBarInner: { flexDirection: 'row', alignItems: 'center', minHeight: 52 },
+  headerBarLeft: { width: 40 },
+  headerBarCenter: { flex: 1, alignItems: 'center' },
+  headerEyebrow: { color: '#B79E6A', fontSize: 10, fontWeight: '800', letterSpacing: 2, textTransform: 'uppercase', lineHeight: 13 },
+  headerTitle: { color: '#FFFFFF', fontSize: 20, fontWeight: '900', lineHeight: 24 },
+  headerCloseBtn: { width: 40, height: 40, borderRadius: 20, backgroundColor: 'rgba(255,255,255,0.08)', alignItems: 'center', justifyContent: 'center' },
+
+  // ── Admin banner ──
+  adminBanner: { flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: '#101010', marginHorizontal: 16, marginTop: 16, marginBottom: 4, borderRadius: 10, paddingVertical: 12, paddingRight: 14, overflow: 'hidden' },
+  adminBannerAccent: { width: 3, height: '100%', backgroundColor: '#005BD3', position: 'absolute', left: 0, top: 0, bottom: 0 },
+  adminBannerIcon: { marginLeft: 14, width: 32, height: 32, borderRadius: 16, backgroundColor: 'rgba(0,91,211,0.15)', alignItems: 'center', justifyContent: 'center' },
+  adminBannerTitle: { color: '#FFFFFF', fontSize: 13, fontWeight: '800', lineHeight: 17 },
+  adminBannerBody: { color: 'rgba(255,255,255,0.5)', fontSize: 11, fontWeight: '600', lineHeight: 15, marginTop: 1 },
+
+  // ── Sections ──
+  section: { marginTop: 24 },
+  sectionHeader: { paddingHorizontal: 16, marginBottom: 12 },
+  sectionLabel: { color: '#FFFFFF', fontSize: 11, fontWeight: '900', letterSpacing: 2.5, lineHeight: 14 },
+  sectionAccent: { marginTop: 6, height: 2, width: 32, backgroundColor: '#B79E6A' },
+  sectionBody: { backgroundColor: '#101010', paddingHorizontal: 16, paddingVertical: 16, gap: 16 },
+
+  // ── Fields ──
+  row: { flexDirection: 'row', gap: 12 },
+  rowField: { flex: 1 },
+  fieldBlock: { gap: 6 },
+  fieldLabel: { color: 'rgba(255,255,255,0.45)', fontSize: 10, fontWeight: '800', letterSpacing: 1.5, textTransform: 'uppercase', lineHeight: 13 },
+  fieldHelper: { color: 'rgba(255,255,255,0.35)', fontSize: 11, fontWeight: '500', lineHeight: 15 },
+  fieldHelperError: { color: '#FF5B4A' },
+  input: { backgroundColor: '#1A1A1A', borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)', borderRadius: 8, color: '#FFFFFF', fontSize: 14, fontWeight: '600', minHeight: 52, paddingHorizontal: 14 },
+  inputMultiline: { minHeight: 100, paddingTop: 14 },
+  inputError: { borderColor: '#FF5B4A' },
+  pickerField: { backgroundColor: '#1A1A1A', borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)', borderRadius: 8, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', minHeight: 52, paddingHorizontal: 14 },
+  pickerValue: { color: '#FFFFFF', fontSize: 14, fontWeight: '600', flex: 1 },
+  pickerPlaceholder: { color: 'rgba(255,255,255,0.3)' },
+
+  // ── Image upload ──
+  uploadedImage: { width: '100%', height: 200 },
+  uploadZone: { backgroundColor: '#1A1A1A', borderWidth: 1, borderColor: 'rgba(255,255,255,0.12)', borderStyle: 'dashed', borderRadius: 10, minHeight: 160, alignItems: 'center', justifyContent: 'center', gap: 8 },
+  uploadIconCircle: { width: 48, height: 48, borderRadius: 24, backgroundColor: '#005BD3', alignItems: 'center', justifyContent: 'center' },
+  uploadZoneTitle: { color: '#FFFFFF', fontSize: 14, fontWeight: '800', lineHeight: 18 },
+  uploadZoneHint: { color: 'rgba(255,255,255,0.4)', fontSize: 11, fontWeight: '600', lineHeight: 14 },
+  imageMetaRow: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingTop: 10, paddingBottom: 4 },
+  imageMetaTitle: { color: '#FFFFFF', fontSize: 12, fontWeight: '700', lineHeight: 16 },
+  imageMetaBody: { color: 'rgba(255,255,255,0.45)', fontSize: 11, fontWeight: '500', lineHeight: 15, marginTop: 2 },
+  imageActionRow: { flexDirection: 'row', gap: 10, paddingTop: 4 },
+  imgBtn: { flexDirection: 'row', alignItems: 'center', gap: 6, borderRadius: 8, minHeight: 42, paddingHorizontal: 14, justifyContent: 'center' },
+  imgBtnPrimary: { backgroundColor: '#005BD3', flex: 1 },
+  imgBtnPrimaryText: { color: '#FFFFFF', fontSize: 13, fontWeight: '800' },
+  imgBtnGhost: { borderWidth: 1, borderColor: 'rgba(255,255,255,0.14)', backgroundColor: 'transparent' },
+  imgBtnGhostText: { color: 'rgba(255,255,255,0.7)', fontSize: 13, fontWeight: '700' },
+
+  // ── Footer ──
+  footer: { backgroundColor: '#050505', borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: 'rgba(255,255,255,0.1)', paddingHorizontal: 16, paddingTop: 12, gap: 10, position: 'absolute', bottom: 0, left: 0, right: 0 },
+  footerMeta: {},
+  footerNote: { color: 'rgba(255,255,255,0.4)', fontSize: 11, fontWeight: '600', lineHeight: 14 },
+  footerActions: { flexDirection: 'row', gap: 8 },
+  footerGhostBtn: { flex: 1, minHeight: 48, borderRadius: 8, borderWidth: 1, borderColor: 'rgba(255,255,255,0.14)', alignItems: 'center', justifyContent: 'center' },
+  footerGhostBtnText: { color: 'rgba(255,255,255,0.7)', fontSize: 11, fontWeight: '900', letterSpacing: 1.2, textTransform: 'uppercase' },
+  footerPrimaryBtn: { flex: 2, minHeight: 48, borderRadius: 8, backgroundColor: '#005BD3', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6 },
+  footerPrimaryBtnText: { color: '#FFFFFF', fontSize: 12, fontWeight: '900', letterSpacing: 1.2, textTransform: 'uppercase' },
+
+  // ── Modals ──
+  modalBackdrop: { backgroundColor: 'rgba(0,0,0,0.85)', flex: 1, justifyContent: 'flex-end' },
+  modalSafeArea: { flex: 1, justifyContent: 'flex-end' },
+  modalCard: { backgroundColor: '#101010', borderTopLeftRadius: 20, borderTopRightRadius: 20, maxHeight: '90%', padding: 20 },
+  modalHeader: { alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between', marginBottom: 16 },
+  modalEyebrow: { color: '#B79E6A', fontSize: 10, fontWeight: '800', letterSpacing: 2, textTransform: 'uppercase', lineHeight: 13 },
+  modalTitle: { color: '#FFFFFF', fontSize: 20, fontWeight: '900', lineHeight: 24, marginTop: 2 },
+  modalCloseButton: { width: 36, height: 36, borderRadius: 18, backgroundColor: 'rgba(255,255,255,0.08)', alignItems: 'center', justifyContent: 'center' },
+  previewContent: { gap: 12, paddingBottom: 16 },
+  previewHeroImage: { borderRadius: 10, height: 180, width: '100%' },
+  previewSection: { backgroundColor: '#1A1A1A', borderRadius: 10, gap: 8, padding: 14 },
+  previewSectionTitle: { color: '#FFFFFF', fontSize: 13, fontWeight: '900', lineHeight: 17, textTransform: 'uppercase', letterSpacing: 1 },
+  previewRow: { gap: 2 },
+  previewLabel: { color: 'rgba(255,255,255,0.4)', fontSize: 10, fontWeight: '800', lineHeight: 14, textTransform: 'uppercase', letterSpacing: 0.8 },
+  previewValue: { color: '#FFFFFF', fontSize: 14, fontWeight: '700', lineHeight: 19 },
+  modalActions: { flexDirection: 'row', gap: 10, marginTop: 16 },
+  sheetCard: { backgroundColor: '#101010', borderTopLeftRadius: 20, borderTopRightRadius: 20, padding: 20 },
+  sheetHeader: { alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between', marginBottom: 16 },
+  sheetTitle: { color: '#FFFFFF', fontSize: 18, fontWeight: '900', lineHeight: 22 },
+  sheetOptions: { gap: 8, marginBottom: 16 },
+  optionRow: { alignItems: 'center', backgroundColor: '#1A1A1A', borderColor: 'rgba(255,255,255,0.08)', borderRadius: 10, borderWidth: 1, flexDirection: 'row', justifyContent: 'space-between', minHeight: 52, paddingHorizontal: 14 },
+  optionRowActive: { borderColor: '#005BD3', backgroundColor: 'rgba(0,91,211,0.15)' },
+  optionText: { color: '#FFFFFF', fontSize: 14, fontWeight: '700', lineHeight: 19 },
+  optionTextActive: { color: '#005BD3' },
+  timeGrid: { flexDirection: 'row', gap: 10, marginBottom: 16 },
+  timeColumn: { flex: 1 },
+  timeColumnLabel: { color: 'rgba(255,255,255,0.4)', fontSize: 10, fontWeight: '800', letterSpacing: 1.5, marginBottom: 8, textAlign: 'center', textTransform: 'uppercase' },
+  timeColumnScroll: { maxHeight: 220 },
+  timeOptionList: { gap: 6 },
+  timeOption: { alignItems: 'center', backgroundColor: '#1A1A1A', borderColor: 'rgba(255,255,255,0.08)', borderRadius: 8, borderWidth: 1, minHeight: 42, justifyContent: 'center' },
+  timeOptionActive: { backgroundColor: 'rgba(0,91,211,0.18)', borderColor: '#005BD3' },
+  timeOptionText: { color: '#FFFFFF', fontSize: 14, fontWeight: '700', lineHeight: 18 },
+  timeOptionTextActive: { color: '#005BD3' },
+  calendarCard: { backgroundColor: '#101010', borderTopLeftRadius: 20, borderTopRightRadius: 20, padding: 20 },
+  calendarHeader: { alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between', marginBottom: 14 },
+  monthButton: { alignItems: 'center', backgroundColor: '#1A1A1A', borderColor: 'rgba(255,255,255,0.08)', borderRadius: 999, borderWidth: 1, height: 36, justifyContent: 'center', width: 36 },
+  calendarMonthLabel: { color: '#FFFFFF', fontSize: 16, fontWeight: '800', lineHeight: 20 },
+  dayLabelRow: { flexDirection: 'row', marginBottom: 6 },
+  dayLabel: { color: 'rgba(255,255,255,0.4)', flex: 1, fontSize: 11, fontWeight: '800', lineHeight: 14, textAlign: 'center' },
+  calendarGrid: { flexDirection: 'row', flexWrap: 'wrap', marginBottom: 16 },
+  dateCell: { alignItems: 'center', borderRadius: 8, height: 40, justifyContent: 'center', marginBottom: 4, width: '14.28%' },
+  dateCellActive: { backgroundColor: '#005BD3' },
+  dateCellText: { color: '#FFFFFF', fontSize: 14, fontWeight: '700', lineHeight: 18 },
+  dateCellTextActive: { color: '#FFFFFF' },
+  dateCellBlank: { height: 40, marginBottom: 4, width: '14.28%' },
+
+  // ── Action buttons (used in modals) ──
+  actionButton: { alignItems: 'center', borderRadius: 8, flex: 1, justifyContent: 'center', minHeight: 48, paddingHorizontal: 12 },
+  actionButtonPrimary: { backgroundColor: '#005BD3' },
+  actionButtonSecondary: { backgroundColor: '#1A1A1A', borderColor: 'rgba(255,255,255,0.12)', borderWidth: 1 },
+  actionButtonText: { fontSize: 13, fontWeight: '800', lineHeight: 18 },
+  actionButtonTextPrimary: { color: '#FFFFFF' },
+  actionButtonTextSecondary: { color: 'rgba(255,255,255,0.7)' },
 });
