@@ -20,7 +20,7 @@ import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import { StatusBar } from 'expo-status-bar';
 
-import { ticketRadii, ticketSpacing, ticketColors as defaultTicketColors } from '@/constants/ticket-theme';
+import { ticketSpacing, ticketColors as defaultTicketColors } from '@/constants/ticket-theme';
 import {
   type CreateAdminEventInput,
   useEventStore,

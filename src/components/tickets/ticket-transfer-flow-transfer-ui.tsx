@@ -1,8 +1,8 @@
 import { Ionicons } from "@expo/vector-icons";
+import { Barcode } from "expo-barcode-generator";
 import { Image } from "expo-image";
 import React, { useEffect } from "react";
 import { Pressable, Text, TextInput, View } from "react-native";
-import QRCode from "react-native-qrcode-svg";
 import Animated, {
   Easing,
   FadeInDown,
@@ -155,7 +155,7 @@ export function Field({
 
 export function OtpIllustration() {
   return (
-    <View className="relative min-h-[178px] items-center justify-center overflow-hidden bg-[#181823]">
+    <View className="relative  items-center justify-center overflow-hidden bg-[#181823]">
       <View className="relative min-h-[88px] min-w-[190px] items-center justify-center rounded-[34px] bg-white px-[22px]">
         <View className="flex-row gap-[7px]">
           {[0, 1, 2, 3].map((index) => (
@@ -211,121 +211,121 @@ export function TicketCard({
   return (
     <Animated.View
       entering={FadeInDown.duration(280).delay(40 + index * 70)}
-      className="mr-[14px] overflow-hidden rounded-[10px] border border-[#E6DFD9] bg-[#FBF8F5]"
-      style={{ width: cardWidth }}
+      className="mr-[14px] overflow-hidden rounded-[10px] border border-[#EAEAEA] bg-white"
+      style={{
+        width: cardWidth,
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.1,
+        shadowRadius: 10,
+        elevation: 5,
+      }}
     >
-      <View className="h-[10px] bg-[#0458F7]" />
+      <View className="h-2.5 rounded-t-md bg-[#0044FF]" />
 
-      <View className="bg-white px-[10px] pt-2">
+      <View className="bg-white px-2 pb-1 pt-[14px]">
         <View className="mb-2 flex-row items-center justify-center">
-          <Text className="mr-1 text-[11px] font-medium leading-[14px] text-[#6B6B6B]">
+          <Text className="mr-1 text-[11px] font-medium leading-3 text-[#6B6B6B]">
             Screenshots won&apos;t get you in
           </Text>
-          <Ionicons color="#5A5A5A" name="refresh-outline" size={12} />
+          <Ionicons color="#5A5A5A" name="refresh-outline" size={14} />
         </View>
-        <TicketQrBand seat={seat} />
+        <TicketBarcodeBand seat={seat} />
       </View>
 
       <Image
         contentFit="cover"
         source={{ uri: event.imageUrl }}
-        style={{ height: 300, width: "100%" }}
+        style={{ height: 180, width: "100%" }}
       />
 
-      <View className="px-[14px] pb-[14px] pt-3">
-        <Text className="text-[17px] font-bold leading-5 text-[#202020]">
+      <View className="px-4  ">
+        {/* <Text className="text-[16px] font-extrabold leading-[20px] text-[#000000]">
           {seat.note}
         </Text>
-        <Text className="mt-[3px] text-[12px] font-medium leading-[15px] text-[#8B8F96]">
+        <Text className="mt-[2px] text-[12px] font-semibold uppercase leading-[15px] text-[#8B8F96]">
           LOWER BOWL SEATING
-        </Text>
+        </Text> */}
 
-        <View className="mt-[14px]">
-          <Text className="text-[10px] font-bold leading-3 text-[#A7ACB5]">
+        <View className="mt-2">
+          <Text className="texat-sm font-bold leading-2 text-[#A7ACB5]">
             SECTION
           </Text>
-          <Text className="mt-[10px] text-[18px] font-extrabold leading-[22px] text-[#0F0F0F]">
+          <Text className="mt-1 text-sm font-extrabold leading-[28px] text-[#000000]">
             {seat.section}
           </Text>
         </View>
 
-        <View className="mt-[14px] min-h-[48px] items-center justify-center bg-[#0D0D0D]">
-          <Text className="text-[15px] font-bold leading-[19px] text-white">
+        <View className="mt-[20px] items-center justify-center bg-[#000000]">
+          <Text className="text-[14px] font-bold leading-[18px] text-white">
             LOWER BOWL SEATING
           </Text>
         </View>
 
-        <Text className="mt-[14px] text-[12px] font-medium leading-4 text-[#8B8F96]">
-          {`ROW ${seat.row}   -   SEAT ${seat.seat}`}
+        <Text className="mt-[18px] text-[12px] font-medium leading-[16px] text-[#8B8F96]">
+          {`ROW ${seat.row}  ·  SEAT ${seat.seat}`}
         </Text>
       </View>
     </Animated.View>
   );
 }
 
-function TicketQrBand({ seat }: { seat: Seat }) {
+function TicketBarcodeBand({ seat }: { seat: Seat }) {
   const { event } = useTicketFlowData();
   const qrValue = `${event.shortTitle}-${seat.section}-${seat.row}-${seat.seat}`;
   const beamProgress = useSharedValue(0);
 
   useEffect(() => {
     beamProgress.value = withRepeat(
-      withTiming(1, { duration: 1700, easing: Easing.inOut(Easing.ease) }),
+      withTiming(1, { duration: 1800, easing: Easing.inOut(Easing.ease) }),
       -1,
       true,
     );
   }, [beamProgress]);
 
   const beamAnimatedStyle = useAnimatedStyle(() => {
-    const seatBias = seat.seat === "2" ? -18 : seat.seat === "4" ? 18 : 0;
-
     return {
       transform: [
         {
-          translateX: interpolate(
-            beamProgress.value,
-            [0, 1],
-            [-34 + seatBias, 34 + seatBias],
-          ),
+          translateX: interpolate(beamProgress.value, [0, 1], [-120, 120]),
         },
       ],
     };
   });
 
   return (
-    <View className="relative h-16 flex-row items-center overflow-hidden bg-white">
-      <View className="mr-1 h-[42px] w-[3px] bg-[#2E66F5]" />
-
-      <View className="gap-[2px] py-[7px]">
-        <View className="h-[38px] w-[5px] bg-[#101010]" />
-        <View className="h-[38px] w-[2px] bg-[#101010]" />
-        <View className="h-[38px] w-[2px] bg-[#101010]" />
-      </View>
-
-      <View className="flex-1 flex-row justify-center gap-[2px] px-[6px]">
-        {[0, 1, 2].map((index) => (
-          <View className="overflow-hidden bg-white" key={index}>
-            <QRCode
-              backgroundColor="#FFFFFF"
-              color="#111111"
-              quietZone={0}
-              size={40}
-              value={`${qrValue}-${index}`}
-            />
-          </View>
-        ))}
-      </View>
-
-      <Animated.View
-        className="absolute top-[10px] h-[44px] w-[6px] bg-[#2E66F5] opacity-90"
-        style={[{ left: "50%" }, beamAnimatedStyle]}
+    <View className="relative h-[70px] items-center justify-center overflow-hidden bg-white mb-2 px-1">
+      <Barcode 
+        options={{ 
+          format: 'CODE128', 
+          displayValue: false, 
+          background: '#FFFFFF', 
+          lineColor: '#000000', 
+          height: 60, 
+          width: 1.5,
+          marginTop: 5,
+          marginBottom: 5,
+          marginLeft: 0,
+          marginRight: 0 
+        }}
+        value={qrValue} 
       />
 
-      <View className="gap-[2px] py-[7px]">
-        <View className="h-[38px] w-[5px] bg-[#101010]" />
-        <View className="h-[38px] w-[2px] bg-[#101010]" />
-        <View className="h-[38px] w-[2px] bg-[#101010]" />
-      </View>
+      <Animated.View
+        className="absolute top-0 bottom-0 w-[4px] bg-[#0044FF]"
+        style={[
+          {
+            left: "50%",
+            opacity: 0.8,
+            shadowColor: "#0044FF",
+            shadowOffset: { width: 0, height: 0 },
+            shadowOpacity: 0.9,
+            shadowRadius: 8,
+            elevation: 4,
+          },
+          beamAnimatedStyle,
+        ]}
+      />
     </View>
   );
 }

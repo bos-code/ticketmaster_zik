@@ -1,9 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
 import { Image } from 'expo-image';
 import React, { useState } from 'react';
 import {
-  FlatList,
   Platform,
   Pressable,
   ScrollView,
@@ -12,9 +10,8 @@ import {
   TextInput,
   View,
 } from 'react-native';
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
-import { ticketColors } from '@/constants/ticket-theme';
-import { selectDiscoverEvents, useEventStore } from '@/store/use-event-store';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
 
 const fontStack = Platform.select({
   ios: 'SF Pro Display',
@@ -33,13 +30,9 @@ const DC = {
 };
 
 export function DiscoverTabScreen() {
-  const router = useRouter();
   const insets = useSafeAreaInsets();
-  const discoverEvents = useEventStore(selectDiscoverEvents);
-  const [searchValue, setSearchValue] = useState('');
 
-  const featuredEvent = discoverEvents[0];
-  const standardEvents = discoverEvents.slice(1);
+  const [searchValue, setSearchValue] = useState('');
 
   return (
     <View style={styles.root}>
