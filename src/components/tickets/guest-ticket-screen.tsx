@@ -21,7 +21,7 @@ export function GuestTicketScreen() {
 
   return (
     <View style={styles.root}>
-      <StatusBar style="light" />
+      <StatusBar backgroundColor="#000000" style="light" />
       {ticketHeroImage ? (
         <Image contentFit="cover" source={{ uri: ticketHeroImage }} style={styles.backgroundImage} />
       ) : null}

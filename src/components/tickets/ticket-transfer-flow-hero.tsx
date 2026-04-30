@@ -15,8 +15,9 @@ import {
   HERO_COLLAPSE_DISTANCE,
   HERO_COLLAPSED_HEIGHT,
   HERO_EXPANDED_HEIGHT,
-  useTicketFlowData,
-} from "@/components/tickets/ticket-flow-shared";
+  HERO_IMAGE_HEIGHT,
+} from "@/components/tickets/ticketFlowConstants";
+import { useTicketFlowData } from "@/components/tickets/useTicketFlowData";
 
 export function CollapsibleEventHero({
   isHeroCollapsed,
@@ -79,43 +80,49 @@ export function CollapsibleEventHero({
 
   return (
     <Animated.View
-      className="absolute inset-x-0 top-0 z-20 overflow-hidden bg-[#050505]"
+      className="absolute  inset-x-0 top-0 z-20 overflow-hidden"
       style={heroHeightStyle}
     >
       <Image
         contentFit="cover"
         source={{ uri: event.imageUrl }}
-        style={absoluteFill}
+        style={{ height: HERO_IMAGE_HEIGHT, width: "100%" }}
       />
-      <View className="absolute inset-0 bg-[rgba(2,2,4,0.48)]" />
-      <View className="absolute inset-x-0 bottom-0 h-24 bg-[rgba(0,0,0,0.18)]" />
+      <View
+        className="absolute inset-x-0 top-0 bg-[rgba(2,2,4,0.48)]"
+        style={{ height: HERO_IMAGE_HEIGHT }}
+      />
+      <View
+        className="absolute inset-x-0 h-24 bg-[rgba(0,0,0,0.18)]"
+        style={{ top: HERO_IMAGE_HEIGHT - 96 }}
+      />
 
-      <SafeAreaView edges={["top"]} style={{ flex: 1 }}>
+      <SafeAreaView edges={["top"]} style={absoluteFill}>
         <View className="px-4 pt-1">
-          <View className="min-h-[42px] flex-row items-center justify-between">
+          <View className=" mt-4 flex-row items-center justify-between">
             <Pressable
               accessibilityRole="button"
               hitSlop={8}
               onPress={onBack}
-              className="h-10 w-10 items-center justify-center rounded-full bg-[rgba(0,0,0,0.30)]"
+              className="h-10 w-10 items-center justify-center rounded-full bg-[rgba(0,0,0,0.40)]"
             >
-              <Ionicons color="#FFFFFF" name="arrow-back" size={20} />
+              <Ionicons color="#FFFFFF" name="arrow-back" size={24} />
             </Pressable>
 
             <Animated.View
               pointerEvents="none"
               style={collapsedTitleStyle}
-              className="absolute left-16 right-16 items-center"
+              className="absolute left-16 right-16 items-start"
             >
               <Text
                 numberOfLines={1}
-                className="text-center text-[13px] font-extrabold leading-[16px] text-white"
+                className=" text-[13px] font-extrabold  text-white"
               >
                 {event.title}
               </Text>
               <Text
                 numberOfLines={1}
-                className="mt-[2px] text-center text-[11px] font-normal leading-[13px] text-[rgba(255,255,255,0.84)]"
+                className=" text-center text-[11px] font-normal leading-[13px] text-[rgba(255,255,255,0.84)]"
               >
                 {event.venue}
               </Text>
@@ -139,31 +146,32 @@ export function CollapsibleEventHero({
         </View>
 
         <Animated.View
-          style={expandedContentStyle}
-          className="mt-auto px-4 pb-0"
+          className="absolute inset-x-0 px-4"
+          pointerEvents={isHeroCollapsed ? "none" : "auto"}
+          style={[expandedContentStyle, { top: HERO_IMAGE_HEIGHT }]}
         >
-          <View className="overflow-hidden bg-[rgba(20,20,24,0.94)]">
-            <View className="px-4 pt-4">
-              <View className="self-start bg-[#232126] px-4 py-[10px]">
-                <Text
-                  className="text-[11px] font-extrabold uppercase leading-[13px] text-[rgba(255,255,255,0.92)]"
-                  style={{ letterSpacing: 1 }}
-                >
-                  {event.dateTime}
-                </Text>
-              </View>
-
-              <Text className="mt-4 text-[18px] font-extrabold leading-6 text-white">
+          <View className="overflow-hiddenjustify-center">
+            <View className="bg-[#232126] absolute -top-[22%] self-start justify-center px-4 py-2 -mt-1">
+              <Text className="text-sm font-extrabold uppercase leading-[13px] tracking-[1px] text-[rgba(255,255,255,0.92)]">
+                {event.dateTime}
+              </Text>
+            </View>
+            <View className="px-4     bg-[#232126]  ">
+              <Text className="pt-1 text-2xl font-bold leading-6 text-white">
                 {event.title}
               </Text>
 
-              <View className="mt-4 flex-row items-center justify-between pb-4">
+              <View className="mt-3 flex-row items-center justify-between pb-2">
                 <Text className="text-[13px] font-normal leading-[17px] text-[rgba(255,255,255,0.76)]">
                   {event.venue}
                 </Text>
 
                 <View className="flex-row items-center gap-[5px]">
-                  <Ionicons color="#E6E8EC" name="ticket-outline" size={15} />
+                  <Image
+                    contentFit="contain"
+                    source={require("../../../assets/ticketx3.png")}
+                    style={{ height: 15, width: 15 }}
+                  />
                   <Text className="text-[17px] font-bold leading-[19px] text-[#F2F4F7]">
                     {order.ticketCount.replace(" Tickets", "")}
                   </Text>
@@ -174,10 +182,10 @@ export function CollapsibleEventHero({
             <Pressable
               accessibilityRole="button"
               onPress={onOpenViewer}
-              className="min-h-[68px] flex-row items-center justify-center gap-3 bg-[#0B55F5]"
+              className="min-h-[42px] flex-row items-center justify-center gap-[6px] bg-[#0B55F5]"
             >
-              <Ionicons color="#CFE0FF" name="barcode-outline" size={18} />
-              <Text className="text-[15px] font-bold leading-[18px] text-[#F5F9FF]">
+              <Ionicons color="#CFE0FF" name="barcode-outline" size={14} />
+              <Text className="text-[13px] font-bold leading-[16px] text-[#F5F9FF]">
                 View Tickets
               </Text>
             </Pressable>

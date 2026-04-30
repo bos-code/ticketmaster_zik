@@ -1,7 +1,7 @@
 import React from 'react';
 
-import { MyTicketsIndexScreen } from '@/components/tickets/my-tickets-index-screen';
+import { MyTicketsScreen } from '@/components/tickets/MyTicketsScreen';
 
-export default function MyTicketsScreen() {
-  return <MyTicketsIndexScreen />;
+export default function MyTicketsRoute() {
+  return <MyTicketsScreen />;
 }

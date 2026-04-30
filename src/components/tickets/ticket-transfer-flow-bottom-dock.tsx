@@ -8,18 +8,18 @@ export function BottomDock({ onTransfer }: { onTransfer: () => void }) {
     <Animated.View
       entering={FadeInUp.duration(320).delay(220)}
       pointerEvents="box-none"
-      className="absolute inset-x-0 bottom-[22px] z-30 items-center"
+      className="absolute inset-x-0 bottom-4 z-30 items-center"
     >
       <View
         className="overflow-hidden rounded-[30px] border border-white bg-white"
         style={[
           {
-            elevation: 8,
             minWidth: 176,
             shadowColor: "#000000",
-            shadowOffset: { width: 0, height: 6 },
-            shadowOpacity: 0.14,
-            shadowRadius: 12,
+            shadowOffset: { width: 0, height: 4 },
+            shadowOpacity: 0.2,
+            shadowRadius: 8,
+            elevation: 8,
           },
         ]}
       >
@@ -69,7 +69,7 @@ function BottomDockAction({
   return (
     <Pressable
       accessibilityRole="button"
-      className="min-h-[52px] min-w-[86px] items-center justify-center gap-[1px]"
+      className="min-h-[42px] min-w-[76px] items-center justify-center"
       disabled={disabled}
       onPress={onPress}
     >
@@ -77,10 +77,10 @@ function BottomDockAction({
         className={iconClassName}
         color={iconColor}
         name={iconName}
-        size={15}
+        size={13}
       />
       <Text
-        className="text-[11px] font-medium leading-[14px]"
+        className="text-[10px] font-medium leading-[12px]"
         style={{ color: labelColor }}
       >
         {label}

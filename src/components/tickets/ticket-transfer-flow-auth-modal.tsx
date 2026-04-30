@@ -3,11 +3,9 @@ import React from "react";
 import { Modal, Pressable, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import {
-  cx,
-  KEYPAD_KEYS,
-} from "@/components/tickets/ticket-flow-shared";
-import { OtpIllustration } from "@/components/tickets/ticket-transfer-flow-transfer-ui";
+import { cx } from "@/components/tickets/cx";
+import { OtpIllustration } from "@/components/tickets/OtpIllustration";
+import { KEYPAD_KEYS } from "@/components/tickets/ticketFlowConstants";
 
 export function TicketTransferAuthModal({
   confirmCodeReady,

@@ -2,7 +2,7 @@ import React from "react";
 import { Image, Text, View } from "react-native";
 import Svg, { Defs, RadialGradient, Rect, Stop } from "react-native-svg";
 
-import { useTicketFlowData } from "@/components/tickets/ticket-flow-shared";
+import { useTicketFlowData } from "@/components/tickets/useTicketFlowData";
 
 export function PromoCard() {
   const { event } = useTicketFlowData();

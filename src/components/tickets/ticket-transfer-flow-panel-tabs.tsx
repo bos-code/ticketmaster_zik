@@ -3,8 +3,8 @@ import { Pressable, Text, View } from "react-native";
 
 import {
   cx,
-  type PanelTab,
-} from "@/components/tickets/ticket-flow-shared";
+} from "@/components/tickets/cx";
+import type { PanelTab } from "@/components/tickets/ticketFlowTypes";
 
 export function PanelTabs({
   activePanel,
@@ -14,7 +14,7 @@ export function PanelTabs({
   onChange: (value: PanelTab) => void;
 }) {
   return (
-    <View className="border-b border-[#ECE6E3] bg-white">
+    <View className="border-b border-[#EFEFEF] bg-white">
       <View className="flex-row">
         <PanelTabButton
           active={activePanel === "tickets"}
@@ -44,8 +44,10 @@ function PanelTabButton({
     <Pressable
       accessibilityRole="button"
       onPress={onPress}
-      className="flex-1 items-center justify-center border-b-[3px] py-4"
-      style={{ borderBottomColor: active ? "#111111" : "transparent" }}
+      className={cx(
+        "flex-1 items-center justify-center border-b-[3px] pb-[22px] pt-[18px]",
+        active ? "border-[#111111]" : "border-transparent",
+      )}
     >
       <Text
         className={cx(

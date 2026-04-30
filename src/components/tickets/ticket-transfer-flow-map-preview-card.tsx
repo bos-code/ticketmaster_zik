@@ -4,7 +4,7 @@ import React from "react";
 import { Pressable, Text, View } from "react-native";
 import Animated, { FadeInUp } from "react-native-reanimated";
 
-import { useTicketFlowData } from "@/components/tickets/ticket-flow-shared";
+import { useTicketFlowData } from "@/components/tickets/useTicketFlowData";
 
 export function MapPreviewCard({
   onOpenDirections,

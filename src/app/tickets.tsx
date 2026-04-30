@@ -1,7 +1,7 @@
 import { useLocalSearchParams } from 'expo-router';
 import React from 'react';
 
-import { TicketTransferFlow } from '@/components/tickets/ticket-transfer-flow';
+import { TransferTicketsScreen } from '@/components/tickets/TransferTicketsScreen';
 
 export default function TicketsRoute() {
   const params = useLocalSearchParams<{ reservationId?: string | string[] }>();
@@ -9,5 +9,5 @@ export default function TicketsRoute() {
     ? params.reservationId[0]
     : params.reservationId;
 
-  return <TicketTransferFlow reservationId={reservationId} />;
+  return <TransferTicketsScreen reservationId={reservationId} />;
 }

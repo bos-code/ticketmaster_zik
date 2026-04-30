@@ -1,16 +1,11 @@
 import React from "react";
 import { Pressable, ScrollView, Text, TextInput, View } from "react-native";
 
-import {
-  cx,
-  type DeliveryMode,
-  type RecipientFormState,
-} from "@/components/tickets/ticket-flow-shared";
-import {
-  BackLink,
-  Field,
-  TransferScaffold,
-} from "@/components/tickets/ticket-transfer-flow-transfer-ui";
+import { BackLink } from "@/components/tickets/BackLink";
+import { cx } from "@/components/tickets/cx";
+import { Field } from "@/components/tickets/Field";
+import type { DeliveryMode, RecipientFormState } from "@/components/tickets/ticketFlowTypes";
+import { TransferScaffold } from "@/components/tickets/TransferScaffold";
 
 export function TicketTransferRecipientFormScreen({
   deliveryMode,

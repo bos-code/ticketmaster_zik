@@ -1,67 +1,74 @@
-import { useRouter } from 'expo-router';
-import React, { useState } from 'react';
+import { useRouter } from "expo-router";
+import React, { useState } from "react";
 import {
   Platform,
   ScrollView,
   StatusBar,
-  StyleSheet,
   Switch,
   Text,
   TouchableOpacity,
   View,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 import {
   AccountIcon,
   type AccountIconName,
-} from '@/components/account/account-icon';
+} from "@/components/account/account-icon";
 
-const C = {
-  headerBg: '#161616',
-  headerTitle: '#FFFFFF',
-  bodyBg: '#FFFFFF',
-  sectionBg: '#FFFFFF',
-  sectionHeader: '#000000',
-  rowLabel: '#000000',
-  rowIcon: '#000000',
-  rowSeparator: '#E5E5E5',
-  sectionDivider: '#E5E5E5',
-  chevron: '#C7C7CC',
-  primary: '#007AFF',
-  switchThumb: '#FFFFFF',
-  switchTrackOff: '#D1D1D6',
-  switchTrackOn: '#34C759',
+// Only kept for values NativeWind can't express
+const SWITCH = {
+  thumbColor: "#FFFFFF",
+  trackOff: "#D1D1D6",
+  trackOn: "#34C759",
 } as const;
 
 const accountFont = Platform.select({
-  ios: 'SF Pro Display',
-  android: 'sans-serif',
-  web: 'SF Pro Display, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif',
+  ios: "SF Pro Display",
+  android: "sans-serif",
+  web: "SF Pro Display, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif",
   default: undefined,
 });
 
-function RowIconSlot({ icon, customElement }: { icon?: AccountIconName; customElement?: React.ReactNode }) {
-  if (customElement) {
-    return (
-      <View style={styles.rowIcon}>
-        {customElement}
-      </View>
-    );
-  }
+const fontStyle = { fontFamily: accountFont } as const;
+
+// ---------------------------------------------------------------------------
+// Sub-components
+// ---------------------------------------------------------------------------
+
+function RowIconSlot({
+  icon,
+  customElement,
+}: {
+  icon?: AccountIconName;
+  customElement?: React.ReactNode;
+}) {
   return (
-    <View style={styles.rowIcon}>
-      {icon && <AccountIcon color={C.rowIcon} name={icon} size={21} />}
+    <View className="w-7 items-center justify-center">
+      {customElement ??
+        (icon && <AccountIcon color="#000000" name={icon} size={21} />)}
     </View>
   );
 }
 
 function SectionHeader({ label }: { label: string }) {
-  return <Text style={styles.sectionHeader}>{label}</Text>;
+  return (
+    <Text
+      className="text-black text-[17px] font-bold mb-3 px-5"
+      style={fontStyle}
+    >
+      {label}
+    </Text>
+  );
 }
 
 function Divider() {
-  return <View style={styles.divider} />;
+  return (
+    <View
+      className="mx-5 mt-3 mb-5 bg-[rgba(0,0,0,0.05)]"
+      style={{ height: 0.5 }}
+    />
+  );
 }
 
 function ChevronRow({
@@ -81,14 +88,18 @@ function ChevronRow({
     <TouchableOpacity
       activeOpacity={0.55}
       onPress={onPress}
-      style={[styles.row, !isLast && styles.rowBorder]}
+      className={`flex-row items-center justify-between bg-white px-5 py-[3px] min-h-[35px]${
+        isLast ? "" : " border-b border-[rgba(0,0,0,0.06)]"
+      }`}
     >
-      <View style={styles.rowLeft}>
+      <View className="flex-1 flex-row items-center gap-[14px]">
         <RowIconSlot customElement={customIcon} icon={icon} />
-        <Text style={styles.rowLabel}>{label}</Text>
+        <Text className="flex-1 text-black text-[15px]" style={fontStyle}>
+          {label}
+        </Text>
       </View>
-      <View style={styles.trailingIcon}>
-        <AccountIcon color={C.chevron} name="chevron-forward" size={17} />
+      <View className="w-6 items-end justify-center">
+        <AccountIcon color="#C7C7CC" name="chevron-forward" size={17} />
       </View>
     </TouchableOpacity>
   );
@@ -108,18 +119,28 @@ function ToggleRow({
   isLast?: boolean;
 }) {
   return (
-    <View style={[styles.row, !isLast && styles.rowBorder]}>
-      <View style={styles.rowLeft}>
+    <View
+      className={`flex-row items-center justify-between bg-white px-5 py-[3px] min-h-[35px]${
+        isLast ? "" : " border-b border-[rgba(0,0,0,0.06)]"
+      }`}
+    >
+      <View className="flex-1 flex-row items-center gap-[14px]">
         <RowIconSlot icon={icon} />
-        <Text style={styles.rowLabel}>{label}</Text>
+        <Text className="flex-1 text-black text-[15px]" style={fontStyle}>
+          {label}
+        </Text>
       </View>
       <Switch
-        ios_backgroundColor={C.switchTrackOff}
+        ios_backgroundColor={SWITCH.trackOff}
         onValueChange={onChange}
-        thumbColor={C.switchThumb}
-        trackColor={{ false: C.switchTrackOff, true: C.switchTrackOn }}
+        thumbColor={SWITCH.thumbColor}
+        trackColor={{ false: SWITCH.trackOff, true: SWITCH.trackOn }}
         value={value}
-        style={styles.toggle}
+        style={
+          Platform.OS === "android"
+            ? { transform: [{ scale: 0.85 }] }
+            : undefined
+        }
       />
     </View>
   );
@@ -141,21 +162,31 @@ function ValueRow({
   return (
     <TouchableOpacity
       activeOpacity={0.55}
-      style={[styles.row, !isLast && styles.rowBorder]}
+      className={`flex-row items-center justify-between bg-white px-5 py-[3px] min-h-[35px]${
+        isLast ? "" : " border-b border-[rgba(0,0,0,0.06)]"
+      }`}
     >
-      <View style={styles.rowLeft}>
+      <View className="flex-1 flex-row items-center gap-[14px]">
         <RowIconSlot customElement={customIcon} icon={icon} />
-        <Text style={styles.rowLabel}>{label}</Text>
+        <Text className="flex-1 text-black text-[15px]" style={fontStyle}>
+          {label}
+        </Text>
       </View>
-      <View style={styles.valueRight}>
-        <Text style={styles.rowValue}>{value}</Text>
-        <View style={styles.editIcon}>
-          <AccountIcon color={C.primary} name="edit-outline" size={16} />
+      <View className="flex-row items-center gap-1 pr-0.5">
+        <Text className="text-[#007AFF] text-[15px]" style={fontStyle}>
+          {value}
+        </Text>
+        <View className="w-[18px] items-center justify-center">
+          <AccountIcon color="#007AFF" name="edit-outline" size={16} />
         </View>
       </View>
     </TouchableOpacity>
   );
 }
+
+// ---------------------------------------------------------------------------
+// Screen
+// ---------------------------------------------------------------------------
 
 export default function MyAccountScreen() {
   const router = useRouter();
@@ -163,34 +194,54 @@ export default function MyAccountScreen() {
   const [locationContent, setLocationContent] = useState(false);
 
   return (
-    <View style={styles.root}>
-      <StatusBar barStyle="light-content" backgroundColor={C.headerBg} />
+    <View className="flex-1 bg-white">
+      <StatusBar barStyle="light-content" backgroundColor="#000000" />
 
-      <SafeAreaView edges={['top']} style={styles.headerSafe}>
-        <View style={styles.header}>
-          <Text style={styles.headerTitle}>Account</Text>
+      <SafeAreaView edges={["top"]} className="bg-black">
+        <View className="h-11 items-center justify-center bg-black px-4">
+          <Text
+            className="text-white text-base font-semibold text-center"
+            style={fontStyle}
+          >
+            Account
+          </Text>
         </View>
       </SafeAreaView>
 
       <ScrollView
-        contentContainerStyle={styles.scrollContent}
+        contentContainerStyle={{ paddingBottom: 32 }}
         contentOffset={{ x: 0, y: 130 }}
         showsVerticalScrollIndicator={false}
-        style={styles.scroll}
+        className="flex-1 bg-white"
       >
-        <View style={styles.hiddenHeader}>
-          <View style={styles.welcomeContainer}>
-            <Text style={styles.welcomeText}>
-              Welcome to <Text style={styles.logoText}>ticketmaster</Text>
+        {/* Hidden header (revealed on scroll-up) */}
+        <View className="w-full bg-[#161616]">
+          <View className="px-5 pt-4 pb-6 items-center">
+            <Text className="text-white text-base mb-5" style={fontStyle}>
+              Welcome to{" "}
+              <Text
+                className="font-extrabold italic text-[18px]"
+                style={[fontStyle, { letterSpacing: -0.5 }]}
+              >
+                ticketmaster
+              </Text>
             </Text>
-            <TouchableOpacity style={styles.signInButton} activeOpacity={0.8}>
-              <Text style={styles.signInButtonText}>Sign In</Text>
+            <TouchableOpacity
+              activeOpacity={0.8}
+              className="bg-[#026CDF] w-full h-12 rounded-[4px] items-center justify-center"
+            >
+              <Text className="text-white text-base font-semibold">
+                Sign In
+              </Text>
             </TouchableOpacity>
           </View>
         </View>
-        <View style={{ height: 24 }} />
+
+        <View className="h-6" />
+
+        {/* Notifications */}
         <SectionHeader label="Notifications" />
-        <View style={styles.group}>
+        <View className="bg-white">
           <ChevronRow icon="envelope-outline" label="My Notifications" />
           <ToggleRow
             icon="bell-outline"
@@ -203,8 +254,9 @@ export default function MyAccountScreen() {
 
         <Divider />
 
+        {/* Location Settings */}
         <SectionHeader label="Location Settings" />
-        <View style={styles.group}>
+        <View className="bg-white">
           <ValueRow
             icon="location-outline"
             label="My Location"
@@ -212,7 +264,7 @@ export default function MyAccountScreen() {
           />
           <ValueRow
             customIcon={
-              <View style={styles.usFlagIcon}>
+              <View className="w-[22px] h-[22px] rounded-full bg-[#E5E5E5] items-center justify-center overflow-hidden border-[0.5px] border-[#CCCCCC]">
                 <Text style={{ fontSize: 13, lineHeight: 18 }}>🇺🇸</Text>
               </View>
             }
@@ -230,20 +282,33 @@ export default function MyAccountScreen() {
 
         <Divider />
 
+        {/* Preferences */}
         <SectionHeader label="Preferences" />
-        <View style={styles.group}>
+        <View className="bg-white">
           <ChevronRow icon="heart-outline" label="My Favourites" />
           <ChevronRow
             icon="create-outline"
             label="Edit Details"
-            onPress={() => router.push('/admin')}
+            onPress={() => router.push("/admin")}
           />
           <ChevronRow icon="shield-checkmark-outline" label="Security" />
           <ChevronRow icon="card-outline" label="Saved Payment Methods" />
           <ChevronRow
             customIcon={
-              <View style={styles.appIconWrapper}>
-                <Text style={styles.appIconLetter}>t</Text>
+              <View className="w-5 h-5 rounded-[4px] border-[1.5px] border-black items-center justify-center">
+                <Text
+                  className="text-black font-bold"
+                  style={[
+                    fontStyle,
+                    {
+                      fontSize: 14,
+                      lineHeight: 16,
+                      includeFontPadding: false,
+                    } as any,
+                  ]}
+                >
+                  t
+                </Text>
               </View>
             }
             isLast
@@ -253,187 +318,14 @@ export default function MyAccountScreen() {
 
         <Divider />
 
+        {/* Help */}
         <SectionHeader label="Help & Guidance" />
-        <View style={styles.group}>
+        <View className="bg-white">
           <ChevronRow icon="help-circle-outline" label="Help Center" isLast />
         </View>
 
-        <View style={{ height: 32 }} />
+        <View className="h-8" />
       </ScrollView>
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  root: {
-    flex: 1,
-    backgroundColor: C.bodyBg,
-  },
-  headerSafe: {
-    backgroundColor: C.headerBg,
-  },
-  header: {
-    height: 44,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: C.headerBg,
-    paddingHorizontal: 16,
-  },
-  headerTitle: {
-    color: C.headerTitle,
-    fontFamily: accountFont,
-    fontSize: 16,
-    fontWeight: '600',
-    letterSpacing: 0,
-    textAlign: 'center',
-  },
-  hiddenHeader: {
-    backgroundColor: C.headerBg,
-    width: '100%',
-  },
-  welcomeContainer: {
-    paddingHorizontal: 20,
-    paddingTop: 16,
-    paddingBottom: 24,
-    alignItems: 'center',
-  },
-  welcomeText: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontFamily: accountFont,
-    marginBottom: 20,
-  },
-  logoText: {
-    fontWeight: '800',
-    fontStyle: 'italic',
-    fontSize: 18,
-    letterSpacing: -0.5,
-  },
-  signInButton: {
-    backgroundColor: '#026CDF',
-    width: '100%',
-    height: 48,
-    borderRadius: 4,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  signInButtonText: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  scroll: {
-    flex: 1,
-    backgroundColor: C.bodyBg,
-  },
-  scrollContent: {
-    paddingBottom: 32,
-  },
-  sectionHeader: {
-    color: C.sectionHeader,
-    fontFamily: accountFont,
-    fontSize: 17,
-    fontWeight: '700',
-    letterSpacing: 0,
-    marginBottom: 12,
-    paddingHorizontal: 20,
-  },
-  group: {
-    backgroundColor: C.sectionBg,
-  },
-  row: {
-    minHeight: 46,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    backgroundColor: C.sectionBg,
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-  },
-  rowBorder: {
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: C.rowSeparator,
-  },
-  rowLeft: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 14,
-  },
-  rowIcon: {
-    width: 28,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  trailingIcon: {
-    width: 24,
-    alignItems: 'flex-end',
-    justifyContent: 'center',
-    overflow: 'visible',
-  },
-  rowLabel: {
-    flex: 1,
-    color: C.rowLabel,
-    fontFamily: accountFont,
-    fontSize: 15,
-    fontWeight: '400',
-    letterSpacing: 0,
-  },
-  valueRight: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    paddingRight: 2,
-  },
-  editIcon: {
-    width: 18,
-    alignItems: 'center',
-    justifyContent: 'center',
-    overflow: 'visible',
-  },
-  rowValue: {
-    color: C.primary,
-    fontFamily: accountFont,
-    fontSize: 15,
-    fontWeight: '400',
-    letterSpacing: 0,
-  },
-  toggle: {
-    ...Platform.select({ android: { transform: [{ scale: 0.85 }] } }),
-  },
-  divider: {
-    height: StyleSheet.hairlineWidth,
-    backgroundColor: C.sectionDivider,
-    marginHorizontal: 20,
-    marginTop: 12,
-    marginBottom: 20,
-  },
-  usFlagIcon: {
-    width: 22,
-    height: 22,
-    borderRadius: 11,
-    backgroundColor: '#E5E5E5',
-    alignItems: 'center',
-    justifyContent: 'center',
-    overflow: 'hidden',
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: '#CCCCCC',
-  },
-  appIconWrapper: {
-    width: 20,
-    height: 20,
-    borderRadius: 4,
-    borderWidth: 1.5,
-    borderColor: C.rowIcon,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  appIconLetter: {
-    fontFamily: accountFont,
-    fontSize: 14,
-    fontWeight: '700',
-    color: C.rowIcon,
-    includeFontPadding: false,
-    lineHeight: 16,
-  },
-});

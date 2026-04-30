@@ -1,10 +1,12 @@
 import { Ionicons } from "@expo/vector-icons";
+import { Image } from "expo-image";
 import React, { useEffect, useRef } from "react";
 import {
   FlatList,
   Pressable,
   Text,
   View,
+  useWindowDimensions,
   type NativeScrollEvent,
   type NativeSyntheticEvent,
 } from "react-native";
@@ -13,34 +15,34 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 import {
   softPillShadow,
-  useTicketFlowData,
-  type Seat,
-} from "@/components/tickets/ticket-flow-shared";
-import {
-  TicketCard,
-} from "@/components/tickets/ticket-transfer-flow-transfer-ui";
+} from "@/components/tickets/ticketFlowConstants";
+import type { Seat } from "@/components/tickets/ticketFlowTypes";
+import { ExtrasPanel } from "@/components/tickets/ticket-transfer-flow-extras-panel";
+import { useTicketFlowData } from "@/components/tickets/useTicketFlowData";
+import { BottomDrawer } from "@/components/ui/bottom-drawer";
+import { TicketCard } from "./ticket-card";
 
 function ViewerHeader({ onBack }: { onBack: () => void }) {
   const { event } = useTicketFlowData();
 
   return (
-    <SafeAreaView edges={["top"]} style={{ backgroundColor: "#FFFFFF" }}>
-      <View className="flex-row items-center bg-white px-[10px] py-[6px]">
+    <SafeAreaView edges={["top"]} style={{ backgroundColor: "#F9F8F4" }}>
+      <View className="flex-row items-center bg-[#F9F8F4] px-5 py-2">
         <Pressable
           accessibilityRole="button"
           hitSlop={8}
           onPress={onBack}
-          className="h-10 w-10 items-center justify-center"
+          className="mr-2"
         >
-          <Ionicons color="#000000" name="chevron-back" size={26} />
+          <Ionicons color="#000000" name="chevron-back" size={28} />
         </Pressable>
 
-        <View className="ml-1 justify-center">
-          <Text className="text-[16px] font-extrabold leading-[20px] text-[#000000]">
-            {event.title}
+        <View className="justify-center">
+          <Text className="text-[17px] font-bold text-[#000000]">
+            Don Toliver: Octane Tour
           </Text>
-          <Text className="mt-[2px] text-[12px] font-medium leading-[14px] text-[#6B6B6B]">
-            {event.dateTime} - {event.venue}
+          <Text className="text-[12px] font-medium text-[#6B6B6B]">
+            7:30 PM - Madison Square Garden
           </Text>
         </View>
       </View>
@@ -52,6 +54,7 @@ export function TicketTransferViewerScreen({
   carouselCardWidth,
   carouselSnapInterval,
   onBack,
+  onOpenDirections,
   onViewerIndexChange,
   seats,
   viewerIndex,
@@ -59,11 +62,13 @@ export function TicketTransferViewerScreen({
   carouselCardWidth: number;
   carouselSnapInterval: number;
   onBack: () => void;
+  onOpenDirections: () => void;
   onViewerIndexChange: (index: number) => void;
   seats: Seat[];
   viewerIndex: number;
 }) {
   const viewerListRef = useRef<FlatList<Seat>>(null);
+  const [isTicketInfoOpen, setIsTicketInfoOpen] = React.useState(false);
 
   useEffect(() => {
     requestAnimationFrame(() => {
@@ -83,19 +88,23 @@ export function TicketTransferViewerScreen({
     onViewerIndexChange(Math.max(0, Math.min(seats.length - 1, nextIndex)));
   };
 
+  const { width } = useWindowDimensions();
+  const screenWidth = Math.min(width, 430);
+  const sidePadding = (screenWidth - carouselCardWidth) / 2;
+
   return (
     <SafeAreaView
       edges={["left", "right"]}
-      style={{ flex: 1, backgroundColor: "#FFFFFF" }}
+      style={{ flex: 1, backgroundColor: "#F9F8F4" }}
     >
-      <View className="flex-1 bg-[#FFFFFF]">
+      <View className="flex-1 bg-[#F9F8F4]">
         <ViewerHeader onBack={onBack} />
 
         <FlatList
           contentContainerStyle={{
             paddingBottom: 20,
-            paddingLeft: 12,
-            paddingRight: 12,
+            paddingLeft: sidePadding,
+            paddingRight: sidePadding,
             paddingTop: 16,
           }}
           data={seats}
@@ -117,50 +126,70 @@ export function TicketTransferViewerScreen({
             />
           )}
           showsHorizontalScrollIndicator={false}
-          snapToAlignment="start"
+          snapToAlignment="center"
           snapToInterval={carouselSnapInterval}
         />
 
         <Animated.View
           entering={FadeInUp.duration(260)}
-          className="mt-auto items-center gap-[18px] px-4 pb-[22px]"
+          className="mt-auto items-center gap-10 px-5 pb-8"
         >
           <View
-            className="min-w-[78px] rounded-[18px] bg-white px-5 py-[9px]"
+            className="rounded-full bg-white px-5 py-[10px]"
             style={softPillShadow}
           >
-            <Text className="text-center text-[13px] font-bold leading-[15px] text-[#111111]">
+            <Text className="text-center text-[12px] font-bold text-[#111111]">
               {`${viewerIndex + 1} of ${seats.length}`}
             </Text>
           </View>
 
-          <View className="w-full flex-row justify-between">
+          <View className="w-full flex-row justify-between gap-3 px-2">
             <Pressable
               accessibilityRole="button"
-              className="h-[46px] w-[136px] flex-row items-center justify-center gap-2 rounded-[8px] bg-[#111111]"
+              className="h-[44px] flex-1 flex-row items-center justify-center gap-2 rounded-[8px] bg-[#111111]"
             >
-              <Ionicons color="#FFFFFF" name="wallet-outline" size={18} />
-              <Text className="text-[12px] font-semibold leading-[14px] text-white">
-                Add to Apple Wallet
-              </Text>
+              <Image
+                source={require("../../../assets/wallet.svg")}
+                style={{ height: 24, width: 34 }}
+                contentFit="contain"
+              />
+              <View>
+                <Text className="text-[8px] font-medium text-white leading-tight">Add to</Text>
+                <Text className="text-[12px] font-bold text-white leading-tight">Apple Wallet</Text>
+              </View>
             </Pressable>
 
             <Pressable
               accessibilityRole="button"
-              className="h-[46px] w-[148px] flex-row items-center justify-center gap-2 rounded-[24px] border border-[#D7DBE2] bg-white"
+              className="h-[44px] flex-1 flex-row items-center justify-center gap-2 rounded-full border border-[#D7DBE2] bg-[#F9F8F4]"
+              onPress={() => setIsTicketInfoOpen(true)}
             >
-              <Ionicons
-                color="#111111"
-                name="information-circle-outline"
-                size={18}
-              />
-              <Text className="text-[12px] font-semibold leading-[14px] text-[#111111]">
+              <View className="h-6 w-6 items-center justify-center rounded-full bg-black">
+                  <Ionicons
+                    color="#FFFFFF"
+                    name="information"
+                    size={15}
+                  />
+              </View>
+              <Text className="text-[13px] font-bold text-[#111111]">
                 Ticket Info
               </Text>
             </Pressable>
           </View>
         </Animated.View>
       </View>
+      <BottomDrawer
+        minHeight="62%"
+        onClose={() => setIsTicketInfoOpen(false)}
+        visible={isTicketInfoOpen}
+      >
+        <View className="border-b border-[#F0F0F0] px-5 py-4">
+          <Text className="text-center text-[12px] font-medium leading-[15px] text-[#70757E]">
+            TICKET INFO
+          </Text>
+        </View>
+        <ExtrasPanel onOpenDirections={onOpenDirections} />
+      </BottomDrawer>
     </SafeAreaView>
   );
 }

@@ -348,10 +348,10 @@ export function AddEventAdminScreen() {
 
   return (
     <View style={styles.root}>
-      <StatusBar style="light" backgroundColor="#050505" />
+      <StatusBar style="light" backgroundColor="#000000" />
 
       {/* ── Header ── */}
-      <SafeAreaView edges={['top', 'left', 'right']} style={{ backgroundColor: '#050505' }}>
+      <SafeAreaView edges={['top', 'left', 'right']} style={{ backgroundColor: '#000000' }}>
         <View style={styles.headerBar}>
           <View style={styles.headerBarInner}>
             <View style={styles.headerBarLeft} />

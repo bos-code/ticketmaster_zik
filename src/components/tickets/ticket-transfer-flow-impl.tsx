@@ -14,26 +14,25 @@ import {
 } from "react-native-reanimated";
 
 import {
-  buildSeatSummary,
-  buildStaticMapPreviewUrl,
-  EMPTY_SEATS,
-  HERO_COLLAPSE_DISTANCE,
-  TicketFlowContext,
   type DeliveryMode,
   type FlowScreen,
   type PanelTab,
   type RecipientFormState,
   type TicketFlowContextValue,
   type TransferModal,
-} from "@/components/tickets/ticket-flow-shared";
+} from "@/components/tickets/ticketFlowTypes";
+import { buildSeatSummary } from "@/components/tickets/buildSeatSummary";
+import { buildStaticMapPreviewUrl } from "@/components/tickets/buildStaticMapPreviewUrl";
+import { TicketFlowContext } from "@/components/tickets/TicketFlowContext";
+import { EMPTY_SEATS, HERO_COLLAPSE_DISTANCE } from "@/components/tickets/ticketFlowConstants";
 import { TicketsUnavailable } from "@/components/tickets/ticket-transfer-flow-components";
 import { TicketTransferAuthModal } from "@/components/tickets/ticket-transfer-flow-auth-modal";
-import { TicketTransferListScreen } from "@/components/tickets/ticket-transfer-flow-list-screen";
+import { SelectTicketsScreen } from "@/components/tickets/SelectTicketsScreen";
 import { TicketTransferLoadingModal } from "@/components/tickets/ticket-transfer-flow-loading-modal";
-import { TicketTransferRecipientChoiceScreen } from "@/components/tickets/ticket-transfer-flow-recipient-choice-screen";
-import { TicketTransferRecipientFormScreen } from "@/components/tickets/ticket-transfer-flow-recipient-form-screen";
-import { TicketTransferSelectScreen } from "@/components/tickets/ticket-transfer-flow-select-screen";
-import { TicketTransferViewerScreen } from "@/components/tickets/ticket-transfer-flow-viewer-screen";
+import { ChooseRecipientTypeScreen } from "@/components/tickets/ChooseRecipientTypeScreen";
+import { EnterRecipientDetailsScreen } from "@/components/tickets/EnterRecipientDetailsScreen";
+import { ChooseTransferMethodScreen } from "@/components/tickets/ChooseTransferMethodScreen";
+import { ReviewTransferScreen } from "@/components/tickets/ReviewTransferScreen";
 
 export function TicketTransferFlow({
   reservationId,
@@ -47,8 +46,8 @@ export function TicketTransferFlow({
   );
   const { width } = useWindowDimensions();
   const frameWidth = Math.min(width, 430);
-  const carouselCardWidth = Math.max(frameWidth - 52, 286);
-  const carouselGap = 14;
+  const carouselCardWidth = Math.round(frameWidth * 0.84);
+  const carouselGap = 12;
   const carouselSnapInterval = carouselCardWidth + carouselGap;
   const ticketFlowData = useMemo(() => {
     if (!reservation) {
@@ -239,13 +238,16 @@ export function TicketTransferFlow({
   return (
     <TicketFlowContext.Provider value={ticketFlowData}>
       <View className="flex-1">
-        <StatusBar style={screen === "viewer" ? "dark" : "light"} />
+        <StatusBar
+          backgroundColor={screen === "viewer" ? "#FFFFFF" : "#000000"}
+          style={screen === "viewer" ? "dark" : "light"}
+        />
         <View
           className="mx-auto flex-1 w-full"
           style={{ maxWidth: frameWidth }}
         >
-          {screen === "list" || screen === "select" ? (
-            <TicketTransferListScreen
+          {["list", "select", "recipientChoice", "recipientForm"].includes(screen) ? (
+            <SelectTicketsScreen
               activePanel={activePanel}
               handleListScroll={handleListScroll}
               isHeroCollapsed={isHeroCollapsed}
@@ -259,10 +261,9 @@ export function TicketTransferFlow({
           ) : null}
 
           {screen === "select" ? (
-            <TicketTransferSelectScreen
+            <ChooseTransferMethodScreen
               onBack={() => setScreen("list")}
               onContinue={() => setScreen("recipientChoice")}
-              onOpenViewer={handleOpenViewer}
               onToggleSeat={toggleSeat}
               seatSummary={seatSummary}
               seats={seats}
@@ -272,7 +273,7 @@ export function TicketTransferFlow({
           ) : null}
 
           {screen === "recipientChoice" ? (
-            <TicketTransferRecipientChoiceScreen
+            <ChooseRecipientTypeScreen
               onBack={() => setScreen("select")}
               onManualEntry={() =>
                 handleOpenRecipientForm({
@@ -295,7 +296,7 @@ export function TicketTransferFlow({
           ) : null}
 
           {screen === "recipientForm" ? (
-            <TicketTransferRecipientFormScreen
+            <EnterRecipientDetailsScreen
               deliveryMode={deliveryMode}
               form={recipientForm}
               onBack={() => setScreen("recipientChoice")}
@@ -308,10 +309,11 @@ export function TicketTransferFlow({
           ) : null}
 
           {screen === "viewer" ? (
-            <TicketTransferViewerScreen
+            <ReviewTransferScreen
               carouselCardWidth={carouselCardWidth}
               carouselSnapInterval={carouselSnapInterval}
               onBack={() => setScreen("list")}
+              onOpenDirections={handleOpenDirections}
               onViewerIndexChange={setViewerIndex}
               seats={transferredSeats}
               viewerIndex={viewerIndex}

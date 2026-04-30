@@ -2,9 +2,7 @@ import { Ionicons } from "@expo/vector-icons";
 import React from "react";
 import { Text, View } from "react-native";
 
-import {
-  EXTRA_CARDS,
-} from "@/components/tickets/ticket-flow-shared";
+import { EXTRA_CARDS } from "@/components/tickets/ticketFlowConstants";
 import { MapPreviewCard } from "@/components/tickets/ticket-transfer-flow-map-preview-card";
 
 export function ExtrasPanel({

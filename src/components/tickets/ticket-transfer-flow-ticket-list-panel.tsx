@@ -5,11 +5,9 @@ import Animated, { FadeInDown } from "react-native-reanimated";
 
 import { MapPreviewCard } from "@/components/tickets/ticket-transfer-flow-map-preview-card";
 import { PromoCard } from "@/components/tickets/ticket-transfer-flow-promo-card";
-import {
-  cx,
-  useTicketFlowData,
-  type Seat,
-} from "@/components/tickets/ticket-flow-shared";
+import { cx } from "@/components/tickets/cx";
+import type { Seat } from "@/components/tickets/ticketFlowTypes";
+import { useTicketFlowData } from "@/components/tickets/useTicketFlowData";
 
 export function TicketListPanel({
   onOpenDirections,
@@ -20,13 +18,13 @@ export function TicketListPanel({
 
   return (
     <View className="bg-white pb-4">
-      <View className="border-b border-[#F1ECE8] px-5 py-6">
+      <View className="border-b border-[#F1F1F1] px-6 pb-7 pt-6">
         <View className="flex-row items-start justify-between">
           <View className="gap-[6px]">
-            <Text className="text-[17px] font-extrabold leading-[22px] text-[#141414]">
+            <Text className="text-[20px] font-extrabold leading-[24px] text-[#141414]">
               {order.id}
             </Text>
-            <Text className="text-[13px] font-medium leading-[17px] text-[#6D727A]">
+            <Text className="text-[17px] font-medium leading-[21px] text-[#6D727A]">
               {order.ticketCount}
             </Text>
           </View>
@@ -40,7 +38,7 @@ export function TicketListPanel({
         </View>
       </View>
 
-      <View className="gap-4 px-4 pb-1 pt-4">
+      <View className="px-6 pb-1 pt-7">
         {seats.map((seat, index) => (
           <TicketSeatCard index={index} key={seat.id} seat={seat} />
         ))}
@@ -56,15 +54,13 @@ function TicketSeatCard({ index, seat }: { index: number; seat: Seat }) {
   return (
     <Animated.View
       entering={FadeInDown.duration(220).delay(40 + index * 60)}
-      className="overflow-hidden rounded-[4px] bg-gray-100 py-5 text-black"
+      className="bg-white pb-12 text-black"
     >
-      <Text className="px-4 text-[15px] font-semibold leading-[19px] text-[#111111]">
+      <Text className="text-[17px] font-semibold leading-[21px] text-[#111111]">
         {seat.note}
       </Text>
 
-      <View className="my-4 h-1 w-full bg-white" />
-
-      <View className="mt-[20px] flex-row gap-3 px-4">
+      <View className="mt-[38px] flex-row gap-3">
         <TicketMetaCell align="left" label="SECTION" value={seat.section} />
         <TicketMetaCell align="center" label="ROW" value={seat.row} />
         <TicketMetaCell align="right" label="SEAT" value={seat.seat} />
@@ -92,11 +88,10 @@ function TicketMetaCell({
     >
       <Text
         className={cx(
-          "text-[11px] font-bold leading-[13px] text-[#999BA0]",
+          "text-[12px] font-bold uppercase leading-[14px] tracking-[1px] text-[#999BA0]",
           align === "center" && "text-center",
           align === "right" && "text-right",
         )}
-        style={{ letterSpacing: 0.8 }}
       >
         {label}
       </Text>

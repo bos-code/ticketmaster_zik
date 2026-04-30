@@ -5,8 +5,8 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 import {
   HERO_EXPANDED_HEIGHT,
-  type PanelTab,
-} from "@/components/tickets/ticket-flow-shared";
+} from "@/components/tickets/ticketFlowConstants";
+import type { PanelTab } from "@/components/tickets/ticketFlowTypes";
 import { BottomDock } from "@/components/tickets/ticket-transfer-flow-bottom-dock";
 import {
   CollapsibleEventHero,
@@ -37,8 +37,11 @@ export function TicketTransferListScreen({
   scrollY: React.ComponentProps<typeof CollapsibleEventHero>["scrollY"];
 }) {
   return (
-    <SafeAreaView edges={["left", "right"]} style={{ flex: 1 }}>
-      <View className="flex-1 overflow-hidden">
+    <SafeAreaView
+      edges={["left", "right"]}
+      style={{ backgroundColor: "#FFFFFF", flex: 1 }}
+    >
+      <View className="flex-1 overflow-hidden bg-white">
         <CollapsibleEventHero
           isHeroCollapsed={isHeroCollapsed}
           onBack={onBack}
@@ -48,7 +51,7 @@ export function TicketTransferListScreen({
 
         <Animated.ScrollView
           contentContainerStyle={{
-            paddingBottom: 178,
+            paddingBottom: 132,
             paddingTop: HERO_EXPANDED_HEIGHT,
           }}
           onScroll={handleListScroll}
