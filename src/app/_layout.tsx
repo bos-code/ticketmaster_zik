@@ -9,6 +9,7 @@ import { StatusBar } from "expo-status-bar";
 import * as SystemUI from "expo-system-ui";
 import React, { useCallback, useEffect, useRef } from "react";
 import { View } from "react-native";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 import { PremiumStartupScreen } from "@/components/premium-startup-screen";
 import { ticketColors, ticketNavigationTheme } from "@/constants/ticket-theme";
@@ -107,22 +108,24 @@ export default function RootLayout() {
   }
 
   return (
-    <QueryProvider>
-      <ThemeProvider value={ticketNavigationTheme}>
-        <View
-          style={{ flex: 1, backgroundColor: ticketColors.background }}
-          onLayout={handleRootLayout}
-        >
-          <StatusBar
-            style={hasFinishedStartup ? "dark" : "light"}
-            backgroundColor={statusBarBackgroundColor}
-          />
-          <RootStack />
-          {!hasFinishedStartup ? (
-            <PremiumStartupScreen onFinish={handleStartupFinish} />
-          ) : null}
-        </View>
-      </ThemeProvider>
-    </QueryProvider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <QueryProvider>
+        <ThemeProvider value={ticketNavigationTheme}>
+          <View
+            style={{ flex: 1, backgroundColor: ticketColors.background }}
+            onLayout={handleRootLayout}
+          >
+            <StatusBar
+              style={hasFinishedStartup ? "dark" : "light"}
+              backgroundColor={statusBarBackgroundColor}
+            />
+            <RootStack />
+            {!hasFinishedStartup ? (
+              <PremiumStartupScreen onFinish={handleStartupFinish} />
+            ) : null}
+          </View>
+        </ThemeProvider>
+      </QueryProvider>
+    </GestureHandlerRootView>
   );
 }
