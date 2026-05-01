@@ -1,0 +1,7 @@
+
+> ticketmaster_zik@1.0.0 start
+> expo start --port 8081
+
+env: load .env
+env: export EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY
+Starting project at C:\Users\JohnDera\Desktop\ticketmaster_zik

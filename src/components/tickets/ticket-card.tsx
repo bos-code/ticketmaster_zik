@@ -57,7 +57,7 @@ export function TicketCard({
             <View className="bg-white rounded-sm py-0 shadow-lg items-center">
                 <View className="flex-row items-center justify-center gap-1 pt-1">
                     <Text className="text-[10px] font-bold text-[#6B6B6B] tracking-tighter">
-                        Screenshots won't get you in
+                        Screenshots won&apos;t get you in
                     </Text>
                     <Ionicons name="refresh" size={10} color="#6B6B6B" />
                 </View>
@@ -70,7 +70,7 @@ export function TicketCard({
           {/* Left taller panel (75% width) */}
           <View className="bg-white pt-1 px-4 pb-1" style={{ width: "75%", height: 46 }}>
             <Text className="text-[14px] font-bold text-[#000000] leading-tight">
-              Arist presale
+              See Ticket Details for Seller&apos;s Terms
             </Text>
             <Text className="text-[10px] font-semibold text-[#8B8F96] uppercase tracking-tighter leading-tight">
               LOWER BOWL SEATING
@@ -109,8 +109,6 @@ export function TicketCard({
 }
 
 function TicketBarcodeBand({ seat }: { seat: Seat }) {
-  const { event } = useTicketFlowData();
-  const qrValue = `${event.shortTitle}-${seat.section}-${seat.row}-${seat.seat}`;
   const beamProgress = useSharedValue(0);
 
   useEffect(() => {

@@ -8,7 +8,7 @@ export type FlowScreen =
   | "viewer";
 
 export type PanelTab = "tickets" | "extras";
-export type TransferModal = "none" | "auth" | "loading";
+export type TransferModal = "none" | "auth" | "loading" | "success" | "error";
 export type DeliveryMode = "email" | "mobile";
 
 export type Seat = {

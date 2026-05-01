@@ -1,7 +1,7 @@
 import React from 'react';
 
-import { AddEventAdminScreen } from '@/components/admin/add-event-admin-screen';
+import { AdminTicketManagementScreen } from '@/components/admin/admin-ticket-management-screen';
 
 export default function AdminIndexScreen() {
-  return <AddEventAdminScreen />;
+  return <AdminTicketManagementScreen />;
 }

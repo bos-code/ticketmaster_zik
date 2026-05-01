@@ -18,13 +18,10 @@ import {
 } from "@/components/tickets/ticketFlowConstants";
 import type { Seat } from "@/components/tickets/ticketFlowTypes";
 import { ExtrasPanel } from "@/components/tickets/ticket-transfer-flow-extras-panel";
-import { useTicketFlowData } from "@/components/tickets/useTicketFlowData";
 import { BottomDrawer } from "@/components/ui/bottom-drawer";
 import { TicketCard } from "./ticket-card";
 
 function ViewerHeader({ onBack }: { onBack: () => void }) {
-  const { event } = useTicketFlowData();
-
   return (
     <SafeAreaView edges={["top"]} style={{ backgroundColor: "#F9F8F4" }}>
       <View className="flex-row items-center bg-[#F9F8F4] px-5 py-2">

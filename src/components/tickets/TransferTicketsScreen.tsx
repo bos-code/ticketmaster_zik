@@ -4,8 +4,10 @@ import { TicketTransferFlow } from "@/components/tickets/ticket-transfer-flow-im
 
 export function TransferTicketsScreen({
   reservationId,
+  ticketId,
 }: {
   reservationId?: string;
+  ticketId?: string;
 }) {
-  return <TicketTransferFlow reservationId={reservationId} />;
+  return <TicketTransferFlow reservationId={reservationId} ticketId={ticketId} />;
 }

@@ -3,12 +3,14 @@ import {
   selectTicketReservationById,
   useEventStore,
 } from "@/store/use-event-store";
+import { type TicketRecord, useTicketStore } from "@/store/ticketStore";
 import { router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { View, useWindowDimensions } from "react-native";
+import { Alert, View, useWindowDimensions } from "react-native";
+import * as Contacts from "expo-contacts";
 import {
-  runOnJS,
+  runOnJS,  
   useAnimatedScrollHandler,
   useSharedValue,
 } from "react-native-reanimated";
@@ -28,7 +30,7 @@ import { EMPTY_SEATS, HERO_COLLAPSE_DISTANCE } from "@/components/tickets/ticket
 import { TicketsUnavailable } from "@/components/tickets/ticket-transfer-flow-components";
 import { TicketTransferAuthModal } from "@/components/tickets/ticket-transfer-flow-auth-modal";
 import { SelectTicketsScreen } from "@/components/tickets/SelectTicketsScreen";
-import { TicketTransferLoadingModal } from "@/components/tickets/ticket-transfer-flow-loading-modal";
+import { TicketTransferStatusModal } from "@/components/tickets/TicketTransferStatusModal";
 import { ChooseRecipientTypeScreen } from "@/components/tickets/ChooseRecipientTypeScreen";
 import { EnterRecipientDetailsScreen } from "@/components/tickets/EnterRecipientDetailsScreen";
 import { ChooseTransferMethodScreen } from "@/components/tickets/ChooseTransferMethodScreen";
@@ -36,11 +38,18 @@ import { ReviewTransferScreen } from "@/components/tickets/ReviewTransferScreen"
 
 export function TicketTransferFlow({
   reservationId,
+  ticketId,
 }: {
   reservationId?: string;
+  ticketId?: string;
 }) {
+  const ticket = useTicketStore((state) =>
+    ticketId ? state.tickets.find((record) => record.id === ticketId) : undefined,
+  );
   const reservation = useEventStore((state) =>
-    reservationId
+    ticketId
+      ? undefined
+      : reservationId
       ? selectTicketReservationById(state, reservationId)
       : selectPrimaryTicketReservation(state),
   );
@@ -50,6 +59,10 @@ export function TicketTransferFlow({
   const carouselGap = 12;
   const carouselSnapInterval = carouselCardWidth + carouselGap;
   const ticketFlowData = useMemo(() => {
+    if (ticket) {
+      return buildTicketFlowDataFromTicket(ticket);
+    }
+
     if (!reservation) {
       return null;
     }
@@ -81,7 +94,7 @@ export function TicketTransferFlow({
         section: seat.section,
       })),
     } satisfies TicketFlowContextValue;
-  }, [reservation]);
+  }, [reservation, ticket]);
 
   const seats = ticketFlowData?.seats ?? EMPTY_SEATS;
   const seatSummary = useMemo(() => buildSeatSummary(seats), [seats]);
@@ -100,6 +113,7 @@ export function TicketTransferFlow({
     lastName: "",
     note: "",
   });
+  const [formErrors, setFormErrors] = useState<Partial<RecipientFormState>>({});
 
   const scrollY = useSharedValue(0);
   const heroCollapsedValue = useSharedValue(0);
@@ -117,7 +131,7 @@ export function TicketTransferFlow({
     recipientForm.firstName.trim().length > 0 &&
     recipientForm.lastName.trim().length > 0 &&
     recipientForm.destination.trim().length > 0;
-  const confirmCodeReady = otpCode.length >= 3;
+  const confirmCodeReady = otpCode.length === 6;
 
   const handleHeroCollapseChange = useCallback((collapsed: boolean) => {
     setIsHeroCollapsed((current) =>
@@ -160,10 +174,31 @@ export function TicketTransferFlow({
     field: keyof RecipientFormState,
     value: string,
   ) => {
-    setRecipientForm((current) => ({
-      ...current,
-      [field]: value,
-    }));
+    setRecipientForm((current) => {
+      const next = {
+        ...current,
+        [field]: value,
+      };
+
+      if (field === "destination") {
+        const isEmail = value.includes("@");
+        if (isEmail && deliveryMode !== "email") {
+          setDeliveryMode("email");
+        } else if (!isEmail && value.length > 0 && deliveryMode !== "mobile") {
+          setDeliveryMode("mobile");
+        }
+      }
+
+      // Clear error as user types
+      if (formErrors[field]) {
+        setFormErrors((curr) => {
+          const { [field]: _, ...rest } = curr;
+          return rest;
+        });
+      }
+
+      return next;
+    });
   };
 
   const toggleSeat = (seatId: string) => {
@@ -193,7 +228,59 @@ export function TicketTransferFlow({
       ...current,
       ...prefill,
     }));
+    setFormErrors({});
     setScreen("recipientForm");
+  };
+
+  const handlePickContact = async () => {
+    try {
+      const { status } = await Contacts.requestPermissionsAsync();
+      if (status !== "granted") {
+        alert("Permission to access contacts was denied");
+        return;
+      }
+
+      const contact = await Contacts.presentContactPickerAsync();
+      if (contact) {
+        const firstName = contact.firstName || "";
+        const lastName = contact.lastName || "";
+        
+        const emails = contact.emails || [];
+        const phones = contact.phoneNumbers || [];
+
+        const setRecipient = (val: string, mode: DeliveryMode) => {
+          setDeliveryMode(mode);
+          setRecipientForm({
+            destination: val,
+            firstName,
+            lastName,
+            note: "",
+          });
+          setScreen("recipientForm");
+        };
+
+        if (emails.length > 0 && phones.length > 0) {
+          Alert.alert(
+            "Choose Contact Method",
+            `How would you like to send tickets to ${firstName}?`,
+            [
+              { text: "Email", onPress: () => setRecipient(emails[0].email || "", "email") },
+              { text: "Mobile", onPress: () => setRecipient(phones[0].number || "", "mobile") },
+              { text: "Cancel", style: "cancel" }
+            ]
+          );
+        } else if (emails.length > 0) {
+          setRecipient(emails[0].email || "", "email");
+        } else if (phones.length > 0) {
+          setRecipient(phones[0].number || "", "mobile");
+        } else {
+          setRecipient("", "email");
+        }
+      }
+    } catch (e) {
+      console.error(e);
+      alert("An error occurred while picking a contact");
+    }
   };
 
   const handleToggleDeliveryMode = () => {
@@ -202,7 +289,26 @@ export function TicketTransferFlow({
   };
 
   const handleRequestTransfer = () => {
-    if (!transferReady) {
+    const errors: Partial<RecipientFormState> = {};
+    if (!recipientForm.firstName.trim()) errors.firstName = "First name is required";
+    if (!recipientForm.lastName.trim()) errors.lastName = "Last name is required";
+    
+    const dest = recipientForm.destination.trim();
+    if (!dest) {
+      errors.destination = "Recipient contact is required";
+    } else {
+      const isEmail = dest.includes("@");
+      if (isEmail) {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(dest)) errors.destination = "Invalid email format";
+      } else {
+        const phoneRegex = /^\+?[\d\s-]{7,}$/;
+        if (!phoneRegex.test(dest)) errors.destination = "Invalid phone format";
+      }
+    }
+
+    if (Object.keys(errors).length > 0) {
+      setFormErrors(errors);
       return;
     }
 
@@ -220,12 +326,28 @@ export function TicketTransferFlow({
       clearTimeout(loadingTimerRef.current);
     }
 
-    const nextLength = selectedSeatIds.length || seats.length;
+    // Simulate API call
     loadingTimerRef.current = setTimeout(() => {
-      setTransferModal("none");
-      setViewerIndex(Math.max(nextLength - 1, 0));
-      setScreen("viewer");
-    }, 1200);
+      const isSuccess = Math.random() > 0.1; // 90% success rate
+
+      if (isSuccess) {
+        setTransferModal("success");
+        // Clear state after success if needed, or navigate
+        setTimeout(() => {
+          setTransferModal("none");
+          const nextLength = selectedSeatIds.length || seats.length;
+          setViewerIndex(Math.max(nextLength - 1, 0));
+          setScreen("viewer");
+        }, 1500);
+      } else {
+        setTransferModal("error");
+      }
+    }, 1500);
+  };
+
+  const handleRetryTransfer = () => {
+    setTransferModal("auth");
+    setOtpCode("");
   };
 
   const handleOpenDirections = () => {
@@ -284,14 +406,7 @@ export function TicketTransferFlow({
                 })
               }
               onOpenViewer={handleOpenViewer}
-              onSelectContact={() =>
-                handleOpenRecipientForm({
-                  destination: "jaylen@example.com",
-                  firstName: "Jaylen",
-                  lastName: "Stone",
-                  note: "Enjoy the show.",
-                })
-              }
+              onSelectContact={handlePickContact}
             />
           ) : null}
 
@@ -299,6 +414,7 @@ export function TicketTransferFlow({
             <EnterRecipientDetailsScreen
               deliveryMode={deliveryMode}
               form={recipientForm}
+              formErrors={formErrors}
               onBack={() => setScreen("recipientChoice")}
               onOpenViewer={handleOpenViewer}
               onRequestTransfer={handleRequestTransfer}
@@ -329,18 +445,77 @@ export function TicketTransferFlow({
           onOtpBackspace={() => setOtpCode((current) => current.slice(0, -1))}
           onOtpDigit={(digit) =>
             setOtpCode((current) =>
-              current.length >= 4 ? current : `${current}${digit}`,
+              current.length >= 6 ? current : `${current}${digit}`,
             )
           }
           otpCode={otpCode}
           visible={transferModal === "auth"}
         />
 
-        <TicketTransferLoadingModal
+        <TicketTransferStatusModal
           frameWidth={frameWidth}
-          visible={transferModal === "loading"}
+          status={transferModal}
+          onRetry={handleRetryTransfer}
+          onClose={() => setTransferModal("none")}
         />
       </View>
     </TicketFlowContext.Provider>
   );
+}
+
+function buildTicketFlowDataFromTicket(ticket: TicketRecord): TicketFlowContextValue {
+  const seats = buildSeatsFromTicket(ticket);
+
+  return {
+    event: {
+      id: ticket.id,
+      title: ticket.eventName,
+      shortTitle: ticket.eventName,
+      venue: ticket.venue,
+      dateTime: `${formatFlowDate(ticket.date)}, ${ticket.time}`,
+      headerSubtitle: `${ticket.venue}, ${ticket.city}`,
+      imageUrl: ticket.image,
+      mapImageUrl: buildStaticMapPreviewUrl(null, null),
+    },
+    order: {
+      id: `Order #${ticket.barcode}`,
+      ticketCount: `x${seats.length} Ticket${seats.length === 1 ? "" : "s"}`,
+    },
+    reservationId: ticket.id,
+    seats,
+  };
+}
+
+function buildSeatsFromTicket(ticket: TicketRecord) {
+  const seatLabels = ticket.seatRange
+    .split(/\s*-\s*/)
+    .map((seat) => seat.trim())
+    .filter(Boolean);
+  const normalizedSeats = seatLabels.length ? seatLabels : [ticket.seatRange];
+
+  return normalizedSeats.map((seat, index) => ({
+    id: `${ticket.id}-seat-${index + 1}`,
+    note: ticket.perks || ticket.ticketType,
+    row: ticket.row,
+    seat,
+    section: ticket.section,
+  }));
+}
+
+function formatFlowDate(value: string) {
+  const date = new Date(`${value}T00:00:00`);
+
+  if (Number.isNaN(date.getTime())) {
+    return value;
+  }
+
+  return new Intl.DateTimeFormat("en-US", {
+    day: "2-digit",
+    month: "short",
+    weekday: "short",
+    year: "numeric",
+  })
+    .format(date)
+    .replace(",", "")
+    .toUpperCase();
 }

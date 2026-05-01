@@ -18,14 +18,14 @@ export function TicketTransferRecipientChoiceScreen({
   onSelectContact: () => void;
 }) {
   return (
-    <BottomDrawer minHeight="75%" onClose={onBack} visible={true}>
+    <BottomDrawer minHeight="62%" onClose={onBack} visible={true}>
       <View className="flex-1 items-center px-[24px] pt-4">
         <Text className="mb-6 text-center text-sm font-semibold tracking-[0.5px] text-[#4F5966]">
           TRANSFER TO
         </Text>
 
         <RecipientChoiceButton
-          iconName="person-add-outline"
+          iconSource={require("../../../assets/tabicon/contacts-book.png")}
           label="Select From Contacts"
           onPress={onSelectContact}
         />
@@ -36,19 +36,19 @@ export function TicketTransferRecipientChoiceScreen({
           onPress={onManualEntry}
         />
 
-        <View className="mt-[60px] items-center justify-center">
+        <View className="mt-12 items-center justify-center">
           <Image
             source={require("../../../assets/tabicon/send.png")}
-            style={{ width: 110, height: 110 }}
+            style={{ width: 90, height: 90 }}
             contentFit="contain"
           />
         </View>
 
-        <Text className="mt-6 text-center text-[16px] font-bold leading-6 text-[#111111]">
+        <Text className="mt-6 text-center text-sm font-bold leading-6 text-[#111111]">
           Transfer Ticket Via Email or Text
           {"\n"}Message
         </Text>
-        <Text className="mt-3 max-w-[230px] text-center text-[13px] font-normal leading-[19px] text-[#4F5966]">
+        <Text className="mt-3 max-w-[230px] text-center  font-normal leading-[19px] text-[#4F5966]">
           Select an Email or mobile number to transfer tickets to your recipient
         </Text>
       </View>
@@ -62,10 +62,12 @@ export function TicketTransferRecipientChoiceScreen({
 
 function RecipientChoiceButton({
   iconName,
+  iconSource,
   label,
   onPress,
 }: {
-  iconName: React.ComponentProps<typeof Ionicons>["name"];
+  iconName?: React.ComponentProps<typeof Ionicons>["name"];
+  iconSource?: any;
   label: string;
   onPress: () => void;
 }) {
@@ -73,12 +75,21 @@ function RecipientChoiceButton({
     <Pressable
       accessibilityRole="button"
       onPress={onPress}
-      className="mb-[12px] h-[48px] w-full flex-row items-center justify-center gap-3 border border-[#86B7D5] bg-white active:bg-gray-50"
+      className="mb-[12px] w-[90%] py-2 flex-row items-center justify-center gap-3 border border-[#86B7D5] bg-white active:bg-gray-50"
     >
       <Text className="text-[13px] font-semibold leading-[16px] text-[#026CDF]">
         {label}
       </Text>
-      <Ionicons color="#026CDF" name={iconName} size={20} />
+      {iconSource ? (
+        <Image
+          source={iconSource}
+          style={{ width: 18, height: 18 }}
+          contentFit="contain"
+          tintColor="#026CDF"
+        />
+      ) : (
+        <Ionicons color="#026CDF" name={iconName} size={20} />
+      )}
     </Pressable>
   );
 }

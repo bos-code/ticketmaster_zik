@@ -1,13 +1,16 @@
 import React from "react";
 import { Text, TextInput, View } from "react-native";
+import { cx } from "@/components/tickets/cx";
 
 export function Field({
+  error,
   keyboardType,
   label,
   onChangeText,
   placeholder,
   value,
 }: {
+  error?: string;
   keyboardType?: "default" | "email-address" | "phone-pad";
   label: string;
   onChangeText: (value: string) => void;
@@ -15,18 +18,26 @@ export function Field({
   value: string;
 }) {
   return (
-    <View className="gap-[6px]">
-      <Text className="text-[12px] font-semibold leading-[14px] text-[#171717]">
+    <View className="mb-[10px] gap-[2px]">
+      <Text className="text-[10.5px] font-bold leading-[12px] text-[#111111]">
         {label}
       </Text>
       <TextInput
-        className="min-h-[36px] border border-[#C9CCD2] px-[10px] py-2 text-[14px] text-[#111111]"
+        className={cx(
+          "min-h-[32px] border border-[#333333] px-[8px] py-1 text-[13px] font-medium text-[#111111] bg-white",
+          error && "border-[#FF0000]"
+        )}
         keyboardType={keyboardType}
         onChangeText={onChangeText}
         placeholder={placeholder}
-        placeholderTextColor="#C4C8CE"
+        placeholderTextColor="#999999"
         value={value}
       />
+      {error ? (
+        <Text className="text-[10px] font-medium text-[#FF0000]">
+          {error}
+        </Text>
+      ) : null}
     </View>
   );
 }

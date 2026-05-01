@@ -3,11 +3,13 @@ import { Modal, Pressable, View } from "react-native";
 
 export function BottomDrawer({
   children,
+  className,
   minHeight = "75%",
   onClose,
   visible,
 }: {
   children: React.ReactNode;
+  className?: string;
   minHeight?: number | `${number}%`;
   onClose: () => void;
   visible: boolean;
@@ -22,7 +24,7 @@ export function BottomDrawer({
       <View className="flex-1 justify-end bg-[rgba(0,0,0,0.6)]">
         <Pressable className="absolute inset-0" onPress={onClose} />
         <View
-          className="bg-white"
+          className={className || "bg-white"}
           style={[
             { minHeight },
             {
