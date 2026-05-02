@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "ticketmaster_zik",
-    "slug": "ticketmasterzik",
+    "slug": "ticketmaster",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -27,7 +27,12 @@
         "googleMaps": {
           "apiKey": "${EXPO_PUBLIC_GOOGLE_MAPS_API_KEY}"
         }
-      }
+      },
+      "permissions": [
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.ACCESS_FINE_LOCATION",
+        "android.permission.RECORD_AUDIO"
+      ]
     },
     "web": {
       "bundler": "metro",
@@ -82,10 +87,10 @@
     "extra": {
       "router": {},
       "eas": {
-        "projectId": "e9f5dfc6-fbab-4402-bf28-057f180c7b3f"
+        "projectId": "be213680-898c-4136-af6d-078aac0ceca9"
       }
     },
-    "owner": "johnderadev",
+    "owner": "clerksona",
     "runtimeVersion": {
       "policy": "appVersion"
     },
