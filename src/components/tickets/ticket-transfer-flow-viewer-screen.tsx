@@ -1,5 +1,4 @@
 import { Ionicons } from "@expo/vector-icons";
-import { Image } from "expo-image";
 import React, { useEffect, useRef } from "react";
 import {
   FlatList,
@@ -17,6 +16,7 @@ import {
   softPillShadow,
 } from "@/components/tickets/ticketFlowConstants";
 import type { Seat } from "@/components/tickets/ticketFlowTypes";
+import { AppleWalletIcon } from "@/components/tickets/apple-wallet-icon";
 import { ExtrasPanel } from "@/components/tickets/ticket-transfer-flow-extras-panel";
 import { BottomDrawer } from "@/components/ui/bottom-drawer";
 import { TicketCard } from "./ticket-card";
@@ -145,11 +145,7 @@ export function TicketTransferViewerScreen({
               accessibilityRole="button"
               className="h-[44px] flex-1 flex-row items-center justify-center gap-2 rounded-[8px] bg-[#111111]"
             >
-              <Image
-                source={require("../../../assets/wallet.svg")}
-                style={{ height: 24, width: 34 }}
-                contentFit="contain"
-              />
+              <AppleWalletIcon height={24} width={34} />
               <View>
                 <Text className="text-[8px] font-medium text-white leading-tight">Add to</Text>
                 <Text className="text-[12px] font-bold text-white leading-tight">Apple Wallet</Text>
