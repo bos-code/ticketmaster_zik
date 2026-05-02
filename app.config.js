@@ -2,13 +2,25 @@ const { expo: baseConfig } = require("./app.json");
 
 const googleMapsApiKey = process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY;
 
+function isReactNativeMapsPlugin(plugin) {
+  return Array.isArray(plugin)
+    ? plugin[0] === "react-native-maps"
+    : plugin === "react-native-maps";
+}
+
 function withReactNativeMapsPlugin(plugins, apiKey) {
   const nextPlugins = [...plugins];
-  const pluginEntry = ["react-native-maps", { androidGoogleMapsApiKey: apiKey }];
+
+  if (!apiKey) {
+    return nextPlugins.filter((plugin) => !isReactNativeMapsPlugin(plugin));
+  }
+
+  const pluginEntry = [
+    "react-native-maps",
+    { androidGoogleMapsApiKey: apiKey },
+  ];
   const existingIndex = nextPlugins.findIndex((plugin) =>
-    Array.isArray(plugin)
-      ? plugin[0] === "react-native-maps"
-      : plugin === "react-native-maps",
+    isReactNativeMapsPlugin(plugin),
   );
 
   if (existingIndex === -1) {
@@ -17,7 +29,9 @@ function withReactNativeMapsPlugin(plugins, apiKey) {
   }
 
   const existingPlugin = nextPlugins[existingIndex];
-  const existingOptions = Array.isArray(existingPlugin) ? existingPlugin[1] ?? {} : {};
+  const existingOptions = Array.isArray(existingPlugin)
+    ? (existingPlugin[1] ?? {})
+    : {};
 
   nextPlugins[existingIndex] = [
     "react-native-maps",
@@ -37,7 +51,10 @@ module.exports = ({ config }) => {
     android: {
       ...baseConfig.android,
     },
-    plugins: withReactNativeMapsPlugin(baseConfig.plugins ?? [], googleMapsApiKey),
+    plugins: withReactNativeMapsPlugin(
+      baseConfig.plugins ?? [],
+      googleMapsApiKey,
+    ),
   };
 
   if (nextConfig.android?.config?.googleMaps) {
@@ -46,15 +63,5 @@ module.exports = ({ config }) => {
     nextConfig.android.config =
       Object.keys(restAndroidConfig).length > 0 ? restAndroidConfig : undefined;
   }
-
-  if (
-    process.env.EAS_BUILD_PLATFORM === "android" &&
-    !googleMapsApiKey
-  ) {
-    throw new Error(
-      "Missing EXPO_PUBLIC_GOOGLE_MAPS_API_KEY for Android EAS build. Add it to the selected EAS environment.",
-    );
-  }
-
   return nextConfig;
 };
