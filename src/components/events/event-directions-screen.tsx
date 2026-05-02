@@ -24,6 +24,7 @@ import { ticketColors, ticketRadii, ticketSpacing } from '@/constants/ticket-the
 import { useCurrentLocation } from '@/hooks/use-current-location';
 import { getRoutePreview } from '@/lib/directions';
 import {
+  canRenderEmbeddedMap,
   getMapEdgePadding,
   getRegionForCoordinates,
   openExternalMaps,
@@ -39,6 +40,7 @@ export function EventDirectionsScreen({ eventId }: { eventId: string }) {
     () => toCoordinate(event?.latitude, event?.longitude),
     [event?.latitude, event?.longitude],
   );
+  const canShowEmbeddedMap = canRenderEmbeddedMap();
   const mapRef = useRef<MapView | null>(null);
   const [mapReady, setMapReady] = useState(false);
   const [routePreview, setRoutePreview] = useState<RouteState | null>(null);
@@ -191,6 +193,158 @@ export function EventDirectionsScreen({ eventId }: { eventId: string }) {
             </Text>
           </View>
         </View>
+      </SafeAreaView>
+    );
+  }
+
+  if (!canShowEmbeddedMap) {
+    return (
+      <SafeAreaView style={styles.root}>
+        <StatusBar style="light" />
+
+        <View style={styles.headerRow}>
+          <Pressable
+            accessibilityRole="button"
+            onPress={() => router.back()}
+            style={styles.backButton}>
+            <Ionicons color="#FFFFFF" name="arrow-back" size={20} />
+          </Pressable>
+
+          <View style={styles.headerCopy}>
+            <Text numberOfLines={1} style={styles.headerTitle}>
+              Directions
+            </Text>
+            <Text numberOfLines={1} style={styles.headerSubtitle}>
+              {event.venue}
+            </Text>
+          </View>
+        </View>
+
+        <ScrollView
+          contentContainerStyle={styles.noMapContent}
+          showsVerticalScrollIndicator={false}>
+          <View style={styles.noMapHero}>
+            <Ionicons color="#8BC0FF" name="navigate-circle-outline" size={34} />
+            <Text style={styles.noMapHeroTitle}>In-app map preview is disabled here.</Text>
+            <Text style={styles.noMapHeroBody}>
+              This Android build is running without a Google Maps SDK key, so we&apos;re using a
+              route summary fallback instead. You can still refresh the route and open your device
+              maps app for turn-by-turn navigation.
+            </Text>
+          </View>
+
+          <View style={[styles.sheet, styles.noMapSheet]}>
+            <View style={styles.eventRow}>
+              <Image contentFit="cover" source={{ uri: event.imageUrl }} style={styles.eventThumb} />
+              <View style={styles.eventCopy}>
+                <Text style={styles.sheetEyebrow}>{event.date}</Text>
+                <Text numberOfLines={2} style={styles.sheetTitle}>
+                  {event.title}
+                </Text>
+                <Text numberOfLines={1} style={styles.sheetVenue}>
+                  {event.venueAddress}
+                </Text>
+              </View>
+            </View>
+
+            <View style={styles.metricRow}>
+              <RouteMetric label="Distance" value={routePreview?.distanceLabel ?? '--'} />
+              <RouteMetric label="ETA" value={routePreview?.durationLabel ?? '--'} />
+              <RouteMetric
+                label="Route"
+                value={
+                  routePreview
+                    ? routePreview.source === 'google'
+                      ? 'Live'
+                      : 'Approx.'
+                    : 'Pending'
+                }
+              />
+            </View>
+
+            <View style={styles.messageBanner}>
+              <Ionicons color="#8BC0FF" name="information-circle-outline" size={18} />
+              <Text style={styles.messageBannerText}>
+                Open in Maps will still launch external navigation even without the embedded map.
+              </Text>
+            </View>
+
+            {routeError ? (
+              <View style={styles.messageBanner}>
+                <Ionicons color={ticketColors.warning} name="alert-circle-outline" size={18} />
+                <Text style={styles.messageBannerText}>{routeError}</Text>
+              </View>
+            ) : null}
+
+            {!routeError && locationError && permissionStatus === 'granted' ? (
+              <View style={styles.messageBanner}>
+                <Ionicons color={ticketColors.textSubtle} name="locate-outline" size={18} />
+                <Text style={styles.messageBannerText}>{locationError}</Text>
+              </View>
+            ) : null}
+
+            {routePreview?.steps.length ? (
+              <ScrollView
+                contentContainerStyle={styles.stepsWrap}
+                nestedScrollEnabled
+                showsVerticalScrollIndicator={false}
+                style={styles.stepsScroll}>
+                {routePreview.steps.map((step, index) => (
+                  <View key={`${step}-${index}`} style={styles.stepRow}>
+                    <Text style={styles.stepIndex}>{`${index + 1}.`}</Text>
+                    <Text style={styles.stepText}>{step}</Text>
+                  </View>
+                ))}
+              </ScrollView>
+            ) : (
+              <View style={styles.helperCard}>
+                <Text style={styles.helperTitle}>
+                  {permissionStatus === 'denied'
+                    ? 'Enable location to preview your route.'
+                    : routePreview
+                      ? 'Your route summary is ready.'
+                      : 'Checking your route...'}
+                </Text>
+                <Text style={styles.helperBody}>
+                  {permissionStatus === 'denied'
+                    ? 'You can still open the venue in Maps even if location access stays off.'
+                    : 'We can still estimate distance and hand off to external navigation when you need turn-by-turn guidance.'}
+                </Text>
+              </View>
+            )}
+
+            <View style={styles.actionRow}>
+              <Pressable
+                accessibilityRole="button"
+                onPress={() => buildRoute(true)}
+                style={styles.primaryButton}>
+                {isRouting || isCheckingPermission || isLoadingLocation ? (
+                  <ActivityIndicator color="#FFFFFF" size="small" />
+                ) : (
+                  <Text style={styles.primaryButtonText}>
+                    {routePreview ? 'Refresh Route' : 'Build Route'}
+                  </Text>
+                )}
+              </Pressable>
+
+              <Pressable
+                accessibilityRole="button"
+                onPress={handleOpenExternalMaps}
+                style={styles.secondaryButton}>
+                <Text style={styles.secondaryButtonText}>Open in Maps</Text>
+              </Pressable>
+            </View>
+
+            {permissionStatus === 'granted' && !currentLocation && !isLoadingLocation ? (
+              <Pressable
+                accessibilityRole="button"
+                onPress={handleRetryLocation}
+                style={styles.inlineAction}>
+                <Text style={styles.inlineActionText}>Retry current location</Text>
+              </Pressable>
+            ) : null}
+          </View>
+        </ScrollView>
       </SafeAreaView>
     );
   }
@@ -409,6 +563,32 @@ const styles = StyleSheet.create({
     backgroundColor: premiumMapPalette.cardSurface,
     flex: 1,
   },
+  noMapContent: {
+    gap: ticketSpacing.md,
+    paddingBottom: ticketSpacing.lg,
+    paddingHorizontal: ticketSpacing.md,
+    paddingTop: ticketSpacing.md,
+  },
+  noMapHero: {
+    backgroundColor: premiumMapPalette.cardSurfaceElevated,
+    borderColor: premiumMapPalette.cardBorder,
+    borderRadius: ticketRadii.md,
+    borderWidth: 1,
+    gap: ticketSpacing.sm,
+    padding: ticketSpacing.lg,
+  },
+  noMapHeroTitle: {
+    color: '#FFFFFF',
+    fontSize: 22,
+    fontWeight: '900',
+    lineHeight: 28,
+  },
+  noMapHeroBody: {
+    color: premiumMapPalette.textMuted,
+    fontSize: 14,
+    fontWeight: '600',
+    lineHeight: 21,
+  },
   map: {
     ...StyleSheet.absoluteFillObject,
   },
@@ -483,6 +663,9 @@ const styles = StyleSheet.create({
     paddingBottom: ticketSpacing.lg,
     paddingHorizontal: ticketSpacing.md,
     paddingTop: ticketSpacing.sm,
+  },
+  noMapSheet: {
+    marginTop: 0,
   },
   sheetHandle: {
     alignSelf: 'center',

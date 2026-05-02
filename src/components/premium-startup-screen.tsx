@@ -59,7 +59,7 @@ export function PremiumStartupScreen({ onFinish }: PremiumStartupScreenProps) {
   return (
     <View
       pointerEvents="none"
-      className="absolute inset-0 z-[1000] items-center justify-center bg-primary px-8"
+      className="absolute inset-0 z-[1000] items-center justify-center bg-[#007AFF] px-8"
     >
       <Animated.View
         className="absolute items-center justify-center"

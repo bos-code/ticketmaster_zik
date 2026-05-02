@@ -63,9 +63,9 @@ export function TicketTransferAuthModal({
   }));
 
   return (
-    <BottomDrawer minHeight="93%" onClose={onCancel} visible={visible} className="bg-primary rounded-t-2xl" >
+    <BottomDrawer minHeight="93%" onClose={onCancel} visible={visible} className="bg-[#007AFF] rounded-t-2xl" >
       {/* Header Inside Drawer */}
-      <View className="bg-primary h-[54px] w-full flex-row rounded-t-2xl items-center px-[18px]">
+      <View className="bg-[#007AFF] h-[54px] w-full flex-row rounded-t-2xl items-center px-[18px]">
         <Pressable accessibilityRole="button" hitSlop={12} onPress={onCancel}>
           <Text className="text-[14px] font-normal text-white">
             Cancel

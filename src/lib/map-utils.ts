@@ -119,6 +119,14 @@ export function getMapEdgePadding() {
   };
 }
 
+export function canRenderEmbeddedMap() {
+  if (Platform.OS !== 'android') {
+    return true;
+  }
+
+  return Boolean(process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY);
+}
+
 type ExternalMapsOptions = {
   destination: MapCoordinate;
   destinationLabel?: string;

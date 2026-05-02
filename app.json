@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "ticketmaster_zik",
-    "slug": "ticketmaster",
+    "slug": "ticketmasterzik",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -82,10 +82,10 @@
     "extra": {
       "router": {},
       "eas": {
-        "projectId": "be213680-898c-4136-af6d-078aac0ceca9"
+        "projectId": "e9f5dfc6-fbab-4402-bf28-057f180c7b3f"
       }
     },
-    "owner": "clerksona",
+    "owner": "johnderadev",
     "runtimeVersion": {
       "policy": "appVersion"
     },

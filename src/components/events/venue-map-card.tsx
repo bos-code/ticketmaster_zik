@@ -16,6 +16,7 @@ import { premiumMapStyle } from '@/constants/premium-map-style';
 import { ticketColors, ticketRadii, ticketSpacing } from '@/constants/ticket-theme';
 import { useCurrentLocation } from '@/hooks/use-current-location';
 import {
+  canRenderEmbeddedMap,
   getMapEdgePadding,
   getRegionForCoordinates,
   openExternalMaps,
@@ -36,6 +37,7 @@ export function VenueMapCard({
     () => toCoordinate(latitude, longitude),
     [latitude, longitude],
   );
+  const canShowEmbeddedMap = canRenderEmbeddedMap();
   const mapRef = useRef<MapView | null>(null);
   const [mapReady, setMapReady] = useState(false);
   const {
@@ -100,13 +102,15 @@ export function VenueMapCard({
   }
 
   const helperState =
-    permissionStatus === 'denied'
-      ? 'Venue preview only'
-      : permissionStatus === 'granted' && currentLocation
-        ? 'Current location active'
-        : isCheckingPermission || isLoadingLocation
-          ? 'Checking location'
-          : 'Venue preview ready';
+    !canShowEmbeddedMap
+      ? 'External maps only'
+      : permissionStatus === 'denied'
+        ? 'Venue preview only'
+        : permissionStatus === 'granted' && currentLocation
+          ? 'Current location active'
+          : isCheckingPermission || isLoadingLocation
+            ? 'Checking location'
+            : 'Venue preview ready';
 
   const mapPresentationProps =
     Platform.OS === 'android'
@@ -134,7 +138,7 @@ export function VenueMapCard({
         </View>
       </View>
 
-      {venueCoordinate ? (
+      {venueCoordinate && canShowEmbeddedMap ? (
         <View style={[styles.mapShell, styles.fullBleedMapShell]}>
           <MapView
             {...mapPresentationProps}
@@ -185,6 +189,15 @@ export function VenueMapCard({
             <Text style={styles.overlayBadgeText}>Premium venue preview</Text>
           </View>
         </View>
+      ) : venueCoordinate ? (
+        <View style={[styles.emptyMapState, styles.fullBleedMapShell]}>
+          <Ionicons color={ticketColors.primaryBright} name="navigate-circle-outline" size={28} />
+          <Text style={styles.emptyMapTitle}>Open this venue in your maps app</Text>
+          <Text style={styles.emptyMapBody}>
+            This Android build was shipped without an embedded Google Maps key, so the in-app map
+            preview is disabled. Directions can still open in your preferred maps app.
+          </Text>
+        </View>
       ) : (
         <View style={[styles.emptyMapState, styles.fullBleedMapShell]}>
           <Ionicons color={ticketColors.textSubtle} name="map-outline" size={28} />
@@ -212,6 +225,15 @@ export function VenueMapCard({
             size={18}
           />
           <Text style={styles.messageBannerText}>{locationError}</Text>
+        </View>
+      ) : null}
+
+      {!canShowEmbeddedMap && venueCoordinate ? (
+        <View style={styles.messageBanner}>
+          <Ionicons color={ticketColors.primaryBright} name="information-circle-outline" size={18} />
+          <Text style={styles.messageBannerText}>
+            Embedded maps are off for this Android build. Use directions or open the venue in Maps.
+          </Text>
         </View>
       ) : null}
 

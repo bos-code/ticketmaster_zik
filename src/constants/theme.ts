@@ -38,10 +38,10 @@ export const Fonts = Platform.select({
     mono: 'monospace',
   },
   web: {
-    sans: 'var(--font-display)',
-    serif: 'var(--font-serif)',
-    rounded: 'var(--font-rounded)',
-    mono: 'var(--font-mono)',
+    sans: 'SpaceGrotesk-Bold',
+    serif: 'serif',
+    rounded: 'system-ui',
+    mono: 'JetBrainsMono-Regular',
   },
 });
 
