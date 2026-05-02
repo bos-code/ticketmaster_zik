@@ -36,7 +36,6 @@
     },
     "plugins": [
       "expo-dev-client",
-      "@clerk/expo",
       "expo-router",
       [
         "expo-splash-screen",
