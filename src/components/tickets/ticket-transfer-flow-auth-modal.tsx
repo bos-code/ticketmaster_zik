@@ -81,7 +81,7 @@ export function TicketTransferAuthModal({
         {/* Hero Illustration Section */}
         <View className="bg-[#111111] py-12 items-center justify-center">
           <Image
-            source={require("@/assets/tickets/otp_auth_hero.jpg")}
+            source={require("@/assets/tickets/otp_auth_hero.png")}
             style={{ width: 180, height: 120 }}
             contentFit="contain"
           />
