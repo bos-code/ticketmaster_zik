@@ -14,7 +14,8 @@
     "eas:build:dev": "pnpm exec eas build --profile development --platform android",
     "eas:build:preview": "pnpm exec eas build --profile preview --platform android",
     "eas:build:production": "pnpm exec eas build --profile production --platform all",
-    "lint": "expo lint"
+    "lint": "expo lint",
+     "eas-build-pre-install": "npm install -g pnpm@9"
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.2",
