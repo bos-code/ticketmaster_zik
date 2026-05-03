@@ -106,6 +106,30 @@ export function formatTicketDate(ticket: Pick<TicketRecord, 'date' | 'time'>) {
   }).format(date)} at ${ticket.time}`;
 }
 
+export function getSimpleTicketSeatNumbers(seatRange: string) {
+  const seats = seatRange
+    .split(/\s*-\s*/)
+    .map((seat) => {
+      const trimmedSeat = seat.trim();
+      const matches = trimmedSeat.match(/\d+/g);
+
+      return matches?.length ? matches[matches.length - 1] : trimmedSeat;
+    })
+    .filter(Boolean);
+
+  return seats.length ? seats : [seatRange.trim()];
+}
+
+export function formatTicketSeatSummary(
+  ticket: Pick<TicketRecord, 'section' | 'row' | 'seatRange'>,
+) {
+  const seats = getSimpleTicketSeatNumbers(ticket.seatRange);
+  const seatLabel =
+    seats.length > 1 ? `${seats[0]}-${seats[seats.length - 1]}` : seats[0];
+
+  return `Section ${ticket.section} / Row ${ticket.row} / Seat ${seatLabel}`;
+}
+
 function slugify(value: string) {
   return value
     .trim()

@@ -3,13 +3,13 @@ import { Image } from "expo-image";
 import React, { useEffect } from "react";
 import { Text, View } from "react-native";
 import Animated, {
-    Easing,
-    FadeInDown,
-    interpolate,
-    useAnimatedStyle,
-    useSharedValue,
-    withRepeat,
-    withTiming,
+  Easing,
+  FadeInDown,
+  interpolate,
+  useAnimatedStyle,
+  useSharedValue,
+  withRepeat,
+  withTiming,
 } from "react-native-reanimated";
 
 import type { Seat } from "@/components/tickets/ticketFlowTypes";
@@ -54,21 +54,24 @@ export function TicketCard({
 
         {/* 3B. Barcode Section - Overlaid on top of the image */}
         <View className="absolute top-3 left-0 right-0 px-5">
-            <View className="bg-white rounded-sm py-0 shadow-lg items-center">
-                <View className="flex-row items-center justify-center gap-1 pt-1">
-                    <Text className="text-[10px] font-bold text-[#6B6B6B] tracking-tighter">
-                        Screenshots won&apos;t get you in
-                    </Text>
-                    <Ionicons name="refresh" size={10} color="#6B6B6B" />
-                </View>
-                <TicketBarcodeBand seat={seat} />
+          <View className="bg-white rounded-sm py-0 shadow-lg items-center">
+            <View className="flex-row items-center justify-center gap-1 pt-1">
+              <Text className="text-[10px] font-bold text-[#6B6B6B] tracking-tighter">
+                Screenshots won&apos;t get you in
+              </Text>
+              <Ionicons name="refresh" size={10} color="#6B6B6B" />
             </View>
+            <TicketBarcodeBand seat={seat} />
+          </View>
         </View>
 
         {/* 3C. The "Step" Layout - Overlaid at the bottom of the image */}
         <View className="absolute bottom-0 left-0 w-full">
           {/* Left taller panel (75% width) */}
-          <View className="bg-white pt-1 px-4 pb-1" style={{ width: "75%", height: 46 }}>
+          <View
+            className="bg-white pt-1 px-4 pb-1"
+            style={{ width: "75%", height: 46 }}
+          >
             <Text className="text-[14px] font-bold text-[#000000] leading-tight">
               See Ticket Details for Seller&apos;s Terms
             </Text>
@@ -85,15 +88,15 @@ export function TicketCard({
           <Text className="text-[10px] font-bold tracking-[1.5px] text-[#A7ACB5] uppercase">
             SECTION
           </Text>
-          <Text className="text-[18px] font-extrabold leading-[22px] text-[#000000]">
-            {seat.section}
+          <Text className="text-[12px] font-extrabold leading-[15px] text-[#000000]">
+            {seat.id}
           </Text>
         </View>
 
         {/* 3D. Seating Block */}
         <View className="mt-1 h-[32px] w-full items-center justify-center bg-[#111111]">
-          <Text className="text-[11px] font-bold uppercase text-white tracking-widest">
-            LOWER BOWL SEATING
+          <Text className="text-[8px] font-bold uppercase text-white tracking-[2px]">
+            {seat.section}
           </Text>
         </View>
 

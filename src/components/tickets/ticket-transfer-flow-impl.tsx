@@ -3,7 +3,11 @@ import {
   selectTicketReservationById,
   useEventStore,
 } from "@/store/use-event-store";
-import { type TicketRecord, useTicketStore } from "@/store/ticketStore";
+import {
+  getSimpleTicketSeatNumbers,
+  type TicketRecord,
+  useTicketStore,
+} from "@/store/ticketStore";
 import { router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -487,11 +491,7 @@ function buildTicketFlowDataFromTicket(ticket: TicketRecord): TicketFlowContextV
 }
 
 function buildSeatsFromTicket(ticket: TicketRecord) {
-  const seatLabels = ticket.seatRange
-    .split(/\s*-\s*/)
-    .map((seat) => seat.trim())
-    .filter(Boolean);
-  const normalizedSeats = seatLabels.length ? seatLabels : [ticket.seatRange];
+  const normalizedSeats = getSimpleTicketSeatNumbers(ticket.seatRange);
 
   return normalizedSeats.map((seat, index) => ({
     id: `${ticket.id}-seat-${index + 1}`,

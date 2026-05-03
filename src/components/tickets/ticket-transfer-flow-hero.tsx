@@ -172,7 +172,7 @@ export function CollapsibleEventHero({
                     source={require("../../../assets/ticketx3.png")}
                     style={{ height: 15, width: 15 }}
                   />
-                  <Text className="text-[17px] font-bold leading-[19px] text-[#F2F4F7]">
+                  <Text className="text-[17px]  font-bold leading-[19px] text-[#F2F4F7]">
                     {order.ticketCount.replace(" Tickets", "")}
                   </Text>
                 </View>

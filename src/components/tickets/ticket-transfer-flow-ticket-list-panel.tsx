@@ -1,13 +1,15 @@
 import { Ionicons } from "@expo/vector-icons";
 import React from "react";
-import { Pressable, Text, View } from "react-native";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 import Animated, { FadeInDown } from "react-native-reanimated";
 
 import { MapPreviewCard } from "@/components/tickets/ticket-transfer-flow-map-preview-card";
 import { PromoCard } from "@/components/tickets/ticket-transfer-flow-promo-card";
-import { cx } from "@/components/tickets/cx";
 import type { Seat } from "@/components/tickets/ticketFlowTypes";
 import { useTicketFlowData } from "@/components/tickets/useTicketFlowData";
+import { fonts } from "../../../theme/fonts";
+
+const FALLBACK_SEAT_NOTE = "Arist presale";
 
 export function TicketListPanel({
   onOpenDirections,
@@ -17,28 +19,25 @@ export function TicketListPanel({
   const { order, seats } = useTicketFlowData();
 
   return (
-    <View className="bg-white pb-4">
-      <View className="border-b border-[#F1F1F1] px-6 pb-7 pt-6">
-        <View className="flex-row items-start justify-between">
-          <View className="gap-[6px]">
-            <Text className="text-[20px] font-extrabold leading-[24px] text-[#141414]">
-              {order.id}
-            </Text>
-            <Text className="text-[17px] font-medium leading-[21px] text-[#6D727A]">
-              {order.ticketCount}
-            </Text>
+    <View style={styles.panel}>
+      <View style={styles.orderHeader}>
+        <View style={styles.orderHeaderRow}>
+          <View style={styles.orderTextGroup}>
+            <Text style={styles.orderId}>{order.id}</Text>
+            <Text style={styles.ticketCount}>{order.ticketCount}</Text>
           </View>
 
           <Pressable
             accessibilityRole="button"
-            className="h-9 w-9 items-center justify-center"
+            hitSlop={8}
+            style={styles.menuButton}
           >
-            <Ionicons color="#1E1E1E" name="ellipsis-vertical" size={18} />
+            <Ionicons color="#242424" name="ellipsis-vertical" size={20} />
           </Pressable>
         </View>
       </View>
 
-      <View className="px-6 pb-1 pt-7">
+      <View style={styles.ticketList}>
         {seats.map((seat, index) => (
           <TicketSeatCard index={index} key={seat.id} seat={seat} />
         ))}
@@ -54,13 +53,13 @@ function TicketSeatCard({ index, seat }: { index: number; seat: Seat }) {
   return (
     <Animated.View
       entering={FadeInDown.duration(220).delay(40 + index * 60)}
-      className="bg-white pb-12 text-black"
+      style={styles.ticketCard}
     >
-      <Text className="text-[17px] font-semibold leading-[21px] text-[#111111]">
-        {seat.note}
-      </Text>
+      <View style={styles.ticketCardHeader}>
+        <Text style={styles.ticketNote}>{FALLBACK_SEAT_NOTE}</Text>
+      </View>
 
-      <View className="mt-[38px] flex-row gap-3">
+      <View style={styles.ticketMetaRow}>
         <TicketMetaCell align="left" label="SECTION" value={seat.section} />
         <TicketMetaCell align="center" label="ROW" value={seat.row} />
         <TicketMetaCell align="right" label="SEAT" value={seat.seat} />
@@ -80,30 +79,129 @@ function TicketMetaCell({
 }) {
   return (
     <View
-      className={cx(
-        "flex-1",
-        align === "center" && "items-center",
-        align === "right" && "items-end",
-      )}
+      style={[
+        styles.metaCell,
+        align === "center" && styles.metaCellCenter,
+        align === "right" && styles.metaCellRight,
+      ]}
     >
       <Text
-        className={cx(
-          "text-[12px] font-bold uppercase leading-[14px] tracking-[1px] text-[#999BA0]",
-          align === "center" && "text-center",
-          align === "right" && "text-right",
-        )}
+        style={[
+          styles.metaLabel,
+          align === "center" && styles.textCenter,
+          align === "right" && styles.textRight,
+        ]}
       >
         {label}
       </Text>
       <Text
-        className={cx(
-          "mt-[10px] text-[17px] font-bold leading-[21px] text-[#111111]",
-          align === "center" && "text-center",
-          align === "right" && "text-right",
-        )}
+        style={[
+          styles.metaValue,
+          align === "center" && styles.textCenter,
+          align === "right" && styles.textRight,
+        ]}
       >
         {value}
       </Text>
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  panel: {
+    backgroundColor: "#FFFFFF",
+  },
+  orderHeader: {
+    paddingHorizontal: 22,
+    paddingBottom: 10,
+    paddingTop: 20,
+  },
+  orderHeaderRow: {
+    alignItems: "flex-start",
+    flexDirection: "row",
+    justifyContent: "space-between",
+  },
+  orderTextGroup: {
+    gap: 4,
+    paddingTop: 2,
+  },
+  orderId: {
+    color: "#171717",
+    fontFamily: fonts.extraBold,
+    fontSize: 18,
+    letterSpacing: -0.4,
+    lineHeight: 23,
+  },
+  ticketCount: {
+    color: "#6E6E72",
+    fontFamily: fonts.medium,
+    fontSize: 15,
+    lineHeight: 20,
+  },
+  menuButton: {
+    alignItems: "center",
+    height: 32,
+    justifyContent: "center",
+    marginRight: -6,
+    marginTop: -2,
+    width: 32,
+  },
+  ticketList: {
+    paddingBottom: 6,
+    paddingHorizontal: 22,
+    paddingTop: 6,
+  },
+  ticketCard: {
+    backgroundColor: "#F7F3F3",
+    marginBottom: 14,
+    overflow: "hidden",
+  },
+  ticketCardHeader: {
+    borderBottomColor: "#FFFDFD",
+    borderBottomWidth: 3,
+    paddingHorizontal: 18,
+    paddingVertical: 8,
+  },
+  ticketNote: {
+    color: "#191919",
+    fontFamily: fonts.semiBold,
+    fontSize: 16,
+    letterSpacing: -0.2,
+    lineHeight: 21,
+  },
+  ticketMetaRow: {
+    flexDirection: "row",
+    paddingBottom: 18,
+    paddingHorizontal: 18,
+    paddingTop: 16,
+  },
+  metaCell: {
+    flex: 1,
+  },
+  metaCellCenter: {
+    alignItems: "center",
+  },
+  metaCellRight: {
+    alignItems: "flex-end",
+  },
+  metaLabel: {
+    color: "#8D8D93",
+    fontFamily: fonts.bold,
+    fontSize: 11,
+    letterSpacing: 1.35,
+    lineHeight: 13,
+  },
+  metaValue: {
+    color: "#111111",
+    fontFamily: fonts.extraBold,
+    fontSize: 16,
+    lineHeight: 21,
+    marginTop: 9,
+  },
+  textCenter: {
+    textAlign: "center",
+  },
+  textRight: {
+    textAlign: "right",
+  },
+});
