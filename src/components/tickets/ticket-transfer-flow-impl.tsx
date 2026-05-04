@@ -110,7 +110,7 @@ export function TicketTransferFlow({
   const [deliveryMode, setDeliveryMode] = useState<DeliveryMode>("email");
   const [selectedSeatIds, setSelectedSeatIds] = useState<string[]>([]);
   const [otpCode, setOtpCode] = useState("");
-  const [viewerIndex, setViewerIndex] = useState(Math.max(seats.length - 1, 0));
+  const [viewerIndex, setViewerIndex] = useState(0);
   const [recipientForm, setRecipientForm] = useState<RecipientFormState>({
     destination: "",
     firstName: "",
@@ -166,7 +166,7 @@ export function TicketTransferFlow({
   }, []);
 
   useEffect(() => {
-    setViewerIndex(Math.max(seats.length - 1, 0));
+    setViewerIndex(0);
     setSelectedSeatIds([]);
   }, [seats.length, ticketFlowData?.reservationId]);
 
@@ -223,7 +223,7 @@ export function TicketTransferFlow({
   };
 
   const handleOpenViewer = () => {
-    setViewerIndex(Math.max(seats.length - 1, 0));
+    setViewerIndex(0);
     setScreen("viewer");
   };
 
@@ -339,8 +339,7 @@ export function TicketTransferFlow({
         // Clear state after success if needed, or navigate
         setTimeout(() => {
           setTransferModal("none");
-          const nextLength = selectedSeatIds.length || seats.length;
-          setViewerIndex(Math.max(nextLength - 1, 0));
+          setViewerIndex(0);
           setScreen("viewer");
         }, 1500);
       } else {

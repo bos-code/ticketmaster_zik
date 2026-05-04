@@ -128,7 +128,7 @@ const styles = StyleSheet.create({
   orderId: {
     color: "#171717",
     fontFamily: fonts.extraBold,
-    fontSize: 18,
+    fontSize: 14,
     letterSpacing: -0.4,
     lineHeight: 23,
   },

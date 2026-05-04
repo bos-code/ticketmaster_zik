@@ -25,6 +25,7 @@ export function TicketCard({
   seat: Seat;
 }) {
   const { event } = useTicketFlowData();
+  const ticketNote = seat.note.trim || "Lower bowl seating";
 
   return (
     <Animated.View
@@ -61,7 +62,7 @@ export function TicketCard({
               </Text>
               <Ionicons name="refresh" size={10} color="#6B6B6B" />
             </View>
-            <TicketBarcodeBand seat={seat} />
+            <TicketBarcodeBand />
           </View>
         </View>
 
@@ -72,11 +73,11 @@ export function TicketCard({
             className="bg-white pt-1 px-4 pb-1"
             style={{ width: "75%", height: 46 }}
           >
-            <Text className="text-[14px] font-bold text-[#000000] leading-tight">
-              See Ticket Details for Seller&apos;s Terms
+            <Text className="text-lg font-bold tracking-wider text-[#000000] leading-tight">
+              Arist presale
             </Text>
-            <Text className="text-[10px] font-semibold text-[#8B8F96] uppercase tracking-tighter leading-tight">
-              LOWER BOWL SEATING
+            <Text className="text-sm font-semibold text-[#8B8F96] uppercase tracking-tighter leading-tight">
+              {seat.section}
             </Text>
           </View>
         </View>
@@ -85,17 +86,17 @@ export function TicketCard({
       {/* Content below the step image area */}
       <View className="bg-white px-5 pt-0 pb-3">
         <View className="mt-1">
-          <Text className="text-[10px] font-bold tracking-[1.5px] text-[#A7ACB5] uppercase">
+          <Text className="text-sm font-bold tracking-[1.5px] text-[#93969c] uppercase">
             SECTION
           </Text>
-          <Text className="text-[12px] font-extrabold leading-[15px] text-[#000000]">
-            {seat.id}
+          <Text className="text-xl pt-1 mb-2 font-extrabold leading-[15px] text-[#000000]">
+            {seat.seat}
           </Text>
         </View>
 
         {/* 3D. Seating Block */}
         <View className="mt-1 h-[32px] w-full items-center justify-center bg-[#111111]">
-          <Text className="text-[8px] font-bold uppercase text-white tracking-[2px]">
+          <Text className="text-base font-bold uppercase text-white tracking-[2px]">
             {seat.section}
           </Text>
         </View>

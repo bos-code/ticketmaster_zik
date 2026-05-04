@@ -11,8 +11,8 @@ export function PromoCard() {
     <View className="mx-4 mt-5 h-[190px] overflow-hidden bg-[#09090A]">
       <View className="absolute inset-0 bg-[#080809]" />
       <View className="absolute inset-0 flex-row">
-        <View className="w-[62%] bg-[#101010]">
-          <View className="relative h-[112px] overflow-hidden bg-black">
+        <View className="w-[60%] bg-[#101010]">
+          <View className="relative h-[112px]pl-3 pt-2 overflow-hidden bg-black">
             <Image
               resizeMode="cover"
               source={{ uri: event.imageUrl }}
