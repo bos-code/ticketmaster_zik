@@ -67,6 +67,12 @@
           "photosPermission": "Allow ticketmaster_zik to access your photos so admins can upload event artwork."
         }
       ],
+      [
+        "expo-contacts",
+        {
+          "contactsPermission": "Allow ticketmaster_zik to access your contacts to transfer tickets."
+        }
+      ],
       "expo-notifications",
       "expo-secure-store",
       "expo-font",
@@ -79,15 +85,15 @@
     "extra": {
       "router": {},
       "eas": {
-        "projectId": "be213680-898c-4136-af6d-078aac0ceca9"
+        "projectId": "a504ff1f-1b23-4c4e-8078-d02ee3ec946f"
       }
     },
-    "owner": "clerksona",
+    "owner": "macaes-organization",
     "runtimeVersion": {
       "policy": "appVersion"
     },
     "updates": {
-      "url": "https://u.expo.dev/be213680-898c-4136-af6d-078aac0ceca9"
+      "url": "https://u.expo.dev/a504ff1f-1b23-4c4e-8078-d02ee3ec946f"
     }
   }
 }
