@@ -5,11 +5,7 @@ import { Text, View } from "react-native";
 import { EXTRA_CARDS } from "@/components/tickets/ticketFlowConstants";
 import { MapPreviewCard } from "@/components/tickets/ticket-transfer-flow-map-preview-card";
 
-export function ExtrasPanel({
-  onOpenDirections,
-}: {
-  onOpenDirections: () => void;
-}) {
+export function ExtrasPanel() {
   return (
     <View className="bg-white px-4 pb-10 pt-5">
       <View className="gap-3">
@@ -36,7 +32,7 @@ export function ExtrasPanel({
         ))}
       </View>
 
-      <MapPreviewCard onOpenDirections={onOpenDirections} />
+      <MapPreviewCard />
     </View>
   );
 }

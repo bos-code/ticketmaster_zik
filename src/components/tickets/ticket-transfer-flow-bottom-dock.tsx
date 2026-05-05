@@ -7,18 +7,15 @@ export function BottomDock({ onTransfer }: { onTransfer: () => void }) {
   return (
     <Animated.View
       entering={FadeInUp.duration(320).delay(220)}
-      pointerEvents="box-none"
-      className="absolute inset-x-0 bottom-4 z-30 items-center"
+      className="absolute inset-x-0 bottom-10 z-30 items-center"
+      style={{ pointerEvents: 'box-none' }}
     >
       <View
         className="overflow-hidden rounded-[30px] border border-white bg-white"
         style={[
           {
             minWidth: 176,
-            shadowColor: "#000000",
-            shadowOffset: { width: 0, height: 4 },
-            shadowOpacity: 0.2,
-            shadowRadius: 8,
+            boxShadow: '0px 4px 8px rgba(0, 0, 0, 0.20)',
             elevation: 8,
           },
         ]}
@@ -29,7 +26,7 @@ export function BottomDock({ onTransfer }: { onTransfer: () => void }) {
             iconColor="#2B72D7"
             iconName="arrow-up-outline"
             label="Transfer"
-            labelColor="#2B72D7"
+            labelColor="#2b2b2b"
             onPress={onTransfer}
           />
 

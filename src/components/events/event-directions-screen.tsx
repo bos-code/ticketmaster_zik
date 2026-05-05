@@ -12,7 +12,7 @@ import {
   Text,
   View,
 } from 'react-native';
-import MapView, { Marker, Polyline } from 'react-native-maps';
+import MapView, { Marker, Polyline, PROVIDER_GOOGLE } from 'react-native-maps';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { VenueMapMarker } from '@/components/events/venue-map-marker';
@@ -360,6 +360,7 @@ export function EventDirectionsScreen({ eventId }: { eventId: string }) {
         mapPadding={getMapEdgePadding()}
         onMapReady={() => setMapReady(true)}
         pitchEnabled={false}
+        provider={PROVIDER_GOOGLE}
         ref={mapRef}
         rotateEnabled={false}
         scrollEnabled
@@ -407,7 +408,7 @@ export function EventDirectionsScreen({ eventId }: { eventId: string }) {
       <View style={styles.mapScrimTop} />
       <View style={styles.mapScrimBottom} />
 
-      <SafeAreaView pointerEvents="box-none" style={styles.overlay}>
+      <SafeAreaView style={[styles.overlay, { pointerEvents: 'box-none' }]}>
         <View style={styles.headerRow}>
           <Pressable
             accessibilityRole="button"

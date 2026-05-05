@@ -29,13 +29,18 @@ export type RecipientFormState = {
 export type TicketFlowContextValue = {
   event: {
     dateTime: string;
+    directionsEventId?: string;
     headerSubtitle: string;
     id: string;
     imageUrl: string;
+    latitude?: number | null;
+    longitude?: number | null;
     mapImageUrl: string;
     shortTitle: string;
     title: string;
     venue: string;
+    venueAddress?: string;
+    venueSummary?: string;
   };
   order: {
     id: string;

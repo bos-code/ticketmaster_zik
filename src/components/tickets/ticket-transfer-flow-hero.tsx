@@ -110,8 +110,7 @@ export function CollapsibleEventHero({
             </Pressable>
 
             <Animated.View
-              pointerEvents="none"
-              style={collapsedTitleStyle}
+              style={[collapsedTitleStyle, { pointerEvents: 'none' }]}
               className="absolute left-16 right-16 items-start"
             >
               <Text
@@ -147,8 +146,7 @@ export function CollapsibleEventHero({
 
         <Animated.View
           className="absolute inset-x-0 px-4"
-          pointerEvents={isHeroCollapsed ? "none" : "auto"}
-          style={[expandedContentStyle, { top: HERO_IMAGE_HEIGHT }]}
+          style={[expandedContentStyle, { top: HERO_IMAGE_HEIGHT, pointerEvents: isHeroCollapsed ? 'none' : 'auto' }]}
         >
           <View className="overflow-hiddenjustify-center">
             <View className="bg-[#232126] absolute -top-[22%] self-start justify-center px-4 py-2 -mt-1">

@@ -12,12 +12,12 @@ import {
 import Animated, { FadeInUp } from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import { AppleWalletIcon } from "@/components/tickets/apple-wallet-icon";
+import { ExtrasPanel } from "@/components/tickets/ticket-transfer-flow-extras-panel";
 import {
   softPillShadow,
 } from "@/components/tickets/ticketFlowConstants";
 import type { Seat } from "@/components/tickets/ticketFlowTypes";
-import { AppleWalletIcon } from "@/components/tickets/apple-wallet-icon";
-import { ExtrasPanel } from "@/components/tickets/ticket-transfer-flow-extras-panel";
 import { BottomDrawer } from "@/components/ui/bottom-drawer";
 import { TicketCard } from "./ticket-card";
 
@@ -51,7 +51,6 @@ export function TicketTransferViewerScreen({
   carouselCardWidth,
   carouselSnapInterval,
   onBack,
-  onOpenDirections,
   onViewerIndexChange,
   seats,
   viewerIndex,
@@ -59,7 +58,6 @@ export function TicketTransferViewerScreen({
   carouselCardWidth: number;
   carouselSnapInterval: number;
   onBack: () => void;
-  onOpenDirections: () => void;
   onViewerIndexChange: (index: number) => void;
   seats: Seat[];
   viewerIndex: number;
@@ -140,13 +138,13 @@ export function TicketTransferViewerScreen({
             </Text>
           </View>
 
-          <View className="w-full flex-row justify-between gap-3 px-2">
+          <View className="flex-row w-full justify-between gap-3 px-2">
             <Pressable
               accessibilityRole="button"
-              className="h-[44px] flex-1 flex-row items-center justify-center gap-2 rounded-[8px] bg-[#111111]"
+              className="h-[44px] flex-row items-center justify-center gap-2 rounded-[8px] bg-[#111111] px-4"
             >
               <AppleWalletIcon height={24} width={34} />
-              <View>
+              <View className="flex flex-col items-center" >
                 <Text className="text-[8px] font-medium text-white leading-tight">Add to</Text>
                 <Text className="text-[12px] font-bold text-white leading-tight">Apple Wallet</Text>
               </View>
@@ -154,7 +152,7 @@ export function TicketTransferViewerScreen({
 
             <Pressable
               accessibilityRole="button"
-              className="h-[44px] flex-1 flex-row items-center justify-center gap-2 rounded-full border border-[#D7DBE2] bg-[#F9F8F4]"
+              className="h-[44px] flex-row items-center justify-center gap-2 rounded-full border border-[#D7DBE2] bg-[#F9F8F4] px-4"
               onPress={() => setIsTicketInfoOpen(true)}
             >
               <View className="h-6 w-6 items-center justify-center rounded-full bg-black">
@@ -181,7 +179,7 @@ export function TicketTransferViewerScreen({
             TICKET INFO
           </Text>
         </View>
-        <ExtrasPanel onOpenDirections={onOpenDirections} />
+        <ExtrasPanel />
       </BottomDrawer>
     </SafeAreaView>
   );

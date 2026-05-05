@@ -11,11 +11,7 @@ import { fonts } from "../../../theme/fonts";
 
 const FALLBACK_SEAT_NOTE = "Arist presale";
 
-export function TicketListPanel({
-  onOpenDirections,
-}: {
-  onOpenDirections: () => void;
-}) {
+export function TicketListPanel() {
   const { order, seats } = useTicketFlowData();
 
   return (
@@ -42,8 +38,7 @@ export function TicketListPanel({
           <TicketSeatCard index={index} key={seat.id} seat={seat} />
         ))}
       </View>
-
-      <MapPreviewCard onOpenDirections={onOpenDirections} />
+      <MapPreviewCard />
       <PromoCard />
     </View>
   );
@@ -60,7 +55,7 @@ function TicketSeatCard({ index, seat }: { index: number; seat: Seat }) {
       </View>
 
       <View style={styles.ticketMetaRow}>
-        <TicketMetaCell align="left" label="SECTION" value={seat.section} />
+        <TicketMetaCell align="left" label="SECTION" value={seat.seat} />
         <TicketMetaCell align="center" label="ROW" value={seat.row} />
         <TicketMetaCell align="right" label="SEAT" value={seat.seat} />
       </View>
@@ -147,13 +142,15 @@ const styles = StyleSheet.create({
     width: 32,
   },
   ticketList: {
-    paddingBottom: 6,
+    paddingBottom: -2,
     paddingHorizontal: 22,
     paddingTop: 6,
   },
   ticketCard: {
-    backgroundColor: "#F7F3F3",
+    backgroundColor: "#f0eeef",
     marginBottom: 14,
+    borderRadius: 5,
+  
     overflow: "hidden",
   },
   ticketCardHeader: {
@@ -165,13 +162,13 @@ const styles = StyleSheet.create({
   ticketNote: {
     color: "#191919",
     fontFamily: fonts.semiBold,
-    fontSize: 16,
+    fontSize: 14,
     letterSpacing: -0.2,
     lineHeight: 21,
   },
   ticketMetaRow: {
     flexDirection: "row",
-    paddingBottom: 18,
+    paddingBottom: 15,
     paddingHorizontal: 18,
     paddingTop: 16,
   },
@@ -194,7 +191,7 @@ const styles = StyleSheet.create({
   metaValue: {
     color: "#111111",
     fontFamily: fonts.extraBold,
-    fontSize: 16,
+    fontSize: 14 ,
     lineHeight: 21,
     marginTop: 9,
   },

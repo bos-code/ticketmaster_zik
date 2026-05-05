@@ -70,13 +70,13 @@ export function TicketCard({
         <View className="absolute bottom-0 left-0 w-full">
           {/* Left taller panel (75% width) */}
           <View
-            className="bg-white pt-1 px-4 pb-1"
+            className="bg-white pt-1 pl-2 pb-1"
             style={{ width: "75%", height: 46 }}
           >
-            <Text className="text-lg font-bold tracking-wider text-[#000000] leading-tight">
+            <Text className="text-base mb-1 font-bold tracking-wider text-[#000000] leading-tight">
               Arist presale
             </Text>
-            <Text className="text-sm font-semibold text-[#8B8F96] uppercase tracking-tighter leading-tight">
+            <Text className="text-sm  text-[#8B8F96] uppercase  leading-tight">
               {seat.section}
             </Text>
           </View>
@@ -84,12 +84,12 @@ export function TicketCard({
       </View>
 
       {/* Content below the step image area */}
-      <View className="bg-white px-5 pt-0 pb-3">
+      <View className="bg-white px-5 pt-2 pb-3">
         <View className="mt-1">
-          <Text className="text-sm font-bold tracking-[1.5px] text-[#93969c] uppercase">
+          <Text className="text-xs font-bold tracking-[1.5px] text-[#93969c] uppercase">
             SECTION
           </Text>
-          <Text className="text-xl pt-1 mb-2 font-extrabold leading-[15px] text-[#000000]">
+          <Text className="text-lg pt-1 mb-2 font-extrabold leading-[15px] text-[#000000]">
             {seat.seat}
           </Text>
         </View>
@@ -102,7 +102,7 @@ export function TicketCard({
         </View>
 
         {/* 3E. Footer Section */}
-        <View className="mt-2">
+        <View className="mt-3 mb-4">
           <Text className="text-[12px] font-medium text-[#8B8F96] uppercase">
             {`ROW ${seat.row}  ·  SEAT ${seat.seat}`}
           </Text>
@@ -112,7 +112,7 @@ export function TicketCard({
   );
 }
 
-function TicketBarcodeBand({ seat }: { seat: Seat }) {
+function TicketBarcodeBand() {
   const beamProgress = useSharedValue(0);
 
   useEffect(() => {
@@ -142,18 +142,18 @@ function TicketBarcodeBand({ seat }: { seat: Seat }) {
       />
 
       <Animated.View
-        className="absolute w-[4px] bg-[#026CDF]"
+        className="absolute w-[6px] bg-[#026CDF]"
         style={[
           {
-            height: 52,
-            top: 3,
+            height: "100%",
+            top: 0,
             left: "50%",
-            opacity: 0.8,
+            opacity: 1,
             shadowColor: "#026CDF",
             shadowOffset: { width: 0, height: 0 },
-            shadowOpacity: 0.9,
-            shadowRadius: 8,
-            elevation: 4,
+            shadowOpacity: 1,
+            shadowRadius: 10,
+            elevation: 5,
           },
           beamAnimatedStyle,
         ]}

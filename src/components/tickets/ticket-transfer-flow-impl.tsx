@@ -39,6 +39,7 @@ import { ChooseRecipientTypeScreen } from "@/components/tickets/ChooseRecipientT
 import { EnterRecipientDetailsScreen } from "@/components/tickets/EnterRecipientDetailsScreen";
 import { ChooseTransferMethodScreen } from "@/components/tickets/ChooseTransferMethodScreen";
 import { ReviewTransferScreen } from "@/components/tickets/ReviewTransferScreen";
+import type { EventRecord } from "@/lib/data";
 
 export function TicketTransferFlow({
   reservationId,
@@ -50,6 +51,7 @@ export function TicketTransferFlow({
   const ticket = useTicketStore((state) =>
     ticketId ? state.tickets.find((record) => record.id === ticketId) : undefined,
   );
+  const events = useEventStore((state) => state.events);
   const reservation = useEventStore((state) =>
     ticketId
       ? undefined
@@ -62,9 +64,13 @@ export function TicketTransferFlow({
   const carouselCardWidth = Math.round(frameWidth * 0.84);
   const carouselGap = 12;
   const carouselSnapInterval = carouselCardWidth + carouselGap;
+  const legacyVenueEvent = useMemo(
+    () => (ticket ? resolveLegacyTicketVenueEvent(ticket, events) : undefined),
+    [events, ticket],
+  );
   const ticketFlowData = useMemo(() => {
     if (ticket) {
-      return buildTicketFlowDataFromTicket(ticket);
+      return buildTicketFlowDataFromTicket(ticket, legacyVenueEvent);
     }
 
     if (!reservation) {
@@ -73,13 +79,18 @@ export function TicketTransferFlow({
 
     return {
       event: {
+        directionsEventId: reservation.event.id,
         id: reservation.event.id,
         title: reservation.event.title,
         shortTitle: reservation.event.shortTitle ?? reservation.event.title,
         venue: reservation.event.venue,
+        venueAddress: reservation.event.venueAddress,
+        venueSummary: reservation.event.venueSummary,
         dateTime: reservation.event.date,
         headerSubtitle: reservation.event.venue,
         imageUrl: reservation.event.imageUrl,
+        latitude: reservation.event.latitude,
+        longitude: reservation.event.longitude,
         mapImageUrl: buildStaticMapPreviewUrl(
           reservation.event.longitude,
           reservation.event.latitude,
@@ -98,7 +109,7 @@ export function TicketTransferFlow({
         section: seat.section,
       })),
     } satisfies TicketFlowContextValue;
-  }, [reservation, ticket]);
+  }, [legacyVenueEvent, reservation, ticket]);
 
   const seats = ticketFlowData?.seats ?? EMPTY_SEATS;
   const seatSummary = useMemo(() => buildSeatSummary(seats), [seats]);
@@ -353,13 +364,6 @@ export function TicketTransferFlow({
     setOtpCode("");
   };
 
-  const handleOpenDirections = () => {
-    router.push({
-      pathname: "/event-directions/[id]",
-      params: { id: ticketFlowData.event.id },
-    });
-  };
-
   return (
     <TicketFlowContext.Provider value={ticketFlowData}>
       <View className="flex-1">
@@ -377,7 +381,6 @@ export function TicketTransferFlow({
               handleListScroll={handleListScroll}
               isHeroCollapsed={isHeroCollapsed}
               onBack={handleBackToTabs}
-              onOpenDirections={handleOpenDirections}
               onOpenViewer={handleOpenViewer}
               onPanelChange={setActivePanel}
               onTransfer={handleTransferStart}
@@ -432,7 +435,6 @@ export function TicketTransferFlow({
               carouselCardWidth={carouselCardWidth}
               carouselSnapInterval={carouselSnapInterval}
               onBack={() => setScreen("list")}
-              onOpenDirections={handleOpenDirections}
               onViewerIndexChange={setViewerIndex}
               seats={transferredSeats}
               viewerIndex={viewerIndex}
@@ -466,19 +468,34 @@ export function TicketTransferFlow({
   );
 }
 
-function buildTicketFlowDataFromTicket(ticket: TicketRecord): TicketFlowContextValue {
+function buildTicketFlowDataFromTicket(
+  ticket: TicketRecord,
+  venueEvent?: EventRecord,
+): TicketFlowContextValue {
   const seats = buildSeatsFromTicket(ticket);
+  const venueAddress = venueEvent?.venueAddress ?? buildLegacyVenueAddress(ticket);
+  const venueSummary =
+    venueEvent?.venueSummary ??
+    `Preview ${ticket.venue} before you leave, then jump straight into turn-by-turn navigation.`;
 
   return {
     event: {
+      directionsEventId: venueEvent?.id,
       id: ticket.id,
       title: ticket.eventName,
       shortTitle: ticket.eventName,
       venue: ticket.venue,
+      venueAddress,
+      venueSummary,
       dateTime: `${formatFlowDate(ticket.date)}, ${ticket.time}`,
       headerSubtitle: `${ticket.venue}, ${ticket.city}`,
       imageUrl: ticket.image,
-      mapImageUrl: buildStaticMapPreviewUrl(null, null),
+      latitude: venueEvent?.latitude ?? null,
+      longitude: venueEvent?.longitude ?? null,
+      mapImageUrl: buildStaticMapPreviewUrl(
+        venueEvent?.longitude ?? null,
+        venueEvent?.latitude ?? null,
+      ),
     },
     order: {
       id: `Order #${ticket.barcode}`,
@@ -499,6 +516,45 @@ function buildSeatsFromTicket(ticket: TicketRecord) {
     seat,
     section: ticket.section,
   }));
+}
+
+function resolveLegacyTicketVenueEvent(ticket: TicketRecord, events: EventRecord[]) {
+  const normalizedVenue = normalizeSearchValue(ticket.venue);
+  const normalizedCity = normalizeSearchValue(ticket.city);
+  const normalizedEventName = normalizeSearchValue(ticket.eventName);
+
+  const exactVenueMatch = events.find((event) => {
+    const eventVenue = normalizeSearchValue(event.venue);
+    const eventCity = normalizeSearchValue(event.city);
+    const eventTitle = normalizeSearchValue(event.title);
+    const eventShortTitle = normalizeSearchValue(event.shortTitle ?? "");
+
+    return (
+      eventVenue === normalizedVenue &&
+      (eventCity.includes(normalizedCity) ||
+        normalizedCity.includes(eventCity) ||
+        eventTitle.includes(normalizedEventName) ||
+        eventShortTitle.includes(normalizedEventName))
+    );
+  });
+
+  if (exactVenueMatch) {
+    return exactVenueMatch;
+  }
+
+  return events.find((event) => normalizeSearchValue(event.venue) === normalizedVenue);
+}
+
+function buildLegacyVenueAddress(ticket: TicketRecord) {
+  return [ticket.venue, ticket.city, ticket.state, ticket.country].filter(Boolean).join(", ");
+}
+
+function normalizeSearchValue(value: string) {
+  return value
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, " ")
+    .replace(/\s+/g, " ");
 }
 
 function formatFlowDate(value: string) {
