@@ -145,10 +145,10 @@ export function CollapsibleEventHero({
         </View>
 
         <Animated.View
-          className="absolute inset-x-0 px-4"
+          className="absolute inset-x-0  px-4"
           style={[expandedContentStyle, { top: HERO_IMAGE_HEIGHT, pointerEvents: isHeroCollapsed ? 'none' : 'auto' }]}
         >
-          <View className="relative pt-4">
+          <View className="relative  pt-4">
             <View className="absolute left-0 top-0 z-10 self-start justify-center bg-[#232126] px-4 py-2">
               <Text className="text-sm font-extrabold uppercase leading-[13px] tracking-[1px] text-[rgba(255,255,255,0.92)]">
                 {event.dateTime}
@@ -180,7 +180,7 @@ export function CollapsibleEventHero({
             <Pressable
               accessibilityRole="button"
               onPress={onOpenViewer}
-              className="min-h-[42px] flex-row items-center justify-center gap-[6px] bg-[#0B55F5]"
+              className="min-h-[42px] flex-row items-center justify-center gap-[6px] bg-[#0444f3]"
             >
               <Ionicons color="#CFE0FF" name="barcode-outline" size={14} />
               <Text className="text-[13px] font-bold leading-[16px] text-[#F5F9FF]">

@@ -1,4 +1,4 @@
-import { version } from 'expo/package.json';
+import Constants from 'expo-constants';
 import { Image } from 'expo-image';
 import React from 'react';
 import { StyleSheet } from 'react-native';
@@ -9,12 +9,14 @@ import { ThemedView } from './themed-view';
 import { Spacing } from '@/constants/theme';
 
 export function WebBadge() {
+  const appVersion = Constants.expoConfig?.version ?? '1.0.0';
+
   return (
     <ThemedView style={styles.container}>
       <ThemedText type="code" themeColor="textSecondary" style={styles.versionText}>
-        v{version}
+        v{appVersion}
       </ThemedText>
-      <Image source={require('@/assets/images/expo-badge.png')} style={styles.badgeImage} />
+      <Image source={require('@/assets/Correctapp_icon.png')} style={styles.badgeImage} />
     </ThemedView>
   );
 }
@@ -29,7 +31,8 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   badgeImage: {
-    width: 123,
-    aspectRatio: 123 / 24,
+    width: 40,
+    height: 40,
+    borderRadius: 10,
   },
 });

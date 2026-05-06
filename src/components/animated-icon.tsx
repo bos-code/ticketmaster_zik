@@ -4,6 +4,8 @@ import { Dimensions, StyleSheet, View } from 'react-native';
 import Animated, { Easing, Keyframe } from 'react-native-reanimated';
 import { scheduleOnRN } from 'react-native-worklets';
 
+import { TicketmasterTMark } from '@/components/ticketmaster-wordmark';
+
 const INITIAL_SCALE_FACTOR = Dimensions.get('screen').height / 90;
 const DURATION = 600;
 
@@ -89,7 +91,9 @@ export function AnimatedIcon() {
 
       <Animated.View entering={keyframe.duration(DURATION)} style={styles.background} />
       <Animated.View style={styles.imageContainer} entering={logoKeyframe.duration(DURATION)}>
-        <Image style={styles.image} source={require('@/assets/images/expo-logo.png')} />
+        <View style={styles.image}>
+          <TicketmasterTMark fill="#FFFFFF" size={74} />
+        </View>
       </Animated.View>
     </View>
   );
@@ -113,9 +117,11 @@ const styles = StyleSheet.create({
     zIndex: 100,
   },
   image: {
+    alignItems: 'center',
+    height: 74,
+    justifyContent: 'center',
     position: 'absolute',
-    width: 76,
-    height: 71,
+    width: 40,
   },
   background: {
     borderRadius: 40,

@@ -444,15 +444,9 @@ export function TicketTransferFlow({
 
         <TicketTransferAuthModal
           confirmCodeReady={confirmCodeReady}
-          frameWidth={frameWidth}
           onCancel={() => setTransferModal("none")}
           onConfirm={handleConfirmCode}
-          onOtpBackspace={() => setOtpCode((current) => current.slice(0, -1))}
-          onOtpDigit={(digit) =>
-            setOtpCode((current) =>
-              current.length >= 6 ? current : `${current}${digit}`,
-            )
-          }
+          onOtpChange={setOtpCode}
           otpCode={otpCode}
           visible={transferModal === "auth"}
         />

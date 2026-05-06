@@ -1,6 +1,10 @@
 import { useRouter } from "expo-router";
-import React, { useState } from "react";
+import * as countries from "i18n-iso-countries";
+import enCountryData from "i18n-iso-countries/langs/en.json";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
+  ActivityIndicator,
+  Alert,
   Platform,
   ScrollView,
   StatusBar,
@@ -9,14 +13,19 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import CountryFlag from "react-native-country-flag";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import {
   AccountIcon,
   type AccountIconName,
 } from "@/components/account/account-icon";
+import {
+  getLocationPermissionStatus,
+  resolveHomeLocation,
+} from "@/lib/device-permissions";
+import { useAppStore } from "@/store/use-app-store";
 
-// Only kept for values NativeWind can't express
 const SWITCH = {
   thumbColor: "#FFFFFF",
   trackOff: "#D1D1D6",
@@ -31,10 +40,11 @@ const accountFont = Platform.select({
 });
 
 const fontStyle = { fontFamily: accountFont } as const;
+const WELCOME_PANEL_LOCK_HEIGHT = 132;
+const WELCOME_PANEL_REVEAL_THRESHOLD = 56;
+const COUNTRY_LANGUAGE = "en";
 
-// ---------------------------------------------------------------------------
-// Sub-components
-// ---------------------------------------------------------------------------
+countries.registerLocale(enCountryData);
 
 function RowIconSlot({
   icon,
@@ -47,6 +57,18 @@ function RowIconSlot({
     <View className="w-7 items-center justify-center">
       {customElement ??
         (icon && <AccountIcon color="#000000" name={icon} size={21} />)}
+    </View>
+  );
+}
+
+function CountryFlagCircle({ countryCode }: { countryCode?: string }) {
+  if (!countryCode) {
+    return <AccountIcon color="#000000" name="flag-outline" size={21} />;
+  }
+
+  return (
+    <View className="h-[22px] w-[22px] items-center justify-center overflow-hidden rounded-full border border-[rgba(0,0,0,0.08)] bg-[#F2F4F7]">
+      <CountryFlag isoCode={countryCode} size={22} />
     </View>
   );
 }
@@ -115,7 +137,7 @@ function ToggleRow({
   icon: AccountIconName;
   label: string;
   value: boolean;
-  onChange: (v: boolean) => void;
+  onChange: (value: boolean) => void;
   isLast?: boolean;
 }) {
   return (
@@ -147,21 +169,26 @@ function ToggleRow({
 }
 
 function ValueRow({
+  busy = false,
   icon,
   customIcon,
   label,
+  onPress,
   value,
   isLast = false,
 }: {
+  busy?: boolean;
   icon?: AccountIconName;
   customIcon?: React.ReactNode;
   label: string;
+  onPress?: () => void;
   value: string;
   isLast?: boolean;
 }) {
   return (
     <TouchableOpacity
       activeOpacity={0.55}
+      onPress={onPress}
       className={`flex-row items-center justify-between bg-white px-5 py-[3px] min-h-[35px]${
         isLast ? "" : " border-b border-[rgba(0,0,0,0.06)]"
       }`}
@@ -177,21 +204,114 @@ function ValueRow({
           {value}
         </Text>
         <View className="w-[18px] items-center justify-center">
-          <AccountIcon color="#007AFF" name="edit-outline" size={16} />
+          {busy ? (
+            <ActivityIndicator color="#007AFF" size="small" />
+          ) : (
+            <AccountIcon color="#007AFF" name="edit-outline" size={16} />
+          )}
         </View>
       </View>
     </TouchableOpacity>
   );
 }
 
-// ---------------------------------------------------------------------------
-// Screen
-// ---------------------------------------------------------------------------
-
 export default function MyAccountScreen() {
   const router = useRouter();
+  const scrollRef = useRef<ScrollView | null>(null);
+  const scrollOffsetYRef = useRef(WELCOME_PANEL_LOCK_HEIGHT);
   const [receiveNotifs, setReceiveNotifs] = useState(false);
-  const [locationContent, setLocationContent] = useState(false);
+  const [isRefreshingLocation, setIsRefreshingLocation] = useState(false);
+  const homeLocationLabel = useAppStore((state) => state.homeLocationLabel);
+  const locationEnabled = useAppStore((state) => state.locationEnabled);
+  const setHomeLocationLabel = useAppStore((state) => state.setHomeLocationLabel);
+  const setLocationEnabled = useAppStore((state) => state.setLocationEnabled);
+
+  useEffect(() => {
+    let isActive = true;
+
+    async function syncLocationState() {
+      const locationStatus = await getLocationPermissionStatus();
+
+      if (!isActive) {
+        return;
+      }
+
+      if (locationStatus === "granted") {
+        setLocationEnabled(true);
+
+        const result = await resolveHomeLocation({ requestIfNeeded: false });
+        if (!isActive) {
+          return;
+        }
+
+        if (result.granted && result.label) {
+          setHomeLocationLabel(result.label);
+        }
+        return;
+      }
+
+      setLocationEnabled(false);
+    }
+
+    void syncLocationState();
+
+    return () => {
+      isActive = false;
+    };
+  }, [setHomeLocationLabel, setLocationEnabled]);
+
+  const locationDetails = useMemo(
+    () => splitLocationLabel(homeLocationLabel),
+    [homeLocationLabel],
+  );
+
+  async function refreshLocationDetails(requestIfNeeded: boolean) {
+    if (isRefreshingLocation) {
+      return;
+    }
+
+    setIsRefreshingLocation(true);
+    const result = await resolveHomeLocation({ requestIfNeeded });
+
+    if (result.granted) {
+      setLocationEnabled(true);
+      if (result.label) {
+        setHomeLocationLabel(result.label);
+      }
+    } else {
+      setLocationEnabled(false);
+      Alert.alert(
+        "Location access",
+        result.error ?? "Unable to update your location details right now.",
+      );
+    }
+
+    setIsRefreshingLocation(false);
+  }
+
+  async function handleLocationToggle(nextValue: boolean) {
+    if (!nextValue) {
+      setLocationEnabled(false);
+      return;
+    }
+
+    await refreshLocationDetails(true);
+  }
+
+  function snapWelcomePanel() {
+    const offsetY = scrollOffsetYRef.current;
+
+    if (offsetY <= 0 || offsetY >= WELCOME_PANEL_LOCK_HEIGHT) {
+      return;
+    }
+
+    const nextOffset =
+      offsetY <= WELCOME_PANEL_REVEAL_THRESHOLD ? 0 : WELCOME_PANEL_LOCK_HEIGHT;
+
+    requestAnimationFrame(() => {
+      scrollRef.current?.scrollTo({ x: 0, y: nextOffset, animated: true });
+    });
+  }
 
   return (
     <View className="flex-1 bg-white">
@@ -209,14 +329,24 @@ export default function MyAccountScreen() {
       </SafeAreaView>
 
       <ScrollView
+        ref={scrollRef}
+        alwaysBounceVertical
         contentContainerStyle={{ paddingBottom: 32 }}
-        contentOffset={{ x: 0, y: 130 }}
+        contentOffset={{ x: 0, y: WELCOME_PANEL_LOCK_HEIGHT }}
+        onMomentumScrollEnd={snapWelcomePanel}
+        onScroll={(event) => {
+          scrollOffsetYRef.current = event.nativeEvent.contentOffset.y;
+        }}
+        onScrollEndDrag={snapWelcomePanel}
+        scrollEventThrottle={16}
         showsVerticalScrollIndicator={false}
         className="flex-1 bg-white"
       >
-        {/* Hidden header (revealed on scroll-up) */}
         <View className="w-full bg-[#161616]">
-          <View className="px-5 pt-4 pb-6 items-center">
+          <View
+            className="px-5 pt-4 pb-6 items-center"
+            style={{ minHeight: WELCOME_PANEL_LOCK_HEIGHT }}
+          >
             <Text className="text-white text-base mb-5" style={fontStyle}>
               Welcome to{" "}
               <Text
@@ -239,7 +369,6 @@ export default function MyAccountScreen() {
 
         <View className="h-6" />
 
-        {/* Notifications */}
         <SectionHeader label="Notifications" />
         <View className="bg-white">
           <ChevronRow icon="envelope-outline" label="My Notifications" />
@@ -254,35 +383,35 @@ export default function MyAccountScreen() {
 
         <Divider />
 
-        {/* Location Settings */}
         <SectionHeader label="Location Settings" />
         <View className="bg-white">
           <ValueRow
+            busy={isRefreshingLocation}
             icon="location-outline"
             label="My Location"
-            value="Los Angeles, CA"
+            onPress={() => void refreshLocationDetails(true)}
+            value={locationDetails.location}
           />
           <ValueRow
+            busy={isRefreshingLocation}
             customIcon={
-              <View className="w-[22px] h-[22px] rounded-full bg-[#E5E5E5] items-center justify-center overflow-hidden border-[0.5px] border-[#CCCCCC]">
-                <Text style={{ fontSize: 13, lineHeight: 18 }}>🇺🇸</Text>
-              </View>
+              <CountryFlagCircle countryCode={locationDetails.countryCode} />
             }
             label="My Country"
-            value="United States"
+            onPress={() => void refreshLocationDetails(true)}
+            value={locationDetails.country}
           />
           <ToggleRow
             icon="paper-plane-outline"
             isLast
             label="Location Based Content"
-            onChange={setLocationContent}
-            value={locationContent}
+            onChange={(value) => void handleLocationToggle(value)}
+            value={locationEnabled}
           />
         </View>
 
         <Divider />
 
-        {/* Preferences */}
         <SectionHeader label="Preferences" />
         <View className="bg-white">
           <ChevronRow icon="heart-outline" label="My Favourites" />
@@ -304,7 +433,7 @@ export default function MyAccountScreen() {
                       fontSize: 14,
                       lineHeight: 16,
                       includeFontPadding: false,
-                    } as any,
+                    } as const,
                   ]}
                 >
                   t
@@ -318,7 +447,6 @@ export default function MyAccountScreen() {
 
         <Divider />
 
-        {/* Help */}
         <SectionHeader label="Help & Guidance" />
         <View className="bg-white">
           <ChevronRow icon="help-circle-outline" label="Help Center" isLast />
@@ -328,4 +456,58 @@ export default function MyAccountScreen() {
       </ScrollView>
     </View>
   );
+}
+
+function splitLocationLabel(label: string) {
+  const parts = label
+    .split(",")
+    .map((part) => part.trim())
+    .filter(Boolean);
+
+  if (!parts.length) {
+    return {
+      location: "Unavailable",
+      country: "Unavailable",
+      countryCode: undefined,
+    };
+  }
+
+  const rawCountry = parts[parts.length - 1] ?? "";
+  const location =
+    parts.length > 1 ? parts.slice(0, -1).join(", ") : parts[0];
+  const countryCode = resolveCountryCode(rawCountry);
+
+  return {
+    location,
+    country: resolveCountryName(rawCountry, countryCode),
+    countryCode,
+  };
+}
+
+function resolveCountryName(value: string, countryCode?: string) {
+  const normalized = value.trim();
+
+  if (!normalized) {
+    return "Unavailable";
+  }
+
+  if (countryCode) {
+    return countries.getName(countryCode, COUNTRY_LANGUAGE) ?? countryCode;
+  }
+
+  return normalized;
+}
+
+function resolveCountryCode(value: string) {
+  const normalized = value.trim();
+
+  if (!normalized) {
+    return undefined;
+  }
+
+  if (/^[A-Za-z]{2}$/.test(normalized)) {
+    return normalized.toUpperCase();
+  }
+
+  return countries.getAlpha2Code(normalized, COUNTRY_LANGUAGE)?.toUpperCase();
 }

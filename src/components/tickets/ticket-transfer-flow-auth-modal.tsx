@@ -1,66 +1,46 @@
-import { Ionicons } from "@expo/vector-icons";
 import React from "react";
-import { Pressable, Text, View } from "react-native";
+import { Keyboard, Platform, Pressable, Text, TextInput, View } from "react-native";
 
 import { Image } from "expo-image";
-import Animated, { useAnimatedStyle, withTiming, useSharedValue } from "react-native-reanimated";
 
 import { cx } from "@/components/tickets/cx";
 import { BottomDrawer } from "@/components/ui/bottom-drawer";
-
-const AUTH_KEYPAD = [
-  { val: "1", sub: "" },
-  { val: "2", sub: "A B C" },
-  { val: "3", sub: "D E F" },
-  { val: "4", sub: "G H I" },
-  { val: "5", sub: "J K L" },
-  { val: "6", sub: "M N O" },
-  { val: "7", sub: "P Q R S" },
-  { val: "8", sub: "T U V" },
-  { val: "9", sub: "W X Y Z" },
-  { val: "", sub: "" },
-  { val: "0", sub: "" },
-  { val: "back", sub: "" },
-];
+import { normalizeOtp, OTP_LENGTH } from "@/lib/auth/otp";
 
 export function TicketTransferAuthModal({
   confirmCodeReady,
-  frameWidth,
   onCancel,
   onConfirm,
-  onOtpBackspace,
-  onOtpDigit,
+  onOtpChange,
   otpCode,
   visible,
 }: {
   confirmCodeReady: boolean;
-  frameWidth: number;
   onCancel: () => void;
   onConfirm: () => void;
-  onOtpBackspace: () => void;
-  onOtpDigit: (digit: string) => void;
+  onOtpChange: (value: string) => void;
   otpCode: string;
   visible: boolean;
 }) {
-  const [isKeypadVisible, setIsKeypadVisible] = React.useState(false);
-  const keypadTranslateY = useSharedValue(400); // Start hidden below
+  const inputRef = React.useRef<TextInput | null>(null);
 
   React.useEffect(() => {
-    keypadTranslateY.value = withTiming(isKeypadVisible ? 0 : 400, {
-      duration: 300,
-    });
-  }, [isKeypadVisible, keypadTranslateY]);
+    if (!visible) {
+      return;
+    }
 
-  // Auto-hide when 6 digits reached
+    const focusTimer = setTimeout(() => {
+      inputRef.current?.focus();
+    }, 220);
+
+    return () => clearTimeout(focusTimer);
+  }, [visible]);
+
   React.useEffect(() => {
-    if (otpCode.length === 6) {
-      setIsKeypadVisible(false);
+    if (otpCode.length === OTP_LENGTH) {
+      Keyboard.dismiss();
     }
   }, [otpCode]);
-
-  const animatedKeypadStyle = useAnimatedStyle(() => ({
-    transform: [{ translateY: keypadTranslateY.value }],
-  }));
 
   return (
     <BottomDrawer minHeight="93%" onClose={onCancel} visible={visible} className="bg-[#007AFF] rounded-t-2xl" >
@@ -100,25 +80,46 @@ export function TicketTransferAuthModal({
           <Text className="text-[11px] font-bold leading-[13px] text-[#4A4F58]">
             One-Time Code
           </Text>
-          <Pressable
-            onPress={() => setIsKeypadVisible(true)}
-            className={cx(
-              "min-h-[46px] justify-center rounded-[8px] border px-4 bg-white",
-              isKeypadVisible ? "border-[#2F88F3]" : "border-[#D1D5DB]"
-            )}
-          >
-            <Text className="text-[20px] font-medium leading-[24px] tracking-[4px] text-[#111111]">
-              {otpCode}
-            </Text>
-          </Pressable>
+          <TextInput
+            ref={inputRef}
+            autoComplete={Platform.OS === "android" ? "sms-otp" : "one-time-code"}
+            autoFocus={visible}
+            inputMode="numeric"
+            keyboardType="number-pad"
+            maxLength={OTP_LENGTH}
+            onChangeText={(value) => onOtpChange(normalizeOtp(value))}
+            onSubmitEditing={() => {
+              if (confirmCodeReady) {
+                onConfirm();
+              }
+            }}
+            placeholder={`Enter ${OTP_LENGTH}-digit code`}
+            placeholderTextColor="#80858E"
+            returnKeyType="done"
+            selectionColor="#2F88F3"
+            style={[
+              {
+                minHeight: 46,
+                borderRadius: 8,
+                borderWidth: 1,
+                borderColor: otpCode.length ? "#2F88F3" : "#D1D5DB",
+                paddingHorizontal: 16,
+                backgroundColor: "#FFFFFF",
+                color: "#111111",
+                fontSize: 20,
+                fontWeight: "500",
+                letterSpacing: 4,
+              },
+            ]}
+            textContentType="oneTimeCode"
+            value={otpCode}
+          />
           <Text className="text-[11px] font-normal leading-[13px] text-[#80858E]">
             It may take a minute to receive your code.
           </Text>
         </View>
 
-        {/* Bottom Section (Keypad or Button) */}
         <View className="mt-auto">
-          {/* Always reserve space for the button at the very bottom */}
           <View className="px-2 pb-6 pt-2 h-[68px]">
             <Pressable
               accessibilityRole="button"
@@ -134,72 +135,6 @@ export function TicketTransferAuthModal({
               </Text>
             </Pressable>
           </View>
-
-          {/* Keypad Overlays the bottom area when visible */}
-          <Animated.View 
-            style={[
-              { position: 'absolute', bottom: 0, left: 0, right: 0 },
-              animatedKeypadStyle
-            ]}
-            className="bg-[#F4F5F7] p-2 pt-5"
-          >
-            <View className="flex-row flex-wrap justify-between">
-              {AUTH_KEYPAD.map((item, index) => {
-                if (item.val === "") {
-                  return (
-                    <View key={`empty-${index}`} className="h-[48px] w-[31%] mb-2" />
-                  );
-                }
-
-                if (item.val === "back") {
-                  return (
-                    <Pressable
-                      accessibilityRole="button"
-                      key="back-key"
-                      onPress={onOtpBackspace}
-                      className="h-[48px] w-[31%] mb-2 items-center justify-center"
-                    >
-                      <Ionicons color="#111111" name="backspace-outline" size={24} />
-                    </Pressable>
-                  );
-                }
-
-                return (
-                  <Pressable
-                    accessibilityRole="button"
-                    key={item.val}
-                    onPress={() => onOtpDigit(item.val)}
-                    className="h-[48px] w-[31%] mb-2 items-center justify-center bg-white rounded-[6px] shadow-sm"
-                    style={{
-                      elevation: 1,
-                      shadowColor: "#000",
-                      shadowOffset: { width: 0, height: 1 },
-                      shadowOpacity: 0.1,
-                      shadowRadius: 1,
-                    }}
-                  >
-                    <View className="items-center">
-                      <Text className="text-[22px] font-normal text-[#111111] leading-[26px]">
-                        {item.val}
-                      </Text>
-                      {item.sub ? (
-                        <Text className="text-[8px] font-bold tracking-[1px] text-[#80858E] mt-[-4px]">
-                          {item.sub}
-                        </Text>
-                      ) : null}
-                    </View>
-                  </Pressable>
-                );
-              })}
-            </View>
-            {/* Small handle to dismiss the keypad */}
-            <Pressable 
-              onPress={() => setIsKeypadVisible(false)}
-              className="items-center py-2"
-            >
-              <View className="w-10 h-1 bg-gray-300 rounded-full" />
-            </Pressable>
-          </Animated.View>
         </View>
       </View>
     </BottomDrawer>

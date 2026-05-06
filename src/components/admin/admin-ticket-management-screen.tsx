@@ -350,7 +350,7 @@ const styles = StyleSheet.create({
   sectionTitle: { color: '#FFFFFF', fontSize: 15, fontWeight: '900', letterSpacing: 1.3, textTransform: 'uppercase' },
   sectionCount: { color: '#B79E6A', fontSize: 13, fontWeight: '900' },
   card: { backgroundColor: '#101010', borderRadius: 8, marginBottom: 14, overflow: 'hidden' },
-  artPanel: { height: 164, overflow: 'hidden' },
+  artPanel: { height: 212, overflow: 'hidden' },
   cardImage: { backgroundColor: '#1A1A1A', height: '100%', width: '100%' },
   imageGradient: { bottom: 0, height: 90, left: 0, position: 'absolute', right: 0 },
   artAccent: { bottom: 0, height: 4, left: 0, position: 'absolute', right: 0 },

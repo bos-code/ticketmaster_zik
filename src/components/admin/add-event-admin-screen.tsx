@@ -18,6 +18,7 @@ import {
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { AdminDateTimeField } from '@/components/admin/admin-date-time-field';
 import {
   TICKET_STATUS_OPTIONS,
   TICKET_TYPE_OPTIONS,
@@ -201,11 +202,10 @@ export function AddEventAdminScreen() {
       }
 
       const result = await ImagePicker.launchImageLibraryAsync({
-        allowsEditing: true,
-        aspect: [16, 9],
+        allowsEditing: false,
         base64: true,
         mediaTypes: ['images'],
-        quality: 0.86,
+        quality: 1,
       });
 
       if (result.canceled || !result.assets?.length) {
@@ -282,7 +282,7 @@ export function AddEventAdminScreen() {
 
           <View style={styles.previewCard}>
             {form.image.trim() ? (
-              <Image contentFit="cover" source={{ uri: form.image }} style={styles.previewImage} />
+              <Image contentFit="contain" source={{ uri: form.image }} style={styles.previewImage} />
             ) : (
               <View style={styles.previewPlaceholder}>
                 <Ionicons color="rgba(255,255,255,0.5)" name="image-outline" size={32} />
@@ -346,10 +346,31 @@ export function AddEventAdminScreen() {
 
           <FormSection title="Schedule">
             <View style={styles.row}>
-              <TicketTextField error={errors.date} label="Date" onChangeText={(value) => updateField('date', value)} placeholder="2026-12-19" value={form.date} />
-              <TicketTextField error={errors.time} label="Time" onChangeText={(value) => updateField('time', value)} placeholder="8:30 PM" value={form.time} />
+              <AdminDateTimeField
+                error={errors.date}
+                label="Date"
+                mode="date"
+                onChangeValue={(value) => updateField('date', value)}
+                placeholder="2026-12-19"
+                value={form.date}
+              />
+              <AdminDateTimeField
+                error={errors.time}
+                label="Time"
+                mode="time"
+                onChangeValue={(value) => updateField('time', value)}
+                placeholder="8:30 PM"
+                value={form.time}
+              />
             </View>
-            <TicketTextField error={errors.purchaseDate} label="Purchase Date" onChangeText={(value) => updateField('purchaseDate', value)} placeholder="2026-04-30" value={form.purchaseDate} />
+            <AdminDateTimeField
+              error={errors.purchaseDate}
+              label="Purchase Date"
+              mode="date"
+              onChangeValue={(value) => updateField('purchaseDate', value)}
+              placeholder="2026-04-30"
+              value={form.purchaseDate}
+            />
           </FormSection>
 
           <FormSection title="Seat Details">
@@ -582,12 +603,12 @@ const styles = StyleSheet.create({
     marginTop: 3,
   },
   previewCard: { backgroundColor: '#101010', borderRadius: 8, overflow: 'hidden' },
-  previewImage: { backgroundColor: '#1A1A1A', height: 178, width: '100%' },
+  previewImage: { backgroundColor: '#1A1A1A', height: 272, width: '100%' },
   previewPlaceholder: {
     alignItems: 'center',
     backgroundColor: '#1A1A1A',
     gap: 8,
-    height: 178,
+    height: 272,
     justifyContent: 'center',
     width: '100%',
   },

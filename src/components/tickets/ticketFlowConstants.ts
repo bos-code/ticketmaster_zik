@@ -23,21 +23,6 @@ export const EXTRA_CARDS: ExtraCard[] = [
   },
 ];
 
-export const KEYPAD_KEYS = [
-  "1",
-  "2",
-  "3",
-  "4",
-  "5",
-  "6",
-  "7",
-  "8",
-  "9",
-  "",
-  "0",
-  "back",
-] as const;
-
 export const HERO_IMAGE_HEIGHT = 209;
 export const HERO_DETAIL_PANEL_HEIGHT = 122;
 export const HERO_EXPANDED_HEIGHT = HERO_IMAGE_HEIGHT + HERO_DETAIL_PANEL_HEIGHT;
