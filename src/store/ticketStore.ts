@@ -41,6 +41,8 @@ export const DEFAULT_WIZKID_TICKET: TicketInput = {
   image:
     'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&w=1200&q=85',
   backgroundColor: '#B79E6A',
+  seatLabel: 'Artist presale',
+  ticketNote: 'Standard seating',
 };
 
 export const useTicketStore = create<TicketStore>((set, get) => ({

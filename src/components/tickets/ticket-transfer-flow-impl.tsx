@@ -103,6 +103,7 @@ export function TicketTransferFlow({
       reservationId: reservation.id,
       seats: reservation.seats.map((seat) => ({
         id: seat.id,
+        label: seat.note,
         note: seat.note,
         row: seat.row,
         seat: seat.seat,
@@ -505,7 +506,8 @@ function buildSeatsFromTicket(ticket: TicketRecord) {
 
   return normalizedSeats.map((seat, index) => ({
     id: `${ticket.id}-seat-${index + 1}`,
-    note: ticket.perks || ticket.ticketType,
+    label: ticket.seatLabel || ticket.ticketType,
+    note: ticket.ticketNote || 'Standard seating',
     row: ticket.row,
     seat,
     section: ticket.section,

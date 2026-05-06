@@ -13,6 +13,7 @@ export type DeliveryMode = "email" | "mobile";
 
 export type Seat = {
   id: string;
+  label: string;
   note: string;
   seat: string;
   row: string;

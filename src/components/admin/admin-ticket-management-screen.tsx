@@ -129,6 +129,12 @@ export function AdminTicketManagementScreen() {
                   params: { mode: 'edit', ticketId: ticket.id },
                 })
               }
+              onPreview={(ticket) =>
+                router.push({
+                  pathname: '/admin/preview',
+                  params: { ticketId: ticket.id },
+                })
+              }
               tickets={upcomingTickets}
               title="Upcoming"
             />
@@ -138,6 +144,12 @@ export function AdminTicketManagementScreen() {
                 router.push({
                   pathname: '/add-event',
                   params: { mode: 'edit', ticketId: ticket.id },
+                })
+              }
+              onPreview={(ticket) =>
+                router.push({
+                  pathname: '/admin/preview',
+                  params: { ticketId: ticket.id },
                 })
               }
               tickets={pastTickets}
@@ -180,11 +192,13 @@ export function AdminTicketManagementScreen() {
 function TicketSection({
   onDelete,
   onEdit,
+  onPreview,
   tickets,
   title,
 }: {
   onDelete: (ticket: TicketRecord) => void;
   onEdit: (ticket: TicketRecord) => void;
+  onPreview: (ticket: TicketRecord) => void;
   tickets: TicketRecord[];
   title: string;
 }) {
@@ -199,7 +213,7 @@ function TicketSection({
         <Text style={styles.sectionCount}>{tickets.length}</Text>
       </View>
       {tickets.map((ticket) => (
-        <AdminTicketCard key={ticket.id} onDelete={() => onDelete(ticket)} onEdit={() => onEdit(ticket)} ticket={ticket} />
+        <AdminTicketCard key={ticket.id} onDelete={() => onDelete(ticket)} onEdit={() => onEdit(ticket)} onPreview={() => onPreview(ticket)} ticket={ticket} />
       ))}
     </View>
   );
@@ -208,10 +222,12 @@ function TicketSection({
 function AdminTicketCard({
   onDelete,
   onEdit,
+  onPreview,
   ticket,
 }: {
   onDelete: () => void;
   onEdit: () => void;
+  onPreview: () => void;
   ticket: TicketRecord;
 }) {
   return (
@@ -241,13 +257,16 @@ function AdminTicketCard({
         </View>
 
         <View style={styles.actionRow}>
+          <Pressable onPress={onPreview} style={styles.previewButton}>
+            <Ionicons color="#FFFFFF" name="eye-outline" size={16} />
+            <Text style={styles.previewButtonText}>Preview</Text>
+          </Pressable>
           <Pressable onPress={onEdit} style={styles.editButton}>
             <Ionicons color="#FFFFFF" name="create-outline" size={16} />
             <Text style={styles.editButtonText}>Edit</Text>
           </Pressable>
           <Pressable onPress={onDelete} style={styles.deleteButton}>
             <Ionicons color="#FF6B5A" name="trash-outline" size={16} />
-            <Text style={styles.deleteButtonText}>Delete</Text>
           </Pressable>
         </View>
       </View>
@@ -382,9 +401,10 @@ const styles = StyleSheet.create({
     minHeight: 44,
   },
   editButtonText: { color: '#FFFFFF', fontSize: 12, fontWeight: '900', textTransform: 'uppercase' },
-  deleteButton: {
+  previewButton: {
     alignItems: 'center',
-    borderColor: 'rgba(255,107,90,0.35)',
+    backgroundColor: '#1A1A1A',
+    borderColor: 'rgba(183,158,106,0.35)',
     borderRadius: 8,
     borderWidth: 1,
     flex: 1,
@@ -392,6 +412,16 @@ const styles = StyleSheet.create({
     gap: 7,
     justifyContent: 'center',
     minHeight: 44,
+  },
+  previewButtonText: { color: '#B79E6A', fontSize: 12, fontWeight: '900', textTransform: 'uppercase' },
+  deleteButton: {
+    alignItems: 'center',
+    borderColor: 'rgba(255,107,90,0.35)',
+    borderRadius: 8,
+    borderWidth: 1,
+    justifyContent: 'center',
+    minHeight: 44,
+    width: 44,
   },
   deleteButtonText: { color: '#FF6B5A', fontSize: 12, fontWeight: '900', textTransform: 'uppercase' },
   emptyState: {

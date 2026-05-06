@@ -4,6 +4,7 @@ import { Image, Pressable, StyleSheet, Text, View } from "react-native";
 import Svg, { Defs, LinearGradient, RadialGradient, Rect, Stop } from "react-native-svg";
 
 import { useTicketFlowData } from "@/components/tickets/useTicketFlowData";
+import { EditableText } from "@/components/tickets/EditableText";
 
 export function PromoCard() {
   const { event } = useTicketFlowData();
@@ -78,28 +79,13 @@ export function PromoCard() {
               <View className="absolute inset-0 bg-black/10" />
 
               <View className="absolute bottom-0 left-0 bg-[#1c1c1e] px-4 py-[6px] rounded-tr-[2px]">
-                <Text
-                  className="text-[8px] font-extrabold uppercase tracking-widest text-white"
-                  numberOfLines={1}
-                >
-                  {formattedDate}
-                </Text>
+                  <EditableText field="eventName" value={formattedDate} className="text-[8px] font-extrabold uppercase tracking-widest text-white" numberOfLines={1} />
               </View>
             </View>
 
             <View className="bg-[#121213] px-3 pb-4 pt-3">
-              <Text
-                className="mb-[6px] text-[12px] font-black uppercase leading-[18px] text-white"
-                numberOfLines={2}
-              >
-                {event.title}
-              </Text>
-              <Text
-                className="text-[10px] font-medium text-[#A0A0A0]"
-                numberOfLines={1}
-              >
-                {event.venue}
-              </Text>
+              <EditableText field="eventName" value={event.title} className="mb-[6px] text-[12px] font-black uppercase leading-[18px] text-white" numberOfLines={2} />
+              <EditableText field="venue" value={event.venue} className="text-[10px] font-medium text-[#A0A0A0]" numberOfLines={1} />
             </View>
           </View>
 

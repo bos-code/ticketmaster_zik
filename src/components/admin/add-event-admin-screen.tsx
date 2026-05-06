@@ -52,6 +52,8 @@ const fieldLabels: Record<FieldKey, string> = {
   transferRules: 'Transfer Rules',
   image: 'Image URL',
   backgroundColor: 'Accent Color',
+  seatLabel: 'Seat Label',
+  ticketNote: 'Ticket Note',
 };
 
 const requiredFields: FieldKey[] = [
@@ -96,6 +98,8 @@ const EMPTY_CREATE_FORM: FormState = {
   transferRules: '',
   image: '',
   backgroundColor: '#B79E6A',
+  seatLabel: '',
+  ticketNote: '',
 };
 
 export function AddEventAdminScreen() {
@@ -380,6 +384,8 @@ export function AddEventAdminScreen() {
             </View>
             <TicketTextField error={errors.seatRange} label="Seat Range" onChangeText={(value) => updateField('seatRange', value)} value={form.seatRange} />
             <TicketTextField error={errors.barcode} label="Barcode" onChangeText={(value) => updateField('barcode', value)} value={form.barcode} />
+            <TicketTextField error={errors.seatLabel} label="Seat Label" onChangeText={(value) => updateField('seatLabel', value)} placeholder="e.g. Artist presale, Fan verified" value={form.seatLabel} />
+            <TicketTextField error={errors.ticketNote} label="Ticket Note" onChangeText={(value) => updateField('ticketNote', value)} placeholder="e.g. Lower bowl seating" value={form.ticketNote} />
           </FormSection>
 
           <FormSection title="Ticket Info">
@@ -406,6 +412,14 @@ export function AddEventAdminScreen() {
         <Pressable onPress={() => router.replace('/admin')} style={styles.secondaryButton}>
           <Text style={styles.secondaryButtonText}>Cancel</Text>
         </Pressable>
+        {mode === 'edit' && ticketId ? (
+          <Pressable
+            onPress={() => router.push({ pathname: '/admin/preview', params: { ticketId } })}
+            style={styles.previewFooterButton}
+          >
+            <Ionicons color="#B79E6A" name="eye-outline" size={17} />
+          </Pressable>
+        ) : null}
         <Pressable onPress={handleSave} style={styles.primaryButton}>
           <Ionicons color="#FFFFFF" name={mode === 'edit' ? 'save-outline' : 'add'} size={17} />
           <Text style={styles.primaryButtonText}>{submitLabel}</Text>
@@ -751,6 +765,15 @@ const styles = StyleSheet.create({
     fontWeight: '900',
     letterSpacing: 1.1,
     textTransform: 'uppercase',
+  },
+  previewFooterButton: {
+    alignItems: 'center',
+    borderColor: 'rgba(183,158,106,0.35)',
+    borderRadius: 8,
+    borderWidth: 1,
+    justifyContent: 'center',
+    minHeight: 50,
+    width: 50,
   },
   toast: {
     alignItems: 'center',

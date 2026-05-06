@@ -13,15 +13,19 @@ import Animated, { FadeInUp } from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { AppleWalletIcon } from "@/components/tickets/apple-wallet-icon";
+import { EditableText } from "@/components/tickets/EditableText";
 import { ExtrasPanel } from "@/components/tickets/ticket-transfer-flow-extras-panel";
 import {
   softPillShadow,
 } from "@/components/tickets/ticketFlowConstants";
 import type { Seat } from "@/components/tickets/ticketFlowTypes";
+import { useTicketFlowData } from "@/components/tickets/useTicketFlowData";
 import { BottomDrawer } from "@/components/ui/bottom-drawer";
 import { TicketCard } from "./ticket-card";
 
 function ViewerHeader({ onBack }: { onBack: () => void }) {
+  const { event } = useTicketFlowData();
+
   return (
     <SafeAreaView edges={["top"]} style={{ backgroundColor: "#F9F8F4" }}>
       <View className="flex-row items-center bg-[#F9F8F4] px-5 py-2">
@@ -35,12 +39,8 @@ function ViewerHeader({ onBack }: { onBack: () => void }) {
         </Pressable>
 
         <View className="justify-center">
-          <Text className="text-[17px] font-bold text-[#000000]">
-            Don Toliver: Octane Tour
-          </Text>
-          <Text className="text-[12px] font-medium text-[#6B6B6B]">
-            7:30 PM - Madison Square Garden
-          </Text>
+          <EditableText field="eventName" value={event.shortTitle} className="text-[17px] font-bold text-[#000000]" />
+          <EditableText field="venue" value={event.headerSubtitle} className="text-[12px] font-medium text-[#6B6B6B]" />
         </View>
       </View>
     </SafeAreaView>

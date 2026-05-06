@@ -5,11 +5,10 @@ import Animated, { FadeInDown } from "react-native-reanimated";
 
 import { MapPreviewCard } from "@/components/tickets/ticket-transfer-flow-map-preview-card";
 import { PromoCard } from "@/components/tickets/ticket-transfer-flow-promo-card";
+import { EditableText } from "@/components/tickets/EditableText";
 import type { Seat } from "@/components/tickets/ticketFlowTypes";
 import { useTicketFlowData } from "@/components/tickets/useTicketFlowData";
 import { fonts } from "../../../theme/fonts";
-
-const FALLBACK_SEAT_NOTE = "Arist presale";
 
 export function TicketListPanel() {
   const { order, seats } = useTicketFlowData();
@@ -45,7 +44,7 @@ export function TicketListPanel() {
 }
 
 function TicketSeatCard({ index, seat }: { index: number; seat: Seat }) {
-  const ticketNote = FALLBACK_SEAT_NOTE;
+  const ticketNote = seat.label || seat.note || 'Standard';
 
   return (
     <Animated.View
@@ -53,7 +52,7 @@ function TicketSeatCard({ index, seat }: { index: number; seat: Seat }) {
       style={styles.ticketCard}
     >
       <View style={styles.ticketCardHeader}>
-        <Text style={styles.ticketNote}>{ticketNote}</Text>
+        <EditableText field="seatLabel" value={ticketNote} style={styles.ticketNote} />
       </View>
 
       <View style={styles.ticketMetaRow}>

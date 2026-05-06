@@ -1,9 +1,12 @@
 import { useRouter } from "expo-router";
+import { Image } from "expo-image";
 import React from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import VenueMap from "@/components/VenueMap";
 import {
+  buildStaticMapPreviewUrl,
+  canRenderEmbeddedMap,
   openExternalMaps,
   toCoordinate,
   type VenueMapData,
@@ -17,6 +20,10 @@ export function VenueMapCard({
 }: VenueMapData) {
   const router = useRouter();
   const venueCoordinate = toCoordinate(latitude, longitude);
+  const canShowEmbeddedMap = canRenderEmbeddedMap();
+  const staticMapUrl = venueCoordinate
+    ? buildStaticMapPreviewUrl(venueCoordinate.longitude, venueCoordinate.latitude)
+    : null;
 
   function handleOpenDirections() {
     if (eventId) {
@@ -45,11 +52,19 @@ export function VenueMapCard({
       style={styles.card}
     >
       <View style={styles.mapContainer} pointerEvents="none">
-        <VenueMap
-          latitude={latitude}
-          longitude={longitude}
-          venueName={venueName}
-        />
+        {canShowEmbeddedMap ? (
+          <VenueMap
+            latitude={latitude}
+            longitude={longitude}
+            venueName={venueName}
+          />
+        ) : staticMapUrl ? (
+          <Image
+            contentFit="cover"
+            source={{ uri: staticMapUrl }}
+            style={styles.staticMap}
+          />
+        ) : null}
       </View>
       <View style={styles.button}>
         <Text style={styles.buttonText}>Get Directions</Text>
@@ -65,6 +80,10 @@ const styles = StyleSheet.create({
   },
   mapContainer: {
     height: 220,
+    width: "100%",
+  },
+  staticMap: {
+    height: "100%",
     width: "100%",
   },
   button: {

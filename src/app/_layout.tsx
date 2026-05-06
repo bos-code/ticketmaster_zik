@@ -38,6 +38,10 @@ function RootStack() {
         options={{ animation: "slide_from_right" }}
       />
       <Stack.Screen
+        name="admin/preview"
+        options={{ animation: "slide_from_right" }}
+      />
+      <Stack.Screen
         name="events/[id]"
         options={{ animation: "slide_from_right" }}
       />
