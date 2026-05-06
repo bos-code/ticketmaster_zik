@@ -148,13 +148,13 @@ export function CollapsibleEventHero({
           className="absolute inset-x-0 px-4"
           style={[expandedContentStyle, { top: HERO_IMAGE_HEIGHT, pointerEvents: isHeroCollapsed ? 'none' : 'auto' }]}
         >
-          <View className="overflow-hiddenjustify-center">
-            <View className="bg-[#232126] absolute -top-[22%] self-start justify-center px-4 py-2 -mt-1">
+          <View className="relative pt-4">
+            <View className="absolute left-0 top-0 z-10 self-start justify-center bg-[#232126] px-4 py-2">
               <Text className="text-sm font-extrabold uppercase leading-[13px] tracking-[1px] text-[rgba(255,255,255,0.92)]">
                 {event.dateTime}
               </Text>
             </View>
-            <View className="px-4     bg-[#232126]  ">
+            <View className="bg-[#232126] px-4 pt-4">
               <Text className="pt-1 text-2xl font-bold leading-6 text-white">
                 {event.title}
               </Text>

@@ -45,17 +45,19 @@ export function TicketListPanel() {
 }
 
 function TicketSeatCard({ index, seat }: { index: number; seat: Seat }) {
+  const ticketNote = FALLBACK_SEAT_NOTE;
+
   return (
     <Animated.View
       entering={FadeInDown.duration(220).delay(40 + index * 60)}
       style={styles.ticketCard}
     >
       <View style={styles.ticketCardHeader}>
-        <Text style={styles.ticketNote}>{FALLBACK_SEAT_NOTE}</Text>
+        <Text style={styles.ticketNote}>{ticketNote}</Text>
       </View>
 
       <View style={styles.ticketMetaRow}>
-        <TicketMetaCell align="left" label="SECTION" value={seat.seat} />
+        <TicketMetaCell align="left" label="SECTION" value={seat.section} />
         <TicketMetaCell align="center" label="ROW" value={seat.row} />
         <TicketMetaCell align="right" label="SEAT" value={seat.seat} />
       </View>
@@ -150,7 +152,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#f0eeef",
     marginBottom: 14,
     borderRadius: 5,
-  
+
     overflow: "hidden",
   },
   ticketCardHeader: {
@@ -191,7 +193,7 @@ const styles = StyleSheet.create({
   metaValue: {
     color: "#111111",
     fontFamily: fonts.extraBold,
-    fontSize: 14 ,
+    fontSize: 14,
     lineHeight: 21,
     marginTop: 9,
   },

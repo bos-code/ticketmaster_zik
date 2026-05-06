@@ -49,7 +49,7 @@ export function TicketTransferAuthModal({
     keypadTranslateY.value = withTiming(isKeypadVisible ? 0 : 400, {
       duration: 300,
     });
-  }, [isKeypadVisible]);
+  }, [isKeypadVisible, keypadTranslateY]);
 
   // Auto-hide when 6 digits reached
   React.useEffect(() => {

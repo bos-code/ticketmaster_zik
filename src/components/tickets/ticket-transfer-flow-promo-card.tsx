@@ -7,20 +7,26 @@ import { useTicketFlowData } from "@/components/tickets/useTicketFlowData";
 
 export function PromoCard() {
   const { event } = useTicketFlowData();
-  const formattedDate = event.dateTime.replace(/, (\d{1,2}:\d{2}\s[AP]M)$/, ", • $1");
+  const formattedDate = event.dateTime.replace(/, (\d{1,2}:\d{2}\s[AP]M)$/, ", / $1");
 
   return (
     <View className="mx-[22px] mb-24 mt-4 overflow-hidden rounded-[4px] border border-[#f0f0f0]">
-      {/* Top Section: Blurred Background + Card + "YOU GOT TICKETS!" */}
       <View className="relative h-[220px] overflow-hidden justify-end px-4">
-        {/* Background Image & Blur Overlay */}
         <Image
           source={{ uri: event.imageUrl }}
-          style={{ position: 'absolute', top: -30, left: -30, right: -30, bottom: -30, width: 'auto', height: 'auto' }}
+          style={{
+            position: "absolute",
+            top: -30,
+            left: -30,
+            right: -30,
+            bottom: -30,
+            width: "auto",
+            height: "auto",
+          }}
           blurRadius={100}
           resizeMode="cover"
         />
-        <View style={[StyleSheet.absoluteFillObject, { pointerEvents: 'none' }]}>
+        <View style={[StyleSheet.absoluteFillObject, { pointerEvents: "none" }]}>
           <Svg height="100%" width="100%">
             <Defs>
               <LinearGradient id="ticketPromoFade" x1="0%" y1="0%" x2="100%" y2="0%">
@@ -62,7 +68,6 @@ export function PromoCard() {
         </View>
 
         <View className="flex-row items-center">
-          {/* Inner Event Card */}
           <View className="w-[65%] overflow-hidden shadow-2xl rounded-[2px] bg-[#1c1c1e]">
             <View className="relative h-[145px] w-full">
               <Image
@@ -72,7 +77,6 @@ export function PromoCard() {
               />
               <View className="absolute inset-0 bg-black/10" />
 
-              {/* Date Step Overlay */}
               <View className="absolute bottom-0 left-0 bg-[#1c1c1e] px-4 py-[6px] rounded-tr-[2px]">
                 <Text
                   className="text-[8px] font-extrabold uppercase tracking-widest text-white"
@@ -99,11 +103,8 @@ export function PromoCard() {
             </View>
           </View>
 
-          {/* Right Text */}
           <View className="flex-1 pl-7 justify-center">
-            <Text
-              className="text-[15px] font-black uppercase leading-[26px] tracking-[1px] text-white"
-            >
+            <Text className="text-[15px] font-black uppercase leading-[26px] tracking-[1px] text-white">
               YOU GOT{"\n"}TICKETS!
             </Text>
             <View className="mt-3 h-[6px] w-[85px] bg-white" />
@@ -111,7 +112,6 @@ export function PromoCard() {
         </View>
       </View>
 
-      {/* Bottom Section: Social Share */}
       <View className="bg-[#f7f7f7]">
         <View className="px-5 pb-6 pt-5">
           <Text className="mb-2 text-[15px] font-extrabold text-[#111111]">
@@ -121,9 +121,9 @@ export function PromoCard() {
             Build hype for the event, and share that you got tickets with your friends and family.
           </Text>
         </View>
-        <Pressable className="flex-row items-center justify-center border-t-2 border-white  py-4">
+        <Pressable className="flex-row items-center justify-center border-t-2 border-white py-4">
           <Text className="mr-2 text-[14px] font-medium text-[#111111]">
-            Share You're Going
+            Share You&apos;re Going
           </Text>
           <Ionicons name="share-outline" size={20} color="#111111" />
         </Pressable>

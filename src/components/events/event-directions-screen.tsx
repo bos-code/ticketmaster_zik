@@ -171,7 +171,6 @@ export function EventDirectionsScreen({ eventId }: { eventId: string }) {
           mapType: 'standard' as const,
           userInterfaceStyle: 'dark' as const,
         };
-
   if (!event || !venueCoordinate) {
     return (
       <SafeAreaView style={styles.root}>
@@ -360,7 +359,7 @@ export function EventDirectionsScreen({ eventId }: { eventId: string }) {
         mapPadding={getMapEdgePadding()}
         onMapReady={() => setMapReady(true)}
         pitchEnabled={false}
-        provider={PROVIDER_GOOGLE}
+        provider={Platform.OS === 'android' ? PROVIDER_GOOGLE : undefined}
         ref={mapRef}
         rotateEnabled={false}
         scrollEnabled

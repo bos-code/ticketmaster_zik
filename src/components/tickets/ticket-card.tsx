@@ -25,7 +25,7 @@ export function TicketCard({
   seat: Seat;
 }) {
   const { event } = useTicketFlowData();
-  const ticketNote = seat.note.trim || "Lower bowl seating";
+  const ticketNote = seat.note?.trim() || "Lower bowl seating";
 
   return (
     <Animated.View
@@ -40,12 +40,9 @@ export function TicketCard({
         elevation: 6,
       }}
     >
-      {/* 3A. Top Decorative Bar */}
       <View className="h-[10px] w-full bg-[#026CDF]" />
 
-      {/* Hero Container (Image + Barcode + Step Panel) */}
       <View className="relative w-full" style={{ height: 320 }}>
-        {/* Grayscale Image - Stretches from the blue stripe */}
         <Image
           contentFit="cover"
           source={{ uri: event.imageUrl }}
@@ -53,7 +50,6 @@ export function TicketCard({
         />
         <View className="absolute inset-0 bg-black/10" />
 
-        {/* 3B. Barcode Section - Overlaid on top of the image */}
         <View className="absolute top-3 left-0 right-0 px-5">
           <View className="bg-white rounded-sm py-0 shadow-lg items-center">
             <View className="flex-row items-center justify-center gap-1 pt-1">
@@ -66,24 +62,21 @@ export function TicketCard({
           </View>
         </View>
 
-        {/* 3C. The "Step" Layout - Overlaid at the bottom of the image */}
         <View className="absolute bottom-0 left-0 w-full">
-          {/* Left taller panel (75% width) */}
           <View
             className="bg-white pt-1 pl-2 pb-1"
             style={{ width: "75%", height: 46 }}
           >
             <Text className="text-base mb-1 font-bold tracking-wider text-[#000000] leading-tight">
-              Arist presale
+              {ticketNote}
             </Text>
-            <Text className="text-sm  text-[#8B8F96] uppercase  leading-tight">
+            <Text className="text-sm text-[#8B8F96] uppercase leading-tight">
               {seat.section}
             </Text>
           </View>
         </View>
       </View>
 
-      {/* Content below the step image area */}
       <View className="bg-white px-5 pt-2 pb-3">
         <View className="mt-1">
           <Text className="text-xs font-bold tracking-[1.5px] text-[#93969c] uppercase">
@@ -94,17 +87,15 @@ export function TicketCard({
           </Text>
         </View>
 
-        {/* 3D. Seating Block */}
         <View className="mt-1 h-[32px] w-full items-center justify-center bg-[#111111]">
           <Text className="text-base font-bold uppercase text-white tracking-[2px]">
             {seat.section}
           </Text>
         </View>
 
-        {/* 3E. Footer Section */}
         <View className="mt-3 mb-4">
           <Text className="text-[12px] font-medium text-[#8B8F96] uppercase">
-            {`ROW ${seat.row}  ·  SEAT ${seat.seat}`}
+            {`ROW ${seat.row} / SEAT ${seat.seat}`}
           </Text>
         </View>
       </View>
