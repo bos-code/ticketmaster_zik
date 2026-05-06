@@ -340,8 +340,8 @@ const styles = StyleSheet.create({
   },
   toolbar: {
     alignItems: 'center',
-    backgroundColor: 'rgba(5, 5, 5, 0.92)',
-    borderTopColor: 'rgba(255, 255, 255, 0.1)',
+    backgroundColor: '#FFFFFF',
+    borderTopColor: '#E5E7EB',
     borderTopWidth: StyleSheet.hairlineWidth,
     bottom: 0,
     flexDirection: 'row',
@@ -354,7 +354,7 @@ const styles = StyleSheet.create({
   },
   cancelButton: {
     alignItems: 'center',
-    borderColor: 'rgba(255, 255, 255, 0.18)',
+    borderColor: '#E5E7EB',
     borderRadius: 8,
     borderWidth: 1,
     flex: 1,
@@ -362,9 +362,9 @@ const styles = StyleSheet.create({
     minHeight: 48,
   },
   cancelButtonText: {
-    color: 'rgba(255, 255, 255, 0.76)',
+    color: '#374151',
     fontSize: 12,
-    fontWeight: '900',
+    fontWeight: '800',
     letterSpacing: 1.1,
     textTransform: 'uppercase',
   },
@@ -391,10 +391,8 @@ const styles = StyleSheet.create({
   toast: {
     alignItems: 'center',
     alignSelf: 'center',
-    backgroundColor: '#151515',
-    borderColor: 'rgba(255, 255, 255, 0.1)',
+    backgroundColor: '#111827',
     borderRadius: 999,
-    borderWidth: 1,
     flexDirection: 'row',
     gap: 8,
     paddingHorizontal: 14,
@@ -404,6 +402,6 @@ const styles = StyleSheet.create({
   toastText: {
     color: '#FFFFFF',
     fontSize: 13,
-    fontWeight: '800',
+    fontWeight: '700',
   },
 });
