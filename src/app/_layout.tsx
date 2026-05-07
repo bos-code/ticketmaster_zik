@@ -119,16 +119,16 @@ export default function RootLayout() {
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <Head>
-        <link rel="manifest" href="/manifest.json" />
-        <link rel="apple-touch-icon" href="/icon.png" />
-      </Head>
       <QueryProvider>
         <ThemeProvider value={ticketNavigationTheme}>
           <View
             style={{ flex: 1, backgroundColor: ticketColors.background }}
             onLayout={handleRootLayout}
           >
+            <Head>
+              <link rel="manifest" href="/manifest.json" />
+              <link rel="apple-touch-icon" href="/icon.png" />
+            </Head>
             <StatusBar
               style={hasFinishedStartup ? "dark" : "light"}
               backgroundColor={statusBarBackgroundColor}
