@@ -1,24 +1,44 @@
 import {
+  getSimpleTicketSeatNumbers,
+  useTicketStore,
+  type TicketRecord,
+} from "@/store/ticketStore";
+import {
   selectPrimaryTicketReservation,
   selectTicketReservationById,
   useEventStore,
 } from "@/store/use-event-store";
-import {
-  getSimpleTicketSeatNumbers,
-  type TicketRecord,
-  useTicketStore,
-} from "@/store/ticketStore";
+import * as Contacts from "expo-contacts";
 import { router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { Alert, View, useWindowDimensions } from "react-native";
-import * as Contacts from "expo-contacts";
 import {
-  runOnJS,  
+  runOnJS,
   useAnimatedScrollHandler,
   useSharedValue,
 } from "react-native-reanimated";
 
+import { buildSeatSummary } from "@/components/tickets/buildSeatSummary";
+import { buildStaticMapPreviewUrl } from "@/components/tickets/buildStaticMapPreviewUrl";
+import { ChooseRecipientTypeScreen } from "@/components/tickets/ChooseRecipientTypeScreen";
+import { ChooseTransferMethodScreen } from "@/components/tickets/ChooseTransferMethodScreen";
+import { EnterRecipientDetailsScreen } from "@/components/tickets/EnterRecipientDetailsScreen";
+import { ReviewTransferScreen } from "@/components/tickets/ReviewTransferScreen";
+import { SelectTicketsScreen } from "@/components/tickets/SelectTicketsScreen";
+import { TicketTransferAuthModal } from "@/components/tickets/ticket-transfer-flow-auth-modal";
+import { TicketsUnavailable } from "@/components/tickets/ticket-transfer-flow-components";
+import {
+  EMPTY_SEATS,
+  HERO_COLLAPSE_DISTANCE,
+} from "@/components/tickets/ticketFlowConstants";
+import { TicketFlowContext } from "@/components/tickets/TicketFlowContext";
 import {
   type DeliveryMode,
   type FlowScreen,
@@ -27,18 +47,7 @@ import {
   type TicketFlowContextValue,
   type TransferModal,
 } from "@/components/tickets/ticketFlowTypes";
-import { buildSeatSummary } from "@/components/tickets/buildSeatSummary";
-import { buildStaticMapPreviewUrl } from "@/components/tickets/buildStaticMapPreviewUrl";
-import { TicketFlowContext } from "@/components/tickets/TicketFlowContext";
-import { EMPTY_SEATS, HERO_COLLAPSE_DISTANCE } from "@/components/tickets/ticketFlowConstants";
-import { TicketsUnavailable } from "@/components/tickets/ticket-transfer-flow-components";
-import { TicketTransferAuthModal } from "@/components/tickets/ticket-transfer-flow-auth-modal";
-import { SelectTicketsScreen } from "@/components/tickets/SelectTicketsScreen";
 import { TicketTransferStatusModal } from "@/components/tickets/TicketTransferStatusModal";
-import { ChooseRecipientTypeScreen } from "@/components/tickets/ChooseRecipientTypeScreen";
-import { EnterRecipientDetailsScreen } from "@/components/tickets/EnterRecipientDetailsScreen";
-import { ChooseTransferMethodScreen } from "@/components/tickets/ChooseTransferMethodScreen";
-import { ReviewTransferScreen } from "@/components/tickets/ReviewTransferScreen";
 import type { EventRecord } from "@/lib/data";
 
 export function TicketTransferFlow({
@@ -49,15 +58,17 @@ export function TicketTransferFlow({
   ticketId?: string;
 }) {
   const ticket = useTicketStore((state) =>
-    ticketId ? state.tickets.find((record) => record.id === ticketId) : undefined,
+    ticketId
+      ? state.tickets.find((record) => record.id === ticketId)
+      : undefined,
   );
   const events = useEventStore((state) => state.events);
   const reservation = useEventStore((state) =>
     ticketId
       ? undefined
       : reservationId
-      ? selectTicketReservationById(state, reservationId)
-      : selectPrimaryTicketReservation(state),
+        ? selectTicketReservationById(state, reservationId)
+        : selectPrimaryTicketReservation(state),
   );
   const { width } = useWindowDimensions();
   const frameWidth = Math.min(width, 430);
@@ -260,7 +271,7 @@ export function TicketTransferFlow({
       if (contact) {
         const firstName = contact.firstName || "";
         const lastName = contact.lastName || "";
-        
+
         const emails = contact.emails || [];
         const phones = contact.phoneNumbers || [];
 
@@ -280,10 +291,16 @@ export function TicketTransferFlow({
             "Choose Contact Method",
             `How would you like to send tickets to ${firstName}?`,
             [
-              { text: "Email", onPress: () => setRecipient(emails[0].email || "", "email") },
-              { text: "Mobile", onPress: () => setRecipient(phones[0].number || "", "mobile") },
-              { text: "Cancel", style: "cancel" }
-            ]
+              {
+                text: "Email",
+                onPress: () => setRecipient(emails[0].email || "", "email"),
+              },
+              {
+                text: "Mobile",
+                onPress: () => setRecipient(phones[0].number || "", "mobile"),
+              },
+              { text: "Cancel", style: "cancel" },
+            ],
           );
         } else if (emails.length > 0) {
           setRecipient(emails[0].email || "", "email");
@@ -306,9 +323,11 @@ export function TicketTransferFlow({
 
   const handleRequestTransfer = () => {
     const errors: Partial<RecipientFormState> = {};
-    if (!recipientForm.firstName.trim()) errors.firstName = "First name is required";
-    if (!recipientForm.lastName.trim()) errors.lastName = "Last name is required";
-    
+    if (!recipientForm.firstName.trim())
+      errors.firstName = "First name is required";
+    if (!recipientForm.lastName.trim())
+      errors.lastName = "Last name is required";
+
     const dest = recipientForm.destination.trim();
     if (!dest) {
       errors.destination = "Recipient contact is required";
@@ -372,11 +391,10 @@ export function TicketTransferFlow({
           backgroundColor={screen === "viewer" ? "#FFFFFF" : "#000000"}
           style={screen === "viewer" ? "dark" : "light"}
         />
-        <View
-          className="mx-auto flex-1 w-full"
-          style={{ maxWidth: frameWidth }}
-        >
-          {["list", "select", "recipientChoice", "recipientForm"].includes(screen) ? (
+        <View className=" flex-1 w-full">
+          {["list", "select", "recipientChoice", "recipientForm"].includes(
+            screen,
+          ) ? (
             <SelectTicketsScreen
               activePanel={activePanel}
               handleListScroll={handleListScroll}
@@ -468,7 +486,8 @@ function buildTicketFlowDataFromTicket(
   venueEvent?: EventRecord,
 ): TicketFlowContextValue {
   const seats = buildSeatsFromTicket(ticket);
-  const venueAddress = venueEvent?.venueAddress ?? buildLegacyVenueAddress(ticket);
+  const venueAddress =
+    venueEvent?.venueAddress ?? buildLegacyVenueAddress(ticket);
   const venueSummary =
     venueEvent?.venueSummary ??
     `Preview ${ticket.venue} before you leave, then jump straight into turn-by-turn navigation.`;
@@ -507,14 +526,17 @@ function buildSeatsFromTicket(ticket: TicketRecord) {
   return normalizedSeats.map((seat, index) => ({
     id: `${ticket.id}-seat-${index + 1}`,
     label: ticket.seatLabel || ticket.ticketType,
-    note: ticket.ticketNote || 'Standard seating',
+    note: ticket.ticketNote || "Standard seating",
     row: ticket.row,
     seat,
     section: ticket.section,
   }));
 }
 
-function resolveLegacyTicketVenueEvent(ticket: TicketRecord, events: EventRecord[]) {
+function resolveLegacyTicketVenueEvent(
+  ticket: TicketRecord,
+  events: EventRecord[],
+) {
   const normalizedVenue = normalizeSearchValue(ticket.venue);
   const normalizedCity = normalizeSearchValue(ticket.city);
   const normalizedEventName = normalizeSearchValue(ticket.eventName);
@@ -538,11 +560,15 @@ function resolveLegacyTicketVenueEvent(ticket: TicketRecord, events: EventRecord
     return exactVenueMatch;
   }
 
-  return events.find((event) => normalizeSearchValue(event.venue) === normalizedVenue);
+  return events.find(
+    (event) => normalizeSearchValue(event.venue) === normalizedVenue,
+  );
 }
 
 function buildLegacyVenueAddress(ticket: TicketRecord) {
-  return [ticket.venue, ticket.city, ticket.state, ticket.country].filter(Boolean).join(", ");
+  return [ticket.venue, ticket.city, ticket.state, ticket.country]
+    .filter(Boolean)
+    .join(", ");
 }
 
 function normalizeSearchValue(value: string) {

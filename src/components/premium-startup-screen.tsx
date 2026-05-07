@@ -1,7 +1,6 @@
 import React, { useEffect, useRef } from "react";
 import { Animated, Easing, View } from "react-native";
 
-import { ticketColors } from "@/constants/ticket-theme";
 import {
   TicketmasterTMark,
   TicketmasterWordmark,
@@ -59,11 +58,8 @@ export function PremiumStartupScreen({ onFinish }: PremiumStartupScreenProps) {
 
   return (
     <View
-      className="absolute inset-0 z-[1000] items-center justify-center px-8"
-      style={{
-        backgroundColor: ticketColors.background,
-        pointerEvents: "none",
-      }}
+      pointerEvents="none"
+      className="absolute inset-0 z-[1000] items-center justify-center bg-[#007AFF] px-8"
     >
       <Animated.View
         className="absolute items-center justify-center"
@@ -74,7 +70,7 @@ export function PremiumStartupScreen({ onFinish }: PremiumStartupScreenProps) {
           },
         ]}
       >
-        <TicketmasterTMark fill={ticketColors.primaryBright} size={128} />
+        <TicketmasterTMark fill="#FFFFFF" size={128} />
       </Animated.View>
       <Animated.View
         className="absolute items-center justify-center"
@@ -85,7 +81,7 @@ export function PremiumStartupScreen({ onFinish }: PremiumStartupScreenProps) {
           },
         ]}
       >
-        <TicketmasterWordmark fill={ticketColors.primaryBright} size={270} />
+        <TicketmasterWordmark fill="#FFFFFF" size={270} />
       </Animated.View>
     </View>
   );
