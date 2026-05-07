@@ -1,0 +1,17 @@
+{
+  "short_name": "Tickets",
+  "name": "Ticketmaster Admin",
+  "icons": [
+    {
+      "src": "/icon.png",
+      "type": "image/png",
+      "sizes": "192x192 512x512",
+      "purpose": "any maskable"
+    }
+  ],
+  "start_url": "/",
+  "background_color": "#F5F6F8",
+  "display": "standalone",
+  "scope": "/",
+  "theme_color": "#005BD3"
+}
