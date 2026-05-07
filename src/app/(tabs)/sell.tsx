@@ -2,7 +2,8 @@ import React from 'react';
 import { Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Svg, { Circle, G, Path, Rect } from 'react-native-svg';
-import { StatusBar } from 'expo-status-bar';
+
+import { StatusBarChrome } from '@/components/status-bar-chrome';
 
 const fontStack = Platform.select({
   ios: 'SF Pro Display',
@@ -85,7 +86,7 @@ function SellIllustration() {
 export default function SellScreen() {
   return (
     <View style={styles.root}>
-      <StatusBar style="light" />
+      <StatusBarChrome backgroundColor={C.bg} style="light" />
       <SafeAreaView style={styles.safeArea} edges={['top']}>
         <View style={styles.mainContainer}>
           <View style={styles.spacer} />

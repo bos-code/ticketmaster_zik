@@ -10,7 +10,6 @@ import {
 } from "@/store/use-event-store";
 import * as Contacts from "expo-contacts";
 import { router } from "expo-router";
-import { StatusBar } from "expo-status-bar";
 import React, {
   useCallback,
   useEffect,
@@ -32,6 +31,7 @@ import { ChooseTransferMethodScreen } from "@/components/tickets/ChooseTransferM
 import { EnterRecipientDetailsScreen } from "@/components/tickets/EnterRecipientDetailsScreen";
 import { ReviewTransferScreen } from "@/components/tickets/ReviewTransferScreen";
 import { SelectTicketsScreen } from "@/components/tickets/SelectTicketsScreen";
+import { StatusBarChrome } from "@/components/status-bar-chrome";
 import { TicketTransferAuthModal } from "@/components/tickets/ticket-transfer-flow-auth-modal";
 import { TicketsUnavailable } from "@/components/tickets/ticket-transfer-flow-components";
 import {
@@ -387,8 +387,8 @@ export function TicketTransferFlow({
   return (
     <TicketFlowContext.Provider value={ticketFlowData}>
       <View className="flex-1">
-        <StatusBar
-          backgroundColor={screen === "viewer" ? "#FFFFFF" : "#000000"}
+        <StatusBarChrome
+          backgroundColor={screen === "viewer" ? "#F9F8F4" : "#000000"}
           style={screen === "viewer" ? "dark" : "light"}
         />
         <View className=" flex-1 w-full">

@@ -1,5 +1,4 @@
 import { Ionicons } from '@expo/vector-icons';
-import { StatusBar } from 'expo-status-bar';
 import { Image } from 'expo-image';
 import { router } from 'expo-router';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -16,6 +15,7 @@ import MapView, { Marker, Polyline, PROVIDER_GOOGLE } from 'react-native-maps';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { VenueMapMarker } from '@/components/events/venue-map-marker';
+import { StatusBarChrome } from '@/components/status-bar-chrome';
 import {
   premiumMapPalette,
   premiumMapStyle,
@@ -174,7 +174,7 @@ export function EventDirectionsScreen({ eventId }: { eventId: string }) {
   if (!event || !venueCoordinate) {
     return (
       <SafeAreaView style={styles.root}>
-        <StatusBar style="light" />
+        <StatusBarChrome backgroundColor={premiumMapPalette.cardSurface} style="dark" />
         <View style={styles.notFoundWrap}>
           <Pressable
             accessibilityRole="button"
@@ -199,7 +199,7 @@ export function EventDirectionsScreen({ eventId }: { eventId: string }) {
   if (!canShowEmbeddedMap) {
     return (
       <SafeAreaView style={styles.root}>
-        <StatusBar style="light" />
+        <StatusBarChrome backgroundColor={premiumMapPalette.cardSurface} style="dark" />
 
         <View style={styles.headerRow}>
           <Pressable
@@ -350,7 +350,7 @@ export function EventDirectionsScreen({ eventId }: { eventId: string }) {
 
   return (
     <View style={styles.root}>
-      <StatusBar style="light" />
+      <StatusBarChrome backgroundColor={premiumMapPalette.cardSurface} style="dark" />
 
       <MapView
         {...mapPresentationProps}

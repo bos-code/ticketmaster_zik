@@ -1,7 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import * as ImagePicker from 'expo-image-picker';
-import { StatusBar } from 'expo-status-bar';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useEffect, useMemo, useState } from 'react';
 import {
@@ -19,6 +18,7 @@ import {
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AdminDateTimeField } from '@/components/admin/admin-date-time-field';
+import { StatusBarChrome } from '@/components/status-bar-chrome';
 import {
   TICKET_STATUS_OPTIONS,
   TICKET_TYPE_OPTIONS,
@@ -227,7 +227,7 @@ export function AddEventAdminScreen() {
   if (mode === 'edit' && ticketId && !selectedTicket) {
     return (
       <SafeAreaView style={styles.root}>
-        <StatusBar style="dark" backgroundColor="#F5F6F8" />
+        <StatusBarChrome style="dark" backgroundColor="#F5F6F8" />
         <View style={styles.notFound}>
           <Text style={styles.notFoundTitle}>Ticket not found</Text>
           <Pressable onPress={() => router.replace('/admin')} style={styles.primaryButton}>
@@ -240,7 +240,7 @@ export function AddEventAdminScreen() {
 
   return (
     <View style={styles.root}>
-      <StatusBar style="dark" backgroundColor="#F5F6F8" />
+      <StatusBarChrome style="dark" backgroundColor="#F5F6F8" />
       <SafeAreaView edges={['top', 'left', 'right']} style={styles.headerSafe}>
         <View style={styles.header}>
           <Pressable onPress={() => router.replace('/admin')} style={styles.iconButton}>

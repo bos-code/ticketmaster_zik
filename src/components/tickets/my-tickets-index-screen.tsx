@@ -1,9 +1,9 @@
 import { useRouter } from "expo-router";
-import { StatusBar } from "expo-status-bar";
 import React, { useEffect, useMemo, useState } from "react";
 import { Image, Pressable, ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import { StatusBarChrome } from "@/components/status-bar-chrome";
 import {
   formatTicketDate,
   type TicketRecord,
@@ -61,7 +61,7 @@ export function MyTicketsIndexScreen() {
 
   return (
     <View className="flex-1 bg-white">
-      <StatusBar backgroundColor="#050505" style="light" />
+      <StatusBarChrome backgroundColor="#050505" style="light" />
 
       <SafeAreaView edges={["top", "left", "right"]} className="flex-1">
         <View className="relative z-10 h-[128px] overflow-visible bg-[#050505]">

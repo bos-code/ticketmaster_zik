@@ -1,10 +1,10 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { StatusBar } from 'expo-status-bar';
 import React from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { StatusBarChrome } from '@/components/status-bar-chrome';
 import { ticketSpacing } from '@/constants/ticket-theme';
 import { shellColors } from '@/constants/shell-theme';
 import { useAppStore, type DistanceUnit, type ThemePreference } from '@/store/use-app-store';
@@ -29,7 +29,7 @@ export function AppSettingsScreen() {
 
   return (
     <View style={styles.root}>
-      <StatusBar style="dark" />
+      <StatusBarChrome backgroundColor={shellColors.lightSurface} style="dark" />
       <SafeAreaView edges={['top', 'left', 'right']} style={styles.safeArea}>
         <View style={styles.header}>
           <Pressable accessibilityRole="button" onPress={() => router.back()} style={styles.backButton}>

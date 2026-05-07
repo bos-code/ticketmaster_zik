@@ -1,6 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { StatusBar } from 'expo-status-bar';
 import React, { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
@@ -14,6 +13,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { StatusBarChrome } from '@/components/status-bar-chrome';
 import { ticketRadii, ticketSpacing } from '@/constants/ticket-theme';
 import { GradientSurface } from '@/components/ui/gradient-surface';
 import { shellColors, shellGradients } from '@/constants/shell-theme';
@@ -134,7 +134,7 @@ export function SettingsHomeScreen() {
 
   return (
     <View style={styles.root}>
-      <StatusBar style="dark" />
+      <StatusBarChrome backgroundColor={shellGradients.hero[0]} style="light" />
       <GradientSurface colors={shellGradients.hero} style={styles.hero}>
         <SafeAreaView edges={['top', 'left', 'right']} style={styles.heroSafeArea}>
           <Pressable accessibilityRole="button" onPress={handleClose} style={styles.closeButton}>

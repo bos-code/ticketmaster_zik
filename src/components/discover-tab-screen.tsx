@@ -1,5 +1,4 @@
 import { Ionicons } from '@expo/vector-icons';
-import { StatusBar } from 'expo-status-bar';
 import { Image } from 'expo-image';
 import React, { useState } from 'react';
 import {
@@ -13,6 +12,7 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { StatusBarChrome } from '@/components/status-bar-chrome';
 
 const fontStack = Platform.select({
   ios: 'SF Pro Display',
@@ -37,7 +37,7 @@ export function DiscoverTabScreen() {
 
   return (
     <View style={styles.root}>
-      <StatusBar backgroundColor="#000000" style="light" />
+      <StatusBarChrome backgroundColor="#000000" style="light" />
 
       {/* Top Black Area uses standard View + SafeArea inside */}
       <View style={[styles.darkHeaderBg, { paddingTop: insets.top }]}>

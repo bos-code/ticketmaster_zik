@@ -1,12 +1,12 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
-import { StatusBar } from 'expo-status-bar';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useEffect, useMemo, useState } from 'react';
 import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { StatusBarChrome } from '@/components/status-bar-chrome';
 import {
   formatTicketDate,
   type TicketRecord,
@@ -78,7 +78,7 @@ export function AdminTicketManagementScreen() {
 
   return (
     <View style={styles.root}>
-      <StatusBar style="dark" backgroundColor="#F5F6F8" />
+      <StatusBarChrome style="dark" backgroundColor="#F5F6F8" />
       <SafeAreaView edges={['top', 'left', 'right']} style={styles.safe}>
         <View style={styles.header}>
           <View>

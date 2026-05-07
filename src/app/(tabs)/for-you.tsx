@@ -2,12 +2,13 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Svg, { Circle, Path, Rect } from 'react-native-svg';
-import { StatusBar } from 'expo-status-bar';
+
+import { StatusBarChrome } from '@/components/status-bar-chrome';
 
 export default function ForYouScreen() {
   return (
     <SafeAreaView style={styles.container}>
-      <StatusBar style="dark" />
+      <StatusBarChrome backgroundColor="#EAEBEE" style="dark" />
       <View style={styles.content}>
         
         {/* The White Circle Illustration */}

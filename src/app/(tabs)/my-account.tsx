@@ -6,7 +6,6 @@ import {
   Alert,
   Platform,
   ScrollView,
-  StatusBar,
   Switch,
   Text,
   TouchableOpacity,
@@ -19,6 +18,7 @@ import {
   AccountIcon,
   type AccountIconName,
 } from "@/components/account/account-icon";
+import { StatusBarChrome } from "@/components/status-bar-chrome";
 import {
   getLocationPermissionStatus,
   resolveHomeLocation,
@@ -316,7 +316,7 @@ export default function MyAccountScreen() {
 
   return (
     <View className="flex-1 bg-white">
-      <StatusBar barStyle="light-content" backgroundColor="#000000" />
+      <StatusBarChrome backgroundColor="#000000" style="light" />
 
       <SafeAreaView edges={["top"]} className="bg-black">
         <View className="h-11 items-center justify-center bg-black px-4">

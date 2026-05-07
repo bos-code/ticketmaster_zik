@@ -1,11 +1,11 @@
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
-import { StatusBar } from 'expo-status-bar';
 import { Image } from 'expo-image';
 import React from 'react';
 import { Alert, Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { StatusBarChrome } from '@/components/status-bar-chrome';
 import { ticketRadii, ticketSpacing } from '@/constants/ticket-theme';
 import { GradientSurface } from '@/components/ui/gradient-surface';
 import { shellColors, shellGradients } from '@/constants/shell-theme';
@@ -21,7 +21,7 @@ export function GuestTicketScreen() {
 
   return (
     <View style={styles.root}>
-      <StatusBar backgroundColor="#000000" style="light" />
+      <StatusBarChrome backgroundColor="#000000" style="light" />
       {ticketHeroImage ? (
         <Image contentFit="cover" source={{ uri: ticketHeroImage }} style={styles.backgroundImage} />
       ) : null}

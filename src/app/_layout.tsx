@@ -6,7 +6,6 @@ import { useFonts } from "expo-font";
 import { Stack } from "expo-router";
 import Head from "expo-router/head";
 import * as SplashScreen from "expo-splash-screen";
-import { StatusBar } from "expo-status-bar";
 import * as SystemUI from "expo-system-ui";
 import { useCallback, useEffect, useRef } from "react";
 import { Platform, View } from "react-native";
@@ -14,6 +13,7 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 import { PremiumStartupScreen } from "@/components/premium-startup-screen";
 import { PwaInstallPrompt } from "@/components/pwa-install-prompt";
+import { StatusBarChrome } from "@/components/status-bar-chrome";
 import { ticketColors, ticketNavigationTheme } from "@/constants/ticket-theme";
 import { QueryProvider } from "@/providers/query-provider";
 import { useAppStore } from "@/store/use-app-store";
@@ -129,10 +129,9 @@ export default function RootLayout() {
           >
             <Head>
               <link rel="manifest" href="/manifest.json" />
-              <meta name="theme-color" content={ticketColors.background} />
               <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
             </Head>
-            <StatusBar
+            <StatusBarChrome
               style="dark"
               backgroundColor={statusBarBackgroundColor}
             />
