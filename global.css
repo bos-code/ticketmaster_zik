@@ -2,3 +2,31 @@
 @import "tailwindcss/preflight.css" layer(base);
 @import "tailwindcss/utilities.css";
 @import "nativewind/theme";
+
+/* ─── Web: constrain to mobile viewport width ─────────────────────────────── */
+@media screen {
+  html,
+  body {
+    background-color: #0a0a0a;
+    /* Neutral surround for desktop visitors */
+    height: 100%;
+    overflow: hidden;
+    /* Disable browser auto text-size on mobile browsers */
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+
+  #root {
+    /* Center the app and cap at iPhone 14 Pro Max width */
+    max-width: 430px;
+    width: 100%;
+    height: 100%;
+    margin-left: auto;
+    margin-right: auto;
+    position: relative;
+    overflow: hidden;
+    /* Subtle side shadow so it looks like a real phone on desktop */
+    box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.06),
+      0 32px 96px rgba(0, 0, 0, 0.72);
+  }
+}
