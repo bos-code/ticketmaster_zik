@@ -13,6 +13,7 @@ import { Platform, View } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 import { PremiumStartupScreen } from "@/components/premium-startup-screen";
+import { PwaInstallPrompt } from "@/components/pwa-install-prompt";
 import { ticketColors, ticketNavigationTheme } from "@/constants/ticket-theme";
 import { QueryProvider } from "@/providers/query-provider";
 import { useAppStore } from "@/store/use-app-store";
@@ -136,6 +137,7 @@ export default function RootLayout() {
               backgroundColor={statusBarBackgroundColor}
             />
             <RootStack />
+            <PwaInstallPrompt />
             {!hasFinishedStartup ? (
               <PremiumStartupScreen onFinish={handleStartupFinish} />
             ) : null}
