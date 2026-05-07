@@ -1,5 +1,4 @@
 import { useRouter } from "expo-router";
-import * as countries from "i18n-iso-countries";
 import enCountryData from "i18n-iso-countries/langs/en.json";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
@@ -25,6 +24,8 @@ import {
   resolveHomeLocation,
 } from "@/lib/device-permissions";
 import { useAppStore } from "@/store/use-app-store";
+
+const countries: typeof import("i18n-iso-countries") = require("i18n-iso-countries/index");
 
 const SWITCH = {
   thumbColor: "#FFFFFF",

@@ -3,7 +3,8 @@ import "../../global.css";
 import { ThemeProvider } from "@react-navigation/native";
 import Constants from "expo-constants";
 import { useFonts } from "expo-font";
-import { Head, Stack } from "expo-router";
+import { Stack } from "expo-router";
+import Head from "expo-router/head";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import * as SystemUI from "expo-system-ui";
@@ -127,7 +128,8 @@ export default function RootLayout() {
           >
             <Head>
               <link rel="manifest" href="/manifest.json" />
-              <link rel="apple-touch-icon" href="/icon.png" />
+              <meta name="theme-color" content="#005BD3" />
+              <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
             </Head>
             <StatusBar
               style={hasFinishedStartup ? "dark" : "light"}
