@@ -32,8 +32,8 @@
       "favicon": "./assets/Correctapp_icon.png",
       "name": "Ticketmaster Admin",
       "shortName": "Tickets",
-      "themeColor": "#005BD3",
-      "backgroundColor": "#F5F6F8",
+      "themeColor": "#F8FAFC",
+      "backgroundColor": "#F8FAFC",
       "display": "standalone",
       "orientation": "portrait"
     },
@@ -44,18 +44,18 @@
       [
         "expo-splash-screen",
         {
-          "backgroundColor": "#024ddf",
+          "backgroundColor": "#F8FAFC",
           "image": "./assets/images/splash-t-mark.png",
           "imageWidth": 180,
           "resizeMode": "contain",
           "android": {
-            "backgroundColor": "#024ddf",
+            "backgroundColor": "#F8FAFC",
             "image": "./assets/images/splash-t-mark.png",
             "imageWidth": 180,
             "resizeMode": "contain"
           },
           "ios": {
-            "backgroundColor": "#024ddf",
+            "backgroundColor": "#F8FAFC",
             "image": "./assets/images/splash-t-mark.png",
             "imageWidth": 180,
             "resizeMode": "contain"

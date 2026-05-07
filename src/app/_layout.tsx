@@ -82,7 +82,7 @@ export default function RootLayout() {
   const hasFinishedStartup = useAppStore((state) => state.hasFinishedStartup);
   const finishStartup = useAppStore((state) => state.finishStartup);
   const hasHiddenNativeSplash = useRef(false);
-  const statusBarBackgroundColor = "#1a73e8";
+  const statusBarBackgroundColor = ticketColors.background;
   const isReady = fontsLoaded || Boolean(fontError);
 
   useEffect(() => {
@@ -128,11 +128,11 @@ export default function RootLayout() {
           >
             <Head>
               <link rel="manifest" href="/manifest.json" />
-              <meta name="theme-color" content="#005BD3" />
+              <meta name="theme-color" content={ticketColors.background} />
               <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
             </Head>
             <StatusBar
-              style={hasFinishedStartup ? "dark" : "light"}
+              style="dark"
               backgroundColor={statusBarBackgroundColor}
             />
             <RootStack />

@@ -3,21 +3,21 @@
   "name": "Ticketmaster Admin",
   "icons": [
     {
-      "src": "/icon-192.png",
+      "src": "/assets/Correctapp_icon.png",
       "type": "image/png",
       "sizes": "192x192",
       "purpose": "any maskable"
     },
     {
-      "src": "/icon-512.png",
+      "src": "/assets/Correctapp_icon.png",
       "type": "image/png",
       "sizes": "512x512",
       "purpose": "any maskable"
     }
   ],
   "start_url": "/",
-  "background_color": "#F5F6F8",
+  "background_color": "#F8FAFC",
   "display": "standalone",
   "scope": "/",
-  "theme_color": "#005BD3"
+  "theme_color": "#F8FAFC"
 }
