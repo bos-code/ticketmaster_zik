@@ -8,7 +8,7 @@ import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import * as SystemUI from "expo-system-ui";
 import { useCallback, useEffect, useRef } from "react";
-import { View } from "react-native";
+import { Platform, View } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 import { PremiumStartupScreen } from "@/components/premium-startup-screen";
@@ -88,6 +88,12 @@ export default function RootLayout() {
     void SystemUI.setBackgroundColorAsync(statusBarBackgroundColor).catch(
       () => {},
     );
+
+    if (Platform.OS === "web" && typeof window !== "undefined" && "serviceWorker" in navigator) {
+      navigator.serviceWorker.register("/service-worker.js").catch(() => {
+        // Ignore registration errors
+      });
+    }
   }, [statusBarBackgroundColor]);
 
   const handleRootLayout = useCallback(() => {

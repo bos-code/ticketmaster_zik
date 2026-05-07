@@ -29,7 +29,13 @@
     "web": {
       "bundler": "metro",
       "output": "static",
-      "favicon": "./assets/Correctapp_icon.png"
+      "favicon": "./assets/Correctapp_icon.png",
+      "name": "Ticketmaster Admin",
+      "shortName": "Tickets",
+      "themeColor": "#005BD3",
+      "backgroundColor": "#F5F6F8",
+      "display": "standalone",
+      "orientation": "portrait"
     },
     "plugins": [
       "expo-dev-client",
