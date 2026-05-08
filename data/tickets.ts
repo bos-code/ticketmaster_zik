@@ -18,6 +18,7 @@ export type TicketRecord = {
   row: string;
   seatRange: string;
   barcode: string;
+  orderNumber: string;
   ticketType: TicketType;
   status: TicketStatus;
   perks: string;
@@ -53,6 +54,7 @@ export const mockTickets: TicketRecord[] = [
     row: 'A',
     seatRange: 'A12 - A13',
     barcode: 'WIZ-MIL-VIP-001',
+    orderNumber: '19-12465/DAL',
     ticketType: 'VIP',
     status: 'upcoming',
     perks: 'Priority entry, Starboy lounge access, complimentary drinks, VIP wristband',
@@ -73,6 +75,7 @@ export const mockTickets: TicketRecord[] = [
     row: 'B',
     seatRange: 'B04 - B05',
     barcode: 'WIZ-MIL-VIP-PAST-001',
+    orderNumber: '15-44921/LAG',
     ticketType: 'VIP',
     status: 'past',
     perks: 'Lounge access, premium bar, priority exit',

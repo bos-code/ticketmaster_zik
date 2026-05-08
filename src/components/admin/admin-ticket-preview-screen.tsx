@@ -125,7 +125,7 @@ export function AdminTicketPreviewScreen() {
       },
       order: {
         id: editedTicket.id,
-        orderNumber: editedTicket.barcode,
+        orderNumber: editedTicket.orderNumber,
         ticketCount: seats.length,
         ticketCountLabel: `x${seats.length} Ticket${seats.length > 1 ? "s" : ""}`,
       },
@@ -164,6 +164,7 @@ export function AdminTicketPreviewScreen() {
         row: editedTicket.row,
         seatRange: editedTicket.seatRange,
         barcode: editedTicket.barcode,
+        orderNumber: editedTicket.orderNumber,
         ticketType: editedTicket.ticketType,
         status: editedTicket.status,
         perks: editedTicket.perks,

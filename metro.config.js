@@ -5,6 +5,11 @@ const { withNativewind } = require("nativewind/metro");
 const config = getDefaultConfig(__dirname);
 
 const { transformer, resolver } = config;
+const firebaseModules = new Set([
+  "firebase/app",
+  "firebase/firestore",
+  "firebase/storage",
+]);
 
 // SVG Support
 // Added react-native-svg-transformer to support .svg files as components
@@ -15,7 +20,19 @@ config.transformer = {
 config.resolver = {
   ...resolver,
   assetExts: resolver.assetExts.filter((ext) => ext !== "svg"),
+  resolverMainFields: ["react-native", "browser", "module", "main"],
   sourceExts: [...resolver.sourceExts, "svg"],
+  unstable_enablePackageExports: true,
+  resolveRequest: (context, moduleName, platform) => {
+    if (firebaseModules.has(moduleName)) {
+      return {
+        type: "sourceFile",
+        filePath: require.resolve(moduleName),
+      };
+    }
+
+    return context.resolveRequest(context, moduleName, platform);
+  },
 };
 
 module.exports = withNativewind(config);

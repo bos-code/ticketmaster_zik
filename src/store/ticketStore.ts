@@ -47,6 +47,7 @@ export const DEFAULT_WIZKID_TICKET: TicketInput = {
   row: 'A',
   seatRange: 'A12 - A13',
   barcode: 'WIZ-MIL-VIP-NEW',
+  orderNumber: '19-12465/DAL',
   ticketType: 'VIP',
   status: 'upcoming',
   perks: 'Priority entry, Starboy lounge access, complimentary drinks',

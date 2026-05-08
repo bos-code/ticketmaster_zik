@@ -76,7 +76,7 @@ export function AdminDateTimeField({
             {value || placeholder || (mode === 'date' ? 'Select date' : 'Select time')}
           </Text>
           <Ionicons
-            color="rgba(255,255,255,0.48)"
+            color="#9CA3AF"
             name={mode === 'date' ? 'calendar-outline' : 'time-outline'}
             size={18}
           />
@@ -115,8 +115,8 @@ export function AdminDateTimeField({
 
                   setDraftValue(selectedDate);
                 }}
-                textColor="#FFFFFF"
-                themeVariant="dark"
+                textColor="#111827"
+                themeVariant="light"
                 value={draftValue}
               />
             </View>
@@ -193,40 +193,40 @@ function formatPickerValue(value: Date, mode: 'date' | 'time') {
 }
 
 const styles = StyleSheet.create({
-  field: { flex: 1, gap: 7 },
+  field: { flex: 1, gap: 6 },
   label: {
-    color: 'rgba(255,255,255,0.5)',
+    color: '#6B7280',
     fontSize: 10,
-    fontWeight: '900',
-    letterSpacing: 1.4,
+    fontWeight: '700',
+    letterSpacing: 1.2,
     lineHeight: 13,
     textTransform: 'uppercase',
   },
   inputButton: {
     alignItems: 'center',
-    backgroundColor: '#1A1A1A',
-    borderColor: 'rgba(255,255,255,0.08)',
+    backgroundColor: '#F9FAFB',
+    borderColor: '#E5E7EB',
     borderRadius: 8,
     borderWidth: 1,
     flexDirection: 'row',
     justifyContent: 'space-between',
-    minHeight: 50,
+    minHeight: 48,
     paddingHorizontal: 13,
   },
   inputText: {
-    color: '#FFFFFF',
+    color: '#111827',
     flex: 1,
     fontSize: 14,
-    fontWeight: '700',
+    fontWeight: '600',
     paddingRight: 12,
   },
   placeholderText: {
-    color: 'rgba(255,255,255,0.32)',
+    color: 'rgba(17, 24, 39, 0.32)',
   },
   inputError: { borderColor: '#EF4444' },
-  errorText: { color: '#EF4444', fontSize: 11, fontWeight: '700', lineHeight: 15 },
+  errorText: { color: '#EF4444', fontSize: 11, fontWeight: '600', lineHeight: 15 },
   modalBackdrop: {
-    backgroundColor: 'rgba(0,0,0,0.58)',
+    backgroundColor: 'rgba(0, 0, 0, 0.4)',
     flex: 1,
     justifyContent: 'flex-end',
   },
@@ -234,32 +234,32 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   modalCard: {
-    backgroundColor: '#101010',
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
+    backgroundColor: '#FFFFFF',
+    borderTopLeftRadius: 16,
+    borderTopRightRadius: 16,
     overflow: 'hidden',
-    paddingBottom: 18,
+    paddingBottom: 24,
   },
   modalHeader: {
     alignItems: 'center',
-    borderBottomColor: 'rgba(255,255,255,0.08)',
-    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: '#F3F4F6',
+    borderBottomWidth: 1,
     flexDirection: 'row',
     justifyContent: 'space-between',
     minHeight: 56,
-    paddingHorizontal: 14,
+    paddingHorizontal: 16,
   },
   modalAction: {
-    minWidth: 64,
-    paddingVertical: 10,
+    minWidth: 60,
+    paddingVertical: 12,
   },
   modalActionText: {
-    color: '#2D8CFF',
+    color: '#005BD3',
     fontSize: 15,
-    fontWeight: '800',
+    fontWeight: '700',
   },
   modalTitle: {
-    color: '#FFFFFF',
+    color: '#111827',
     fontSize: 15,
     fontWeight: '800',
   },

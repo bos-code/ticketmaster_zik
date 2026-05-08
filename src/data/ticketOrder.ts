@@ -87,7 +87,7 @@ export function mapTicketRecordToTicketOrderData(
     },
     order: {
       id: ticketRecord.id,
-      orderNumber: buildOrderNumber(ticketRecord),
+      orderNumber: ticketRecord.orderNumber,
       ticketCount,
     },
     tickets,
@@ -118,22 +118,6 @@ function createTicketItem(
   };
 }
 
-function buildOrderNumber(ticketRecord: TicketRecord) {
-  const idTokens = ticketRecord.id
-    .split("-")
-    .map((token) => token.trim())
-    .filter(Boolean);
-  const suffix = idTokens.slice(-3).join("-").toUpperCase() || "TICKET";
-  const artistToken =
-    ticketRecord.artistName
-      .trim()
-      .split(/\s+/)
-      .filter(Boolean)[0]
-      ?.slice(0, 3)
-      .toUpperCase() || "EVT";
-
-  return `#${suffix}/${artistToken}`;
-}
 
 function formatEventDateLabel(dateValue: string) {
   const date = parseTicketDate(dateValue);

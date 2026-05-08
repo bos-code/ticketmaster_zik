@@ -13,6 +13,7 @@ type AdminDateTimeFieldProps = {
 export function AdminDateTimeField({
   error,
   label,
+  mode,
   onChangeValue,
   placeholder,
   value,
@@ -21,9 +22,11 @@ export function AdminDateTimeField({
     <View style={styles.field}>
       <Text style={styles.label}>{label}</Text>
       <TextInput
+        // @ts-ignore - 'type' is supported on React Native Web
+        type={mode}
         onChangeText={onChangeValue}
         placeholder={placeholder}
-        placeholderTextColor="rgba(255,255,255,0.32)"
+        placeholderTextColor="rgba(17, 24, 39, 0.32)"
         style={[styles.input, error && styles.inputError]}
         value={value}
       />
@@ -33,26 +36,28 @@ export function AdminDateTimeField({
 }
 
 const styles = StyleSheet.create({
-  field: { flex: 1, gap: 7 },
+  field: { flex: 1, gap: 6 },
   label: {
-    color: 'rgba(255,255,255,0.5)',
+    color: '#6B7280',
     fontSize: 10,
-    fontWeight: '900',
-    letterSpacing: 1.4,
+    fontWeight: '700',
+    letterSpacing: 1.2,
     lineHeight: 13,
     textTransform: 'uppercase',
   },
   input: {
-    backgroundColor: '#1A1A1A',
-    borderColor: 'rgba(255,255,255,0.08)',
+    backgroundColor: '#F9FAFB',
+    borderColor: '#E5E7EB',
     borderRadius: 8,
     borderWidth: 1,
-    color: '#FFFFFF',
+    color: '#111827',
     fontSize: 14,
-    fontWeight: '700',
-    minHeight: 50,
+    fontWeight: '600',
+    minHeight: 48,
     paddingHorizontal: 13,
+    // Ensure the web picker looks clean
+    outlineStyle: 'none',
   },
   inputError: { borderColor: '#EF4444' },
-  errorText: { color: '#EF4444', fontSize: 11, fontWeight: '700', lineHeight: 15 },
+  errorText: { color: '#EF4444', fontSize: 11, fontWeight: '600', lineHeight: 15 },
 });
