@@ -70,7 +70,7 @@ export const useTicketStore = create<TicketStore>((set, get) => ({
   addEvent: async (ticket) => {
     const now = new Date().toISOString();
     const nextTicketId = generateTicketId(ticket);
-    const image = await persistTicketImage(nextTicketId, ticket.image);
+    const image = await persistTicketImageSafely(nextTicketId, ticket.image, '');
     const nextTicket: TicketRecord = {
       ...ticket,
       id: nextTicketId,
@@ -97,9 +97,10 @@ export const useTicketStore = create<TicketStore>((set, get) => ({
     const nextTicket = {
       ...currentTicket,
       ...updatedFields,
-      image: await persistTicketImage(
+      image: await persistTicketImageSafely(
         id,
         updatedFields.image ?? currentTicket.image,
+        currentTicket.image,
       ),
       updatedAt: new Date().toISOString(),
     };
@@ -183,6 +184,19 @@ function slugify(value: string) {
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/(^-|-$)/g, '');
+}
+
+async function persistTicketImageSafely(
+  ticketId: string,
+  imageValue: string,
+  fallbackImage: string,
+) {
+  try {
+    return await persistTicketImage(ticketId, imageValue);
+  } catch (error) {
+    console.warn('Ticket image could not be persisted.', error);
+    return fallbackImage;
+  }
 }
 
 type ParsedSeatToken = {

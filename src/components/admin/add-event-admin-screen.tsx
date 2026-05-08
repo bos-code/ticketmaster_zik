@@ -580,10 +580,11 @@ function getTicketSaveErrorMessage(error: unknown) {
   const message = error instanceof Error ? error.message : '';
 
   if (
+    message.toLowerCase().includes('cloudinary') ||
     message.includes('storage/') ||
     message.toLowerCase().includes('firebase storage')
   ) {
-    return 'The ticket details are valid, but Firebase Storage rejected the artwork upload. Paste an Image URL instead, or publish the Storage rules and try again.';
+    return 'The ticket details are valid, but the artwork upload is not ready. Paste an Image URL, or add a Cloudinary unsigned upload preset and try again.';
   }
 
   return 'We could not save this ticket to Firebase right now. Please try again.';

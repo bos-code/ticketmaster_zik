@@ -5,13 +5,6 @@ import {
   runTransaction,
   setDoc,
 } from 'firebase/firestore';
-import {
-  getDownloadURL,
-  ref as storageRef,
-  uploadBytes,
-  uploadString,
-} from 'firebase/storage';
-
 import { mockTickets, type TicketRecord } from '../../data/tickets';
 import {
   eventCatalog,
@@ -19,7 +12,7 @@ import {
   type EventRecord,
   type ReservationRecord,
 } from '@/lib/data';
-import { firebaseConfig, firestore, storage } from '@/lib/firebase';
+import { firebaseConfig, firestore } from '@/lib/firebase';
 
 const EVENTS_COLLECTION = 'events';
 const RESERVATIONS_COLLECTION = 'reservations';
@@ -84,24 +77,7 @@ export async function persistTicketImage(ticketId: string, imageValue: string) {
     return normalizedImageValue;
   }
 
-  const imageRef = storageRef(
-    storage,
-    `tickets/${ticketId}/${Date.now()}-${buildStorageSafeId(ticketId)}`,
-  );
-
-  if (normalizedImageValue.startsWith('data:')) {
-    await uploadString(imageRef, normalizedImageValue, 'data_url');
-    return getDownloadURL(imageRef);
-  }
-
-  const response = await fetch(normalizedImageValue);
-  const blob = await response.blob();
-
-  await uploadBytes(imageRef, blob, {
-    contentType: blob.type || 'image/jpeg',
-  });
-
-  return getDownloadURL(imageRef);
+  return uploadTicketImageToCloudinary(ticketId, normalizedImageValue);
 }
 
 export async function createEventDocument(event: EventRecord) {
@@ -196,6 +172,52 @@ function buildStorageSafeId(value: string) {
 
 function isRemoteUrl(value: string) {
   return /^(https?:\/\/|gs:\/\/)/i.test(value);
+}
+
+async function uploadTicketImageToCloudinary(ticketId: string, imageValue: string) {
+  const cloudName = process.env.EXPO_PUBLIC_CLOUDINARY_CLOUD_NAME;
+  const uploadPreset = process.env.EXPO_PUBLIC_CLOUDINARY_UPLOAD_PRESET;
+
+  if (!cloudName || !uploadPreset) {
+    throw new Error(
+      'Cloudinary upload is not configured. Set EXPO_PUBLIC_CLOUDINARY_CLOUD_NAME and EXPO_PUBLIC_CLOUDINARY_UPLOAD_PRESET.',
+    );
+  }
+
+  const formData = new FormData();
+  const imageBlob = await fetchImageBlob(imageValue);
+
+  formData.append('file', imageBlob, `${buildStorageSafeId(ticketId)}.jpg`);
+  formData.append('upload_preset', uploadPreset);
+  formData.append('folder', 'ticketmaster-zik/tickets');
+  formData.append('public_id', `${buildStorageSafeId(ticketId)}-${Date.now()}`);
+
+  const response = await fetch(
+    `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
+    {
+      body: formData,
+      method: 'POST',
+    },
+  );
+  const payload = await response.json();
+
+  if (!response.ok || typeof payload.secure_url !== 'string') {
+    throw new Error(
+      `Cloudinary upload failed (${response.status}): ${JSON.stringify(payload)}`,
+    );
+  }
+
+  return payload.secure_url as string;
+}
+
+async function fetchImageBlob(imageValue: string) {
+  const response = await fetch(imageValue);
+
+  if (!response.ok) {
+    throw new Error(`Could not read selected image (${response.status}).`);
+  }
+
+  return response.blob();
 }
 
 function buildTicketDocumentUrl(ticketId: string) {

@@ -157,7 +157,7 @@ export function CollapsibleEventHero({
               </View>
               <View className="absolute inset-x-0 -bottom-4 h-4 bg-[#232126]" />
             </View>
-            <View className="bg-[#232126] px-4 pt-4">
+            <View className="bg-[#232126] px-4 pt-3">
               <Text className="pt-1 text-2xl font-bold leading-6 text-white">
                 {event.title}
               </Text>
