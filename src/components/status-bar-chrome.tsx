@@ -7,6 +7,7 @@ import { useAppStore } from "@/store/use-app-store";
 
 type StatusBarChromeProps = {
   backgroundColor?: string;
+  drawsBehindStatusBar?: boolean;
   style?: StatusBarStyle;
   useCustomAppearance?: boolean;
 };
@@ -15,6 +16,7 @@ export const SPLASH_STATUS_BAR_COLOR = "#007AFF";
 
 export function StatusBarChrome({
   backgroundColor = "#000000",
+  drawsBehindStatusBar = false,
   style = "light",
   useCustomAppearance = false,
 }: StatusBarChromeProps) {
@@ -32,13 +34,16 @@ export function StatusBarChrome({
       ? style
       : "light";
   const topInsetHeight = Platform.OS === "web" ? 0 : insets.top;
+  const shouldDrawBehindStatusBar = drawsBehindStatusBar && !isStartupLocked;
+  const shouldRenderStatusBarFill =
+    topInsetHeight > 0 && !shouldDrawBehindStatusBar;
 
   return (
     <>
       <Head>
         <meta name="theme-color" content={resolvedBackgroundColor} />
       </Head>
-      {topInsetHeight > 0 ? (
+      {shouldRenderStatusBarFill ? (
         <View
           pointerEvents="none"
           style={{
@@ -55,6 +60,7 @@ export function StatusBarChrome({
       <StatusBar
         backgroundColor={resolvedBackgroundColor}
         style={resolvedStyle}
+        translucent={shouldDrawBehindStatusBar}
       />
     </>
   );

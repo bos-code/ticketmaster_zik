@@ -371,13 +371,16 @@ export function TicketTransferFlow({
     setTransferModal("auth");
     setOtpCode("");
   };
+  const isViewerScreen = screen === "viewer";
 
   return (
     <TicketFlowContext.Provider value={ticketFlowData}>
       <View className="flex-1">
         <StatusBarChrome
-          backgroundColor={screen === "viewer" ? "#F9F8F4" : "#000000"}
-          style={screen === "viewer" ? "dark" : "light"}
+          backgroundColor={isViewerScreen ? "#F9F8F4" : "transparent"}
+          drawsBehindStatusBar={!isViewerScreen}
+          style={isViewerScreen ? "dark" : "light"}
+          useCustomAppearance
         />
         <View className=" flex-1 w-full">
           {["list", "select", "recipientChoice", "recipientForm"].includes(
