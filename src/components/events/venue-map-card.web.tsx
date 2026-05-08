@@ -293,7 +293,7 @@ function applyAppleMapsPaint(map: MapLibreMap) {
   const loadedStyle = map.getStyle();
 
   (loadedStyle.layers || []).forEach((layer) => {
-    const sourceLayer = String(layer["source-layer"] || "").toLowerCase();
+    const sourceLayer = String((layer as { "source-layer"?: string })["source-layer"] || "").toLowerCase();
     const id = layer.id.toLowerCase();
     const name = `${id} ${sourceLayer}`;
 
@@ -372,7 +372,6 @@ const styles = StyleSheet.create({
     color: "#1C1C1E",
     fontSize: 17,
     height: 52,
-    outlineStyle: "none",
     paddingHorizontal: 16,
   },
   resultsSheet: {
