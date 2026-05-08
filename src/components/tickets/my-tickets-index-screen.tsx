@@ -4,27 +4,21 @@ import { Image, Pressable, ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { StatusBarChrome } from "@/components/status-bar-chrome";
-import {
-  formatTicketDate,
-  type TicketRecord,
-  useTicketStore,
-} from "@/store/ticketStore";
+import { useTicketOrder } from "@/hooks/useTicketOrder";
+import type { TicketSummaryViewModel } from "@/types/ticket";
 
 type TicketIndexTab = "upcoming" | "past";
 
 export function MyTicketsIndexScreen() {
   const router = useRouter();
-  const tickets = useTicketStore((state) => state.tickets);
+  const { summaryViewModel } = useTicketOrder();
 
   const upcomingEvents = useMemo(
-    () => tickets.filter((ticket) => ticket.status === "upcoming"),
-    [tickets],
+    () => [summaryViewModel],
+    [summaryViewModel],
   );
 
-  const pastEvents = useMemo(
-    () => tickets.filter((ticket) => ticket.status === "past"),
-    [tickets],
-  );
+  const pastEvents = useMemo<TicketSummaryViewModel[]>(() => [], []);
 
   const [activeTab, setActiveTab] = useState<TicketIndexTab>(() =>
     upcomingEvents.length > 0 || pastEvents.length === 0 ? "upcoming" : "past",
@@ -107,11 +101,11 @@ export function MyTicketsIndexScreen() {
           {visibleEvents.length ? (
             visibleEvents.map((ticket) => (
               <TicketIndexCard
-                key={ticket.id}
+                key={ticket.orderId}
                 onPress={() =>
                   router.push({
                     pathname: "/tickets",
-                    params: { ticketId: ticket.id },
+                    params: { orderId: ticket.orderId },
                   })
                 }
                 ticket={ticket}
@@ -139,7 +133,7 @@ function TicketIndexCard({
   ticket,
 }: {
   onPress: () => void;
-  ticket: TicketRecord;
+  ticket: TicketSummaryViewModel;
 }) {
   return (
     <Pressable
@@ -151,7 +145,7 @@ function TicketIndexCard({
         <Image
           className="h-64 w-full bg-[#1A1A1A]"
           resizeMode="cover"
-          source={{ uri: ticket.image }}
+          source={ticket.heroImage}
         />
 
         {/* <View className="absolute left-3 top-3 rounded-full bg-[#101010]/90 px-3 py-2">
@@ -161,14 +155,14 @@ function TicketIndexCard({
         </View> */}
         <View className="absolute bottom-0 left-0 bg-[#101010] p-3">
           <Text className="text-base font-black uppercase leading-3 tracking-[0.6px] text-white">
-            {formatTicketDate(ticket)}
+            {ticket.eventFullDateTimeLabel}
           </Text>
         </View>
       </View>
 
       <View className="bg-[#101010] px-[14px] pb-[18px] pt-1">
         <Text className="text-2xl font-black uppercase leading-[30px] text-white">
-          {ticket.eventName}
+          {ticket.eventTitle}
         </Text>
 
         <View className="mt-[10px] h-[3px] w-52 bg-[#B79E6A]" />
@@ -178,7 +172,7 @@ function TicketIndexCard({
         </Text> */}
 
         <Text className="mt-1 text-base font-medium pt-3 leading-[19px] text-[rgba(255,255,255,0.76)]">
-          {ticket.venue}
+          {ticket.eventVenue}
         </Text>
         {/* 
         <Text className="mt-3 text-[13px] font-bold leading-[18px] text-[rgba(255,255,255,0.62)]">

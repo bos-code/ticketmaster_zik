@@ -92,11 +92,15 @@ export function AdminTicketPreviewScreen() {
     const normalizedSeats = getSimpleTicketSeatNumbers(editedTicket.seatRange);
     const seats: Seat[] = normalizedSeats.map((seat, index) => ({
       id: `${editedTicket.id}-seat-${index + 1}`,
+      ticketIndex: index + 1,
       label: editedTicket.seatLabel || editedTicket.ticketType,
       note: editedTicket.ticketNote || 'Standard seating',
       row: editedTicket.row,
       seat,
       section: editedTicket.section,
+      barcodeValue: editedTicket.barcode,
+      canTransfer: true,
+      canSell: false,
     }));
 
     return {
@@ -104,8 +108,8 @@ export function AdminTicketPreviewScreen() {
         dateTime: `${editedTicket.date} • ${editedTicket.time}`,
         directionsEventId: undefined,
         headerSubtitle: `${editedTicket.time} - ${editedTicket.venue}`,
+        heroImage: { uri: editedTicket.image },
         id: editedTicket.id,
-        imageUrl: editedTicket.image,
         latitude: null,
         longitude: null,
         mapImageUrl: '',
@@ -116,10 +120,12 @@ export function AdminTicketPreviewScreen() {
         venueSummary: editedTicket.venue,
       },
       order: {
-        id: `Order #${editedTicket.id.slice(-6).toUpperCase()}`,
-        ticketCount: `${seats.length} Ticket${seats.length > 1 ? 's' : ''}`,
+        id: editedTicket.id,
+        orderNumber: `#${editedTicket.id.slice(-6).toUpperCase()}`,
+        ticketCount: seats.length,
+        ticketCountLabel: `x${seats.length} Ticket${seats.length > 1 ? 's' : ''}`,
       },
-      reservationId: editedTicket.id,
+      orderId: editedTicket.id,
       seats,
     };
   }, [editedTicket]);
