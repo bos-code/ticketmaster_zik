@@ -104,7 +104,7 @@ export function CollapsibleEventHero({
         }}
       />
       <LinearGradient
-        colors={["rgba(0,0,0,0.70)", "rgba(2,2,4,0.56)", "rgba(0,0,0,0.72)"]}
+        colors={["transparent", "rgba(2,2,4,0.56)", "rgba(0,0,0,0.72)"]}
         locations={[0, 0.48, 1]}
         pointerEvents="none"
         style={{
@@ -116,7 +116,7 @@ export function CollapsibleEventHero({
         }}
       />
 
-      <SafeAreaView edges={["top"]} style={absoluteFill}>
+      <SafeAreaView style={absoluteFill}>
         <View className="px-4 pt-1">
           <View className=" mt-4 flex-row items-center justify-between">
             <Pressable

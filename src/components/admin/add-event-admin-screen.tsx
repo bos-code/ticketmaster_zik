@@ -7,6 +7,7 @@ import {
   Alert,
   ActivityIndicator,
   KeyboardAvoidingView,
+  Modal,
   Platform,
   Pressable,
   ScrollView,
@@ -30,6 +31,10 @@ import {
 
 type FormState = Record<keyof TicketInput, string>;
 type FieldKey = keyof FormState;
+type WebImageDressState = {
+  sourceUri: string;
+  zoom: number;
+};
 
 const fieldLabels: Record<FieldKey, string> = {
   eventName: 'Event Name',
@@ -102,6 +107,7 @@ export function AddEventAdminScreen() {
   const [errors, setErrors] = useState<Partial<Record<FieldKey, string>>>({});
   const [isPickingImage, setIsPickingImage] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [webImageDress, setWebImageDress] = useState<WebImageDressState | null>(null);
   const [toast, setToast] = useState<string | null>(null);
   const screenTitle = mode === 'edit' ? 'Edit Ticket' : 'Create New Ticket';
   const screenSubtitle =
@@ -226,9 +232,52 @@ export function AddEventAdminScreen() {
         return;
       }
 
-      updateField('image', buildPickedImageUri(result.assets[0]));
+      const pickedImageUri = buildPickedImageUri(result.assets[0]);
+
+      if (Platform.OS === 'web') {
+        openWebImageDresser(pickedImageUri);
+        return;
+      }
+
+      updateField('image', pickedImageUri);
     } catch {
       Alert.alert('Image upload unavailable', 'The photo library could not be opened right now.');
+    } finally {
+      setIsPickingImage(false);
+    }
+  }
+
+  function openWebImageDresser(sourceUri = form.image.trim()) {
+    if (!sourceUri) {
+      return;
+    }
+
+    setWebImageDress({
+      sourceUri,
+      zoom: 1,
+    });
+  }
+
+  function updateWebImageDress(updates: Partial<WebImageDressState>) {
+    setWebImageDress((current) => (current ? { ...current, ...updates } : current));
+  }
+
+  async function applyWebImageDress() {
+    if (!webImageDress) {
+      return;
+    }
+
+    try {
+      setIsPickingImage(true);
+      const dressedImageUri = await renderWebDressedImage(webImageDress);
+      updateField('image', dressedImageUri);
+      setWebImageDress(null);
+    } catch (error) {
+      console.warn('Web image dressing failed.', error);
+      Alert.alert(
+        'Could not crop image',
+        'Use an uploaded image from your device, or paste a direct image URL and save it without cropping.',
+      );
     } finally {
       setIsPickingImage(false);
     }
@@ -340,6 +389,12 @@ export function AddEventAdminScreen() {
                 </Pressable>
               ) : null}
             </View>
+            {Platform.OS === 'web' && form.image ? (
+              <Pressable onPress={() => openWebImageDresser()} style={styles.imageDressButton}>
+                <Ionicons color="#005BD3" name="crop-outline" size={16} />
+                <Text style={styles.imageDressButtonText}>Crop Image</Text>
+              </Pressable>
+            ) : null}
             <TicketTextField
               error={errors.image}
               label="Image URL"
@@ -459,6 +514,68 @@ export function AddEventAdminScreen() {
           <Text style={styles.toastText}>{toast}</Text>
         </View>
       ) : null}
+
+      {webImageDress ? (
+        <Modal animationType="fade" transparent visible onRequestClose={() => setWebImageDress(null)}>
+          <View style={styles.dressModalBackdrop}>
+            <View style={styles.dressModal}>
+              <View style={styles.dressHeader}>
+                <View>
+                  <Text style={styles.dressTitle}>Crop image</Text>
+                  <Text style={styles.dressSubtitle}>Zoom inside the ticket frame.</Text>
+                </View>
+                <Pressable onPress={() => setWebImageDress(null)} style={styles.dressCloseButton}>
+                  <Ionicons color="#374151" name="close" size={18} />
+                </Pressable>
+              </View>
+
+              <View style={styles.dressPreviewFrame}>
+                <Image
+                  contentFit="cover"
+                  source={{ uri: webImageDress.sourceUri }}
+                  style={[
+                    styles.dressPreviewImage,
+                    {
+                      transform: [
+                        { scale: webImageDress.zoom },
+                      ],
+                    },
+                  ]}
+                />
+              </View>
+
+              <View style={styles.dressControls}>
+                <ZoomControl
+                  onChange={(zoom) => updateWebImageDress({ zoom })}
+                  value={webImageDress.zoom}
+                />
+              </View>
+
+              <View style={styles.dressActions}>
+                <Pressable onPress={() => setWebImageDress(null)} style={styles.dressSecondaryAction}>
+                  <Text style={styles.dressSecondaryActionText}>Cancel</Text>
+                </Pressable>
+                <Pressable
+                  disabled={isPickingImage}
+                  onPress={() => {
+                    void applyWebImageDress();
+                  }}
+                  style={[styles.dressPrimaryAction, isPickingImage && styles.buttonDisabled]}
+                >
+                  {isPickingImage ? (
+                    <ActivityIndicator color="#FFFFFF" size="small" />
+                  ) : (
+                    <>
+                      <Ionicons color="#FFFFFF" name="checkmark" size={17} />
+                      <Text style={styles.dressPrimaryActionText}>Apply</Text>
+                    </>
+                  )}
+                </Pressable>
+              </View>
+            </View>
+          </View>
+        </Modal>
+      ) : null}
     </View>
   );
 }
@@ -536,6 +653,35 @@ function SegmentedOptions<T extends string>({
   );
 }
 
+function ZoomControl({
+  onChange,
+  value,
+}: {
+  onChange: (value: number) => void;
+  value: number;
+}) {
+  function clamp(nextValue: number) {
+    return Math.min(2.5, Math.max(1, Number(nextValue.toFixed(2))));
+  }
+
+  return (
+    <View style={styles.zoomRow}>
+      <View style={styles.zoomCopy}>
+        <Text style={styles.label}>Zoom</Text>
+        <Text style={styles.zoomValue}>{Math.round(value * 100)}%</Text>
+      </View>
+      <View style={styles.zoomButtons}>
+        <Pressable onPress={() => onChange(clamp(value - 0.1))} style={styles.zoomButton}>
+          <Ionicons color="#374151" name="remove" size={16} />
+        </Pressable>
+        <Pressable onPress={() => onChange(clamp(value + 0.1))} style={styles.zoomButton}>
+          <Ionicons color="#374151" name="add" size={16} />
+        </Pressable>
+      </View>
+    </View>
+  );
+}
+
 function validateForm(form: FormState) {
   const errors: Partial<Record<FieldKey, string>> = {};
 
@@ -575,6 +721,49 @@ function buildPickedImageUri(asset: ImagePicker.ImagePickerAsset) {
   }
 
   return asset.uri;
+}
+
+async function renderWebDressedImage(dress: WebImageDressState) {
+  if (typeof window === 'undefined' || typeof document === 'undefined') {
+    return dress.sourceUri;
+  }
+
+  const image = await loadBrowserImage(dress.sourceUri);
+  const targetWidth = 1400;
+  const targetHeight = 788;
+  const canvas = document.createElement('canvas');
+  const context = canvas.getContext('2d');
+
+  if (!context) {
+    throw new Error('Canvas rendering is unavailable.');
+  }
+
+  canvas.width = targetWidth;
+  canvas.height = targetHeight;
+  context.fillStyle = '#111827';
+  context.fillRect(0, 0, targetWidth, targetHeight);
+
+  const baseScale = Math.max(targetWidth / image.naturalWidth, targetHeight / image.naturalHeight);
+  const scale = baseScale * dress.zoom;
+  const drawWidth = image.naturalWidth * scale;
+  const drawHeight = image.naturalHeight * scale;
+  const offsetX = (targetWidth - drawWidth) / 2;
+  const offsetY = (targetHeight - drawHeight) / 2;
+
+  context.drawImage(image, offsetX, offsetY, drawWidth, drawHeight);
+
+  return canvas.toDataURL('image/jpeg', 0.92);
+}
+
+function loadBrowserImage(sourceUri: string) {
+  return new Promise<HTMLImageElement>((resolve, reject) => {
+    const image = new window.Image();
+
+    image.onload = () => resolve(image);
+    image.onerror = () => reject(new Error('Image could not be loaded.'));
+    image.crossOrigin = 'anonymous';
+    image.src = sourceUri;
+  });
 }
 
 function getTicketSaveErrorMessage(error: unknown) {
@@ -749,6 +938,23 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     width: 44,
   },
+  imageDressButton: {
+    alignItems: 'center',
+    borderColor: '#BFDBFE',
+    borderRadius: 8,
+    borderWidth: 1,
+    flexDirection: 'row',
+    gap: 8,
+    justifyContent: 'center',
+    minHeight: 42,
+  },
+  imageDressButtonText: {
+    color: '#005BD3',
+    fontSize: 12,
+    fontWeight: '800',
+    letterSpacing: 0.8,
+    textTransform: 'uppercase',
+  },
   segmentRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   segment: {
     backgroundColor: '#F9FAFB',
@@ -834,4 +1040,97 @@ const styles = StyleSheet.create({
   toastText: { color: '#FFFFFF', fontSize: 13, fontWeight: '700' },
   notFound: { alignItems: 'center', flex: 1, gap: 16, justifyContent: 'center', padding: 24 },
   notFoundTitle: { color: '#111827', fontSize: 20, fontWeight: '800' },
+  dressModalBackdrop: {
+    alignItems: 'center',
+    backgroundColor: 'rgba(17,24,39,0.54)',
+    flex: 1,
+    justifyContent: 'center',
+    padding: 18,
+  },
+  dressModal: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 10,
+    gap: 16,
+    maxWidth: 520,
+    padding: 16,
+    width: '100%',
+  },
+  dressHeader: { alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between' },
+  dressTitle: { color: '#111827', fontSize: 18, fontWeight: '800', lineHeight: 23 },
+  dressSubtitle: { color: '#6B7280', fontSize: 12, fontWeight: '600', lineHeight: 17, marginTop: 2 },
+  dressCloseButton: {
+    alignItems: 'center',
+    borderColor: '#E5E7EB',
+    borderRadius: 18,
+    borderWidth: 1,
+    height: 36,
+    justifyContent: 'center',
+    width: 36,
+  },
+  dressPreviewFrame: {
+    aspectRatio: 16 / 9,
+    backgroundColor: '#111827',
+    borderRadius: 8,
+    overflow: 'hidden',
+    width: '100%',
+  },
+  dressPreviewImage: { height: '100%', width: '100%' },
+  dressControls: { gap: 12 },
+  zoomRow: {
+    alignItems: 'center',
+    backgroundColor: '#F9FAFB',
+    borderColor: '#E5E7EB',
+    borderRadius: 8,
+    borderWidth: 1,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    padding: 10,
+  },
+  zoomCopy: { gap: 2 },
+  zoomValue: { color: '#111827', fontSize: 13, fontWeight: '800', lineHeight: 18 },
+  zoomButtons: { flexDirection: 'row', gap: 8 },
+  zoomButton: {
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    borderColor: '#E5E7EB',
+    borderRadius: 8,
+    borderWidth: 1,
+    height: 34,
+    justifyContent: 'center',
+    width: 40,
+  },
+  dressActions: { flexDirection: 'row', gap: 10 },
+  dressSecondaryAction: {
+    alignItems: 'center',
+    borderColor: '#E5E7EB',
+    borderRadius: 8,
+    borderWidth: 1,
+    flex: 1,
+    justifyContent: 'center',
+    minHeight: 46,
+  },
+  dressSecondaryActionText: {
+    color: '#374151',
+    fontSize: 12,
+    fontWeight: '800',
+    letterSpacing: 0.8,
+    textTransform: 'uppercase',
+  },
+  dressPrimaryAction: {
+    alignItems: 'center',
+    backgroundColor: '#005BD3',
+    borderRadius: 8,
+    flex: 1,
+    flexDirection: 'row',
+    gap: 7,
+    justifyContent: 'center',
+    minHeight: 46,
+  },
+  dressPrimaryActionText: {
+    color: '#FFFFFF',
+    fontSize: 12,
+    fontWeight: '800',
+    letterSpacing: 0.8,
+    textTransform: 'uppercase',
+  },
 });

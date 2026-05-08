@@ -1,30 +1,7 @@
 
 > ticketmaster_zik@1.0.0 web
-> expo start --web --port 8081 --non-interactive
+> expo start --web --host localhost --port 8081
 
 env: load .env
-env: export EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY
-✅ Clerk iOS plugin loaded
-✅ Clerk Android plugin loaded
+env: export EXPO_PUBLIC_GOOGLE_MAPS_API_KEY EXPO_PUBLIC_GOOGLE_MAPS_DIRECTIONS_API_KEY EXPO_PUBLIC_FIREBASE_API_KEY EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN EXPO_PUBLIC_FIREBASE_PROJECT_ID EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID EXPO_PUBLIC_FIREBASE_APP_ID EXPO_PUBLIC_CLOUDINARY_CLOUD_NAME EXPO_PUBLIC_CLOUDINARY_UPLOAD_PRESET
 Starting project at C:\Users\JohnDera\Desktop\ticketmaster_zik
-✅ Clerk iOS plugin loaded
-✅ Clerk Android plugin loaded
-✅ Clerk iOS plugin loaded
-✅ Clerk Android plugin loaded
-✅ Clerk iOS plugin loaded
-✅ Clerk Android plugin loaded
-✅ Clerk iOS plugin loaded
-✅ Clerk Android plugin loaded
-Using src/app as the root directory for Expo Router.
-✅ Clerk iOS plugin loaded
-✅ Clerk Android plugin loaded
-React Compiler enabled
-Starting Metro Bundler
-✅ Clerk iOS plugin loaded
-✅ Clerk Android plugin loaded
-✅ Clerk iOS plugin loaded
-✅ Clerk Android plugin loaded
-✅ Clerk iOS plugin loaded
-✅ Clerk Android plugin loaded
-✅ Clerk iOS plugin loaded
-✅ Clerk Android plugin loaded
