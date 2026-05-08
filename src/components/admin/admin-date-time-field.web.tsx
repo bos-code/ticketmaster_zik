@@ -1,5 +1,13 @@
-import React from 'react';
-import { StyleSheet, Text, TextInput, View } from 'react-native';
+import React, { useMemo, useState } from 'react';
+import {
+  Modal,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from 'react-native';
 
 type AdminDateTimeFieldProps = {
   error?: string;
@@ -18,64 +26,101 @@ export function AdminDateTimeField({
   placeholder,
   value,
 }: AdminDateTimeFieldProps) {
-  const inputValue = mode === 'time' ? toWebTimeValue(value) : value;
+  const [isTimePickerOpen, setIsTimePickerOpen] = useState(false);
+  const timeOptions = useMemo(() => buildTimeOptions(), []);
+
+  if (mode === 'time') {
+    return (
+      <View style={styles.field}>
+        <Text style={styles.label}>{label}</Text>
+        <Pressable
+          accessibilityRole="button"
+          onPress={() => setIsTimePickerOpen(true)}
+          style={[styles.inputButton, error && styles.inputError]}
+        >
+          <Text style={[styles.inputText, !value && styles.placeholderText]}>
+            {value || placeholder || 'Select time'}
+          </Text>
+          <Text style={styles.inputIcon}>⌄</Text>
+        </Pressable>
+        {error ? <Text style={styles.errorText}>{error}</Text> : null}
+
+        <Modal
+          animationType="fade"
+          onRequestClose={() => setIsTimePickerOpen(false)}
+          transparent
+          visible={isTimePickerOpen}
+        >
+          <View style={styles.modalBackdrop}>
+            <Pressable
+              onPress={() => setIsTimePickerOpen(false)}
+              style={StyleSheet.absoluteFill}
+            />
+            <View style={styles.modalCard}>
+              <View style={styles.modalHeader}>
+                <Text style={styles.modalTitle}>{label}</Text>
+                <Pressable onPress={() => setIsTimePickerOpen(false)}>
+                  <Text style={styles.modalClose}>Done</Text>
+                </Pressable>
+              </View>
+              <ScrollView contentContainerStyle={styles.timeGrid}>
+                {timeOptions.map((option) => {
+                  const active = option === value;
+
+                  return (
+                    <Pressable
+                      key={option}
+                      onPress={() => {
+                        onChangeValue(option);
+                        setIsTimePickerOpen(false);
+                      }}
+                      style={[styles.timeOption, active && styles.timeOptionActive]}
+                    >
+                      <Text
+                        style={[
+                          styles.timeOptionText,
+                          active && styles.timeOptionTextActive,
+                        ]}
+                      >
+                        {option}
+                      </Text>
+                    </Pressable>
+                  );
+                })}
+              </ScrollView>
+            </View>
+          </View>
+        </Modal>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.field}>
       <Text style={styles.label}>{label}</Text>
       <TextInput
         // @ts-ignore - 'type' is supported on React Native Web
-        type={mode}
-        onChangeText={(nextValue) => {
-          onChangeValue(
-            mode === 'time' ? fromWebTimeValue(nextValue) : nextValue,
-          );
-        }}
+        type="date"
+        onChangeText={onChangeValue}
         placeholder={placeholder}
         placeholderTextColor="rgba(17, 24, 39, 0.32)"
         style={[styles.input, error && styles.inputError]}
-        value={inputValue}
+        value={value}
       />
       {error ? <Text style={styles.errorText}>{error}</Text> : null}
     </View>
   );
 }
 
-function toWebTimeValue(value: string) {
-  const trimmedValue = value.trim();
-  const match = trimmedValue.match(/^(\d{1,2}):(\d{2})\s?(AM|PM)$/i);
+function buildTimeOptions() {
+  return Array.from({ length: 48 }, (_, index) => {
+    const hour24 = Math.floor(index / 2);
+    const minute = index % 2 === 0 ? '00' : '30';
+    const displayHour = hour24 % 12 || 12;
+    const meridiem = hour24 >= 12 ? 'PM' : 'AM';
 
-  if (!match) {
-    return trimmedValue;
-  }
-
-  const [, hourString, minuteString, meridiem] = match;
-  const hour = Number(hourString);
-  const minute = Number(minuteString);
-
-  if (hour < 1 || hour > 12 || minute < 0 || minute > 59) {
-    return trimmedValue;
-  }
-
-  const normalizedHour =
-    meridiem.toUpperCase() === 'PM' ? (hour % 12) + 12 : hour % 12;
-
-  return `${String(normalizedHour).padStart(2, '0')}:${minuteString}`;
-}
-
-function fromWebTimeValue(value: string) {
-  const match = value.trim().match(/^(\d{2}):(\d{2})$/);
-
-  if (!match) {
-    return value;
-  }
-
-  const [, hourString, minuteString] = match;
-  const hour = Number(hourString);
-  const displayHour = hour % 12 || 12;
-  const meridiem = hour >= 12 ? 'PM' : 'AM';
-
-  return `${displayHour}:${minuteString} ${meridiem}`;
+    return `${displayHour}:${minute} ${meridiem}`;
+  });
 }
 
 const styles = StyleSheet.create({
@@ -99,6 +144,74 @@ const styles = StyleSheet.create({
     minHeight: 48,
     paddingHorizontal: 13,
   },
+  inputButton: {
+    alignItems: 'center',
+    backgroundColor: '#F9FAFB',
+    borderColor: '#E5E7EB',
+    borderRadius: 8,
+    borderWidth: 1,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    minHeight: 48,
+    paddingHorizontal: 13,
+  },
+  inputText: {
+    color: '#111827',
+    flex: 1,
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  placeholderText: { color: 'rgba(17, 24, 39, 0.32)' },
+  inputIcon: { color: '#6B7280', fontSize: 18, fontWeight: '800' },
   inputError: { borderColor: '#EF4444' },
   errorText: { color: '#EF4444', fontSize: 11, fontWeight: '600', lineHeight: 15 },
+  modalBackdrop: {
+    alignItems: 'center',
+    backgroundColor: 'rgba(0,0,0,0.35)',
+    flex: 1,
+    justifyContent: 'center',
+    padding: 20,
+  },
+  modalCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 10,
+    maxHeight: 420,
+    maxWidth: 360,
+    overflow: 'hidden',
+    width: '100%',
+  },
+  modalHeader: {
+    alignItems: 'center',
+    borderBottomColor: '#E5E7EB',
+    borderBottomWidth: 1,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    minHeight: 52,
+    paddingHorizontal: 16,
+  },
+  modalTitle: { color: '#111827', fontSize: 15, fontWeight: '800' },
+  modalClose: { color: '#005BD3', fontSize: 14, fontWeight: '800' },
+  timeGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    padding: 14,
+  },
+  timeOption: {
+    alignItems: 'center',
+    backgroundColor: '#F9FAFB',
+    borderColor: '#E5E7EB',
+    borderRadius: 8,
+    borderWidth: 1,
+    minHeight: 38,
+    minWidth: 72,
+    justifyContent: 'center',
+    paddingHorizontal: 10,
+  },
+  timeOptionActive: {
+    backgroundColor: '#005BD3',
+    borderColor: '#005BD3',
+  },
+  timeOptionText: { color: '#374151', fontSize: 12, fontWeight: '700' },
+  timeOptionTextActive: { color: '#FFFFFF' },
 });

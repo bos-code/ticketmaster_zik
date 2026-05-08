@@ -158,16 +158,22 @@ export function CollapsibleEventHero({
               <View className="absolute inset-x-0 -bottom-4 h-4 bg-[#232126]" />
             </View>
             <View className="bg-[#232126] px-4 pt-3">
-              <Text className="pt-1 text-2xl font-bold leading-6 text-white">
+              <Text
+                numberOfLines={2}
+                className="pt-1 text-2xl font-bold leading-6 text-white"
+              >
                 {event.title}
               </Text>
 
               <View className="mt-3 flex-row items-center justify-between pb-2">
-                <Text className="text-[13px] font-normal leading-[17px] text-[rgba(255,255,255,0.76)]">
+                <Text
+                  numberOfLines={1}
+                  className="mr-3 flex-1 text-[13px] font-normal leading-[17px] text-[rgba(255,255,255,0.76)]"
+                >
                   {event.venue}
                 </Text>
 
-                <View className="flex-row items-center gap-[5px]">
+                <View className="shrink-0 flex-row items-center gap-[5px]">
                   <Image
                     contentFit="contain"
                     source={require("../../../assets/ticketx3.png")}
