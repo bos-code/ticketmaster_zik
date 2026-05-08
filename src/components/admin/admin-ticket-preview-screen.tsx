@@ -1,6 +1,6 @@
-import { Ionicons } from '@expo/vector-icons';
-import { useLocalSearchParams, useRouter } from 'expo-router';
-import React, { useCallback, useMemo, useState } from 'react';
+import { Ionicons } from "@expo/vector-icons";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import React, { useCallback, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -8,35 +8,39 @@ import {
   StyleSheet,
   Text,
   View,
-} from 'react-native';
+} from "react-native";
 import Animated, {
   FadeIn,
   FadeOut,
   useAnimatedScrollHandler,
   useSharedValue,
-} from 'react-native-reanimated';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+} from "react-native-reanimated";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { EditableProvider, type EditableContextValue } from '@/components/tickets/EditableContext';
-import { TicketFlowContext } from '@/components/tickets/TicketFlowContext';
-import { TicketTransferListScreen } from '@/components/tickets/ticket-transfer-flow-list-screen';
+import {
+  EditableProvider,
+  type EditableContextValue,
+} from "@/components/tickets/EditableContext";
+import { TicketFlowContext } from "@/components/tickets/TicketFlowContext";
+import { TicketTransferListScreen } from "@/components/tickets/ticket-transfer-flow-list-screen";
 import type {
   PanelTab,
   Seat,
   TicketFlowContextValue,
-} from '@/components/tickets/ticketFlowTypes';
+} from "@/components/tickets/ticketFlowTypes";
 import {
   getSimpleTicketSeatNumbers,
+  useTicketStore,
   type TicketInput,
   type TicketRecord,
-  useTicketStore,
-} from '@/store/ticketStore';
+} from "@/store/ticketStore";
 
 export function AdminTicketPreviewScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const params = useLocalSearchParams<{ ticketId?: string }>();
-  const ticketId = typeof params.ticketId === 'string' ? params.ticketId : undefined;
+  const ticketId =
+    typeof params.ticketId === "string" ? params.ticketId : undefined;
 
   const originalTicket = useTicketStore((state) =>
     ticketId ? state.tickets.find((t) => t.id === ticketId) : undefined,
@@ -50,7 +54,7 @@ export function AdminTicketPreviewScreen() {
   const [toast, setToast] = useState<string | null>(null);
 
   // List screen state
-  const [activePanel, setActivePanel] = useState<PanelTab>('tickets');
+  const [activePanel, setActivePanel] = useState<PanelTab>("tickets");
   const scrollY = useSharedValue(0);
   const [isHeroCollapsed, setIsHeroCollapsed] = useState(false);
 
@@ -94,7 +98,7 @@ export function AdminTicketPreviewScreen() {
       id: `${editedTicket.id}-seat-${index + 1}`,
       ticketIndex: index + 1,
       label: editedTicket.seatLabel || editedTicket.ticketType,
-      note: editedTicket.ticketNote || 'Standard seating',
+      note: editedTicket.ticketNote || "Standard seating",
       row: editedTicket.row,
       seat,
       section: editedTicket.section,
@@ -112,7 +116,7 @@ export function AdminTicketPreviewScreen() {
         id: editedTicket.id,
         latitude: null,
         longitude: null,
-        mapImageUrl: '',
+        mapImageUrl: "",
         shortTitle: editedTicket.eventName,
         title: editedTicket.eventName,
         venue: editedTicket.venue,
@@ -123,7 +127,7 @@ export function AdminTicketPreviewScreen() {
         id: editedTicket.id,
         orderNumber: editedTicket.barcode,
         ticketCount: seats.length,
-        ticketCountLabel: `x${seats.length} Ticket${seats.length > 1 ? 's' : ''}`,
+        ticketCountLabel: `x${seats.length} Ticket${seats.length > 1 ? "s" : ""}`,
       },
       orderId: editedTicket.id,
       seats,
@@ -136,7 +140,7 @@ export function AdminTicketPreviewScreen() {
       return;
     }
 
-    router.replace('/admin');
+    router.replace("/admin");
   }
 
   async function handleSave() {
@@ -171,10 +175,13 @@ export function AdminTicketPreviewScreen() {
       };
 
       await updateEvent(ticketId, payload);
-      showToast('Changes saved');
+      showToast("Changes saved");
       setTimeout(() => goBackFromPreview(), 600);
     } catch {
-      Alert.alert('Save failed', 'Could not save ticket changes. Please try again.');
+      Alert.alert(
+        "Save failed",
+        "Could not save ticket changes. Please try again.",
+      );
     } finally {
       setIsSaving(false);
     }
@@ -182,9 +189,9 @@ export function AdminTicketPreviewScreen() {
 
   function handleCancel() {
     if (isDirty) {
-      Alert.alert('Discard changes?', 'Your edits will be lost.', [
-        { text: 'Keep editing', style: 'cancel' },
-        { text: 'Discard', style: 'destructive', onPress: goBackFromPreview },
+      Alert.alert("Discard changes?", "Your edits will be lost.", [
+        { text: "Keep editing", style: "cancel" },
+        { text: "Discard", style: "destructive", onPress: goBackFromPreview },
       ]);
       return;
     }
@@ -217,7 +224,10 @@ export function AdminTicketPreviewScreen() {
 
   return (
     <View style={styles.root}>
-      <Pressable onPress={handleCancel} style={[styles.backButtonFloating, { top: insets.top + 6 }]}>
+      <Pressable
+        onPress={handleCancel}
+        style={[styles.backButtonFloating, { top: insets.top + 6 }]}
+      >
         <Ionicons color="#FFFFFF" name="chevron-back" size={20} />
       </Pressable>
 
@@ -247,7 +257,10 @@ export function AdminTicketPreviewScreen() {
       {/* Floating admin toolbar */}
       <Animated.View
         entering={FadeIn.delay(200).duration(280)}
-        style={[styles.toolbar, { paddingBottom: Math.max(insets.bottom, 12) + 4 }]}
+        style={[
+          styles.toolbar,
+          { paddingBottom: Math.max(insets.bottom, 12) + 4 },
+        ]}
       >
         <Pressable onPress={handleCancel} style={styles.cancelButton}>
           <Text style={styles.cancelButtonText}>Cancel</Text>
@@ -258,7 +271,10 @@ export function AdminTicketPreviewScreen() {
           onPress={() => {
             void handleSave();
           }}
-          style={[styles.saveButton, (!isDirty || isSaving) && styles.saveButtonDisabled]}
+          style={[
+            styles.saveButton,
+            (!isDirty || isSaving) && styles.saveButtonDisabled,
+          ]}
         >
           {isSaving ? (
             <ActivityIndicator color="#FFFFFF" size="small" />
@@ -288,142 +304,142 @@ export function AdminTicketPreviewScreen() {
 
 const styles = StyleSheet.create({
   root: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: "#FFFFFF",
     flex: 1,
   },
   centered: {
-    alignItems: 'center',
+    alignItems: "center",
     flex: 1,
     gap: 12,
-    justifyContent: 'center',
+    justifyContent: "center",
     padding: 24,
   },
   notFoundTitle: {
-    color: '#111111',
+    color: "#111111",
     fontSize: 20,
-    fontWeight: '900',
+    fontWeight: "900",
   },
   notFoundBody: {
-    color: '#70757E',
+    color: "#70757E",
     fontSize: 14,
-    fontWeight: '600',
-    textAlign: 'center',
+    fontWeight: "600",
+    textAlign: "center",
   },
   backButton: {
-    alignItems: 'center',
-    backgroundColor: '#005BD3',
+    alignItems: "center",
+    backgroundColor: "#005BD3",
     borderRadius: 8,
     marginTop: 8,
     minHeight: 44,
-    justifyContent: 'center',
+    justifyContent: "center",
     paddingHorizontal: 28,
   },
   backButtonText: {
-    color: '#FFFFFF',
+    color: "#FFFFFF",
     fontSize: 13,
-    fontWeight: '900',
+    fontWeight: "900",
     letterSpacing: 1,
-    textTransform: 'uppercase',
+    textTransform: "uppercase",
   },
   adminBadge: {
-    alignItems: 'center',
-    alignSelf: 'center',
-    backgroundColor: 'rgba(11, 85, 245, 0.88)',
+    alignItems: "center",
+    alignSelf: "center",
+    backgroundColor: "rgba(11, 85, 245, 0.88)",
     borderRadius: 999,
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: 6,
     paddingHorizontal: 12,
     paddingVertical: 5,
-    position: 'absolute',
+    position: "absolute",
     zIndex: 100,
   },
   adminBadgeDot: {
-    backgroundColor: '#7CFC00',
+    backgroundColor: "#7CFC00",
     borderRadius: 4,
     height: 7,
     width: 7,
   },
   adminBadgeText: {
-    color: '#FFFFFF',
+    color: "#FFFFFF",
     fontSize: 10,
-    fontWeight: '900',
+    fontWeight: "900",
     letterSpacing: 1.8,
   },
   backButtonFloating: {
-    alignItems: 'center',
-    backgroundColor: 'rgba(17, 24, 39, 0.84)',
+    alignItems: "center",
+    backgroundColor: "rgba(17, 24, 39, 0.84)",
     borderRadius: 20,
     height: 40,
-    justifyContent: 'center',
+    justifyContent: "center",
     left: 16,
-    position: 'absolute',
+    position: "absolute",
     width: 40,
     zIndex: 101,
   },
   toolbar: {
-    alignItems: 'center',
-    backgroundColor: '#FFFFFF',
-    borderTopColor: '#E5E7EB',
+    alignItems: "center",
+    backgroundColor: "#FFFFFF",
+    borderTopColor: "#E5E7EB",
     borderTopWidth: StyleSheet.hairlineWidth,
     bottom: 0,
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: 10,
     left: 0,
     paddingHorizontal: 16,
     paddingTop: 12,
-    position: 'absolute',
+    position: "absolute",
     right: 0,
   },
   cancelButton: {
-    alignItems: 'center',
-    borderColor: '#E5E7EB',
+    alignItems: "center",
+    borderColor: "#E5E7EB",
     borderRadius: 8,
     borderWidth: 1,
     flex: 1,
-    justifyContent: 'center',
+    justifyContent: "center",
     minHeight: 48,
   },
   cancelButtonText: {
-    color: '#374151',
+    color: "#374151",
     fontSize: 12,
-    fontWeight: '800',
+    fontWeight: "800",
     letterSpacing: 1.1,
-    textTransform: 'uppercase',
+    textTransform: "uppercase",
   },
   saveButton: {
-    alignItems: 'center',
-    backgroundColor: '#005BD3',
+    alignItems: "center",
+    backgroundColor: "#005BD3",
     borderRadius: 8,
     flex: 1,
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: 7,
-    justifyContent: 'center',
+    justifyContent: "center",
     minHeight: 48,
   },
   saveButtonDisabled: {
     opacity: 0.4,
   },
   saveButtonText: {
-    color: '#FFFFFF',
+    color: "#FFFFFF",
     fontSize: 12,
-    fontWeight: '900',
+    fontWeight: "900",
     letterSpacing: 1.1,
-    textTransform: 'uppercase',
+    textTransform: "uppercase",
   },
   toast: {
-    alignItems: 'center',
-    alignSelf: 'center',
-    backgroundColor: '#111827',
+    alignItems: "center",
+    alignSelf: "center",
+    backgroundColor: "#111827",
     borderRadius: 999,
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: 8,
     paddingHorizontal: 14,
     paddingVertical: 10,
-    position: 'absolute',
+    position: "absolute",
   },
   toastText: {
-    color: '#FFFFFF',
+    color: "#FFFFFF",
     fontSize: 13,
-    fontWeight: '700',
+    fontWeight: "700",
   },
 });
