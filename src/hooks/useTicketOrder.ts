@@ -18,12 +18,15 @@ import {
 
 export function useTicketOrder(orderId?: string) {
   const storeTickets = useTicketStore((state) => state.tickets);
+  const hasSyncedTickets = useTicketStore((state) => state.isSynced);
   const ticketOrders = useMemo(
     () =>
       storeTickets.length
         ? mapTicketRecordsToTicketOrders(storeTickets)
+        : hasSyncedTickets
+          ? []
         : fallbackTicketOrders,
-    [storeTickets],
+    [hasSyncedTickets, storeTickets],
   );
 
   const resolvedTicketOrder = useMemo(

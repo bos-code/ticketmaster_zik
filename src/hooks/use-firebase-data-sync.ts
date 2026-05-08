@@ -16,17 +16,18 @@ export function useFirebaseDataSync() {
 
     void (async () => {
       try {
+        unsubscribeHandlers.push(
+          subscribeToTickets((tickets) => {
+            useTicketStore.getState().replaceTickets(tickets);
+          }),
+        );
+
         await ensureFirebaseSeedData();
 
         if (!isActive) {
           return;
         }
 
-        unsubscribeHandlers.push(
-          subscribeToTickets((tickets) => {
-            useTicketStore.getState().replaceTickets(tickets);
-          }),
-        );
         unsubscribeHandlers.push(
           subscribeToEvents((events) => {
             useEventStore.getState().replaceEvents(events);

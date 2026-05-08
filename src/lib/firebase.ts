@@ -26,6 +26,7 @@ export const firebaseApp =
 export const firestore = (() => {
   try {
     return initializeFirestore(firebaseApp, {
+      experimentalForceLongPolling: true,
       ignoreUndefinedProperties: true,
     });
   } catch {
