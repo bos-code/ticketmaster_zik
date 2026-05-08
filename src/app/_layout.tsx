@@ -92,14 +92,14 @@ export default function RootLayout() {
   const finishStartup = useAppStore((state) => state.finishStartup);
   const hasHiddenNativeSplash = useRef(false);
   const startupStatusBarColor = "#007AFF";
-  const startupBackgroundColor = "#000000";
+  const startupBackgroundColor = "#007AFF";
   const statusBarBackgroundColor = hasFinishedStartup
-    ? ticketColors.background
+    ? "#000000"
     : startupStatusBarColor;
   const appBackgroundColor = hasFinishedStartup
     ? ticketColors.background
     : startupBackgroundColor;
-  const statusBarStyle = hasFinishedStartup ? "dark" : "light";
+  const statusBarStyle = "light";
   const isReady = fontsLoaded || Boolean(fontError);
 
   useEffect(() => {
@@ -150,6 +150,7 @@ export default function RootLayout() {
             <StatusBarChrome
               style={statusBarStyle}
               backgroundColor={statusBarBackgroundColor}
+              useCustomAppearance={!hasFinishedStartup}
             />
             <RootStack />
             <PwaInstallPrompt />

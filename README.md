@@ -40,6 +40,18 @@ The system is composed of two main applications:
 
 ---
 
+## 🗺️ App Sitemap
+
+The maintained route map now lives in [docs/sitemap.md](docs/sitemap.md).
+
+It includes:
+
+* the current Expo Router sitemap
+* the ticket navigation flow
+* the major sitemap changes across previous commits
+
+---
+
 ### ☁️ Backend (BaaS)
 
 * Authentication (users, admins, organizers)

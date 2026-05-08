@@ -43,22 +43,38 @@ import type { TicketOrderData, TicketSummaryViewModel } from "@/types/ticket";
 export function TicketTransferFlow({
   initialScreen = "list",
   initialTicketIndex = 0,
+  initialTicketId,
   orderId,
 }: {
   initialScreen?: "list" | "viewer";
   initialTicketIndex?: number;
+  initialTicketId?: string;
   orderId?: string;
 }) {
-  const { ticketOrder, summaryViewModel, getDetailsViewModel } =
+  const {
+    ticketOrder,
+    summaryViewModel,
+    getDetailsViewModel,
+    getTicketByIndex,
+    getTicketIndexById,
+  } =
     useTicketOrder(orderId);
   const { width } = useWindowDimensions();
   const frameWidth = Math.min(width, 430);
   const carouselCardWidth = Math.round(frameWidth * 0.84);
   const carouselGap = 12;
   const carouselSnapInterval = carouselCardWidth + carouselGap;
+  const resolvedInitialTicketIndex = useMemo(() => {
+    if (initialTicketId) {
+      return getTicketIndexById(initialTicketId);
+    }
+
+    return initialTicketIndex;
+  }, [getTicketIndexById, initialTicketId, initialTicketIndex]);
+
   const initialViewerIndex = useMemo(
-    () => getDetailsViewModel(initialTicketIndex).activeIndex,
-    [getDetailsViewModel, initialTicketIndex],
+    () => getDetailsViewModel(resolvedInitialTicketIndex).activeIndex,
+    [getDetailsViewModel, resolvedInitialTicketIndex],
   );
   const ticketFlowData = useMemo(
     () => buildTicketFlowDataFromOrder(ticketOrder, summaryViewModel),
@@ -190,16 +206,18 @@ export function TicketTransferFlow({
   const openTicketDetailsRoute = useCallback(
     (ticketIndex: number) => {
       const nextDetails = getDetailsViewModel(ticketIndex);
+      const nextTicket = getTicketByIndex(nextDetails.activeIndex);
 
       router.push({
         pathname: "/tickets/[orderId]",
         params: {
           orderId: ticketOrder.order.id,
+          ticketId: nextTicket.id,
           ticketIndex: String(nextDetails.activeIndex),
         },
       });
     },
-    [getDetailsViewModel, ticketOrder.order.id],
+    [getDetailsViewModel, getTicketByIndex, ticketOrder.order.id],
   );
 
   const handleTransferStart = () => {
@@ -209,10 +227,6 @@ export function TicketTransferFlow({
 
   const handleOpenViewer = () => {
     openTicketDetailsRoute(0);
-  };
-
-  const handleOpenTicket = (ticketIndex: number) => {
-    openTicketDetailsRoute(ticketIndex);
   };
 
   const handleViewerBack = () => {
@@ -377,7 +391,7 @@ export function TicketTransferFlow({
               handleListScroll={handleListScroll}
               isHeroCollapsed={isHeroCollapsed}
               onBack={handleBackToTabs}
-              onOpenTicket={handleOpenTicket}
+              onOpenTicket={openTicketDetailsRoute}
               onOpenViewer={handleOpenViewer}
               onPanelChange={setActivePanel}
               onTransfer={handleTransferStart}

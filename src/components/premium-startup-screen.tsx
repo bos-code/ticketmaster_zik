@@ -12,7 +12,7 @@ type PremiumStartupScreenProps = {
 };
 
 const STARTUP_STATUS_BAR_COLOR = "#007AFF";
-const STARTUP_BACKGROUND_COLOR = "#000000";
+const STARTUP_BACKGROUND_COLOR = "#007AFF";
 
 export function PremiumStartupScreen({ onFinish }: PremiumStartupScreenProps) {
   const markOpacity = useRef(new Animated.Value(1)).current;

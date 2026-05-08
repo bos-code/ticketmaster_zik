@@ -8,17 +8,22 @@ import { useTicketOrder } from "@/hooks/useTicketOrder";
 import type { TicketSummaryViewModel } from "@/types/ticket";
 
 type TicketIndexTab = "upcoming" | "past";
+const TICKET_INDEX_IMAGE_HEIGHT = 256;
 
 export function MyTicketsIndexScreen() {
   const router = useRouter();
-  const { summaryViewModel } = useTicketOrder();
+  const { pastSummaryViewModels, upcomingSummaryViewModels } =
+    useTicketOrder();
 
   const upcomingEvents = useMemo(
-    () => [summaryViewModel],
-    [summaryViewModel],
+    () => upcomingSummaryViewModels,
+    [upcomingSummaryViewModels],
   );
 
-  const pastEvents = useMemo<TicketSummaryViewModel[]>(() => [], []);
+  const pastEvents = useMemo<TicketSummaryViewModel[]>(
+    () => pastSummaryViewModels,
+    [pastSummaryViewModels],
+  );
 
   const [activeTab, setActiveTab] = useState<TicketIndexTab>(() =>
     upcomingEvents.length > 0 || pastEvents.length === 0 ? "upcoming" : "past",
@@ -143,9 +148,10 @@ function TicketIndexCard({
     >
       <View className="relative">
         <Image
-          className="h-64 w-full bg-[#1A1A1A]"
+          className="w-full bg-[#1A1A1A]"
           resizeMode="cover"
           source={ticket.heroImage}
+          style={{ height: TICKET_INDEX_IMAGE_HEIGHT }}
         />
 
         {/* <View className="absolute left-3 top-3 rounded-full bg-[#101010]/90 px-3 py-2">

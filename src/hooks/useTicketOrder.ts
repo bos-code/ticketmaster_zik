@@ -1,6 +1,11 @@
 import { useCallback, useMemo } from "react";
 
-import { ticketOrder, ticketOrders } from "@/data/ticketOrder";
+import {
+  mapTicketRecordsToTicketOrders,
+  ticketOrder,
+  ticketOrders as fallbackTicketOrders,
+} from "@/data/ticketOrder";
+import { useTicketStore } from "@/store/ticketStore";
 import type { TicketItem } from "@/types/ticket";
 import {
   createTicketDetailsViewModel,
@@ -12,12 +17,51 @@ import {
 } from "@/utils/ticketUtils";
 
 export function useTicketOrder(orderId?: string) {
+  const storeTickets = useTicketStore((state) => state.tickets);
+  const ticketOrders = useMemo(
+    () =>
+      storeTickets.length
+        ? mapTicketRecordsToTicketOrders(storeTickets)
+        : fallbackTicketOrders,
+    [storeTickets],
+  );
+
   const resolvedTicketOrder = useMemo(
     () =>
       ticketOrders.find((candidateOrder) => candidateOrder.order.id === orderId) ??
+      ticketOrders[0] ??
       ticketOrder,
-    [orderId],
+    [orderId, ticketOrders],
   );
+
+  const summaryViewModels = useMemo(
+    () => ticketOrders.map((order) => createTicketSummaryViewModel(order)),
+    [ticketOrders],
+  );
+
+  const upcomingSummaryViewModels = useMemo(() => {
+    if (!storeTickets.length) {
+      return summaryViewModels;
+    }
+
+    return storeTickets
+      .filter((ticket) => ticket.status === "upcoming")
+      .map((ticket) =>
+        createTicketSummaryViewModel(mapTicketRecordsToTicketOrders([ticket])[0]),
+      );
+  }, [storeTickets, summaryViewModels]);
+
+  const pastSummaryViewModels = useMemo(() => {
+    if (!storeTickets.length) {
+      return [];
+    }
+
+    return storeTickets
+      .filter((ticket) => ticket.status === "past")
+      .map((ticket) =>
+        createTicketSummaryViewModel(mapTicketRecordsToTicketOrders([ticket])[0]),
+      );
+  }, [storeTickets]);
 
   const summaryViewModel = useMemo(
     () => createTicketSummaryViewModel(resolvedTicketOrder),
@@ -55,7 +99,11 @@ export function useTicketOrder(orderId?: string) {
 
   return {
     ticketOrder: resolvedTicketOrder,
+    ticketOrders,
     summaryViewModel,
+    summaryViewModels,
+    upcomingSummaryViewModels,
+    pastSummaryViewModels,
     getDetailsViewModel,
     getTicketByIndex,
     getTicketById: getTicketForId,

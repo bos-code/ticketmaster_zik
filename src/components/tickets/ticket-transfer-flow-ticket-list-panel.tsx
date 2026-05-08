@@ -22,7 +22,7 @@ export function TicketListPanel({
       <View style={styles.orderHeader}>
         <View style={styles.orderHeaderRow}>
           <View style={styles.orderTextGroup}>
-            <Text style={styles.orderId}>{order.orderNumber}</Text>
+            <Text style={styles.orderId}>{`Order ${order.orderNumber}`}</Text>
             <Text style={styles.ticketCount}>{order.ticketCountLabel}</Text>
           </View>
 
@@ -41,7 +41,7 @@ export function TicketListPanel({
           <TicketSeatCard
             index={index}
             key={seat.id}
-            onOpenTicket={onOpenTicket}
+            onPress={() => onOpenTicket(index)}
             seat={seat}
           />
         ))}
@@ -54,21 +54,24 @@ export function TicketListPanel({
 
 function TicketSeatCard({
   index,
-  onOpenTicket,
+  onPress,
   seat,
 }: {
   index: number;
-  onOpenTicket: (ticketIndex: number) => void;
+  onPress: () => void;
   seat: Seat;
 }) {
   const seatLabel = seat.label?.trim() || seat.note?.trim() || "Standard";
 
   return (
-    <Animated.View
-      entering={FadeInDown.duration(220).delay(40 + index * 60)}
-      style={styles.ticketCard}
+    <Pressable
+      accessibilityRole="button"
+      onPress={onPress}
     >
-      <Pressable accessibilityRole="button" onPress={() => onOpenTicket(index)}>
+      <Animated.View
+        entering={FadeInDown.duration(220).delay(40 + index * 60)}
+        style={styles.ticketCard}
+      >
         <View style={styles.ticketCardHeader}>
           <EditableText field="seatLabel" value={seatLabel} style={styles.ticketNote} />
         </View>
@@ -78,8 +81,8 @@ function TicketSeatCard({
           <TicketMetaCell align="center" label="ROW" value={seat.row} />
           <TicketMetaCell align="right" label="SEAT" value={seat.seat} />
         </View>
-      </Pressable>
-    </Animated.View>
+      </Animated.View>
+    </Pressable>
   );
 }
 

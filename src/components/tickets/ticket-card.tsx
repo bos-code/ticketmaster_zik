@@ -15,6 +15,7 @@ import Animated, {
 import { EditableText } from "@/components/tickets/EditableText";
 import type { Seat } from "@/components/tickets/ticketFlowTypes";
 import { useTicketFlowData } from "@/components/tickets/useTicketFlowData";
+import { createDemoBarcodeSegments } from "@/utils/demoBarcode";
 
 export function TicketCard({
   cardWidth,
@@ -28,6 +29,7 @@ export function TicketCard({
   const { event } = useTicketFlowData();
   const seatLabel = seat.label?.trim() || seat.note?.trim() || "Standard seating";
   const ticketNote = seat.note?.trim() || seat.label?.trim() || "Standard seating";
+  const barcodeValue = seat.barcodeValue?.trim() || `DEMO-${seat.id.toUpperCase()}`;
 
   return (
     <Animated.View
@@ -60,7 +62,7 @@ export function TicketCard({
               </Text>
               <Ionicons name="refresh" size={10} color="#6B6B6B" />
             </View>
-            <TicketBarcodeBand />
+            <TicketBarcodeBand barcodeValue={barcodeValue} />
           </View>
         </View>
 
@@ -97,8 +99,9 @@ export function TicketCard({
   );
 }
 
-function TicketBarcodeBand() {
+function TicketBarcodeBand({ barcodeValue }: { barcodeValue: string }) {
   const beamProgress = useSharedValue(0);
+  const barcodeSegments = createDemoBarcodeSegments(barcodeValue);
 
   useEffect(() => {
     beamProgress.value = withRepeat(
@@ -120,11 +123,24 @@ function TicketBarcodeBand() {
 
   return (
     <View className="relative h-[58px] w-full items-center justify-center overflow-hidden bg-white px-2">
-      <Image
-        contentFit="contain"
-        source={require("../../../assets/image.png")}
-        style={{ height: 90, width: "100%" }}
-      />
+      <View className="w-full px-2">
+        <View className="h-[34px] flex-row items-stretch justify-center overflow-hidden bg-white">
+          {barcodeSegments.map((segment, index) => (
+            <View
+              key={`${barcodeValue}-${index}`}
+              style={{
+                backgroundColor: segment.filled ? "#111111" : "#FFFFFF",
+                height: "100%",
+                marginRight: segment.filled ? 0 : 1,
+                width: segment.width,
+              }}
+            />
+          ))}
+        </View>
+        <Text className="pt-1 text-center text-[8px] font-bold tracking-[1.2px] text-[#5D6167]">
+          {barcodeValue}
+        </Text>
+      </View>
 
       <Animated.View
         className="absolute w-[6px] bg-[#026CDF]"

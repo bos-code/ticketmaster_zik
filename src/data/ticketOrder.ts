@@ -1,4 +1,7 @@
-import type { TicketOrderData } from "@/types/ticket";
+import type { TicketRecord } from "../../data/tickets";
+
+import { getSimpleTicketSeatNumbers } from "@/store/ticketStore";
+import type { TicketItem, TicketOrderData } from "@/types/ticket";
 
 export const ticketOrder: TicketOrderData = {
   event: {
@@ -58,3 +61,107 @@ export const ticketOrder: TicketOrderData = {
 };
 
 export const ticketOrders: TicketOrderData[] = [ticketOrder];
+
+export function mapTicketRecordToTicketOrderData(
+  ticketRecord: TicketRecord,
+): TicketOrderData {
+  const seatValues = getSimpleTicketSeatNumbers(ticketRecord.seatRange);
+  const normalizedSeats = seatValues.length ? seatValues : ["TBA"];
+  const tickets = normalizedSeats.map((seat, index) =>
+    createTicketItem(ticketRecord, seat, index),
+  );
+  const ticketCount = tickets.length;
+
+  return {
+    event: {
+      id: ticketRecord.id,
+      title: ticketRecord.eventName,
+      venue: ticketRecord.venue,
+      date: formatEventDateLabel(ticketRecord.date),
+      time: ticketRecord.time,
+      fullDateTimeLabel: formatEventFullDateTimeLabel(
+        ticketRecord.date,
+        ticketRecord.time,
+      ),
+      heroImage: { uri: ticketRecord.image },
+    },
+    order: {
+      id: ticketRecord.id,
+      orderNumber: buildOrderNumber(ticketRecord),
+      ticketCount,
+    },
+    tickets,
+  };
+}
+
+export function mapTicketRecordsToTicketOrders(ticketRecords: TicketRecord[]) {
+  return ticketRecords.map(mapTicketRecordToTicketOrderData);
+}
+
+function createTicketItem(
+  ticketRecord: TicketRecord,
+  seat: string,
+  index: number,
+): TicketItem {
+  return {
+    id: `${ticketRecord.id}-seat-${index + 1}`,
+    ticketIndex: index + 1,
+    type: ticketRecord.seatLabel.trim() || ticketRecord.ticketType,
+    seatingCategory:
+      ticketRecord.ticketNote.trim() || "STANDARD SEATING",
+    section: ticketRecord.section,
+    row: ticketRecord.row,
+    seat,
+    barcodeValue: ticketRecord.barcode || undefined,
+    canTransfer: ticketRecord.status === "upcoming",
+    canSell: false,
+  };
+}
+
+function buildOrderNumber(ticketRecord: TicketRecord) {
+  const idTokens = ticketRecord.id
+    .split("-")
+    .map((token) => token.trim())
+    .filter(Boolean);
+  const suffix = idTokens.slice(-3).join("-").toUpperCase() || "TICKET";
+  const artistToken =
+    ticketRecord.artistName
+      .trim()
+      .split(/\s+/)
+      .filter(Boolean)[0]
+      ?.slice(0, 3)
+      .toUpperCase() || "EVT";
+
+  return `#${suffix}/${artistToken}`;
+}
+
+function formatEventDateLabel(dateValue: string) {
+  const date = parseTicketDate(dateValue);
+
+  if (!date) {
+    return dateValue;
+  }
+
+  return new Intl.DateTimeFormat("en-US", {
+    weekday: "short",
+    month: "short",
+    day: "numeric",
+  }).format(date);
+}
+
+function formatEventFullDateTimeLabel(dateValue: string, timeValue: string) {
+  const formattedDate = formatEventDateLabel(dateValue);
+  return timeValue.trim()
+    ? `${formattedDate}, ${timeValue.trim()}`
+    : formattedDate;
+}
+
+function parseTicketDate(dateValue: string) {
+  const trimmedDateValue = dateValue.trim();
+  if (!trimmedDateValue) {
+    return null;
+  }
+
+  const parsedDate = new Date(`${trimmedDateValue}T00:00:00`);
+  return Number.isNaN(parsedDate.getTime()) ? null : parsedDate;
+}
