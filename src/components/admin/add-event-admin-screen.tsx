@@ -144,6 +144,15 @@ export function AddEventAdminScreen() {
     [form.status, form.ticketType],
   );
 
+  function handleLeaveAdminForm() {
+    if (router.canGoBack()) {
+      router.back();
+      return;
+    }
+
+    router.replace('/admin');
+  }
+
   function updateField(key: FieldKey, value: string) {
     setForm((current) => ({ ...current, [key]: value }));
     setErrors((current) => {
@@ -230,7 +239,7 @@ export function AddEventAdminScreen() {
         <StatusBarChrome style="dark" backgroundColor="#F5F6F8" />
         <View style={styles.notFound}>
           <Text style={styles.notFoundTitle}>Ticket not found</Text>
-          <Pressable onPress={() => router.replace('/admin')} style={styles.primaryButton}>
+          <Pressable onPress={handleLeaveAdminForm} style={styles.primaryButton}>
             <Text style={styles.primaryButtonText}>Back to Admin</Text>
           </Pressable>
         </View>
@@ -243,7 +252,7 @@ export function AddEventAdminScreen() {
       <StatusBarChrome style="dark" backgroundColor="#F5F6F8" />
       <SafeAreaView edges={['top', 'left', 'right']} style={styles.headerSafe}>
         <View style={styles.header}>
-          <Pressable onPress={() => router.replace('/admin')} style={styles.iconButton}>
+          <Pressable onPress={handleLeaveAdminForm} style={styles.iconButton}>
             <Ionicons color="#374151" name="chevron-back" size={20} />
           </Pressable>
           <View style={styles.headerCopy}>
@@ -409,7 +418,7 @@ export function AddEventAdminScreen() {
       </KeyboardAvoidingView>
 
       <View style={[styles.footer, { paddingBottom: Math.max(insets.bottom, 12) }]}>
-        <Pressable onPress={() => router.replace('/admin')} style={styles.secondaryButton}>
+        <Pressable onPress={handleLeaveAdminForm} style={styles.secondaryButton}>
           <Text style={styles.secondaryButtonText}>Cancel</Text>
         </Pressable>
         {mode === 'edit' && ticketId ? (

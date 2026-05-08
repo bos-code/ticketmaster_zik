@@ -130,6 +130,15 @@ export function AdminTicketPreviewScreen() {
     };
   }, [editedTicket]);
 
+  function goBackFromPreview() {
+    if (router.canGoBack()) {
+      router.back();
+      return;
+    }
+
+    router.replace('/admin');
+  }
+
   function handleSave() {
     if (!editedTicket || !ticketId || !isDirty) return;
 
@@ -163,7 +172,7 @@ export function AdminTicketPreviewScreen() {
 
       updateEvent(ticketId, payload);
       showToast('Changes saved');
-      setTimeout(() => router.back(), 600);
+      setTimeout(() => goBackFromPreview(), 600);
     } catch {
       Alert.alert('Save failed', 'Could not save ticket changes. Please try again.');
     } finally {
@@ -175,12 +184,12 @@ export function AdminTicketPreviewScreen() {
     if (isDirty) {
       Alert.alert('Discard changes?', 'Your edits will be lost.', [
         { text: 'Keep editing', style: 'cancel' },
-        { text: 'Discard', style: 'destructive', onPress: () => router.back() },
+        { text: 'Discard', style: 'destructive', onPress: goBackFromPreview },
       ]);
       return;
     }
 
-    router.back();
+    goBackFromPreview();
   }
 
   function showToast(message: string) {
@@ -198,7 +207,7 @@ export function AdminTicketPreviewScreen() {
           <Text style={styles.notFoundBody}>
             This ticket may have been deleted.
           </Text>
-          <Pressable onPress={() => router.back()} style={styles.backButton}>
+          <Pressable onPress={goBackFromPreview} style={styles.backButton}>
             <Text style={styles.backButtonText}>Go Back</Text>
           </Pressable>
         </View>
@@ -208,6 +217,10 @@ export function AdminTicketPreviewScreen() {
 
   return (
     <View style={styles.root}>
+      <Pressable onPress={handleCancel} style={[styles.backButtonFloating, { top: insets.top + 6 }]}>
+        <Ionicons color="#FFFFFF" name="chevron-back" size={20} />
+      </Pressable>
+
       {/* Admin badge */}
       <View style={[styles.adminBadge, { top: insets.top + 6 }]}>
         <View style={styles.adminBadgeDot} />
@@ -333,6 +346,17 @@ const styles = StyleSheet.create({
     fontSize: 10,
     fontWeight: '900',
     letterSpacing: 1.8,
+  },
+  backButtonFloating: {
+    alignItems: 'center',
+    backgroundColor: 'rgba(17, 24, 39, 0.84)',
+    borderRadius: 20,
+    height: 40,
+    justifyContent: 'center',
+    left: 16,
+    position: 'absolute',
+    width: 40,
+    zIndex: 101,
   },
   toolbar: {
     alignItems: 'center',

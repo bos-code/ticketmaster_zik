@@ -1,6 +1,11 @@
 import { create } from 'zustand';
 
-import { mockTickets, type TicketRecord, type TicketStatus, type TicketType } from '../../data/tickets';
+import {
+  mockTickets,
+  type TicketRecord,
+  type TicketStatus,
+  type TicketType,
+} from '../../data/tickets';
 
 export type { TicketRecord, TicketStatus, TicketType };
 
@@ -37,7 +42,8 @@ export const DEFAULT_WIZKID_TICKET: TicketInput = {
   ticketType: 'VIP',
   status: 'upcoming',
   perks: 'Priority entry, Starboy lounge access, complimentary drinks',
-  transferRules: 'Transferable once before 24 hours to showtime. Valid ID required at entry.',
+  transferRules:
+    'Transferable once before 24 hours to showtime. Valid ID required at entry.',
   image:
     'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&w=1200&q=85',
   backgroundColor: '#B79E6A',
@@ -88,10 +94,15 @@ export const useTicketStore = create<TicketStore>((set, get) => ({
   getEventById: (id) => get().tickets.find((ticket) => ticket.id === id),
 }));
 
-export function generateTicketId(ticket: Pick<TicketInput, 'artistName' | 'ticketType'>) {
+export function generateTicketId(
+  ticket: Pick<TicketInput, 'artistName' | 'ticketType'>,
+) {
   const artist = slugify(ticket.artistName) || 'artist';
   const type = slugify(ticket.ticketType) || 'ticket';
-  return `ticket-${artist}-${type}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+
+  return `ticket-${artist}-${type}-${Date.now()}-${Math.random()
+    .toString(36)
+    .slice(2, 7)}`;
 }
 
 export function formatTicketDate(ticket: Pick<TicketRecord, 'date' | 'time'>) {
@@ -109,14 +120,14 @@ export function formatTicketDate(ticket: Pick<TicketRecord, 'date' | 'time'>) {
 }
 
 export function getSimpleTicketSeatNumbers(seatRange: string) {
-  const normalizedRange = seatRange.trim();
+  const normalizedRange = normalizeSeatRangeInput(seatRange);
 
   if (!normalizedRange) {
     return [];
   }
 
   const seats = normalizedRange
-    .split(/\s*,\s*/)
+    .split(/\s*(?:,|;|\/|\band\b|&|\r?\n)\s*/i)
     .flatMap((segment) => expandSeatSegment(segment))
     .map((seat) => seat.trim())
     .filter(Boolean);
@@ -150,14 +161,14 @@ type ParsedSeatToken = {
 };
 
 function expandSeatSegment(segment: string) {
-  const trimmedSegment = segment.trim();
+  const trimmedSegment = normalizeSeatRangeInput(segment);
 
   if (!trimmedSegment) {
     return [];
   }
 
   const rangeParts = trimmedSegment
-    .split(/\s*(?:-|–|—|to)\s*/i)
+    .split(/\s*-\s*/)
     .map((part) => part.trim())
     .filter(Boolean);
 
@@ -165,25 +176,22 @@ function expandSeatSegment(segment: string) {
     return [trimmedSegment];
   }
 
-  return expandSeatRange(rangeParts[0], rangeParts[1]) ?? rangeParts;
+  return expandSeatRange(rangeParts[0], rangeParts[1]) ?? [trimmedSegment];
 }
 
 function expandSeatRange(startSeat: string, endSeat: string) {
-  const startToken = parseSeatToken(startSeat);
-  const endToken = parseSeatToken(endSeat);
+  const alignedTokens = alignSeatRangeTokens(
+    parseSeatToken(startSeat),
+    parseSeatToken(endSeat),
+  );
 
-  if (!startToken || !endToken) {
+  if (!alignedTokens) {
     return null;
   }
 
-  if (
-    startToken.prefix !== endToken.prefix ||
-    startToken.suffix !== endToken.suffix
-  ) {
-    return null;
-  }
-
+  const { startToken, endToken } = alignedTokens;
   const delta = endToken.number - startToken.number;
+
   if (Math.abs(delta) > 200) {
     return null;
   }
@@ -203,6 +211,59 @@ function expandSeatRange(startSeat: string, endSeat: string) {
   }
 
   return expandedSeats;
+}
+
+function normalizeSeatRangeInput(value: string) {
+  return value
+    .replace(/[\u2010\u2011\u2012\u2013\u2014\u2015]/g, '-')
+    .replace(/\bto\b/gi, '-')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function alignSeatRangeTokens(
+  startToken: ParsedSeatToken | null,
+  endToken: ParsedSeatToken | null,
+) {
+  if (!startToken || !endToken) {
+    return null;
+  }
+
+  const mergedPrefix = resolveSeatAffix(startToken.prefix, endToken.prefix);
+  const mergedSuffix = resolveSeatAffix(startToken.suffix, endToken.suffix);
+
+  if (mergedPrefix === null || mergedSuffix === null) {
+    return null;
+  }
+
+  return {
+    startToken: {
+      ...startToken,
+      prefix: mergedPrefix,
+      suffix: mergedSuffix,
+    },
+    endToken: {
+      ...endToken,
+      prefix: mergedPrefix,
+      suffix: mergedSuffix,
+    },
+  };
+}
+
+function resolveSeatAffix(left: string, right: string) {
+  if (left === right) {
+    return left;
+  }
+
+  if (!left) {
+    return right;
+  }
+
+  if (!right) {
+    return left;
+  }
+
+  return null;
 }
 
 function formatSeatSelectionLabel(seats: string[]) {
@@ -245,7 +306,7 @@ function areSequentialSeatValues(seats: string[]) {
 }
 
 function parseSeatToken(value: string): ParsedSeatToken | null {
-  const trimmedValue = value.trim();
+  const trimmedValue = value.replace(/\s+/g, '').trim();
   const match = trimmedValue.match(/^([A-Za-z]*)(\d+)([A-Za-z]*)$/);
 
   if (!match) {

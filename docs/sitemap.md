@@ -20,7 +20,7 @@ Note: names in parentheses such as `(tabs)` are Expo Router route groups, not li
 - /add-event        (hidden from tab bar)
 - `index`           (hidden tab screen / internal helper route)
 
-/tickets/index
+/tickets
 - ticket order summary / detail screen
 - hero image, event info, ticket list, map/extras, and "View Tickets" button
 
@@ -49,9 +49,9 @@ Note: names in parentheses such as `(tabs)` are Expo Router route groups, not li
 
 /my-tickets
 -> tap ticket card
--> /tickets/index
+-> /tickets
 
-/tickets/index
+/tickets
 -> tap "View Tickets"
 -> /tickets/[orderId]
 ```
@@ -59,10 +59,10 @@ Note: names in parentheses such as `(tabs)` are Expo Router route groups, not li
 The ticket flow is designed so that:
 
 - the app opens into the tab navigator and the default visible tab is `My Tickets`
-- tapping a ticket card on `My Tickets` opens `/tickets/index`
-- `/tickets/index` is the summary/detail screen with the hero and ticket list
+- tapping a ticket card on `My Tickets` opens `/tickets`
+- `/tickets` is the summary/detail screen with the hero and ticket list
 - tapping `View Tickets` on that summary screen opens `/tickets/[orderId]`
-- the viewer back action returns to `/tickets/index`
+- the viewer back action returns to `/tickets`
 
 ## Route History
 
@@ -126,7 +126,7 @@ Replaced the single ticket route with split ticket routes:
 became:
 
 ```text
-/tickets/index
+/tickets
 /tickets/[orderId]
 ```
 

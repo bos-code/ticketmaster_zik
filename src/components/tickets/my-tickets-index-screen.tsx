@@ -1,4 +1,4 @@
-import { useRouter } from "expo-router";
+import { type Href, useRouter } from "expo-router";
 import React, { useEffect, useMemo, useState } from "react";
 import { Image, Pressable, ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -9,6 +9,13 @@ import type { TicketSummaryViewModel } from "@/types/ticket";
 
 type TicketIndexTab = "upcoming" | "past";
 const TICKET_INDEX_IMAGE_HEIGHT = 256;
+
+function buildTicketSummaryHref(orderId: string): Href {
+  return {
+    pathname: "/tickets",
+    params: { orderId },
+  } as unknown as Href;
+}
 
 export function MyTicketsIndexScreen() {
   const router = useRouter();
@@ -108,10 +115,7 @@ export function MyTicketsIndexScreen() {
               <TicketIndexCard
                 key={ticket.orderId}
                 onPress={() =>
-                  router.push({
-                    pathname: "/tickets/index",
-                    params: { orderId: ticket.orderId },
-                  })
+                  router.push(buildTicketSummaryHref(ticket.orderId))
                 }
                 ticket={ticket}
               />

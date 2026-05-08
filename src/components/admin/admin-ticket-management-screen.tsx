@@ -76,12 +76,24 @@ export function AdminTicketManagementScreen() {
     showToast('Ticket deleted');
   }
 
+  function handleExitAdmin() {
+    if (router.canGoBack()) {
+      router.back();
+      return;
+    }
+
+    router.replace('/my-tickets');
+  }
+
   return (
     <View style={styles.root}>
       <StatusBarChrome style="dark" backgroundColor="#F5F6F8" />
       <SafeAreaView edges={['top', 'left', 'right']} style={styles.safe}>
         <View style={styles.header}>
-          <View>
+          <Pressable onPress={handleExitAdmin} style={styles.iconButton}>
+            <Ionicons color="#374151" name="chevron-back" size={20} />
+          </Pressable>
+          <View style={styles.headerCopy}>
             <Text style={styles.eyebrow}>STARBOY ADMIN</Text>
             <Text style={styles.title}>Ticket Management</Text>
             <Text style={styles.subtitle}>Wizkid: Made in Lagos Live mock database</Text>
@@ -330,10 +342,24 @@ const styles = StyleSheet.create({
   header: {
     alignItems: 'center',
     flexDirection: 'row',
-    justifyContent: 'space-between',
     paddingBottom: 16,
     paddingHorizontal: 16,
     paddingTop: 8,
+  },
+  iconButton: {
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    borderColor: '#E5E7EB',
+    borderRadius: 20,
+    borderWidth: 1,
+    height: 40,
+    justifyContent: 'center',
+    width: 40,
+  },
+  headerCopy: {
+    flex: 1,
+    marginLeft: 12,
+    marginRight: 12,
   },
   eyebrow: { color: '#005BD3', fontSize: 10, fontWeight: '900', letterSpacing: 2.2, lineHeight: 13 },
   title: { color: '#111827', fontSize: 22, fontWeight: '900', lineHeight: 27, marginTop: 3 },

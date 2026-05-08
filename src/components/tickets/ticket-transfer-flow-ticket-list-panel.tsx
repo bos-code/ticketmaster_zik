@@ -41,7 +41,7 @@ export function TicketListPanel({
           <TicketSeatCard
             index={index}
             key={seat.id}
-            onPress={() => onOpenTicket(index)}
+            onPress={() => onOpenTicket(Math.max(0, seat.ticketIndex - 1))}
             seat={seat}
           />
         ))}

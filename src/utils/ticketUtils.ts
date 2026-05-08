@@ -111,7 +111,10 @@ export function createTicketDetailsViewModel(
     activeTicket,
     activeIndex: normalizedIndex,
     totalTickets,
-    positionLabel: getTicketPositionLabel(normalizedIndex, totalTickets),
+    positionLabel:
+      activeTicket.ticketIndex > 0
+        ? `${activeTicket.ticketIndex} of ${totalTickets}`
+        : getTicketPositionLabel(normalizedIndex, totalTickets),
     canTransfer: activeTicket.canTransfer,
     canSell: activeTicket.canSell,
   };

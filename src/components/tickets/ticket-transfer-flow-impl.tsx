@@ -1,5 +1,5 @@
 import * as Contacts from "expo-contacts";
-import { router } from "expo-router";
+import { type Href, router } from "expo-router";
 import React, {
   useCallback,
   useEffect,
@@ -43,20 +43,16 @@ import type { TicketOrderData, TicketSummaryViewModel } from "@/types/ticket";
 export function TicketTransferFlow({
   initialScreen = "list",
   initialTicketIndex = 0,
-  initialTicketId,
   orderId,
 }: {
   initialScreen?: "list" | "viewer";
   initialTicketIndex?: number;
-  initialTicketId?: string;
   orderId?: string;
 }) {
   const {
     ticketOrder,
     summaryViewModel,
     getDetailsViewModel,
-    getTicketByIndex,
-    getTicketIndexById,
   } =
     useTicketOrder(orderId);
   const { width } = useWindowDimensions();
@@ -64,17 +60,9 @@ export function TicketTransferFlow({
   const carouselCardWidth = Math.round(frameWidth * 0.84);
   const carouselGap = 12;
   const carouselSnapInterval = carouselCardWidth + carouselGap;
-  const resolvedInitialTicketIndex = useMemo(() => {
-    if (initialTicketId) {
-      return getTicketIndexById(initialTicketId);
-    }
-
-    return initialTicketIndex;
-  }, [getTicketIndexById, initialTicketId, initialTicketIndex]);
-
   const initialViewerIndex = useMemo(
-    () => getDetailsViewModel(resolvedInitialTicketIndex).activeIndex,
-    [getDetailsViewModel, resolvedInitialTicketIndex],
+    () => getDetailsViewModel(initialTicketIndex).activeIndex,
+    [getDetailsViewModel, initialTicketIndex],
   );
   const ticketFlowData = useMemo(
     () => buildTicketFlowDataFromOrder(ticketOrder, summaryViewModel),
@@ -203,21 +191,28 @@ export function TicketTransferFlow({
     router.replace("/my-tickets");
   };
 
+  const buildTicketSummaryHref = useCallback(
+    (nextOrderId: string): Href =>
+      ({
+        pathname: "/tickets",
+        params: { orderId: nextOrderId },
+      }) as unknown as Href,
+    [],
+  );
+
   const openTicketDetailsRoute = useCallback(
     (ticketIndex: number) => {
       const nextDetails = getDetailsViewModel(ticketIndex);
-      const nextTicket = getTicketByIndex(nextDetails.activeIndex);
 
       router.push({
         pathname: "/tickets/[orderId]",
         params: {
           orderId: ticketOrder.order.id,
-          ticketId: nextTicket.id,
           ticketIndex: String(nextDetails.activeIndex),
         },
       });
     },
-    [getDetailsViewModel, getTicketByIndex, ticketOrder.order.id],
+    [getDetailsViewModel, ticketOrder.order.id],
   );
 
   const handleTransferStart = () => {
@@ -236,10 +231,7 @@ export function TicketTransferFlow({
         return;
       }
 
-      router.replace({
-        pathname: "/tickets/index",
-        params: { orderId: ticketOrder.order.id },
-      });
+      router.replace(buildTicketSummaryHref(ticketOrder.order.id));
       return;
     }
 
@@ -506,7 +498,7 @@ function buildTicketFlowDataFromOrder(
       ticketCountLabel: summaryViewModel.ticketCountLabel,
     },
     orderId: summaryViewModel.orderId,
-    seats: summaryViewModel.tickets.map((ticket) => ({
+    seats: order.tickets.map((ticket) => ({
       id: ticket.id,
       ticketIndex: ticket.ticketIndex,
       label: ticket.type,
