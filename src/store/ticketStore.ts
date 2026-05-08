@@ -80,6 +80,10 @@ export const useTicketStore = create<TicketStore>((set, get) => ({
     };
 
     await createTicketDocument(nextTicket);
+    set((state) => ({
+      events: [nextTicket, ...state.events],
+      tickets: [nextTicket, ...state.tickets],
+    }));
 
     return nextTicket;
   },
@@ -103,9 +107,21 @@ export const useTicketStore = create<TicketStore>((set, get) => ({
     await updateTicketDocument(id, {
       ...nextTicket,
     });
+    set((state) => ({
+      events: state.events.map((ticket) =>
+        ticket.id === id ? nextTicket : ticket,
+      ),
+      tickets: state.tickets.map((ticket) =>
+        ticket.id === id ? nextTicket : ticket,
+      ),
+    }));
   },
   removeEvent: async (id) => {
     await deleteTicketDocument(id);
+    set((state) => ({
+      events: state.events.filter((ticket) => ticket.id !== id),
+      tickets: state.tickets.filter((ticket) => ticket.id !== id),
+    }));
   },
   getEventById: (id) => get().tickets.find((ticket) => ticket.id === id),
 }));
