@@ -3,7 +3,16 @@ import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useEffect, useMemo, useState } from 'react';
-import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import {
+  ActivityIndicator,
+  Alert,
+  Modal,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { StatusBarChrome } from '@/components/status-bar-chrome';
@@ -26,6 +35,7 @@ export function AdminTicketManagementScreen() {
   const removeEvent = useTicketStore((state) => state.removeEvent);
   const [activeFilter, setActiveFilter] = useState<TicketFilter>('All');
   const [deleteTarget, setDeleteTarget] = useState<TicketRecord | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
 
   useEffect(() => {
@@ -66,14 +76,24 @@ export function AdminTicketManagementScreen() {
     setTimeout(() => setToast(null), 1800);
   }
 
-  function handleConfirmDelete() {
-    if (!deleteTarget) {
+  async function handleConfirmDelete() {
+    if (!deleteTarget || isDeleting) {
       return;
     }
 
-    removeEvent(deleteTarget.id);
-    setDeleteTarget(null);
-    showToast('Ticket deleted');
+    try {
+      setIsDeleting(true);
+      await removeEvent(deleteTarget.id);
+      setDeleteTarget(null);
+      showToast('Ticket deleted');
+    } catch {
+      Alert.alert(
+        'Delete failed',
+        'We could not remove this ticket from Firebase right now. Please try again.',
+      );
+    } finally {
+      setIsDeleting(false);
+    }
   }
 
   function handleExitAdmin() {
@@ -187,7 +207,10 @@ export function AdminTicketManagementScreen() {
 
       <DeleteSheet
         onCancel={() => setDeleteTarget(null)}
-        onConfirm={handleConfirmDelete}
+        onConfirm={() => {
+          void handleConfirmDelete();
+        }}
+        isDeleting={isDeleting}
         ticket={deleteTarget}
       />
 
@@ -304,10 +327,12 @@ function SeatFact({ label, value }: { label: string; value: string }) {
 }
 
 function DeleteSheet({
+  isDeleting,
   onCancel,
   onConfirm,
   ticket,
 }: {
+  isDeleting: boolean;
   onCancel: () => void;
   onConfirm: () => void;
   ticket: TicketRecord | null;
@@ -323,11 +348,19 @@ function DeleteSheet({
             This will remove {ticket?.eventName ?? 'this ticket'} from Admin and My Tickets immediately.
           </Text>
           <View style={styles.sheetActions}>
-            <Pressable onPress={onCancel} style={styles.sheetCancel}>
+            <Pressable disabled={isDeleting} onPress={onCancel} style={styles.sheetCancel}>
               <Text style={styles.sheetCancelText}>Cancel</Text>
             </Pressable>
-            <Pressable onPress={onConfirm} style={styles.sheetDelete}>
-              <Text style={styles.sheetDeleteText}>Delete</Text>
+            <Pressable
+              disabled={isDeleting}
+              onPress={onConfirm}
+              style={[styles.sheetDelete, isDeleting && styles.sheetDeleteDisabled]}
+            >
+              {isDeleting ? (
+                <ActivityIndicator color="#FFFFFF" size="small" />
+              ) : (
+                <Text style={styles.sheetDeleteText}>Delete</Text>
+              )}
             </Pressable>
           </View>
         </View>
@@ -503,6 +536,7 @@ const styles = StyleSheet.create({
     minHeight: 46,
   },
   sheetDelete: { alignItems: 'center', backgroundColor: '#DC2626', borderRadius: 8, flex: 1, justifyContent: 'center', minHeight: 46 },
+  sheetDeleteDisabled: { opacity: 0.7 },
   sheetCancelText: { color: '#374151', fontSize: 12, fontWeight: '800', textTransform: 'uppercase' },
   sheetDeleteText: { color: '#FFFFFF', fontSize: 12, fontWeight: '800', textTransform: 'uppercase' },
 });

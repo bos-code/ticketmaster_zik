@@ -1,6 +1,10 @@
 import { create } from 'zustand';
 
 import {
+  createEventDocument,
+  upsertReservationDocument,
+} from '@/lib/firebase-data';
+import {
   type AdminEventMetadata,
   eventCatalog,
   initialReservations,
@@ -35,10 +39,13 @@ export type CreateAdminEventInput = {
 };
 
 type EventStore = {
-  createAdminEvent: (input: CreateAdminEventInput) => EventRecord;
+  createAdminEvent: (input: CreateAdminEventInput) => Promise<EventRecord>;
   events: EventRecord[];
+  isSynced: boolean;
+  replaceEvents: (events: EventRecord[]) => void;
+  replaceReservations: (reservations: ReservationRecord[]) => void;
   reservations: ReservationRecord[];
-  reserveTickets: (input: ReserveTicketsInput) => ReservationRecord | null;
+  reserveTickets: (input: ReserveTicketsInput) => Promise<ReservationRecord | null>;
 };
 
 export type HydratedEventRecord = EventRecord & {
@@ -66,18 +73,23 @@ type EventViewCache = {
 let eventViewCache: EventViewCache | null = null;
 
 export const useEventStore = create<EventStore>((set, get) => ({
-  createAdminEvent: (input) => {
+  createAdminEvent: async (input) => {
     const nextEvent = buildAdminEvent(input);
 
-    set((state) => ({
-      events: [nextEvent, ...state.events],
-    }));
+    await createEventDocument(nextEvent);
 
     return nextEvent;
   },
   events: eventCatalog,
+  isSynced: false,
+  replaceEvents: (events) => {
+    set({ events, isSynced: true });
+  },
+  replaceReservations: (reservations) => {
+    set({ reservations, isSynced: true });
+  },
   reservations: initialReservations,
-  reserveTickets: ({ eventId, reservationId, seatIds }) => {
+  reserveTickets: async ({ eventId, reservationId, seatIds }) => {
     const { events, reservations } = get();
     const event = events.find((record) => record.id === eventId);
 
@@ -114,13 +126,7 @@ export const useEventStore = create<EventStore>((set, get) => ({
       source: existingReservation?.source ?? 'reservation',
     };
 
-    set((state) => ({
-      reservations: existingReservation
-        ? state.reservations.map((reservation) =>
-            reservation.id === existingReservation.id ? nextReservation : reservation,
-          )
-        : [nextReservation, ...state.reservations],
-    }));
+    await upsertReservationDocument(nextReservation);
 
     return nextReservation;
   },

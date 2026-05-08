@@ -45,7 +45,7 @@ const fieldLabels: Record<FieldKey, string> = {
   section: 'Section',
   row: 'Row',
   seatRange: 'Seat Range',
-  barcode: 'Barcode',
+  barcode: 'Order Number',
   ticketType: 'Ticket Type',
   status: 'Status',
   perks: 'Perks',
@@ -118,6 +118,7 @@ export function AddEventAdminScreen() {
   );
   const [errors, setErrors] = useState<Partial<Record<FieldKey, string>>>({});
   const [isPickingImage, setIsPickingImage] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
   const screenTitle = mode === 'edit' ? 'Edit Ticket' : 'Create New Ticket';
   const screenSubtitle =
@@ -166,7 +167,11 @@ export function AddEventAdminScreen() {
     });
   }
 
-  function handleSave() {
+  async function handleSave() {
+    if (isSaving) {
+      return;
+    }
+
     const nextErrors = validateForm(form);
     setErrors(nextErrors);
 
@@ -177,16 +182,27 @@ export function AddEventAdminScreen() {
 
     const payload = toTicketInput(form);
 
-    if (mode === 'edit' && ticketId) {
-      updateEvent(ticketId, payload);
-      showToast('Ticket updated');
-      router.replace({ pathname: '/admin', params: { toast: 'updated' } });
-      return;
-    }
+    try {
+      setIsSaving(true);
 
-    addEvent(payload);
-    showToast('Ticket created');
-    router.replace({ pathname: '/admin', params: { toast: 'created' } });
+      if (mode === 'edit' && ticketId) {
+        await updateEvent(ticketId, payload);
+        showToast('Ticket updated');
+        router.replace({ pathname: '/admin', params: { toast: 'updated' } });
+        return;
+      }
+
+      await addEvent(payload);
+      showToast('Ticket created');
+      router.replace({ pathname: '/admin', params: { toast: 'created' } });
+    } catch {
+      Alert.alert(
+        'Save failed',
+        'We could not save this ticket to Firebase right now. Please try again.',
+      );
+    } finally {
+      setIsSaving(false);
+    }
   }
 
   function showToast(message: string) {
@@ -392,7 +408,7 @@ export function AddEventAdminScreen() {
               <TicketTextField error={errors.row} label="Row" onChangeText={(value) => updateField('row', value)} value={form.row} />
             </View>
             <TicketTextField error={errors.seatRange} label="Seat Range" onChangeText={(value) => updateField('seatRange', value)} value={form.seatRange} />
-            <TicketTextField error={errors.barcode} label="Barcode" onChangeText={(value) => updateField('barcode', value)} value={form.barcode} />
+            <TicketTextField error={errors.barcode} label="Order Number" onChangeText={(value) => updateField('barcode', value)} value={form.barcode} />
             <TicketTextField error={errors.seatLabel} label="Seat Label" onChangeText={(value) => updateField('seatLabel', value)} placeholder="e.g. Artist presale, Fan verified" value={form.seatLabel} />
             <TicketTextField error={errors.ticketNote} label="Ticket Note" onChangeText={(value) => updateField('ticketNote', value)} placeholder="e.g. Lower bowl seating" value={form.ticketNote} />
           </FormSection>
@@ -418,20 +434,37 @@ export function AddEventAdminScreen() {
       </KeyboardAvoidingView>
 
       <View style={[styles.footer, { paddingBottom: Math.max(insets.bottom, 12) }]}>
-        <Pressable onPress={handleLeaveAdminForm} style={styles.secondaryButton}>
+        <Pressable
+          disabled={isSaving}
+          onPress={handleLeaveAdminForm}
+          style={[styles.secondaryButton, isSaving && styles.buttonDisabled]}
+        >
           <Text style={styles.secondaryButtonText}>Cancel</Text>
         </Pressable>
         {mode === 'edit' && ticketId ? (
           <Pressable
+            disabled={isSaving}
             onPress={() => router.push({ pathname: '/admin/preview', params: { ticketId } })}
-            style={styles.previewFooterButton}
+            style={[styles.previewFooterButton, isSaving && styles.buttonDisabled]}
           >
             <Ionicons color="#B79E6A" name="eye-outline" size={17} />
           </Pressable>
         ) : null}
-        <Pressable onPress={handleSave} style={styles.primaryButton}>
-          <Ionicons color="#FFFFFF" name={mode === 'edit' ? 'save-outline' : 'add'} size={17} />
-          <Text style={styles.primaryButtonText}>{submitLabel}</Text>
+        <Pressable
+          disabled={isSaving}
+          onPress={() => {
+            void handleSave();
+          }}
+          style={[styles.primaryButton, isSaving && styles.buttonDisabled]}
+        >
+          {isSaving ? (
+            <ActivityIndicator color="#FFFFFF" size="small" />
+          ) : (
+            <>
+              <Ionicons color="#FFFFFF" name={mode === 'edit' ? 'save-outline' : 'add'} size={17} />
+              <Text style={styles.primaryButtonText}>{submitLabel}</Text>
+            </>
+          )}
         </Pressable>
       </View>
 
@@ -770,6 +803,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     minHeight: 48,
   },
+  buttonDisabled: { opacity: 0.62 },
   secondaryButtonText: {
     color: '#374151',
     fontSize: 12,

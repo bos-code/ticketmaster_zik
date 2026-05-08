@@ -6,6 +6,12 @@ import {
   type TicketStatus,
   type TicketType,
 } from '../../data/tickets';
+import {
+  createTicketDocument,
+  deleteTicketDocument,
+  persistTicketImage,
+  updateTicketDocument,
+} from '@/lib/firebase-data';
 
 export type { TicketRecord, TicketStatus, TicketType };
 
@@ -15,9 +21,11 @@ export type TicketUpdateInput = Partial<TicketInput>;
 type TicketStore = {
   tickets: TicketRecord[];
   events: TicketRecord[];
-  addEvent: (ticket: TicketInput) => TicketRecord;
-  updateEvent: (id: string, updatedFields: TicketUpdateInput) => void;
-  removeEvent: (id: string) => void;
+  isSynced: boolean;
+  replaceTickets: (tickets: TicketRecord[]) => void;
+  addEvent: (ticket: TicketInput) => Promise<TicketRecord>;
+  updateEvent: (id: string, updatedFields: TicketUpdateInput) => Promise<void>;
+  removeEvent: (id: string) => Promise<void>;
   getEventById: (id: string) => TicketRecord | undefined;
 };
 
@@ -54,42 +62,49 @@ export const DEFAULT_WIZKID_TICKET: TicketInput = {
 export const useTicketStore = create<TicketStore>((set, get) => ({
   tickets: mockTickets,
   events: mockTickets,
-  addEvent: (ticket) => {
+  isSynced: false,
+  replaceTickets: (tickets) => {
+    set({ tickets, events: tickets, isSynced: true });
+  },
+  addEvent: async (ticket) => {
     const now = new Date().toISOString();
+    const nextTicketId = generateTicketId(ticket);
+    const image = await persistTicketImage(nextTicketId, ticket.image);
     const nextTicket: TicketRecord = {
       ...ticket,
-      id: generateTicketId(ticket),
+      id: nextTicketId,
+      image,
       createdAt: now,
       updatedAt: now,
     };
 
-    set((state) => {
-      const tickets = [nextTicket, ...state.tickets];
-      return { tickets, events: tickets };
-    });
+    await createTicketDocument(nextTicket);
 
     return nextTicket;
   },
-  updateEvent: (id, updatedFields) => {
-    set((state) => {
-      const tickets = state.tickets.map((ticket) =>
-        ticket.id === id
-          ? {
-              ...ticket,
-              ...updatedFields,
-              updatedAt: new Date().toISOString(),
-            }
-          : ticket,
-      );
+  updateEvent: async (id, updatedFields) => {
+    const currentTicket = get().tickets.find((ticket) => ticket.id === id);
 
-      return { tickets, events: tickets };
+    if (!currentTicket) {
+      return;
+    }
+
+    const nextTicket = {
+      ...currentTicket,
+      ...updatedFields,
+      image: await persistTicketImage(
+        id,
+        updatedFields.image ?? currentTicket.image,
+      ),
+      updatedAt: new Date().toISOString(),
+    };
+
+    await updateTicketDocument(id, {
+      ...nextTicket,
     });
   },
-  removeEvent: (id) => {
-    set((state) => {
-      const tickets = state.tickets.filter((ticket) => ticket.id !== id);
-      return { tickets, events: tickets };
-    });
+  removeEvent: async (id) => {
+    await deleteTicketDocument(id);
   },
   getEventById: (id) => get().tickets.find((ticket) => ticket.id === id),
 }));

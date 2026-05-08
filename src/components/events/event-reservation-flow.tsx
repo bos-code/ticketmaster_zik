@@ -3,6 +3,8 @@ import { Image } from "expo-image";
 import { router } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
+  ActivityIndicator,
+  Alert,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -50,6 +52,7 @@ export function EventReservationFlow({ eventId }: { eventId: string }) {
   const [selectedSeatIds, setSelectedSeatIds] = useState<string[]>([]);
   const [seatLimitMessage, setSeatLimitMessage] = useState<string | null>(null);
   const [confirmedReservationId, setConfirmedReservationId] = useState<string | null>(null);
+  const [isConfirmingReservation, setIsConfirmingReservation] = useState(false);
   const confirmedReservation = useEventStore((state) =>
     confirmedReservationId
       ? selectTicketReservationById(state, confirmedReservationId)
@@ -137,23 +140,33 @@ export function EventReservationFlow({ eventId }: { eventId: string }) {
     setSeatLimitMessage(null);
   }
 
-  function handleConfirmReservation() {
-    if (!event) {
+  async function handleConfirmReservation() {
+    if (!event || isConfirmingReservation) {
       return;
     }
 
-    const reservation = reserveTickets({
-      eventId: event.id,
-      reservationId: confirmedReservationId ?? undefined,
-      seatIds: selectedSeatIds,
-    });
+    try {
+      setIsConfirmingReservation(true);
+      const reservation = await reserveTickets({
+        eventId: event.id,
+        reservationId: confirmedReservationId ?? undefined,
+        seatIds: selectedSeatIds,
+      });
 
-    if (!reservation) {
-      return;
+      if (!reservation) {
+        return;
+      }
+
+      setConfirmedReservationId(reservation.id);
+      setStep("confirmation");
+    } catch {
+      Alert.alert(
+        "Reservation failed",
+        "We could not save this reservation to Firebase right now. Please try again.",
+      );
+    } finally {
+      setIsConfirmingReservation(false);
     }
-
-    setConfirmedReservationId(reservation.id);
-    setStep("confirmation");
   }
 
   const header = (
@@ -257,7 +270,10 @@ export function EventReservationFlow({ eventId }: { eventId: string }) {
               eventDate={event.date}
               eventTitle={event.title}
               eventVenue={event.venue}
-              onConfirm={handleConfirmReservation}
+              isSubmitting={isConfirmingReservation}
+              onConfirm={() => {
+                void handleConfirmReservation();
+              }}
               onEditSeats={() => setStep("seats")}
               reservationNote={event.reservationNote}
               reservationTotal={reservationTotal}
@@ -690,6 +706,7 @@ function ReviewStep({
   eventDate,
   eventTitle,
   eventVenue,
+  isSubmitting,
   onConfirm,
   onEditSeats,
   reservationNote,
@@ -699,6 +716,7 @@ function ReviewStep({
   eventDate: string;
   eventTitle: string;
   eventVenue: string;
+  isSubmitting: boolean;
   onConfirm: () => void;
   onEditSeats: () => void;
   reservationNote: string;
@@ -769,10 +787,15 @@ function ReviewStep({
         </Pressable>
         <Pressable
           accessibilityRole="button"
+          disabled={isSubmitting}
           onPress={onConfirm}
-          style={styles.primaryButton}
+          style={[styles.primaryButton, isSubmitting && styles.primaryButtonDisabled]}
         >
-          <Text style={styles.primaryButtonText}>Confirm Reservation</Text>
+          {isSubmitting ? (
+            <ActivityIndicator color="#FFFFFF" size="small" />
+          ) : (
+            <Text style={styles.primaryButtonText}>Confirm Reservation</Text>
+          )}
         </Pressable>
       </Animated.View>
     </View>

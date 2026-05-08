@@ -1,12 +1,7 @@
 import React from "react";
 import { View } from "react-native";
 import Animated from "react-native-reanimated";
-import { SafeAreaView } from "react-native-safe-area-context";
 
-import {
-  HERO_EXPANDED_HEIGHT,
-} from "@/components/tickets/ticketFlowConstants";
-import type { PanelTab } from "@/components/tickets/ticketFlowTypes";
 import { BottomDock } from "@/components/tickets/ticket-transfer-flow-bottom-dock";
 import {
   CollapsibleEventHero,
@@ -14,6 +9,8 @@ import {
   PanelTabs,
   TicketListPanel,
 } from "@/components/tickets/ticket-transfer-flow-components";
+import { HERO_EXPANDED_HEIGHT } from "@/components/tickets/ticketFlowConstants";
+import type { PanelTab } from "@/components/tickets/ticketFlowTypes";
 
 export function TicketTransferListScreen({
   activePanel,
@@ -27,7 +24,9 @@ export function TicketTransferListScreen({
   scrollY,
 }: {
   activePanel: PanelTab;
-  handleListScroll: React.ComponentProps<typeof Animated.ScrollView>["onScroll"];
+  handleListScroll: React.ComponentProps<
+    typeof Animated.ScrollView
+  >["onScroll"];
   isHeroCollapsed: boolean;
   onBack: () => void;
   onOpenTicket: (ticketIndex: number) => void;
@@ -37,10 +36,7 @@ export function TicketTransferListScreen({
   scrollY: React.ComponentProps<typeof CollapsibleEventHero>["scrollY"];
 }) {
   return (
-    <SafeAreaView
-      edges={["left", "right"]}
-      style={{ backgroundColor: "#FFFFFF", flex: 1 }}
-    >
+    <View style={{ backgroundColor: "#FFFFFF", flex: 1 }}>
       <View className="flex-1 overflow-hidden bg-white">
         <CollapsibleEventHero
           isHeroCollapsed={isHeroCollapsed}
@@ -70,6 +66,6 @@ export function TicketTransferListScreen({
 
         <BottomDock onTransfer={onTransfer} />
       </View>
-    </SafeAreaView>
+    </View>
   );
 }

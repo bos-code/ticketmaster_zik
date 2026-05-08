@@ -1,4 +1,5 @@
 import "../../global.css";
+import "@/lib/firebase";
 
 import { ThemeProvider } from "@react-navigation/native";
 import Constants from "expo-constants";
@@ -13,8 +14,12 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 import { PremiumStartupScreen } from "@/components/premium-startup-screen";
 import { PwaInstallPrompt } from "@/components/pwa-install-prompt";
-import { StatusBarChrome } from "@/components/status-bar-chrome";
+import {
+  SPLASH_STATUS_BAR_COLOR,
+  StatusBarChrome,
+} from "@/components/status-bar-chrome";
 import { ticketColors, ticketNavigationTheme } from "@/constants/ticket-theme";
+import { useFirebaseDataSync } from "@/hooks/use-firebase-data-sync";
 import { QueryProvider } from "@/providers/query-provider";
 import { useAppStore } from "@/store/use-app-store";
 import { fonts } from "../../theme/fonts";
@@ -73,6 +78,7 @@ function RootStack() {
 }
 
 export default function RootLayout() {
+  useFirebaseDataSync();
   const [fontsLoaded, fontError] = useFonts({
     [fonts.regular]: require("../../assets/fonts/Inter-Regular.ttf"),
     [fonts.medium]: require("../../assets/fonts/Inter-Medium.ttf"),
@@ -91,7 +97,7 @@ export default function RootLayout() {
   const hasFinishedStartup = useAppStore((state) => state.hasFinishedStartup);
   const finishStartup = useAppStore((state) => state.finishStartup);
   const hasHiddenNativeSplash = useRef(false);
-  const startupStatusBarColor = "#007AFF";
+  const startupStatusBarColor = SPLASH_STATUS_BAR_COLOR;
   const startupBackgroundColor = "#007AFF";
   const statusBarBackgroundColor = hasFinishedStartup
     ? "#000000"

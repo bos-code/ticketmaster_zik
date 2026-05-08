@@ -121,7 +121,7 @@ export function AdminTicketPreviewScreen() {
       },
       order: {
         id: editedTicket.id,
-        orderNumber: `#${editedTicket.id.slice(-6).toUpperCase()}`,
+        orderNumber: editedTicket.barcode,
         ticketCount: seats.length,
         ticketCountLabel: `x${seats.length} Ticket${seats.length > 1 ? 's' : ''}`,
       },
@@ -139,7 +139,7 @@ export function AdminTicketPreviewScreen() {
     router.replace('/admin');
   }
 
-  function handleSave() {
+  async function handleSave() {
     if (!editedTicket || !ticketId || !isDirty) return;
 
     setIsSaving(true);
@@ -170,7 +170,7 @@ export function AdminTicketPreviewScreen() {
         ticketNote: editedTicket.ticketNote,
       };
 
-      updateEvent(ticketId, payload);
+      await updateEvent(ticketId, payload);
       showToast('Changes saved');
       setTimeout(() => goBackFromPreview(), 600);
     } catch {
@@ -255,7 +255,9 @@ export function AdminTicketPreviewScreen() {
 
         <Pressable
           disabled={!isDirty || isSaving}
-          onPress={handleSave}
+          onPress={() => {
+            void handleSave();
+          }}
           style={[styles.saveButton, (!isDirty || isSaving) && styles.saveButtonDisabled]}
         >
           {isSaving ? (
