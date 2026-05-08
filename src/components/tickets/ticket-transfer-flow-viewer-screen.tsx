@@ -40,7 +40,7 @@ function ViewerHeader({ onBack }: { onBack: () => void }) {
 
         <View className="justify-center">
           <EditableText field="eventName" value={event.shortTitle} className="text-[17px] font-bold text-[#000000]" />
-          <EditableText field="venue" value={event.headerSubtitle} className="text-[12px] font-medium text-[#6B6B6B]" />
+          <EditableText value={event.headerSubtitle} className="text-[12px] font-medium text-[#6B6B6B]" />
         </View>
       </View>
     </SafeAreaView>
@@ -52,6 +52,7 @@ export function TicketTransferViewerScreen({
   carouselSnapInterval,
   onBack,
   onViewerIndexChange,
+  positionLabel,
   seats,
   viewerIndex,
 }: {
@@ -59,6 +60,7 @@ export function TicketTransferViewerScreen({
   carouselSnapInterval: number;
   onBack: () => void;
   onViewerIndexChange: (index: number) => void;
+  positionLabel?: string;
   seats: Seat[];
   viewerIndex: number;
 }) {
@@ -134,7 +136,7 @@ export function TicketTransferViewerScreen({
             style={softPillShadow}
           >
             <Text className="text-center text-[12px] font-bold text-[#111111]">
-              {`${viewerIndex + 1} of ${seats.length}`}
+              {positionLabel ?? `${viewerIndex + 1} of ${seats.length}`}
             </Text>
           </View>
 

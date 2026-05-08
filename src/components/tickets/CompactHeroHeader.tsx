@@ -20,7 +20,7 @@ export function CompactHeroHeader({
     <View className="overflow-hidden bg-[#050505]">
       <SafeAreaView edges={["top"]} style={{ backgroundColor: "#050505" }}>
         <View className="relative min-h-[106px] overflow-hidden">
-          <Image contentFit="cover" source={{ uri: event.imageUrl }} style={absoluteFill} />
+          <Image contentFit="cover" source={event.heroImage} style={absoluteFill} />
           <View className="absolute inset-0 bg-[rgba(3,3,6,0.56)]" />
 
           <View className="relative flex-1 justify-center px-4">

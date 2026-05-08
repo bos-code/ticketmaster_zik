@@ -14,7 +14,7 @@ export function PromoCard() {
     <View className="mx-[22px] mb-24 mt-4 overflow-hidden rounded-[4px] border border-[#f0f0f0]">
       <View className="relative h-[220px] overflow-hidden justify-end px-4">
         <Image
-          source={{ uri: event.imageUrl }}
+          source={event.heroImage}
           style={{
             position: "absolute",
             top: -30,
@@ -72,14 +72,14 @@ export function PromoCard() {
           <View className="w-[65%] overflow-hidden shadow-2xl rounded-[2px] bg-[#1c1c1e]">
             <View className="relative h-[145px] w-full">
               <Image
-                source={{ uri: event.imageUrl }}
+                source={event.heroImage}
                 style={{ width: "100%", height: "100%" }}
                 resizeMode="cover"
               />
               <View className="absolute inset-0 bg-black/10" />
 
               <View className="absolute bottom-0 left-0 bg-[#1c1c1e] px-4 py-[6px] rounded-tr-[2px]">
-                  <EditableText field="eventName" value={formattedDate} className="text-[8px] font-extrabold uppercase tracking-widest text-white" numberOfLines={1} />
+                  <EditableText value={formattedDate} className="text-[8px] font-extrabold uppercase tracking-widest text-white" numberOfLines={1} />
               </View>
             </View>
 

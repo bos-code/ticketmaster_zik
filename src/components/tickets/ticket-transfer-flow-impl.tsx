@@ -1,13 +1,3 @@
-import {
-  getSimpleTicketSeatNumbers,
-  useTicketStore,
-  type TicketRecord,
-} from "@/store/ticketStore";
-import {
-  selectPrimaryTicketReservation,
-  selectTicketReservationById,
-  useEventStore,
-} from "@/store/use-event-store";
 import * as Contacts from "expo-contacts";
 import { router } from "expo-router";
 import React, {
@@ -25,7 +15,6 @@ import {
 } from "react-native-reanimated";
 
 import { buildSeatSummary } from "@/components/tickets/buildSeatSummary";
-import { buildStaticMapPreviewUrl } from "@/components/tickets/buildStaticMapPreviewUrl";
 import { ChooseRecipientTypeScreen } from "@/components/tickets/ChooseRecipientTypeScreen";
 import { ChooseTransferMethodScreen } from "@/components/tickets/ChooseTransferMethodScreen";
 import { EnterRecipientDetailsScreen } from "@/components/tickets/EnterRecipientDetailsScreen";
@@ -48,92 +37,45 @@ import {
   type TransferModal,
 } from "@/components/tickets/ticketFlowTypes";
 import { TicketTransferStatusModal } from "@/components/tickets/TicketTransferStatusModal";
-import type { EventRecord } from "@/lib/data";
+import { useTicketOrder } from "@/hooks/useTicketOrder";
+import type { TicketOrderData } from "@/types/ticket";
 
 export function TicketTransferFlow({
-  reservationId,
-  ticketId,
+  initialScreen = "list",
+  initialTicketIndex = 0,
+  orderId,
 }: {
-  reservationId?: string;
-  ticketId?: string;
+  initialScreen?: "list" | "viewer";
+  initialTicketIndex?: number;
+  orderId?: string;
 }) {
-  const ticket = useTicketStore((state) =>
-    ticketId
-      ? state.tickets.find((record) => record.id === ticketId)
-      : undefined,
-  );
-  const events = useEventStore((state) => state.events);
-  const reservation = useEventStore((state) =>
-    ticketId
-      ? undefined
-      : reservationId
-        ? selectTicketReservationById(state, reservationId)
-        : selectPrimaryTicketReservation(state),
-  );
+  const { ticketOrder, summaryViewModel, getDetailsViewModel } =
+    useTicketOrder(orderId);
   const { width } = useWindowDimensions();
   const frameWidth = Math.min(width, 430);
   const carouselCardWidth = Math.round(frameWidth * 0.84);
   const carouselGap = 12;
   const carouselSnapInterval = carouselCardWidth + carouselGap;
-  const legacyVenueEvent = useMemo(
-    () => (ticket ? resolveLegacyTicketVenueEvent(ticket, events) : undefined),
-    [events, ticket],
+  const initialViewerIndex = useMemo(
+    () => getDetailsViewModel(initialTicketIndex).activeIndex,
+    [getDetailsViewModel, initialTicketIndex],
   );
-  const ticketFlowData = useMemo(() => {
-    if (ticket) {
-      return buildTicketFlowDataFromTicket(ticket, legacyVenueEvent);
-    }
-
-    if (!reservation) {
-      return null;
-    }
-
-    return {
-      event: {
-        directionsEventId: reservation.event.id,
-        id: reservation.event.id,
-        title: reservation.event.title,
-        shortTitle: reservation.event.shortTitle ?? reservation.event.title,
-        venue: reservation.event.venue,
-        venueAddress: reservation.event.venueAddress,
-        venueSummary: reservation.event.venueSummary,
-        dateTime: reservation.event.date,
-        headerSubtitle: reservation.event.venue,
-        imageUrl: reservation.event.imageUrl,
-        latitude: reservation.event.latitude,
-        longitude: reservation.event.longitude,
-        mapImageUrl: buildStaticMapPreviewUrl(
-          reservation.event.longitude,
-          reservation.event.latitude,
-        ),
-      },
-      order: {
-        id: reservation.orderId,
-        ticketCount: `x${reservation.ticketCount} Tickets`,
-      },
-      reservationId: reservation.id,
-      seats: reservation.seats.map((seat) => ({
-        id: seat.id,
-        label: seat.note,
-        note: seat.note,
-        row: seat.row,
-        seat: seat.seat,
-        section: seat.section,
-      })),
-    } satisfies TicketFlowContextValue;
-  }, [legacyVenueEvent, reservation, ticket]);
+  const ticketFlowData = useMemo(
+    () => buildTicketFlowDataFromOrder(ticketOrder),
+    [ticketOrder],
+  );
 
   const seats = ticketFlowData?.seats ?? EMPTY_SEATS;
   const seatSummary = useMemo(() => buildSeatSummary(seats), [seats]);
 
-  const [screen, setScreen] = useState<FlowScreen>("list");
+  const [screen, setScreen] = useState<FlowScreen>(initialScreen);
   const [activePanel, setActivePanel] = useState<PanelTab>("tickets");
   const [isHeroCollapsed, setIsHeroCollapsed] = useState(false);
   const [transferModal, setTransferModal] = useState<TransferModal>("none");
   const [deliveryMode, setDeliveryMode] = useState<DeliveryMode>("email");
   const [selectedSeatIds, setSelectedSeatIds] = useState<string[]>([]);
   const [otpCode, setOtpCode] = useState("");
-  const [viewerIndex, setViewerIndex] = useState(0);
+  const [viewerIndex, setViewerIndex] = useState(initialViewerIndex);
   const [recipientForm, setRecipientForm] = useState<RecipientFormState>({
     destination: "",
     firstName: "",
@@ -145,6 +87,10 @@ export function TicketTransferFlow({
   const scrollY = useSharedValue(0);
   const heroCollapsedValue = useSharedValue(0);
   const loadingTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const activeTicketDetails = useMemo(
+    () => getDetailsViewModel(viewerIndex),
+    [getDetailsViewModel, viewerIndex],
+  );
 
   const transferredSeats = useMemo(() => {
     if (!selectedSeatIds.length) {
@@ -189,9 +135,10 @@ export function TicketTransferFlow({
   }, []);
 
   useEffect(() => {
-    setViewerIndex(0);
+    setScreen(initialScreen);
+    setViewerIndex(initialViewerIndex);
     setSelectedSeatIds([]);
-  }, [seats.length, ticketFlowData?.reservationId]);
+  }, [initialScreen, initialViewerIndex, seats.length, ticketFlowData?.orderId]);
 
   if (!ticketFlowData) {
     return <TicketsUnavailable />;
@@ -240,14 +187,44 @@ export function TicketTransferFlow({
     router.replace("/(tabs)");
   };
 
+  const openTicketDetailsRoute = useCallback(
+    (ticketIndex: number) => {
+      const nextDetails = getDetailsViewModel(ticketIndex);
+
+      router.push({
+        pathname: "/tickets/[orderId]",
+        params: {
+          orderId: ticketOrder.order.id,
+          ticketIndex: String(nextDetails.activeIndex),
+        },
+      });
+    },
+    [getDetailsViewModel, ticketOrder.order.id],
+  );
+
   const handleTransferStart = () => {
     setSelectedSeatIds([]);
     setScreen("select");
   };
 
   const handleOpenViewer = () => {
-    setViewerIndex(0);
-    setScreen("viewer");
+    openTicketDetailsRoute(0);
+  };
+
+  const handleOpenTicket = (ticketIndex: number) => {
+    openTicketDetailsRoute(ticketIndex);
+  };
+
+  const handleViewerBack = () => {
+    if (initialScreen === "viewer") {
+      router.replace({
+        pathname: "/tickets",
+        params: { orderId: ticketOrder.order.id },
+      });
+      return;
+    }
+
+    setScreen("list");
   };
 
   const handleOpenRecipientForm = (prefill?: Partial<RecipientFormState>) => {
@@ -400,6 +377,7 @@ export function TicketTransferFlow({
               handleListScroll={handleListScroll}
               isHeroCollapsed={isHeroCollapsed}
               onBack={handleBackToTabs}
+              onOpenTicket={handleOpenTicket}
               onOpenViewer={handleOpenViewer}
               onPanelChange={setActivePanel}
               onTransfer={handleTransferStart}
@@ -415,7 +393,7 @@ export function TicketTransferFlow({
               seatSummary={seatSummary}
               seats={seats}
               selectedSeatIds={selectedSeatIds}
-              ticketCount={ticketFlowData.order.ticketCount}
+              ticketCount={ticketFlowData.order.ticketCountLabel}
             />
           ) : null}
 
@@ -453,8 +431,9 @@ export function TicketTransferFlow({
             <ReviewTransferScreen
               carouselCardWidth={carouselCardWidth}
               carouselSnapInterval={carouselSnapInterval}
-              onBack={() => setScreen("list")}
+              onBack={handleViewerBack}
               onViewerIndexChange={setViewerIndex}
+              positionLabel={activeTicketDetails.positionLabel}
               seats={transferredSeats}
               viewerIndex={viewerIndex}
             />
@@ -481,118 +460,50 @@ export function TicketTransferFlow({
   );
 }
 
-function buildTicketFlowDataFromTicket(
-  ticket: TicketRecord,
-  venueEvent?: EventRecord,
-): TicketFlowContextValue {
-  const seats = buildSeatsFromTicket(ticket);
-  const venueAddress =
-    venueEvent?.venueAddress ?? buildLegacyVenueAddress(ticket);
-  const venueSummary =
-    venueEvent?.venueSummary ??
-    `Preview ${ticket.venue} before you leave, then jump straight into turn-by-turn navigation.`;
-
+function buildTicketFlowDataFromOrder(order: TicketOrderData): TicketFlowContextValue {
   return {
     event: {
-      directionsEventId: venueEvent?.id,
-      id: ticket.id,
-      title: ticket.eventName,
-      shortTitle: ticket.eventName,
-      venue: ticket.venue,
-      venueAddress,
-      venueSummary,
-      dateTime: `${formatFlowDate(ticket.date)}, ${ticket.time}`,
-      headerSubtitle: `${ticket.venue}, ${ticket.city}`,
-      imageUrl: ticket.image,
-      latitude: venueEvent?.latitude ?? null,
-      longitude: venueEvent?.longitude ?? null,
-      mapImageUrl: buildStaticMapPreviewUrl(
-        venueEvent?.longitude ?? null,
-        venueEvent?.latitude ?? null,
-      ),
+      directionsEventId: undefined,
+      id: order.event.id,
+      title: order.event.title,
+      shortTitle: order.event.title,
+      venue: order.event.venue,
+      venueAddress: order.event.venue,
+      venueSummary: `${order.event.title} at ${order.event.venue}`,
+      dateTime: order.event.fullDateTimeLabel,
+      headerSubtitle: `${order.event.time} - ${order.event.venue}`,
+      heroImage: order.event.heroImage,
+      latitude: null,
+      longitude: null,
+      mapImageUrl: "",
     },
     order: {
-      id: `Order #${ticket.barcode}`,
-      ticketCount: `x${seats.length} Ticket${seats.length === 1 ? "" : "s"}`,
+      id: order.order.id,
+      orderNumber: order.order.orderNumber,
+      ticketCount: summaryTicketCount(order),
+      ticketCountLabel: summaryTicketCountLabel(order),
     },
-    reservationId: ticket.id,
-    seats,
+    orderId: order.order.id,
+    seats: order.tickets.map((ticket) => ({
+      id: ticket.id,
+      ticketIndex: ticket.ticketIndex,
+      label: ticket.type,
+      note: ticket.seatingCategory,
+      row: ticket.row,
+      seat: ticket.seat,
+      section: ticket.section,
+      barcodeValue: ticket.barcodeValue,
+      canTransfer: ticket.canTransfer,
+      canSell: ticket.canSell,
+    })),
   };
 }
 
-function buildSeatsFromTicket(ticket: TicketRecord) {
-  const normalizedSeats = getSimpleTicketSeatNumbers(ticket.seatRange);
-
-  return normalizedSeats.map((seat, index) => ({
-    id: `${ticket.id}-seat-${index + 1}`,
-    label: ticket.seatLabel || ticket.ticketType,
-    note: ticket.ticketNote || "Standard seating",
-    row: ticket.row,
-    seat,
-    section: ticket.section,
-  }));
+function summaryTicketCount(order: TicketOrderData) {
+  return order.tickets.length || order.order.ticketCount;
 }
 
-function resolveLegacyTicketVenueEvent(
-  ticket: TicketRecord,
-  events: EventRecord[],
-) {
-  const normalizedVenue = normalizeSearchValue(ticket.venue);
-  const normalizedCity = normalizeSearchValue(ticket.city);
-  const normalizedEventName = normalizeSearchValue(ticket.eventName);
-
-  const exactVenueMatch = events.find((event) => {
-    const eventVenue = normalizeSearchValue(event.venue);
-    const eventCity = normalizeSearchValue(event.city);
-    const eventTitle = normalizeSearchValue(event.title);
-    const eventShortTitle = normalizeSearchValue(event.shortTitle ?? "");
-
-    return (
-      eventVenue === normalizedVenue &&
-      (eventCity.includes(normalizedCity) ||
-        normalizedCity.includes(eventCity) ||
-        eventTitle.includes(normalizedEventName) ||
-        eventShortTitle.includes(normalizedEventName))
-    );
-  });
-
-  if (exactVenueMatch) {
-    return exactVenueMatch;
-  }
-
-  return events.find(
-    (event) => normalizeSearchValue(event.venue) === normalizedVenue,
-  );
-}
-
-function buildLegacyVenueAddress(ticket: TicketRecord) {
-  return [ticket.venue, ticket.city, ticket.state, ticket.country]
-    .filter(Boolean)
-    .join(", ");
-}
-
-function normalizeSearchValue(value: string) {
-  return value
-    .trim()
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, " ")
-    .replace(/\s+/g, " ");
-}
-
-function formatFlowDate(value: string) {
-  const date = new Date(`${value}T00:00:00`);
-
-  if (Number.isNaN(date.getTime())) {
-    return value;
-  }
-
-  return new Intl.DateTimeFormat("en-US", {
-    day: "2-digit",
-    month: "short",
-    weekday: "short",
-    year: "numeric",
-  })
-    .format(date)
-    .replace(",", "")
-    .toUpperCase();
+function summaryTicketCountLabel(order: TicketOrderData) {
+  const totalTickets = summaryTicketCount(order);
+  return totalTickets === 1 ? "x1 Ticket" : `x${totalTickets} Tickets`;
 }

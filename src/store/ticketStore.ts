@@ -109,17 +109,19 @@ export function formatTicketDate(ticket: Pick<TicketRecord, 'date' | 'time'>) {
 }
 
 export function getSimpleTicketSeatNumbers(seatRange: string) {
-  const seats = seatRange
-    .split(/\s*-\s*/)
-    .map((seat) => {
-      const trimmedSeat = seat.trim();
-      const matches = trimmedSeat.match(/\d+/g);
+  const normalizedRange = seatRange.trim();
 
-      return matches?.length ? matches[matches.length - 1] : trimmedSeat;
-    })
+  if (!normalizedRange) {
+    return [];
+  }
+
+  const seats = normalizedRange
+    .split(/\s*,\s*/)
+    .flatMap((segment) => expandSeatSegment(segment))
+    .map((seat) => seat.trim())
     .filter(Boolean);
 
-  return seats.length ? seats : [seatRange.trim()];
+  return seats.length ? seats : [normalizedRange];
 }
 
 export function formatTicketSeatSummary(
@@ -127,7 +129,7 @@ export function formatTicketSeatSummary(
 ) {
   const seats = getSimpleTicketSeatNumbers(ticket.seatRange);
   const seatLabel =
-    seats.length > 1 ? `${seats[0]}-${seats[seats.length - 1]}` : seats[0];
+    formatSeatSelectionLabel(seats) || ticket.seatRange.trim() || 'TBA';
 
   return `Section ${ticket.section} / Row ${ticket.row} / Seat ${seatLabel}`;
 }
@@ -138,4 +140,122 @@ function slugify(value: string) {
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/(^-|-$)/g, '');
+}
+
+type ParsedSeatToken = {
+  number: number;
+  prefix: string;
+  suffix: string;
+  width: number;
+};
+
+function expandSeatSegment(segment: string) {
+  const trimmedSegment = segment.trim();
+
+  if (!trimmedSegment) {
+    return [];
+  }
+
+  const rangeParts = trimmedSegment
+    .split(/\s*(?:-|–|—|to)\s*/i)
+    .map((part) => part.trim())
+    .filter(Boolean);
+
+  if (rangeParts.length !== 2) {
+    return [trimmedSegment];
+  }
+
+  return expandSeatRange(rangeParts[0], rangeParts[1]) ?? rangeParts;
+}
+
+function expandSeatRange(startSeat: string, endSeat: string) {
+  const startToken = parseSeatToken(startSeat);
+  const endToken = parseSeatToken(endSeat);
+
+  if (!startToken || !endToken) {
+    return null;
+  }
+
+  if (
+    startToken.prefix !== endToken.prefix ||
+    startToken.suffix !== endToken.suffix
+  ) {
+    return null;
+  }
+
+  const delta = endToken.number - startToken.number;
+  if (Math.abs(delta) > 200) {
+    return null;
+  }
+
+  const step = delta >= 0 ? 1 : -1;
+  const width = Math.max(startToken.width, endToken.width);
+  const expandedSeats: string[] = [];
+
+  for (
+    let seatNumber = startToken.number;
+    step > 0 ? seatNumber <= endToken.number : seatNumber >= endToken.number;
+    seatNumber += step
+  ) {
+    expandedSeats.push(
+      `${startToken.prefix}${String(seatNumber).padStart(width, '0')}${startToken.suffix}`,
+    );
+  }
+
+  return expandedSeats;
+}
+
+function formatSeatSelectionLabel(seats: string[]) {
+  if (!seats.length) {
+    return '';
+  }
+
+  if (seats.length === 1) {
+    return seats[0];
+  }
+
+  return areSequentialSeatValues(seats)
+    ? `${seats[0]}-${seats[seats.length - 1]}`
+    : seats.join(', ');
+}
+
+function areSequentialSeatValues(seats: string[]) {
+  if (seats.length < 2) {
+    return true;
+  }
+
+  const parsedSeats = seats.map(parseSeatToken);
+
+  if (parsedSeats.some((seat) => !seat)) {
+    return false;
+  }
+
+  const [firstSeat, ...remainingSeats] = parsedSeats as ParsedSeatToken[];
+
+  return remainingSeats.every((seat, index) => {
+    if (
+      seat.prefix !== firstSeat.prefix ||
+      seat.suffix !== firstSeat.suffix
+    ) {
+      return false;
+    }
+
+    return seat.number === firstSeat.number + index + 1;
+  });
+}
+
+function parseSeatToken(value: string): ParsedSeatToken | null {
+  const trimmedValue = value.trim();
+  const match = trimmedValue.match(/^([A-Za-z]*)(\d+)([A-Za-z]*)$/);
+
+  if (!match) {
+    return null;
+  }
+
+  return {
+    number: Number(match[2]),
+    prefix: match[1],
+    suffix: match[3],
+    width: match[2].length,
+  };
 }

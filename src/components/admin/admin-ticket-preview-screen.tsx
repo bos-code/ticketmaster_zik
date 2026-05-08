@@ -26,6 +26,7 @@ import type {
   TicketFlowContextValue,
 } from '@/components/tickets/ticketFlowTypes';
 import {
+  getSimpleTicketSeatNumbers,
   type TicketInput,
   type TicketRecord,
   useTicketStore,
@@ -261,18 +262,6 @@ export function AdminTicketPreviewScreen() {
       ) : null}
     </View>
   );
-}
-
-/**
- * Extracts individual seat numbers from a range like "A12 - A13" → ["A12", "A13"]
- * Handles single seats like "12" → ["12"]
- */
-function getSimpleTicketSeatNumbers(seatRange: string): string[] {
-  const separator = seatRange.includes(' - ') ? ' - ' : seatRange.includes('-') ? '-' : ',';
-  const parts = seatRange.split(separator).map((s) => s.trim()).filter(Boolean);
-
-  if (parts.length === 0) return [seatRange];
-  return parts;
 }
 
 const styles = StyleSheet.create({

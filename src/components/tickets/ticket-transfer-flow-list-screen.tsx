@@ -20,6 +20,7 @@ export function TicketTransferListScreen({
   handleListScroll,
   isHeroCollapsed,
   onBack,
+  onOpenTicket,
   onOpenViewer,
   onPanelChange,
   onTransfer,
@@ -29,6 +30,7 @@ export function TicketTransferListScreen({
   handleListScroll: React.ComponentProps<typeof Animated.ScrollView>["onScroll"];
   isHeroCollapsed: boolean;
   onBack: () => void;
+  onOpenTicket: (ticketIndex: number) => void;
   onOpenViewer: () => void;
   onPanelChange: (value: PanelTab) => void;
   onTransfer: () => void;
@@ -59,7 +61,11 @@ export function TicketTransferListScreen({
         >
           <PanelTabs activePanel={activePanel} onChange={onPanelChange} />
 
-          {activePanel === "tickets" ? <TicketListPanel /> : <ExtrasPanel />}
+          {activePanel === "tickets" ? (
+            <TicketListPanel onOpenTicket={onOpenTicket} />
+          ) : (
+            <ExtrasPanel />
+          )}
         </Animated.ScrollView>
 
         <BottomDock onTransfer={onTransfer} />

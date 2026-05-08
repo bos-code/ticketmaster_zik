@@ -10,7 +10,11 @@ import type { Seat } from "@/components/tickets/ticketFlowTypes";
 import { useTicketFlowData } from "@/components/tickets/useTicketFlowData";
 import { fonts } from "../../../theme/fonts";
 
-export function TicketListPanel() {
+export function TicketListPanel({
+  onOpenTicket,
+}: {
+  onOpenTicket: (ticketIndex: number) => void;
+}) {
   const { order, seats } = useTicketFlowData();
 
   return (
@@ -18,8 +22,8 @@ export function TicketListPanel() {
       <View style={styles.orderHeader}>
         <View style={styles.orderHeaderRow}>
           <View style={styles.orderTextGroup}>
-            <Text style={styles.orderId}>{order.id}</Text>
-            <Text style={styles.ticketCount}>{order.ticketCount}</Text>
+            <Text style={styles.orderId}>{order.orderNumber}</Text>
+            <Text style={styles.ticketCount}>{order.ticketCountLabel}</Text>
           </View>
 
           <Pressable
@@ -34,7 +38,12 @@ export function TicketListPanel() {
 
       <View style={styles.ticketList}>
         {seats.map((seat, index) => (
-          <TicketSeatCard index={index} key={seat.id} seat={seat} />
+          <TicketSeatCard
+            index={index}
+            key={seat.id}
+            onOpenTicket={onOpenTicket}
+            seat={seat}
+          />
         ))}
       </View>
       <MapPreviewCard />
@@ -43,23 +52,33 @@ export function TicketListPanel() {
   );
 }
 
-function TicketSeatCard({ index, seat }: { index: number; seat: Seat }) {
-  const ticketNote = seat.label || seat.note || 'Standard';
+function TicketSeatCard({
+  index,
+  onOpenTicket,
+  seat,
+}: {
+  index: number;
+  onOpenTicket: (ticketIndex: number) => void;
+  seat: Seat;
+}) {
+  const seatLabel = seat.label?.trim() || seat.note?.trim() || "Standard";
 
   return (
     <Animated.View
       entering={FadeInDown.duration(220).delay(40 + index * 60)}
       style={styles.ticketCard}
     >
-      <View style={styles.ticketCardHeader}>
-        <EditableText field="seatLabel" value={ticketNote} style={styles.ticketNote} />
-      </View>
+      <Pressable accessibilityRole="button" onPress={() => onOpenTicket(index)}>
+        <View style={styles.ticketCardHeader}>
+          <EditableText field="seatLabel" value={seatLabel} style={styles.ticketNote} />
+        </View>
 
-      <View style={styles.ticketMetaRow}>
-        <TicketMetaCell align="left" label="SECTION" value={seat.section} />
-        <TicketMetaCell align="center" label="ROW" value={seat.row} />
-        <TicketMetaCell align="right" label="SEAT" value={seat.seat} />
-      </View>
+        <View style={styles.ticketMetaRow}>
+          <TicketMetaCell align="left" label="SECTION" value={seat.section} />
+          <TicketMetaCell align="center" label="ROW" value={seat.row} />
+          <TicketMetaCell align="right" label="SEAT" value={seat.seat} />
+        </View>
+      </Pressable>
     </Animated.View>
   );
 }

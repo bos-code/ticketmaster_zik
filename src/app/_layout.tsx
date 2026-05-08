@@ -91,7 +91,24 @@ export default function RootLayout() {
       () => {},
     );
 
-    if (Platform.OS === "web" && typeof window !== "undefined" && "serviceWorker" in navigator) {
+    if (
+      Platform.OS === "web" &&
+      typeof window !== "undefined" &&
+      "serviceWorker" in navigator
+    ) {
+      if (__DEV__) {
+        void navigator.serviceWorker
+          .getRegistrations()
+          .then((registrations) =>
+            Promise.all(
+              registrations.map((registration) => registration.unregister()),
+            ),
+          )
+          .catch(() => {});
+
+        return;
+      }
+
       navigator.serviceWorker.register("/service-worker.js").catch(() => {
         // Ignore registration errors
       });

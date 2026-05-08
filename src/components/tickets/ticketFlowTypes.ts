@@ -13,11 +13,15 @@ export type DeliveryMode = "email" | "mobile";
 
 export type Seat = {
   id: string;
+  ticketIndex: number;
   label: string;
   note: string;
   seat: string;
   row: string;
   section: string;
+  barcodeValue?: string;
+  canTransfer: boolean;
+  canSell: boolean;
 };
 
 export type RecipientFormState = {
@@ -32,8 +36,8 @@ export type TicketFlowContextValue = {
     dateTime: string;
     directionsEventId?: string;
     headerSubtitle: string;
+    heroImage: any;
     id: string;
-    imageUrl: string;
     latitude?: number | null;
     longitude?: number | null;
     mapImageUrl: string;
@@ -45,9 +49,11 @@ export type TicketFlowContextValue = {
   };
   order: {
     id: string;
-    ticketCount: string;
+    orderNumber: string;
+    ticketCount: number;
+    ticketCountLabel: string;
   };
-  reservationId: string;
+  orderId: string;
   seats: Seat[];
 };
 

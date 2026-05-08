@@ -85,7 +85,7 @@ export function CollapsibleEventHero({
     >
       <Image
         contentFit="cover"
-        source={{ uri: event.imageUrl }}
+        source={event.heroImage}
         style={{ height: HERO_IMAGE_HEIGHT, width: "100%" }}
       />
       <View
@@ -174,7 +174,7 @@ export function CollapsibleEventHero({
                     style={{ height: 15, width: 15 }}
                   />
                   <Text className="text-[17px]  font-bold leading-[19px] text-[#F2F4F7]">
-                    {order.ticketCount.replace(" Tickets", "")}
+                    {`x${order.ticketCount}`}
                   </Text>
                 </View>
               </View>

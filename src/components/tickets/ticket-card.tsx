@@ -26,7 +26,8 @@ export function TicketCard({
   seat: Seat;
 }) {
   const { event } = useTicketFlowData();
-  const ticketNote = seat.note?.trim() || seat.label?.trim() || 'Standard seating';
+  const seatLabel = seat.label?.trim() || seat.note?.trim() || "Standard seating";
+  const ticketNote = seat.note?.trim() || seat.label?.trim() || "Standard seating";
 
   return (
     <Animated.View
@@ -46,7 +47,7 @@ export function TicketCard({
       <View className="relative w-full" style={{ height: 320 }}>
         <Image
           contentFit="cover"
-          source={{ uri: event.imageUrl }}
+          source={event.heroImage}
           style={{ height: "100%", width: "100%" }}
         />
         <View className="absolute inset-0 bg-black/10" />
@@ -68,8 +69,8 @@ export function TicketCard({
             className="bg-white pt-1 pl-2 pb-1"
             style={{ width: "75%", height: 46 }}
           >
-            <EditableText field="ticketNote" value={ticketNote} className="text-base mb-1 font-bold tracking-wider text-[#000000] leading-tight" />
-            <EditableText field="section" value={seat.section} className="text-sm text-[#8B8F96] uppercase leading-tight" />
+            <EditableText field="seatLabel" value={seatLabel} className="text-base mb-1 font-bold tracking-wider text-[#000000] leading-tight" />
+            <EditableText field="ticketNote" value={ticketNote} className="text-sm text-[#8B8F96] uppercase leading-tight" />
           </View>
         </View>
       </View>
@@ -79,15 +80,17 @@ export function TicketCard({
           <Text className="text-xs font-bold tracking-[1.5px] text-[#93969c] uppercase">
             SECTION
           </Text>
-          <EditableText field="seatRange" value={seat.seat} className="text-lg pt-1 mb-2 font-extrabold leading-[15px] text-[#000000]" />
+          <EditableText field="section" value={seat.section} className="text-lg pt-1 mb-2 font-extrabold leading-[15px] text-[#000000]" />
         </View>
 
         <View className="mt-1 h-[32px] w-full items-center justify-center bg-[#111111]">
-          <EditableText field="section" value={seat.section} className="text-base font-bold uppercase text-white tracking-[2px]" />
+          <EditableText field="ticketNote" value={ticketNote} className="text-base font-bold uppercase text-white tracking-[2px]" />
         </View>
 
         <View className="mt-3 mb-4">
-          <EditableText field="row" value={`ROW ${seat.row} / SEAT ${seat.seat}`} className="text-[12px] font-medium text-[#8B8F96] uppercase" />
+          <Text className="text-[12px] font-medium text-[#8B8F96] uppercase">
+            {`ROW ${seat.row} / SEAT ${seat.seat}`}
+          </Text>
         </View>
       </View>
     </Animated.View>
