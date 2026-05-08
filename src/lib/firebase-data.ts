@@ -207,7 +207,7 @@ async function uploadTicketImageToCloudinary(ticketId: string, imageValue: strin
     );
   }
 
-  return payload.secure_url as string;
+  return buildCloudinaryHeroImageUrl(payload.secure_url);
 }
 
 async function fetchImageBlob(imageValue: string) {
@@ -218,6 +218,19 @@ async function fetchImageBlob(imageValue: string) {
   }
 
   return response.blob();
+}
+
+function buildCloudinaryHeroImageUrl(imageUrl: string) {
+  const uploadSegment = '/upload/';
+
+  if (!imageUrl.includes(uploadSegment)) {
+    return imageUrl;
+  }
+
+  return imageUrl.replace(
+    uploadSegment,
+    `${uploadSegment}c_fill,g_auto,w_1400,h_788,q_auto,f_auto/`,
+  );
 }
 
 function buildTicketDocumentUrl(ticketId: string) {

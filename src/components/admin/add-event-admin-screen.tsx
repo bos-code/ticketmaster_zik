@@ -215,7 +215,8 @@ export function AddEventAdminScreen() {
       }
 
       const result = await ImagePicker.launchImageLibraryAsync({
-        allowsEditing: false,
+        allowsEditing: true,
+        aspect: [16, 9],
         base64: true,
         mediaTypes: ['images'],
         quality: 1,
@@ -295,7 +296,7 @@ export function AddEventAdminScreen() {
 
           <View style={styles.previewCard}>
             {form.image.trim() ? (
-              <Image contentFit="contain" source={{ uri: form.image }} style={styles.previewImage} />
+              <Image contentFit="cover" source={{ uri: form.image }} style={styles.previewImage} />
             ) : (
               <View style={styles.previewPlaceholder}>
                 <Ionicons color="rgba(255,255,255,0.5)" name="image-outline" size={32} />
@@ -659,12 +660,12 @@ const styles = StyleSheet.create({
     marginTop: 3,
   },
   previewCard: { backgroundColor: '#FFFFFF', borderColor: '#E5E7EB', borderRadius: 10, borderWidth: 1, overflow: 'hidden' },
-  previewImage: { backgroundColor: '#F3F4F6', height: 220, width: '100%' },
+  previewImage: { aspectRatio: 16 / 9, backgroundColor: '#F3F4F6', width: '100%' },
   previewPlaceholder: {
     alignItems: 'center',
     backgroundColor: '#F9FAFB',
     gap: 8,
-    height: 220,
+    aspectRatio: 16 / 9,
     justifyContent: 'center',
     width: '100%',
   },
