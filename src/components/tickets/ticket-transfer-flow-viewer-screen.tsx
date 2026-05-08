@@ -79,11 +79,19 @@ export function TicketTransferViewerScreen({
   const handleViewerScrollEnd = (
     event: NativeSyntheticEvent<NativeScrollEvent>,
   ) => {
-    const nextIndex = Math.round(
-      event.nativeEvent.contentOffset.x / carouselSnapInterval,
-    );
-    onViewerIndexChange(Math.max(0, Math.min(seats.length - 1, nextIndex)));
+    updateViewerIndexFromOffset(event.nativeEvent.contentOffset.x);
   };
+
+  function updateViewerIndexFromOffset(offsetX: number) {
+    const nextIndex = Math.round(
+      offsetX / carouselSnapInterval,
+    );
+    const clampedIndex = Math.max(0, Math.min(seats.length - 1, nextIndex));
+
+    if (clampedIndex !== viewerIndex) {
+      onViewerIndexChange(clampedIndex);
+    }
+  }
 
   const { width } = useWindowDimensions();
   const screenWidth = Math.min(width, 430);
@@ -114,6 +122,9 @@ export function TicketTransferViewerScreen({
           horizontal
           keyExtractor={(item) => item.id}
           onMomentumScrollEnd={handleViewerScrollEnd}
+          onScroll={(event) => {
+            updateViewerIndexFromOffset(event.nativeEvent.contentOffset.x);
+          }}
           ref={viewerListRef}
           renderItem={({ item, index }) => (
             <TicketCard
