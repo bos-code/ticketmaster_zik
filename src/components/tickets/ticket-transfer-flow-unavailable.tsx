@@ -15,11 +15,10 @@ export function TicketsUnavailable() {
             My Tickets
           </Text>
           <Text className="mt-3 text-[22px] font-extrabold leading-7 text-[#111111]">
-            No reservation is available yet.
+            No ticket order is available yet.
           </Text>
           <Text className="mt-3 text-[14px] font-medium leading-5 text-[#5B6470]">
-            Reserve a ticket from discovery first, then open it from My Tickets
-            to view the full details flow.
+            Open this flow from My Tickets after a ticket order has been loaded.
           </Text>
           <Pressable
             accessibilityRole="button"

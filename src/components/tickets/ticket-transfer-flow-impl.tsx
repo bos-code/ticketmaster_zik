@@ -218,7 +218,7 @@ export function TicketTransferFlow({
   const handleViewerBack = () => {
     if (initialScreen === "viewer") {
       router.replace({
-        pathname: "/tickets",
+        pathname: "/tickets/index",
         params: { orderId: ticketOrder.order.id },
       });
       return;

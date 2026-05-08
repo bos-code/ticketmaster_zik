@@ -91,11 +91,19 @@ export default function RootLayout() {
   const hasFinishedStartup = useAppStore((state) => state.hasFinishedStartup);
   const finishStartup = useAppStore((state) => state.finishStartup);
   const hasHiddenNativeSplash = useRef(false);
-  const statusBarBackgroundColor = ticketColors.background;
+  const startupStatusBarColor = "#007AFF";
+  const startupBackgroundColor = "#000000";
+  const statusBarBackgroundColor = hasFinishedStartup
+    ? ticketColors.background
+    : startupStatusBarColor;
+  const appBackgroundColor = hasFinishedStartup
+    ? ticketColors.background
+    : startupBackgroundColor;
+  const statusBarStyle = hasFinishedStartup ? "dark" : "light";
   const isReady = fontsLoaded || Boolean(fontError);
 
   useEffect(() => {
-    void SystemUI.setBackgroundColorAsync(statusBarBackgroundColor).catch(
+    void SystemUI.setBackgroundColorAsync(appBackgroundColor).catch(
       () => {},
     );
 
@@ -104,7 +112,7 @@ export default function RootLayout() {
         // Ignore registration errors
       });
     }
-  }, [statusBarBackgroundColor]);
+  }, [appBackgroundColor]);
 
   const handleRootLayout = useCallback(() => {
     if (!isReady) {
@@ -132,7 +140,7 @@ export default function RootLayout() {
       <QueryProvider>
         <ThemeProvider value={ticketNavigationTheme}>
           <View
-            style={{ flex: 1, backgroundColor: ticketColors.background }}
+            style={{ flex: 1, backgroundColor: appBackgroundColor }}
             onLayout={handleRootLayout}
           >
             <Head>
@@ -140,7 +148,7 @@ export default function RootLayout() {
               <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
             </Head>
             <StatusBarChrome
-              style="dark"
+              style={statusBarStyle}
               backgroundColor={statusBarBackgroundColor}
             />
             <RootStack />

@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from "react";
 import { Animated, Easing, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 import {
   TicketmasterTMark,
@@ -9,6 +10,9 @@ import {
 type PremiumStartupScreenProps = {
   onFinish?: () => void;
 };
+
+const STARTUP_STATUS_BAR_COLOR = "#007AFF";
+const STARTUP_BACKGROUND_COLOR = "#000000";
 
 export function PremiumStartupScreen({ onFinish }: PremiumStartupScreenProps) {
   const markOpacity = useRef(new Animated.Value(1)).current;
@@ -57,32 +61,41 @@ export function PremiumStartupScreen({ onFinish }: PremiumStartupScreenProps) {
   }, [markOpacity, markScale, onFinish, wordmarkOpacity, wordmarkTranslateX]);
 
   return (
-    <View
-      pointerEvents="none"
-      className="absolute inset-0 z-[1000] items-center justify-center bg-[#007AFF] px-8"
-    >
-      <Animated.View
-        className="absolute items-center justify-center"
-        style={[
-          {
-            opacity: markOpacity,
-            transform: [{ scale: markScale }],
-          },
-        ]}
+    <View pointerEvents="none" className="absolute inset-0 z-[1000]">
+      <SafeAreaView
+        edges={["top"]}
+        style={{ backgroundColor: STARTUP_STATUS_BAR_COLOR }}
       >
-        <TicketmasterTMark fill="#FFFFFF" size={128} />
-      </Animated.View>
-      <Animated.View
-        className="absolute items-center justify-center"
-        style={[
-          {
-            opacity: wordmarkOpacity,
-            transform: [{ translateX: wordmarkTranslateX }],
-          },
-        ]}
+        <View style={{ height: 0 }} />
+      </SafeAreaView>
+
+      <View
+        className="flex-1 items-center justify-center px-8"
+        style={{ backgroundColor: STARTUP_BACKGROUND_COLOR }}
       >
-        <TicketmasterWordmark fill="#FFFFFF" size={270} />
-      </Animated.View>
+        <Animated.View
+          className="absolute items-center justify-center"
+          style={[
+            {
+              opacity: markOpacity,
+              transform: [{ scale: markScale }],
+            },
+          ]}
+        >
+          <TicketmasterTMark fill="#FFFFFF" size={128} />
+        </Animated.View>
+        <Animated.View
+          className="absolute items-center justify-center"
+          style={[
+            {
+              opacity: wordmarkOpacity,
+              transform: [{ translateX: wordmarkTranslateX }],
+            },
+          ]}
+        >
+          <TicketmasterWordmark fill="#FFFFFF" size={270} />
+        </Animated.View>
+      </View>
     </View>
   );
 }

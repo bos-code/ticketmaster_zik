@@ -104,7 +104,7 @@ export function MyTicketsIndexScreen() {
                 key={ticket.orderId}
                 onPress={() =>
                   router.push({
-                    pathname: "/tickets",
+                    pathname: "/tickets/index",
                     params: { orderId: ticket.orderId },
                   })
                 }
