@@ -1,5 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import { Image } from "expo-image";
+import { LinearGradient } from "expo-linear-gradient";
 import React from "react";
 import { Pressable, Text, View } from "react-native";
 import Animated, {
@@ -88,13 +89,31 @@ export function CollapsibleEventHero({
         source={event.heroImage}
         style={{ height: HERO_IMAGE_HEIGHT, width: "100%" }}
       />
-      <View
-        className="absolute inset-x-0 top-0 bg-[rgba(2,2,4,0.48)]"
-        style={{ height: HERO_IMAGE_HEIGHT }}
+      <Image
+        blurRadius={14}
+        contentFit="cover"
+        pointerEvents="none"
+        source={event.heroImage}
+        style={{
+          height: HERO_IMAGE_HEIGHT + 28,
+          left: -14,
+          opacity: 0.34,
+          position: "absolute",
+          right: -14,
+          top: -14,
+        }}
       />
-      <View
-        className="absolute inset-x-0 h-24 bg-[rgba(0,0,0,0.18)]"
-        style={{ top: HERO_IMAGE_HEIGHT - 96 }}
+      <LinearGradient
+        colors={["rgba(0,0,0,0.70)", "rgba(2,2,4,0.56)", "rgba(0,0,0,0.72)"]}
+        locations={[0, 0.48, 1]}
+        pointerEvents="none"
+        style={{
+          height: HERO_IMAGE_HEIGHT,
+          left: 0,
+          position: "absolute",
+          right: 0,
+          top: 0,
+        }}
       />
 
       <SafeAreaView edges={["top"]} style={absoluteFill}>
@@ -143,7 +162,6 @@ export function CollapsibleEventHero({
             )}
           </View>
         </View>
-
         <Animated.View
           className="absolute inset-x-0  px-4"
           style={[
@@ -163,10 +181,10 @@ export function CollapsibleEventHero({
               </View>
               <View className="absolute inset-x-0 -bottom-4 h-4 bg-[#232126]" />
             </View>
-            <View className="bg-[#232126] px-4 pt-3">
+            <View className="bg-[#232126] px-4 pt-2">
               <Text
                 numberOfLines={1}
-                className="ticket-summary-hero-title pt-1 text-2xl font-bold leading-6 text-white"
+                className="ticket-summary-hero-title pt-1 text-lg font-bold leading-6 text-white"
               >
                 {event.title}
               </Text>
