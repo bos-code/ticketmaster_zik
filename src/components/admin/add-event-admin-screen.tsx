@@ -71,7 +71,6 @@ const requiredFields: FieldKey[] = [
   'section',
   'row',
   'seatRange',
-  'barcode',
   'orderNumber',
   'ticketType',
   'status',
@@ -411,7 +410,6 @@ export function AddEventAdminScreen() {
               <TicketTextField error={errors.row} label="Row" onChangeText={(value) => updateField('row', value)} value={form.row} />
             </View>
             <TicketTextField error={errors.seatRange} label="Seat Range" onChangeText={(value) => updateField('seatRange', value)} value={form.seatRange} />
-            <TicketTextField error={errors.barcode} label="Barcode" onChangeText={(value) => updateField('barcode', value)} value={form.barcode} />
             <TicketTextField error={errors.orderNumber} label="Order Number" onChangeText={(value) => updateField('orderNumber', value)} placeholder="e.g. 19-12465/DAL" value={form.orderNumber} />
             <TicketTextField error={errors.seatLabel} label="Seat Label" onChangeText={(value) => updateField('seatLabel', value)} placeholder="e.g. Artist presale, Fan verified" value={form.seatLabel} />
             <TicketTextField error={errors.ticketNote} label="Ticket Note" onChangeText={(value) => updateField('ticketNote', value)} placeholder="e.g. Lower bowl seating" value={form.ticketNote} />
