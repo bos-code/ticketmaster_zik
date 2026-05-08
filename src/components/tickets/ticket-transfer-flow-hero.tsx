@@ -110,7 +110,7 @@ export function CollapsibleEventHero({
             </Pressable>
 
             <Animated.View
-              style={[collapsedTitleStyle, { pointerEvents: 'none' }]}
+              style={[collapsedTitleStyle, { pointerEvents: "none" }]}
               className="absolute left-16 right-16 items-start"
             >
               <Text
@@ -146,12 +146,18 @@ export function CollapsibleEventHero({
 
         <Animated.View
           className="absolute inset-x-0  px-4"
-          style={[expandedContentStyle, { top: HERO_IMAGE_HEIGHT, pointerEvents: isHeroCollapsed ? 'none' : 'auto' }]}
+          style={[
+            expandedContentStyle,
+            {
+              top: HERO_IMAGE_HEIGHT,
+              pointerEvents: isHeroCollapsed ? "none" : "auto",
+            },
+          ]}
         >
-          <View className="relative -top-8 pt-4">
+          <View className="ticket-summary-hero-card relative -top-8 pt-4">
             <View className="absolute left-0 -top-4 z-10 self-start">
-              <View className="justify-center bg-[#232126] px-4 py-2">
-                <Text className="text-xs font-extrabold uppercase leading-[13px] tracking-[1px] text-[rgba(255,255,255,0.92)]">
+              <View className="ticket-summary-hero-date justify-center bg-[#232126] px-4 py-2">
+                <Text className="ticket-summary-hero-date-text text-xs font-extrabold uppercase leading-[13px] tracking-[1px] text-[rgba(255,255,255,0.92)]">
                   {event.dateTime}
                 </Text>
               </View>
@@ -159,8 +165,8 @@ export function CollapsibleEventHero({
             </View>
             <View className="bg-[#232126] px-4 pt-3">
               <Text
-                numberOfLines={2}
-                className="pt-1 text-2xl font-bold leading-6 text-white"
+                numberOfLines={1}
+                className="ticket-summary-hero-title pt-1 text-2xl font-bold leading-6 text-white"
               >
                 {event.title}
               </Text>
@@ -168,7 +174,7 @@ export function CollapsibleEventHero({
               <View className="mt-3 flex-row items-center justify-between pb-2">
                 <Text
                   numberOfLines={1}
-                  className="mr-3 flex-1 text-[13px] font-normal leading-[17px] text-[rgba(255,255,255,0.76)]"
+                  className="ticket-summary-hero-venue mr-3 flex-1 text-[13px] font-normal leading-[17px] text-[rgba(255,255,255,0.76)]"
                 >
                   {event.venue}
                 </Text>
@@ -189,10 +195,10 @@ export function CollapsibleEventHero({
             <Pressable
               accessibilityRole="button"
               onPress={onOpenViewer}
-              className="min-h-[42px] flex-row items-center justify-center gap-[6px] bg-[#0444f3]"
+              className="ticket-summary-view-button min-h-[42px] flex-row items-center justify-center gap-[6px] bg-[#0444f3]"
             >
               <Ionicons color="#CFE0FF" name="barcode-outline" size={14} />
-              <Text className="text-[13px] font-bold leading-[16px] text-[#F5F9FF]">
+              <Text className="ticket-summary-view-button-text text-[13px] font-bold leading-[16px] text-[#F5F9FF]">
                 View Tickets
               </Text>
             </Pressable>
