@@ -2,10 +2,13 @@ export interface EventInfo {
   id: string;
   title: string;
   venue: string;
+  venueAddress?: string;
   date: string;
   time: string;
   fullDateTimeLabel: string;
   heroImage: any;
+  latitude?: number | null;
+  longitude?: number | null;
 }
 
 export interface TicketOrderInfo {
@@ -36,10 +39,13 @@ export interface TicketOrderData {
 export interface TicketSummaryViewModel {
   eventTitle: string;
   eventVenue: string;
+  eventVenueAddress?: string;
   eventDate: string;
   eventTime: string;
   eventFullDateTimeLabel: string;
   heroImage: EventInfo["heroImage"];
+  latitude?: number | null;
+  longitude?: number | null;
   orderId: string;
   orderNumber: string;
   ticketCount: number;

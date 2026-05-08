@@ -4,12 +4,9 @@ import Animated, { FadeInUp } from "react-native-reanimated";
 
 import { useTicketFlowData } from "@/components/tickets/useTicketFlowData";
 import { VenueMapCard } from "@/components/events/venue-map-card";
-import { hasValidCoordinates } from "@/lib/map-utils";
 
 export function MapPreviewCard() {
   const { event } = useTicketFlowData();
-
-  if (!hasValidCoordinates(event.latitude, event.longitude)) return null;
 
   return (
     <Animated.View entering={FadeInUp.duration(240)} style={styles.card}>
@@ -17,6 +14,7 @@ export function MapPreviewCard() {
         eventId={event.directionsEventId}
         latitude={event.latitude}
         longitude={event.longitude}
+        venueAddress={event.venueAddress}
         venueName={event.venue}
       />
     </Animated.View>

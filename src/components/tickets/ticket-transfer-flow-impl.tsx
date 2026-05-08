@@ -144,10 +144,6 @@ export function TicketTransferFlow({
     setSelectedSeatIds([]);
   }, [initialScreen, initialViewerIndex, seats.length, ticketFlowData?.orderId]);
 
-  if (!ticketFlowData) {
-    return <TicketsUnavailable />;
-  }
-
   const updateRecipientForm = (
     field: keyof RecipientFormState,
     value: string,
@@ -373,6 +369,10 @@ export function TicketTransferFlow({
   };
   const isViewerScreen = screen === "viewer";
 
+  if (!ticketFlowData) {
+    return <TicketsUnavailable />;
+  }
+
   return (
     <TicketFlowContext.Provider value={ticketFlowData}>
       <View className="flex-1">
@@ -485,13 +485,13 @@ function buildTicketFlowDataFromOrder(
       title: summaryViewModel.eventTitle,
       shortTitle: summaryViewModel.eventTitle,
       venue: summaryViewModel.eventVenue,
-      venueAddress: summaryViewModel.eventVenue,
+      venueAddress: summaryViewModel.eventVenueAddress ?? summaryViewModel.eventVenue,
       venueSummary: `${summaryViewModel.eventTitle} at ${summaryViewModel.eventVenue}`,
       dateTime: summaryViewModel.eventFullDateTimeLabel,
       headerSubtitle: `${summaryViewModel.eventTime} - ${summaryViewModel.eventVenue}`,
       heroImage: summaryViewModel.heroImage,
-      latitude: null,
-      longitude: null,
+      latitude: summaryViewModel.latitude,
+      longitude: summaryViewModel.longitude,
       mapImageUrl: "",
     },
     order: {

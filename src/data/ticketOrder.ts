@@ -8,10 +8,13 @@ export const ticketOrder: TicketOrderData = {
     id: "event-don-toliver-octane-tour",
     title: "Don Toliver: Octane Tour",
     venue: "Madison Square Garden",
+    venueAddress: "4 Pennsylvania Plaza, New York, NY 10001",
     date: "Mon, Jun 01",
     time: "7:30 PM",
     fullDateTimeLabel: "Mon, Jun 01, 7:30 PM",
     heroImage: require("../../assets/tickets/don-toliver.png"),
+    latitude: 40.7505,
+    longitude: -73.9934,
   },
 
   order: {
@@ -77,6 +80,7 @@ export function mapTicketRecordToTicketOrderData(
       id: ticketRecord.id,
       title: ticketRecord.eventName,
       venue: ticketRecord.venue,
+      venueAddress: buildVenueAddress(ticketRecord),
       date: formatEventDateLabel(ticketRecord.date),
       time: ticketRecord.time,
       fullDateTimeLabel: formatEventFullDateTimeLabel(
@@ -84,6 +88,7 @@ export function mapTicketRecordToTicketOrderData(
         ticketRecord.time,
       ),
       heroImage: { uri: ticketRecord.image },
+      ...resolveKnownVenueCoordinate(ticketRecord.venue),
     },
     order: {
       id: ticketRecord.id,
@@ -148,4 +153,38 @@ function parseTicketDate(dateValue: string) {
 
   const parsedDate = new Date(`${trimmedDateValue}T00:00:00`);
   return Number.isNaN(parsedDate.getTime()) ? null : parsedDate;
+}
+
+function buildVenueAddress(ticketRecord: TicketRecord) {
+  const locationParts = [
+    ticketRecord.venue,
+    ticketRecord.city,
+    ticketRecord.state,
+    ticketRecord.country,
+  ].filter(Boolean);
+
+  return locationParts.join(", ");
+}
+
+function resolveKnownVenueCoordinate(venue: string) {
+  const normalizedVenue = venue.trim().toLowerCase();
+
+  if (normalizedVenue.includes("eko convention centre")) {
+    return {
+      latitude: 6.42674716,
+      longitude: 3.43009885,
+    };
+  }
+
+  if (normalizedVenue.includes("madison square garden")) {
+    return {
+      latitude: 40.7505,
+      longitude: -73.9934,
+    };
+  }
+
+  return {
+    latitude: null,
+    longitude: null,
+  };
 }

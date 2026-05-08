@@ -82,10 +82,13 @@ export function createTicketSummaryViewModel(
   return {
     eventTitle: order.event.title,
     eventVenue: order.event.venue,
+    eventVenueAddress: order.event.venueAddress,
     eventDate: order.event.date,
     eventTime: order.event.time,
     eventFullDateTimeLabel: order.event.fullDateTimeLabel,
     heroImage: order.event.heroImage,
+    latitude: order.event.latitude,
+    longitude: order.event.longitude,
     orderId: order.order.id,
     orderNumber: order.order.orderNumber,
     ticketCount,

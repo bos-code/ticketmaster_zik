@@ -9,7 +9,6 @@ import Animated, {
   useAnimatedStyle,
   type SharedValue,
 } from "react-native-reanimated";
-import { SafeAreaView } from "react-native-safe-area-context";
 
 import {
   absoluteFill,
@@ -104,7 +103,7 @@ export function CollapsibleEventHero({
         }}
       />
       <LinearGradient
-        colors={["transparent", "rgba(2,2,4,0.56)", "rgba(0,0,0,0.72)"]}
+        colors={["transparent", "rgba(2,2,4,0.1)", "rgba(0,0,0,0.72)"]}
         locations={[0, 0.48, 1]}
         pointerEvents="none"
         style={{
@@ -116,7 +115,7 @@ export function CollapsibleEventHero({
         }}
       />
 
-      <SafeAreaView style={absoluteFill}>
+      <View style={absoluteFill}>
         <View className="px-4 pt-1">
           <View className=" mt-4 flex-row items-center justify-between">
             <Pressable
@@ -222,7 +221,7 @@ export function CollapsibleEventHero({
             </Pressable>
           </View>
         </Animated.View>
-      </SafeAreaView>
+      </View>
     </Animated.View>
   );
 }

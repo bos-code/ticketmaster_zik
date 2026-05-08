@@ -7,23 +7,33 @@ import VenueMap from "@/components/VenueMap";
 import {
   buildStaticMapPreviewUrl,
   canRenderEmbeddedMap,
+  hasValidCoordinates,
   openExternalMaps,
   toCoordinate,
   type VenueMapData,
 } from "@/lib/map-utils";
 
+const FALLBACK_MAP_CENTER = {
+  latitude: 6.42674716,
+  longitude: 3.43009885,
+};
+
 export function VenueMapCard({
   eventId,
   latitude,
   longitude,
+  venueAddress,
   venueName,
 }: VenueMapData) {
   const router = useRouter();
   const venueCoordinate = toCoordinate(latitude, longitude);
   const canShowEmbeddedMap = canRenderEmbeddedMap();
-  const staticMapUrl = venueCoordinate
-    ? buildStaticMapPreviewUrl(venueCoordinate.longitude, venueCoordinate.latitude)
-    : null;
+  const initialCoordinate = venueCoordinate ?? FALLBACK_MAP_CENTER;
+  const shouldResolveInitialAddress = !hasValidCoordinates(latitude, longitude);
+  const staticMapUrl = buildStaticMapPreviewUrl(
+    initialCoordinate.longitude,
+    initialCoordinate.latitude,
+  );
 
   function handleOpenDirections() {
     if (eventId) {
@@ -43,19 +53,15 @@ export function VenueMapCard({
     }
   }
 
-  if (!venueCoordinate) return null;
-
   return (
-    <Pressable
-      accessibilityRole="button"
-      onPress={handleOpenDirections}
-      style={styles.card}
-    >
-      <View style={styles.mapContainer} pointerEvents="none">
+    <View style={styles.card}>
+      <View style={styles.mapContainer}>
         {canShowEmbeddedMap ? (
           <VenueMap
-            latitude={latitude}
-            longitude={longitude}
+            latitude={initialCoordinate.latitude}
+            longitude={initialCoordinate.longitude}
+            shouldResolveInitialAddress={shouldResolveInitialAddress}
+            venueAddress={venueAddress}
             venueName={venueName}
           />
         ) : staticMapUrl ? (
@@ -66,10 +72,14 @@ export function VenueMapCard({
           />
         ) : null}
       </View>
-      <View style={styles.button}>
+      <Pressable
+        accessibilityRole="button"
+        onPress={handleOpenDirections}
+        style={styles.button}
+      >
         <Text style={styles.buttonText}>Get Directions</Text>
-      </View>
-    </Pressable>
+      </Pressable>
+    </View>
   );
 }
 
@@ -79,7 +89,7 @@ const styles = StyleSheet.create({
     overflow: "hidden",
   },
   mapContainer: {
-    height: 220,
+    height: 560,
     width: "100%",
   },
   staticMap: {
