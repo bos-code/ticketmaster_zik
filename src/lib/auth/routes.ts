@@ -1,3 +1,3 @@
 export const AUTH_ROUTES = {
-  appHome: '/(tabs)' as const,
+  appHome: '/my-tickets' as const,
 } as const;

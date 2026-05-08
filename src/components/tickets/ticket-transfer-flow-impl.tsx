@@ -200,7 +200,7 @@ export function TicketTransferFlow({
   };
 
   const handleBackToTabs = () => {
-    router.replace("/(tabs)");
+    router.replace("/my-tickets");
   };
 
   const openTicketDetailsRoute = useCallback(
@@ -231,6 +231,11 @@ export function TicketTransferFlow({
 
   const handleViewerBack = () => {
     if (initialScreen === "viewer") {
+      if (router.canGoBack()) {
+        router.back();
+        return;
+      }
+
       router.replace({
         pathname: "/tickets/index",
         params: { orderId: ticketOrder.order.id },
