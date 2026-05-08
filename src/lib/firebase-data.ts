@@ -1,11 +1,9 @@
 import {
   collection,
-  deleteDoc,
   doc,
   onSnapshot,
   runTransaction,
   setDoc,
-  updateDoc,
 } from 'firebase/firestore';
 import {
   getDownloadURL,
@@ -21,7 +19,7 @@ import {
   type EventRecord,
   type ReservationRecord,
 } from '@/lib/data';
-import { firestore, storage } from '@/lib/firebase';
+import { firebaseConfig, firestore, storage } from '@/lib/firebase';
 
 const EVENTS_COLLECTION = 'events';
 const RESERVATIONS_COLLECTION = 'reservations';
@@ -65,18 +63,18 @@ export function subscribeToReservations(
 }
 
 export async function createTicketDocument(ticket: TicketRecord) {
-  await setDoc(doc(firestore, TICKETS_COLLECTION, ticket.id), ticket);
+  await writeTicketDocumentWithRest(ticket.id, ticket);
 }
 
 export async function updateTicketDocument(
   ticketId: string,
   updates: Partial<TicketRecord>,
 ) {
-  await updateDoc(doc(firestore, TICKETS_COLLECTION, ticketId), updates);
+  await writeTicketDocumentWithRest(ticketId, updates);
 }
 
 export async function deleteTicketDocument(ticketId: string) {
-  await deleteDoc(doc(firestore, TICKETS_COLLECTION, ticketId));
+  await deleteTicketDocumentWithRest(ticketId);
 }
 
 export async function persistTicketImage(ticketId: string, imageValue: string) {
@@ -198,4 +196,75 @@ function buildStorageSafeId(value: string) {
 
 function isRemoteUrl(value: string) {
   return /^(https?:\/\/|gs:\/\/)/i.test(value);
+}
+
+function buildTicketDocumentUrl(ticketId: string) {
+  return (
+    `https://firestore.googleapis.com/v1/projects/${firebaseConfig.projectId}` +
+    `/databases/(default)/documents/${TICKETS_COLLECTION}/${encodeURIComponent(ticketId)}` +
+    `?key=${firebaseConfig.apiKey}`
+  );
+}
+
+async function writeTicketDocumentWithRest(
+  ticketId: string,
+  fields: Partial<TicketRecord>,
+) {
+  const fieldNames = Object.keys(fields);
+  const updateMask = fieldNames
+    .map((fieldName) => `updateMask.fieldPaths=${encodeURIComponent(fieldName)}`)
+    .join('&');
+  const separator = updateMask ? '&' : '';
+  const response = await fetch(`${buildTicketDocumentUrl(ticketId)}${separator}${updateMask}`, {
+    body: JSON.stringify({ fields: toFirestoreRestFields(fields) }),
+    headers: { 'content-type': 'application/json' },
+    method: 'PATCH',
+  });
+
+  if (!response.ok) {
+    throw new Error(await buildFirestoreRestErrorMessage(response));
+  }
+}
+
+async function deleteTicketDocumentWithRest(ticketId: string) {
+  const response = await fetch(buildTicketDocumentUrl(ticketId), {
+    method: 'DELETE',
+  });
+
+  if (!response.ok) {
+    throw new Error(await buildFirestoreRestErrorMessage(response));
+  }
+}
+
+function toFirestoreRestFields(fields: Partial<TicketRecord>) {
+  return Object.fromEntries(
+    Object.entries(fields).map(([key, value]) => [
+      key,
+      toFirestoreRestValue(value),
+    ]),
+  );
+}
+
+function toFirestoreRestValue(value: unknown) {
+  if (typeof value === 'number') {
+    return Number.isInteger(value)
+      ? { integerValue: String(value) }
+      : { doubleValue: value };
+  }
+
+  if (typeof value === 'boolean') {
+    return { booleanValue: value };
+  }
+
+  if (value === null || typeof value === 'undefined') {
+    return { nullValue: null };
+  }
+
+  return { stringValue: String(value) };
+}
+
+async function buildFirestoreRestErrorMessage(response: Response) {
+  const body = await response.text();
+
+  return `Firestore request failed (${response.status}): ${body}`;
 }

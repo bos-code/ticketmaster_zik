@@ -57,26 +57,7 @@ const fieldLabels: Record<FieldKey, string> = {
   ticketNote: 'Ticket Note',
 };
 
-const requiredFields: FieldKey[] = [
-  'eventName',
-  'artistName',
-  'albumName',
-  'venue',
-  'city',
-  'state',
-  'country',
-  'date',
-  'time',
-  'purchaseDate',
-  'section',
-  'row',
-  'seatRange',
-  'orderNumber',
-  'ticketType',
-  'status',
-  'image',
-  'backgroundColor',
-];
+const requiredFields: FieldKey[] = [];
 
 const EMPTY_CREATE_FORM: FormState = {
   eventName: '',
@@ -178,7 +159,7 @@ export function AddEventAdminScreen() {
     setErrors(nextErrors);
 
     if (Object.keys(nextErrors).length > 0) {
-      Alert.alert('Finish required fields', 'Please complete the highlighted ticket fields.');
+      Alert.alert('Review ticket fields', 'Please fix the highlighted ticket fields.');
       return;
     }
 
@@ -197,10 +178,11 @@ export function AddEventAdminScreen() {
       await addEvent(payload);
       showToast('Ticket created');
       router.replace({ pathname: '/admin', params: { toast: 'created' } });
-    } catch {
+    } catch (error) {
+      console.warn('Ticket save failed.', error);
       Alert.alert(
         'Save failed',
-        'We could not save this ticket to Firebase right now. Please try again.',
+        getTicketSaveErrorMessage(error),
       );
     } finally {
       setIsSaving(false);
@@ -592,6 +574,19 @@ function buildPickedImageUri(asset: ImagePicker.ImagePickerAsset) {
   }
 
   return asset.uri;
+}
+
+function getTicketSaveErrorMessage(error: unknown) {
+  const message = error instanceof Error ? error.message : '';
+
+  if (
+    message.includes('storage/') ||
+    message.toLowerCase().includes('firebase storage')
+  ) {
+    return 'The ticket details are valid, but Firebase Storage rejected the artwork upload. Paste an Image URL instead, or publish the Storage rules and try again.';
+  }
+
+  return 'We could not save this ticket to Firebase right now. Please try again.';
 }
 
 const styles = StyleSheet.create({

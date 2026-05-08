@@ -151,7 +151,7 @@ export function CollapsibleEventHero({
           <View className="relative -top-8 pt-4">
             <View className="absolute left-0 -top-4 z-10 self-start">
               <View className="justify-center bg-[#232126] px-4 py-2">
-                <Text className="text-sm font-extrabold uppercase leading-[13px] tracking-[1px] text-[rgba(255,255,255,0.92)]">
+                <Text className="text-xs font-extrabold uppercase leading-[13px] tracking-[1px] text-[rgba(255,255,255,0.92)]">
                   {event.dateTime}
                 </Text>
               </View>
