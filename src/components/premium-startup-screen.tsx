@@ -11,7 +11,7 @@ type PremiumStartupScreenProps = {
   onFinish?: () => void;
 };
 
-const STARTUP_STATUS_BAR_COLOR = "#007AFF";
+const STARTUP_STATUS_BAR_COLOR ="transparent";
 const STARTUP_BACKGROUND_COLOR = "#007AFF";
 
 export function PremiumStartupScreen({ onFinish }: PremiumStartupScreenProps) {

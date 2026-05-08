@@ -377,7 +377,7 @@ export function TicketTransferFlow({
     <TicketFlowContext.Provider value={ticketFlowData}>
       <View className="flex-1">
         <StatusBarChrome
-          backgroundColor={isViewerScreen ? "#F9F8F4" : "transparent"}
+          backgroundColor={isViewerScreen ? "#000000" : "transparent"}
           drawsBehindStatusBar={!isViewerScreen}
           style={isViewerScreen ? "dark" : "light"}
           useCustomAppearance

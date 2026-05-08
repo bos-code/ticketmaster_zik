@@ -103,8 +103,8 @@ export function CollapsibleEventHero({
         }}
       />
       <LinearGradient
-        colors={["transparent", "rgba(2,2,4,0.1)", "rgba(0,0,0,0.72)"]}
-        locations={[0, 0.48, 1]}
+        colors={["transparent",  "rgba(0,0,0,0.4)"]}
+        locations={[0, 1]}
         pointerEvents="none"
         style={{
           height: HERO_IMAGE_HEIGHT,
