@@ -222,6 +222,7 @@ export function AdminTicketPreviewScreen() {
             handleListScroll={handleListScroll}
             isHeroCollapsed={isHeroCollapsed}
             onBack={handleCancel}
+            onOpenTicket={() => {}}
             onOpenViewer={() => {}}
             onPanelChange={setActivePanel}
             onTransfer={() => {}}

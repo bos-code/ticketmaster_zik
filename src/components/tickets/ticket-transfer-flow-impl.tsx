@@ -38,7 +38,7 @@ import {
 } from "@/components/tickets/ticketFlowTypes";
 import { TicketTransferStatusModal } from "@/components/tickets/TicketTransferStatusModal";
 import { useTicketOrder } from "@/hooks/useTicketOrder";
-import type { TicketOrderData } from "@/types/ticket";
+import type { TicketOrderData, TicketSummaryViewModel } from "@/types/ticket";
 
 export function TicketTransferFlow({
   initialScreen = "list",
@@ -61,8 +61,8 @@ export function TicketTransferFlow({
     [getDetailsViewModel, initialTicketIndex],
   );
   const ticketFlowData = useMemo(
-    () => buildTicketFlowDataFromOrder(ticketOrder),
-    [ticketOrder],
+    () => buildTicketFlowDataFromOrder(ticketOrder, summaryViewModel),
+    [summaryViewModel, ticketOrder],
   );
 
   const seats = ticketFlowData?.seats ?? EMPTY_SEATS;
@@ -460,31 +460,34 @@ export function TicketTransferFlow({
   );
 }
 
-function buildTicketFlowDataFromOrder(order: TicketOrderData): TicketFlowContextValue {
+function buildTicketFlowDataFromOrder(
+  order: TicketOrderData,
+  summaryViewModel: TicketSummaryViewModel,
+): TicketFlowContextValue {
   return {
     event: {
       directionsEventId: undefined,
       id: order.event.id,
-      title: order.event.title,
-      shortTitle: order.event.title,
-      venue: order.event.venue,
-      venueAddress: order.event.venue,
-      venueSummary: `${order.event.title} at ${order.event.venue}`,
-      dateTime: order.event.fullDateTimeLabel,
-      headerSubtitle: `${order.event.time} - ${order.event.venue}`,
-      heroImage: order.event.heroImage,
+      title: summaryViewModel.eventTitle,
+      shortTitle: summaryViewModel.eventTitle,
+      venue: summaryViewModel.eventVenue,
+      venueAddress: summaryViewModel.eventVenue,
+      venueSummary: `${summaryViewModel.eventTitle} at ${summaryViewModel.eventVenue}`,
+      dateTime: summaryViewModel.eventFullDateTimeLabel,
+      headerSubtitle: `${summaryViewModel.eventTime} - ${summaryViewModel.eventVenue}`,
+      heroImage: summaryViewModel.heroImage,
       latitude: null,
       longitude: null,
       mapImageUrl: "",
     },
     order: {
       id: order.order.id,
-      orderNumber: order.order.orderNumber,
-      ticketCount: summaryTicketCount(order),
-      ticketCountLabel: summaryTicketCountLabel(order),
+      orderNumber: summaryViewModel.orderNumber,
+      ticketCount: summaryViewModel.ticketCount,
+      ticketCountLabel: summaryViewModel.ticketCountLabel,
     },
-    orderId: order.order.id,
-    seats: order.tickets.map((ticket) => ({
+    orderId: summaryViewModel.orderId,
+    seats: summaryViewModel.tickets.map((ticket) => ({
       id: ticket.id,
       ticketIndex: ticket.ticketIndex,
       label: ticket.type,
@@ -497,13 +500,4 @@ function buildTicketFlowDataFromOrder(order: TicketOrderData): TicketFlowContext
       canSell: ticket.canSell,
     })),
   };
-}
-
-function summaryTicketCount(order: TicketOrderData) {
-  return order.tickets.length || order.order.ticketCount;
-}
-
-function summaryTicketCountLabel(order: TicketOrderData) {
-  const totalTickets = summaryTicketCount(order);
-  return totalTickets === 1 ? "x1 Ticket" : `x${totalTickets} Tickets`;
 }

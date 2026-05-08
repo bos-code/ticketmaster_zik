@@ -44,6 +44,14 @@ function RootStack() {
         options={{ animation: "slide_from_right" }}
       />
       <Stack.Screen
+        name="tickets/index"
+        options={{ animation: "slide_from_right" }}
+      />
+      <Stack.Screen
+        name="tickets/[orderId]"
+        options={{ animation: "slide_from_right" }}
+      />
+      <Stack.Screen
         name="events/[id]"
         options={{ animation: "slide_from_right" }}
       />
@@ -91,24 +99,7 @@ export default function RootLayout() {
       () => {},
     );
 
-    if (
-      Platform.OS === "web" &&
-      typeof window !== "undefined" &&
-      "serviceWorker" in navigator
-    ) {
-      if (__DEV__) {
-        void navigator.serviceWorker
-          .getRegistrations()
-          .then((registrations) =>
-            Promise.all(
-              registrations.map((registration) => registration.unregister()),
-            ),
-          )
-          .catch(() => {});
-
-        return;
-      }
-
+    if (Platform.OS === "web" && typeof window !== "undefined" && "serviceWorker" in navigator) {
       navigator.serviceWorker.register("/service-worker.js").catch(() => {
         // Ignore registration errors
       });
