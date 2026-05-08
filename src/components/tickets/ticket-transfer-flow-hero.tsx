@@ -103,7 +103,7 @@ export function CollapsibleEventHero({
         }}
       />
       <LinearGradient
-        colors={["transparent",  "rgba(0,0,0,0.4)"]}
+        colors={["transparent", "rgba(0,0,0,0.5)"]}
         locations={[0, 1]}
         pointerEvents="none"
         style={{
@@ -116,8 +116,8 @@ export function CollapsibleEventHero({
       />
 
       <View style={absoluteFill}>
-        <View className="px-4 pt-1">
-          <View className=" mt-4 flex-row items-center justify-between">
+        <View className="px-4 pt-4">
+          <View className=" mt-3 flex-row items-center justify-between">
             <Pressable
               accessibilityRole="button"
               hitSlop={8}
