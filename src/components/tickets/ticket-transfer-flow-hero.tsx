@@ -155,9 +155,11 @@ export function CollapsibleEventHero({
                 <Ionicons color="#FFFFFF" name="barcode-outline" size={20} />
               </Pressable>
             ) : (
-              <Text className="text-[13px] font-medium leading-4 text-white">
-                Help
-              </Text>
+              <View className=" rounded-xl bg-black/10 p-3">
+                <Text className="text-[13px] font-medium leading-4 text-white">
+                  Help
+                </Text>
+              </View>
             )}
           </View>
         </View>
