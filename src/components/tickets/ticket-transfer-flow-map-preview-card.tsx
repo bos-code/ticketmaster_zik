@@ -14,7 +14,7 @@ export function MapPreviewCard() {
         eventId={event.directionsEventId}
         latitude={event.latitude}
         longitude={event.longitude}
-        mapHeight={340}
+        mapHeight={240}
         venueAddress={event.venueAddress}
         venueName={event.venue}
       />

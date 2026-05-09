@@ -53,7 +53,7 @@ export function VenueMapCard({
       maxPitch: 45,
       pitch: 0,
       style: "https://tiles.openfreemap.org/styles/bright",
-      zoom: 14.1,
+      zoom: 14.65,
     });
 
     mapRef.current = map;
@@ -142,6 +142,7 @@ function createVenueMarker(venueName: string) {
   return new maplibregl.Marker({
     anchor: "bottom",
     element: markerWrap,
+    offset: [0, 2],
   });
 }
 
@@ -154,43 +155,44 @@ function ensureAppleMarkerStyles() {
   style.id = "apple-marker-styles";
   style.textContent = `
     .apple-venue-marker {
-      height: 34px;
+      height: 42px;
       pointer-events: none;
       position: relative;
-      transform: translateX(-3px);
-      width: 34px;
+      width: 120px;
     }
     .apple-venue-pin {
       animation: applePinDrop 300ms cubic-bezier(0.34, 1.56, 0.64, 1);
       background: linear-gradient(180deg, #FF5E57 0%, #F4211B 58%, #C70F0A 100%);
       border: 2px solid #FFFFFF;
       border-radius: 50% 50% 50% 0;
-      box-shadow: 0 5px 10px rgba(0,0,0,0.24), inset 0 1px 1px rgba(255,255,255,0.42);
-      bottom: 0;
-      height: 34px;
-      left: 0;
-      position: relative;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.28), inset 0 1px 1px rgba(255,255,255,0.48);
+      height: 32px;
+      left: 44px;
+      position: absolute;
+      top: 0;
       transform: rotate(-45deg);
-      width: 34px;
+      width: 32px;
     }
     .apple-venue-pin-info {
       align-items: center;
       color: #FFFFFF;
       display: flex;
-      font: 700 18px/18px -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
+      font: 700 17px/17px -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
       height: 100%;
       justify-content: center;
       transform: rotate(45deg) translateY(-1px);
       width: 100%;
     }
     .apple-venue-label {
-      color: #2A2726;
-      font: 700 13px/16px -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
-      max-width: 180px;
+      color: #2D2928;
+      font: 700 12px/15px -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
+      left: 50%;
+      max-width: 190px;
       position: absolute;
-      text-shadow: 0 1px 1px #FFFFFF, 1px 0 1px #FFFFFF, -1px 0 1px #FFFFFF, 0 -1px 1px #FFFFFF;
-      top: 38px;
-      transform: translateX(-24px);
+      text-align: center;
+      text-shadow: 0 1px 1px #FFFFFF, 1px 0 1px #FFFFFF, -1px 0 1px #FFFFFF, 0 -1px 1px #FFFFFF, 0 0 2px #FFFFFF;
+      top: 35px;
+      transform: translateX(-50%);
       white-space: nowrap;
     }
     @keyframes applePinDrop {
@@ -214,16 +216,16 @@ function applyAppleMapsPaint(map: MapLibreMap) {
 
     try {
       if (layer.type === "background") {
-        map.setPaintProperty(layer.id, "background-color", "#F8F7F2");
+        map.setPaintProperty(layer.id, "background-color", "#F6F5F1");
       } else if (layer.type === "fill" && name.includes("water")) {
-        map.setPaintProperty(layer.id, "fill-color", "#B8E3F0");
+        map.setPaintProperty(layer.id, "fill-color", "#B7DDEA");
       } else if (
         layer.type === "fill" &&
         /(park|landcover|wood|grass|green)/.test(name)
       ) {
-        map.setPaintProperty(layer.id, "fill-color", "#D7EBC7");
+        map.setPaintProperty(layer.id, "fill-color", "#DCECC9");
       } else if (layer.type === "fill" && name.includes("building")) {
-        map.setPaintProperty(layer.id, "fill-color", "#ECEBE6");
+        map.setPaintProperty(layer.id, "fill-color", "#EAE8E2");
       } else if (
         layer.type === "line" &&
         /(road|transport|highway|street)/.test(name)
@@ -231,20 +233,20 @@ function applyAppleMapsPaint(map: MapLibreMap) {
         map.setPaintProperty(
           layer.id,
           "line-color",
-          /(case|outline|border)/.test(name) ? "#D4D5D2" : "#FFFDF8",
+          /(case|outline|border)/.test(name) ? "#D1D2CF" : "#FFFCF7",
         );
-        map.setPaintProperty(layer.id, "line-opacity", 0.92);
+        map.setPaintProperty(layer.id, "line-opacity", 0.96);
       } else if (layer.type === "line" && name.includes("boundary")) {
-        map.setPaintProperty(layer.id, "line-color", "#D7D2CC");
-        map.setPaintProperty(layer.id, "line-opacity", 0.28);
+        map.setPaintProperty(layer.id, "line-color", "#D4D0CA");
+        map.setPaintProperty(layer.id, "line-opacity", 0.32);
       } else if (layer.type === "symbol") {
         map.setPaintProperty(
           layer.id,
           "text-color",
-          /(place|city|town)/.test(name) ? "#3F3C39" : "#7F7B76",
+          /(place|city|town)/.test(name) ? "#4D4742" : "#827E79",
         );
-        map.setPaintProperty(layer.id, "text-halo-color", "#F8F7F2");
-        map.setPaintProperty(layer.id, "text-halo-width", 1.8);
+        map.setPaintProperty(layer.id, "text-halo-color", "#F6F5F1");
+        map.setPaintProperty(layer.id, "text-halo-width", 1.9);
       }
     } catch {
       // Some third-party style layers do not expose every paint property.
@@ -266,40 +268,41 @@ const styles = StyleSheet.create({
     overflow: "hidden",
   },
   mapFrame: {
-    backgroundColor: "#F8F7F2",
+    backgroundColor: "#F6F5F1",
     overflow: "hidden",
     position: "relative",
     width: "100%",
   },
   mapAttribution: {
     alignItems: "center",
-    bottom: 10,
+    bottom: 9,
     flexDirection: "row",
-    gap: 7,
-    left: 12,
+    gap: 6,
+    left: 14,
     position: "absolute",
   },
   mapsText: {
-    color: "#505050",
-    fontSize: 15,
-    fontWeight: "600",
+    color: "#4B4B4B",
+    fontSize: 16,
+    fontWeight: "700",
     letterSpacing: 0,
   },
   legalText: {
-    color: "#555555",
-    fontSize: 10,
+    color: "#4F4F4F",
+    fontSize: 9,
     fontWeight: "500",
     letterSpacing: 0,
   },
   button: {
     alignItems: "center",
-    backgroundColor: "#F1F0F4",
+    backgroundColor: "#F2F1F5",
     justifyContent: "center",
-    paddingVertical: 14,
+    minHeight: 66,
+    paddingVertical: 0,
   },
   buttonText: {
-    color: "#242225",
-    fontSize: 18,
+    color: "#272529",
+    fontSize: 17,
     fontWeight: "700",
   },
 });

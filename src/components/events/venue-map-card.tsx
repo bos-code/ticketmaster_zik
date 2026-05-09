@@ -97,14 +97,15 @@ const styles = StyleSheet.create({
     width: "100%",
   },
   button: {
-    backgroundColor: "#F2F2F7",
     alignItems: "center",
+    backgroundColor: "#F2F1F5",
     justifyContent: "center",
-    paddingVertical: 12,
+    minHeight: 66,
+    paddingVertical: 0,
   },
   buttonText: {
-    color: "#000000",
-    fontSize: 16,
-    fontWeight: "500",
+    color: "#272529",
+    fontSize: 17,
+    fontWeight: "700",
   },
 });
