@@ -1,14 +1,23 @@
 import { Ionicons } from "@expo/vector-icons";
 import React from "react";
 import { Image, Pressable, StyleSheet, Text, View } from "react-native";
-import Svg, { Defs, LinearGradient, RadialGradient, Rect, Stop } from "react-native-svg";
+import Svg, {
+  Defs,
+  LinearGradient,
+  RadialGradient,
+  Rect,
+  Stop,
+} from "react-native-svg";
 
-import { useTicketFlowData } from "@/components/tickets/useTicketFlowData";
 import { EditableText } from "@/components/tickets/EditableText";
+import { useTicketFlowData } from "@/components/tickets/useTicketFlowData";
 
 export function PromoCard() {
   const { event } = useTicketFlowData();
-  const formattedDate = event.dateTime.replace(/, (\d{1,2}:\d{2}\s[AP]M)$/, ", / $1");
+  const formattedDate = event.dateTime.replace(
+    /, (\d{1,2}:\d{2}\s[AP]M)$/,
+    ", / $1",
+  );
 
   return (
     <View className="mx-[22px] mb-24 mt-4 overflow-hidden rounded-[4px] border border-[#f0f0f0]">
@@ -27,10 +36,18 @@ export function PromoCard() {
           blurRadius={100}
           resizeMode="cover"
         />
-        <View style={[StyleSheet.absoluteFillObject, { pointerEvents: "none" }]}>
+        <View
+          style={[StyleSheet.absoluteFillObject, { pointerEvents: "none" }]}
+        >
           <Svg height="100%" width="100%">
             <Defs>
-              <LinearGradient id="ticketPromoFade" x1="0%" y1="0%" x2="100%" y2="0%">
+              <LinearGradient
+                id="ticketPromoFade"
+                x1="0%"
+                y1="0%"
+                x2="100%"
+                y2="0%"
+              >
                 <Stop offset="0%" stopColor="#000000" stopOpacity="0.1" />
                 <Stop offset="50%" stopColor="#000000" stopOpacity="0.6" />
                 <Stop offset="100%" stopColor="#000000" stopOpacity="0.95" />
@@ -79,21 +96,35 @@ export function PromoCard() {
               <View className="absolute inset-0 bg-black/10" />
 
               <View className="absolute bottom-0 left-0 bg-[#1c1c1e] px-4 py-[6px] rounded-tr-[2px]">
-                  <EditableText value={formattedDate} className="text-[8px] font-extrabold uppercase tracking-widest text-white" numberOfLines={1} />
+                <EditableText
+                  value={formattedDate}
+                  className="text-[8px] font-extrabold uppercase tracking-widest text-white"
+                  numberOfLines={1}
+                />
               </View>
             </View>
 
             <View className="bg-[#121213] px-3 pb-4 pt-3">
-              <EditableText field="eventName" value={event.title} className="mb-[6px] text-[12px] font-black uppercase leading-[18px] text-white" numberOfLines={2} />
-              <EditableText field="venue" value={event.venue} className="text-[10px] font-medium text-[#A0A0A0]" numberOfLines={1} />
+              <EditableText
+                field="eventName"
+                value={event.title}
+                className="mb-[6px] text-[12px] font-black uppercase leading-[18px] text-white"
+                numberOfLines={2}
+              />
+              <EditableText
+                field="venue"
+                value={event.venue}
+                className="text-[10px] font-medium text-[#A0A0A0]"
+                numberOfLines={1}
+              />
             </View>
           </View>
 
           <View className="flex-1 pl-7 justify-center">
-            <Text className="text-[15px] font-black uppercase leading-[26px] tracking-[1px] text-white">
+            <Text className="text-[15px] font-black uppercase  tracking-[1px] text-white">
               YOU GOT{"\n"}TICKETS!
             </Text>
-            <View className="mt-3 h-[6px] w-[85px] bg-white" />
+            <View className="mt-2 h-[5px] w-[85px] bg-white" />
           </View>
         </View>
       </View>
@@ -104,7 +135,8 @@ export function PromoCard() {
             Post on Social Media
           </Text>
           <Text className="text-[12px] pt-2 font-medium leading-[19px] text-[#444444]">
-            Build hype for the event, and share that you got tickets with your friends and family.
+            Build hype for the event, and share that you got tickets with your
+            friends and family.
           </Text>
         </View>
         <Pressable className="flex-row items-center justify-center border-t-2 border-white py-4">

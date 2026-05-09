@@ -89,7 +89,7 @@ export function TicketCard({
 
         <View className="mt-3 mb-4">
           <Text className="text-[12px] font-medium text-[#8B8F96] uppercase">
-            {`ROW ${seat.row} / SEAT ${seat.seat}`}
+            {`ROW ${seat.row}  •  SEAT ${seat.seat}`}
           </Text>
         </View>
       </View>

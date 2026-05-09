@@ -40,17 +40,14 @@ export function TabButton({
 }: TabTriggerSlotProps) {
   return (
     <Pressable {...props} style={({ pressed }) => pressed && styles.pressed}>
-      <ThemedView
-        type={isFocused ? "backgroundSelected" : "backgroundElement"}
-        style={styles.tabButtonView}
-      >
+      <View style={styles.tabButtonView}>
         <ThemedText
           type="small"
           themeColor={isFocused ? "text" : "textSecondary"}
         >
           {children}
         </ThemedText>
-      </ThemedView>
+      </View>
     </Pressable>
   );
 }
@@ -87,6 +84,7 @@ const styles = StyleSheet.create({
     position: "absolute",
     width: "100%",
     padding: Spacing.three,
+    paddingBottom: Spacing.five,
     justifyContent: "center",
     alignItems: "center",
     flexDirection: "row",

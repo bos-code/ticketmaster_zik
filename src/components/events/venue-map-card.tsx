@@ -22,9 +22,10 @@ export function VenueMapCard({
   eventId,
   latitude,
   longitude,
+  mapHeight = 560,
   venueAddress,
   venueName,
-}: VenueMapData) {
+}: VenueMapData & { mapHeight?: number }) {
   const router = useRouter();
   const venueCoordinate = toCoordinate(latitude, longitude);
   const canShowEmbeddedMap = canRenderEmbeddedMap();
@@ -55,7 +56,7 @@ export function VenueMapCard({
 
   return (
     <View style={styles.card}>
-      <View style={styles.mapContainer}>
+      <View style={[styles.mapContainer, { height: mapHeight }]}>
         {canShowEmbeddedMap ? (
           <VenueMap
             latitude={initialCoordinate.latitude}
@@ -89,7 +90,6 @@ const styles = StyleSheet.create({
     overflow: "hidden",
   },
   mapContainer: {
-    height: 560,
     width: "100%",
   },
   staticMap: {

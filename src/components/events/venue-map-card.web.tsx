@@ -19,9 +19,10 @@ export function VenueMapCard({
   eventId,
   latitude,
   longitude,
+  mapHeight = 560,
   venueAddress,
   venueName,
-}: VenueMapData) {
+}: VenueMapData & { mapHeight?: number }) {
   const router = useRouter();
   const mapContainerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<MapLibreMap | null>(null);
@@ -29,7 +30,11 @@ export function VenueMapCard({
   const venueCoordinate = toCoordinate(latitude, longitude);
   const initialCoordinate = venueCoordinate ?? FALLBACK_MAP_CENTER;
   const mapCenter = useMemo(
-    () => [initialCoordinate.longitude, initialCoordinate.latitude] as [number, number],
+    () =>
+      [initialCoordinate.longitude, initialCoordinate.latitude] as [
+        number,
+        number,
+      ],
     [initialCoordinate.latitude, initialCoordinate.longitude],
   );
 
@@ -37,6 +42,8 @@ export function VenueMapCard({
     if (!mapContainerRef.current || mapRef.current) {
       return;
     }
+
+    ensureAppleMarkerStyles();
 
     const map = new maplibregl.Map({
       attributionControl: false,
@@ -50,13 +57,14 @@ export function VenueMapCard({
     });
 
     mapRef.current = map;
-    map.addControl(new maplibregl.NavigationControl({ showCompass: true, showZoom: false }), "top-right");
+    map.addControl(
+      new maplibregl.NavigationControl({ showCompass: true, showZoom: false }),
+      "top-right",
+    );
 
     map.on("load", () => {
       applyAppleMapsPaint(map);
-      markerRef.current = createVenueMarker()
-        .setLngLat(mapCenter)
-        .addTo(map);
+      markerRef.current = createVenueMarker().setLngLat(mapCenter).addTo(map);
     });
 
     return () => {
@@ -92,7 +100,7 @@ export function VenueMapCard({
 
   return (
     <View style={styles.card}>
-      <View style={styles.mapFrame}>
+      <View style={[styles.mapFrame, { height: mapHeight }]}>
         {React.createElement("div", {
           ref: mapContainerRef,
           style: domMapStyle,
@@ -112,6 +120,8 @@ export function VenueMapCard({
 
 function createVenueMarker() {
   const markerElement = document.createElement("div");
+  markerElement.style.animation =
+    "applePinDrop 300ms cubic-bezier(0.34, 1.56, 0.64, 1)";
   markerElement.style.background = "#FF3B30";
   markerElement.style.border = "3px solid #FFFFFF";
   markerElement.style.borderRadius = "50% 50% 50% 0";
@@ -136,11 +146,30 @@ function createVenueMarker() {
   });
 }
 
+function ensureAppleMarkerStyles() {
+  if (document.getElementById("apple-marker-styles")) {
+    return;
+  }
+
+  const style = document.createElement("style");
+  style.id = "apple-marker-styles";
+  style.textContent = `
+    @keyframes applePinDrop {
+      0% { transform: rotate(-45deg) scale(0); }
+      72% { transform: rotate(-45deg) scale(1.1); }
+      100% { transform: rotate(-45deg) scale(1); }
+    }
+  `;
+  document.head.appendChild(style);
+}
+
 function applyAppleMapsPaint(map: MapLibreMap) {
   const loadedStyle = map.getStyle();
 
   (loadedStyle.layers || []).forEach((layer) => {
-    const sourceLayer = String((layer as { "source-layer"?: string })["source-layer"] || "").toLowerCase();
+    const sourceLayer = String(
+      (layer as { "source-layer"?: string })["source-layer"] || "",
+    ).toLowerCase();
     const id = layer.id.toLowerCase();
     const name = `${id} ${sourceLayer}`;
 
@@ -198,7 +227,6 @@ const styles = StyleSheet.create({
   },
   mapFrame: {
     backgroundColor: "#F7F5EC",
-    height: 560,
     overflow: "hidden",
     position: "relative",
     width: "100%",
@@ -211,7 +239,7 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     color: "#000000",
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: "500",
   },
 });
