@@ -131,10 +131,7 @@ export function CollapsibleEventHero({
               style={[collapsedTitleStyle, { pointerEvents: "none" }]}
               className="absolute left-16 right-16 items-start"
             >
-              <Text
-                numberOfLines={1}
-                className=" text-[13px] font-extrabold  text-white"
-              >
+              <Text className=" text-[13px] font-extrabold  text-white">
                 {event.title}
               </Text>
               <Text
