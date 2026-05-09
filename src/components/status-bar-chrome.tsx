@@ -13,10 +13,11 @@ type StatusBarChromeProps = {
   useCustomAppearance?: boolean;
 };
 
+export const APP_STATUS_BAR_BLACK = "#050505";
 export const SPLASH_STATUS_BAR_COLOR = "#007AFF";
 
 export function StatusBarChrome({
-  backgroundColor = "#000000",
+  backgroundColor = APP_STATUS_BAR_BLACK,
   drawsBehindStatusBar = false,
   style = "light",
   useCustomAppearance = false,
@@ -28,7 +29,8 @@ export function StatusBarChrome({
     ? SPLASH_STATUS_BAR_COLOR
     : useCustomAppearance
       ? backgroundColor
-      : "#000000";
+      : APP_STATUS_BAR_BLACK;
+  const webThemeColor = resolvedBackgroundColor;
   const resolvedStyle = isStartupLocked
     ? "light"
     : useCustomAppearance
@@ -79,7 +81,7 @@ export function StatusBarChrome({
       meta.setAttribute("content", content);
     };
 
-    setMeta('meta[name="theme-color"]', "theme-color", resolvedBackgroundColor);
+    setMeta('meta[name="theme-color"]', "theme-color", webThemeColor);
     setMeta(
       'meta[name="apple-mobile-web-app-capable"]',
       "apple-mobile-web-app-capable",
@@ -100,12 +102,13 @@ export function StatusBarChrome({
     resolvedBackgroundColor,
     resolvedStyle,
     shouldDrawBehindStatusBar,
+    webThemeColor,
   ]);
 
   return (
     <>
       <Head>
-        <meta name="theme-color" content={resolvedBackgroundColor} />
+        <meta name="theme-color" content={webThemeColor} />
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta

@@ -1,8 +1,8 @@
 import { Ionicons } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
-import React from "react";
-import { Pressable, Text, View } from "react-native";
+import React, { useEffect, useState } from "react";
+import { Platform, Pressable, Text, View } from "react-native";
 import Animated, {
   Extrapolation,
   interpolate,
@@ -34,7 +34,8 @@ export function CollapsibleEventHero({
   const { event, order } = useTicketFlowData();
   const insets = useSafeAreaInsets();
   const topInset = insets.top;
-  const statusBarBleed = topInset;
+  const webSafeAreaTop = useWebSafeAreaTop();
+  const statusBarBleed = Platform.OS === "web" ? webSafeAreaTop : topInset;
   const heroImageHeight = HERO_IMAGE_HEIGHT + statusBarBleed;
   const heroHeightStyle = useAnimatedStyle(() => ({
     height:
@@ -99,14 +100,16 @@ export function CollapsibleEventHero({
         contentFit="cover"
         pointerEvents="none"
         source={event.heroImage}
-        style={{
-          height: heroImageHeight + 28,
-          left: -14,
-          opacity: 0.34,
-          position: "absolute",
-          right: -14,
-          top: -14,
-        }}
+        style={[
+          {
+            height: heroImageHeight + 28,
+            left: -14,
+            opacity: 0.34,
+            position: "absolute",
+            right: -14,
+            top: -14,
+          },
+        ]}
       />
       <LinearGradient
         colors={["transparent", "rgba(0,0,0,0.5)"]}
@@ -122,7 +125,10 @@ export function CollapsibleEventHero({
       />
 
       <View style={absoluteFill}>
-        <View className="px-4" style={{ paddingTop: statusBarBleed * 2 + 16 }}>
+        <View
+          className="px-4"
+          style={{ paddingTop: statusBarBleed * 2 + 16 }}
+        >
           <View className=" mt-3 flex-row items-center justify-between">
             <Pressable
               accessibilityRole="button"
@@ -226,4 +232,40 @@ export function CollapsibleEventHero({
       </View>
     </Animated.View>
   );
+}
+
+function useWebSafeAreaTop() {
+  const [safeAreaTop, setSafeAreaTop] = useState(0);
+
+  useEffect(() => {
+    if (Platform.OS !== "web" || typeof document === "undefined") {
+      return;
+    }
+
+    const measureSafeAreaTop = () => {
+      const probe = document.createElement("div");
+      probe.style.paddingTop = "env(safe-area-inset-top)";
+      probe.style.position = "fixed";
+      probe.style.visibility = "hidden";
+      document.body.appendChild(probe);
+
+      const measuredTop = Number.parseFloat(
+        window.getComputedStyle(probe).paddingTop,
+      );
+
+      document.body.removeChild(probe);
+      setSafeAreaTop(Number.isFinite(measuredTop) ? measuredTop : 0);
+    };
+
+    measureSafeAreaTop();
+    window.addEventListener("resize", measureSafeAreaTop);
+    window.visualViewport?.addEventListener("resize", measureSafeAreaTop);
+
+    return () => {
+      window.removeEventListener("resize", measureSafeAreaTop);
+      window.visualViewport?.removeEventListener("resize", measureSafeAreaTop);
+    };
+  }, []);
+
+  return safeAreaTop;
 }

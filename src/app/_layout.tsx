@@ -15,6 +15,7 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { PremiumStartupScreen } from "@/components/premium-startup-screen";
 import { PwaInstallPrompt } from "@/components/pwa-install-prompt";
 import {
+  APP_STATUS_BAR_BLACK,
   SPLASH_STATUS_BAR_COLOR,
   StatusBarChrome,
 } from "@/components/status-bar-chrome";
@@ -98,9 +99,9 @@ export default function RootLayout() {
   const finishStartup = useAppStore((state) => state.finishStartup);
   const hasHiddenNativeSplash = useRef(false);
   const startupStatusBarColor = SPLASH_STATUS_BAR_COLOR;
-  const startupBackgroundColor = "#007AFF";
+  const startupBackgroundColor = SPLASH_STATUS_BAR_COLOR;
   const statusBarBackgroundColor = hasFinishedStartup
-    ? "#000000"
+    ? APP_STATUS_BAR_BLACK
     : startupStatusBarColor;
   const appBackgroundColor = hasFinishedStartup
     ? ticketColors.background

@@ -6,13 +6,14 @@ import {
   TicketmasterTMark,
   TicketmasterWordmark,
 } from "@/components/ticketmaster-wordmark";
+import { SPLASH_STATUS_BAR_COLOR } from "@/components/status-bar-chrome";
 
 type PremiumStartupScreenProps = {
   onFinish?: () => void;
 };
 
-const STARTUP_STATUS_BAR_COLOR ="transparent";
-const STARTUP_BACKGROUND_COLOR = "#007AFF";
+const STARTUP_STATUS_BAR_COLOR = SPLASH_STATUS_BAR_COLOR;
+const STARTUP_BACKGROUND_COLOR = SPLASH_STATUS_BAR_COLOR;
 
 export function PremiumStartupScreen({ onFinish }: PremiumStartupScreenProps) {
   const markOpacity = useRef(new Animated.Value(1)).current;

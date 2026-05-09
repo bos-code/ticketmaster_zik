@@ -16,7 +16,7 @@
     "android": {
       "package": "com.johnderadev.ticketmasterzik",
       "adaptiveIcon": {
-        "backgroundColor": "#000000",
+        "backgroundColor": "#050505",
         "foregroundImage": "./assets/Correctapp_icon.png"
       },
       "predictiveBackGestureEnabled": false,
