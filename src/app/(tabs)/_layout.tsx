@@ -8,7 +8,7 @@ import {
 } from '@/components/ticketmaster-tab-icon';
 
 
-type TabRouteName = 'discover' | 'for-you' | 'my-tickets' | 'add-event' | 'sell' | 'my-account';
+type TabRouteName = 'discover' | 'for-you' | 'my-tickets' | 'add-event' | 'sell' | 'my-account' | 'temp';
 
 type TabConfig = {
   title: string;
@@ -53,6 +53,10 @@ const TAB_CONFIG: Record<TabRouteName, TabConfig> = {
   'my-account': {
     title: 'Account',
     icon: 'my-account',
+  },
+  temp: {
+    title: 'Temp',
+    icon: 'discover',
   },
 };
 
@@ -112,6 +116,7 @@ export default function PremiumTabsLayout() {
       <Tabs.Screen name="add-event" options={{ href: null }} />
       <Tabs.Screen name="sell" options={{ title: TAB_CONFIG.sell.title }} />
       <Tabs.Screen name="my-account" options={{ title: TAB_CONFIG['my-account'].title }} />
+      <Tabs.Screen name="temp" options={{ title: TAB_CONFIG.temp.title }} />
     </Tabs>
   );
 }
