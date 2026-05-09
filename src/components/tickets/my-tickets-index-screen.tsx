@@ -69,10 +69,14 @@ export function MyTicketsIndexScreen() {
       : "Tickets marked as past by admin will show up here.";
 
   return (
-    <View className="flex-1 bg-white">
+    <View className="flex-1" style={{ backgroundColor: APP_STATUS_BAR_BLACK }}>
       <StatusBarChrome backgroundColor={APP_STATUS_BAR_BLACK} style="light" />
 
-      <SafeAreaView edges={["top", "left", "right"]} className="flex-1">
+      <SafeAreaView
+        edges={["top", "left", "right"]}
+        className="flex-1"
+        style={{ backgroundColor: APP_STATUS_BAR_BLACK }}
+      >
         <View
           className="relative z-10 h-[128px] overflow-visible"
           style={{ backgroundColor: APP_STATUS_BAR_BLACK }}
@@ -114,6 +118,7 @@ export function MyTicketsIndexScreen() {
 
         <ScrollView
           contentContainerClassName="gap-5 px-4 pb-44 pt-5"
+          style={{ backgroundColor: "#FFFFFF" }}
           showsVerticalScrollIndicator={true}
         >
           {visibleEvents.length ? (
