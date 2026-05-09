@@ -51,20 +51,18 @@ export function VenueMapCard({
       center: mapCenter,
       container: mapContainerRef.current,
       maxPitch: 45,
-      pitch: 24,
+      pitch: 0,
       style: "https://tiles.openfreemap.org/styles/bright",
-      zoom: 15.5,
+      zoom: 14.1,
     });
 
     mapRef.current = map;
-    map.addControl(
-      new maplibregl.NavigationControl({ showCompass: true, showZoom: false }),
-      "top-right",
-    );
 
     map.on("load", () => {
       applyAppleMapsPaint(map);
-      markerRef.current = createVenueMarker().setLngLat(mapCenter).addTo(map);
+      markerRef.current = createVenueMarker(venueName)
+        .setLngLat(mapCenter)
+        .addTo(map);
     });
 
     return () => {
@@ -73,7 +71,7 @@ export function VenueMapCard({
       mapRef.current = null;
       markerRef.current = null;
     };
-  }, [mapCenter]);
+  }, [mapCenter, venueName]);
 
   function handleOpenDirections() {
     if (eventId) {
@@ -105,6 +103,10 @@ export function VenueMapCard({
           ref: mapContainerRef,
           style: domMapStyle,
         })}
+        <View pointerEvents="none" style={styles.mapAttribution}>
+          <Text style={styles.mapsText}>Maps</Text>
+          <Text style={styles.legalText}>Legal</Text>
+        </View>
       </View>
 
       <Pressable
@@ -118,31 +120,28 @@ export function VenueMapCard({
   );
 }
 
-function createVenueMarker() {
-  const markerElement = document.createElement("div");
-  markerElement.style.animation =
-    "applePinDrop 300ms cubic-bezier(0.34, 1.56, 0.64, 1)";
-  markerElement.style.background = "#FF3B30";
-  markerElement.style.border = "3px solid #FFFFFF";
-  markerElement.style.borderRadius = "50% 50% 50% 0";
-  markerElement.style.boxShadow = "0 8px 18px rgba(255,59,48,0.24)";
-  markerElement.style.height = "28px";
-  markerElement.style.transform = "rotate(-45deg)";
-  markerElement.style.width = "28px";
+function createVenueMarker(venueName: string) {
+  const markerWrap = document.createElement("div");
+  markerWrap.className = "apple-venue-marker";
 
-  const dot = document.createElement("div");
-  dot.style.background = "#FFFFFF";
-  dot.style.borderRadius = "50%";
-  dot.style.height = "8px";
-  dot.style.left = "7px";
-  dot.style.position = "absolute";
-  dot.style.top = "7px";
-  dot.style.width = "8px";
-  markerElement.appendChild(dot);
+  const markerLabel = document.createElement("div");
+  markerLabel.className = "apple-venue-label";
+  markerLabel.textContent = venueName;
+
+  const markerElement = document.createElement("div");
+  markerElement.className = "apple-venue-pin";
+
+  const info = document.createElement("div");
+  info.className = "apple-venue-pin-info";
+  info.textContent = "i";
+  markerElement.appendChild(info);
+
+  markerWrap.appendChild(markerElement);
+  markerWrap.appendChild(markerLabel);
 
   return new maplibregl.Marker({
     anchor: "bottom",
-    element: markerElement,
+    element: markerWrap,
   });
 }
 
@@ -154,6 +153,46 @@ function ensureAppleMarkerStyles() {
   const style = document.createElement("style");
   style.id = "apple-marker-styles";
   style.textContent = `
+    .apple-venue-marker {
+      height: 34px;
+      pointer-events: none;
+      position: relative;
+      transform: translateX(-3px);
+      width: 34px;
+    }
+    .apple-venue-pin {
+      animation: applePinDrop 300ms cubic-bezier(0.34, 1.56, 0.64, 1);
+      background: linear-gradient(180deg, #FF5E57 0%, #F4211B 58%, #C70F0A 100%);
+      border: 2px solid #FFFFFF;
+      border-radius: 50% 50% 50% 0;
+      box-shadow: 0 5px 10px rgba(0,0,0,0.24), inset 0 1px 1px rgba(255,255,255,0.42);
+      bottom: 0;
+      height: 34px;
+      left: 0;
+      position: relative;
+      transform: rotate(-45deg);
+      width: 34px;
+    }
+    .apple-venue-pin-info {
+      align-items: center;
+      color: #FFFFFF;
+      display: flex;
+      font: 700 18px/18px -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
+      height: 100%;
+      justify-content: center;
+      transform: rotate(45deg) translateY(-1px);
+      width: 100%;
+    }
+    .apple-venue-label {
+      color: #2A2726;
+      font: 700 13px/16px -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
+      max-width: 180px;
+      position: absolute;
+      text-shadow: 0 1px 1px #FFFFFF, 1px 0 1px #FFFFFF, -1px 0 1px #FFFFFF, 0 -1px 1px #FFFFFF;
+      top: 38px;
+      transform: translateX(-24px);
+      white-space: nowrap;
+    }
     @keyframes applePinDrop {
       0% { transform: rotate(-45deg) scale(0); }
       72% { transform: rotate(-45deg) scale(1.1); }
@@ -175,16 +214,16 @@ function applyAppleMapsPaint(map: MapLibreMap) {
 
     try {
       if (layer.type === "background") {
-        map.setPaintProperty(layer.id, "background-color", "#F7F5EC");
+        map.setPaintProperty(layer.id, "background-color", "#F8F7F2");
       } else if (layer.type === "fill" && name.includes("water")) {
-        map.setPaintProperty(layer.id, "fill-color", "#AEE2F4");
+        map.setPaintProperty(layer.id, "fill-color", "#B8E3F0");
       } else if (
         layer.type === "fill" &&
         /(park|landcover|wood|grass|green)/.test(name)
       ) {
-        map.setPaintProperty(layer.id, "fill-color", "#CFE8BF");
+        map.setPaintProperty(layer.id, "fill-color", "#D7EBC7");
       } else if (layer.type === "fill" && name.includes("building")) {
-        map.setPaintProperty(layer.id, "fill-color", "#E9E9E5");
+        map.setPaintProperty(layer.id, "fill-color", "#ECEBE6");
       } else if (
         layer.type === "line" &&
         /(road|transport|highway|street)/.test(name)
@@ -192,19 +231,20 @@ function applyAppleMapsPaint(map: MapLibreMap) {
         map.setPaintProperty(
           layer.id,
           "line-color",
-          /(case|outline|border)/.test(name) ? "#D8D8D2" : "#FFFFFF",
+          /(case|outline|border)/.test(name) ? "#D4D5D2" : "#FFFDF8",
         );
+        map.setPaintProperty(layer.id, "line-opacity", 0.92);
       } else if (layer.type === "line" && name.includes("boundary")) {
-        map.setPaintProperty(layer.id, "line-color", "#D0CECA");
-        map.setPaintProperty(layer.id, "line-opacity", 0.35);
+        map.setPaintProperty(layer.id, "line-color", "#D7D2CC");
+        map.setPaintProperty(layer.id, "line-opacity", 0.28);
       } else if (layer.type === "symbol") {
         map.setPaintProperty(
           layer.id,
           "text-color",
-          /(place|city|town)/.test(name) ? "#303236" : "#7A7D82",
+          /(place|city|town)/.test(name) ? "#3F3C39" : "#7F7B76",
         );
-        map.setPaintProperty(layer.id, "text-halo-color", "#FFFFFF");
-        map.setPaintProperty(layer.id, "text-halo-width", 1.5);
+        map.setPaintProperty(layer.id, "text-halo-color", "#F8F7F2");
+        map.setPaintProperty(layer.id, "text-halo-width", 1.8);
       }
     } catch {
       // Some third-party style layers do not expose every paint property.
@@ -226,20 +266,40 @@ const styles = StyleSheet.create({
     overflow: "hidden",
   },
   mapFrame: {
-    backgroundColor: "#F7F5EC",
+    backgroundColor: "#F8F7F2",
     overflow: "hidden",
     position: "relative",
     width: "100%",
   },
+  mapAttribution: {
+    alignItems: "center",
+    bottom: 10,
+    flexDirection: "row",
+    gap: 7,
+    left: 12,
+    position: "absolute",
+  },
+  mapsText: {
+    color: "#505050",
+    fontSize: 15,
+    fontWeight: "600",
+    letterSpacing: 0,
+  },
+  legalText: {
+    color: "#555555",
+    fontSize: 10,
+    fontWeight: "500",
+    letterSpacing: 0,
+  },
   button: {
     alignItems: "center",
-    backgroundColor: "#F2F2F7",
+    backgroundColor: "#F1F0F4",
     justifyContent: "center",
-    paddingVertical: 12,
+    paddingVertical: 14,
   },
   buttonText: {
-    color: "#000000",
+    color: "#242225",
     fontSize: 18,
-    fontWeight: "500",
+    fontWeight: "700",
   },
 });
