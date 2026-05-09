@@ -2,10 +2,7 @@ import React, { useEffect, useRef } from "react";
 import { Animated, Easing, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import {
-  TicketmasterTMark,
-  TicketmasterWordmark,
-} from "@/components/ticketmaster-wordmark";
+import { TicketmasterWordmark } from "@/components/ticketmaster-wordmark";
 import { SPLASH_STATUS_BAR_COLOR } from "@/components/status-bar-chrome";
 
 type PremiumStartupScreenProps = {
@@ -16,8 +13,6 @@ const STARTUP_STATUS_BAR_COLOR = SPLASH_STATUS_BAR_COLOR;
 const STARTUP_BACKGROUND_COLOR = SPLASH_STATUS_BAR_COLOR;
 
 export function PremiumStartupScreen({ onFinish }: PremiumStartupScreenProps) {
-  const markOpacity = useRef(new Animated.Value(1)).current;
-  const markScale = useRef(new Animated.Value(1)).current;
   const wordmarkOpacity = useRef(new Animated.Value(0)).current;
   const wordmarkTranslateX = useRef(new Animated.Value(44)).current;
 
@@ -25,18 +20,6 @@ export function PremiumStartupScreen({ onFinish }: PremiumStartupScreenProps) {
     Animated.sequence([
       Animated.delay(850),
       Animated.parallel([
-        Animated.timing(markOpacity, {
-          toValue: 0,
-          duration: 300,
-          easing: Easing.inOut(Easing.quad),
-          useNativeDriver: true,
-        }),
-        Animated.timing(markScale, {
-          toValue: 0.96,
-          duration: 300,
-          easing: Easing.inOut(Easing.quad),
-          useNativeDriver: true,
-        }),
         Animated.timing(wordmarkOpacity, {
           toValue: 1,
           duration: 480,
@@ -59,7 +42,7 @@ export function PremiumStartupScreen({ onFinish }: PremiumStartupScreenProps) {
     return () => {
       clearTimeout(timeout);
     };
-  }, [markOpacity, markScale, onFinish, wordmarkOpacity, wordmarkTranslateX]);
+  }, [onFinish, wordmarkOpacity, wordmarkTranslateX]);
 
   return (
     <View pointerEvents="none" className="absolute inset-0 z-[1000]">
@@ -74,17 +57,6 @@ export function PremiumStartupScreen({ onFinish }: PremiumStartupScreenProps) {
         className="flex-1 items-center justify-center px-8"
         style={{ backgroundColor: STARTUP_BACKGROUND_COLOR }}
       >
-        <Animated.View
-          className="absolute items-center justify-center"
-          style={[
-            {
-              opacity: markOpacity,
-              transform: [{ scale: markScale }],
-            },
-          ]}
-        >
-          <TicketmasterTMark fill="#FFFFFF" size={128} />
-        </Animated.View>
         <Animated.View
           className="absolute items-center justify-center"
           style={[

@@ -45,23 +45,15 @@
         "expo-splash-screen",
         {
           "backgroundColor": "#007AFF",
-          "image": "./assets/images/app-icon-t.png",
-          "imageWidth": 180,
-          "resizeMode": "contain",
           "android": {
-            "backgroundColor": "#007AFF",
-            "image": "./assets/images/app-icon-t.png",
-            "imageWidth": 180,
-            "resizeMode": "contain"
+            "backgroundColor": "#007AFF"
           },
           "ios": {
-            "backgroundColor": "#007AFF",
-            "image": "./assets/images/app-icon-t.png",
-            "imageWidth": 180,
-            "resizeMode": "contain"
+            "backgroundColor": "#007AFF"
           }
         }
       ],
+      "./plugins/with-android-background-only-splash",
       [
         "expo-location",
         {
