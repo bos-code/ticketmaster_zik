@@ -62,7 +62,7 @@ const TAB_CONFIG: Record<TabRouteName, TabConfig> = {
 
 export default function PremiumTabsLayout() {
   const insets = useSafeAreaInsets();
-  const bottomPadding = Math.max(insets.bottom, Platform.OS === 'android' ? 8 : 12);
+  const bottomPadding = Math.max(insets.bottom, Platform.OS === 'android' ? 16 : 24);
   const tabBarHeight = 54 + bottomPadding;
 
   return (
@@ -123,9 +123,8 @@ export default function PremiumTabsLayout() {
 
 const styles = StyleSheet.create({
   tabBar: {
-    backgroundColor: C.background,
-    borderTopColor: C.border,
-    borderTopWidth: StyleSheet.hairlineWidth,
+    backgroundColor: 'transparent',
+    borderTopWidth: 0,
     elevation: 0,
     paddingTop: 6,
   },

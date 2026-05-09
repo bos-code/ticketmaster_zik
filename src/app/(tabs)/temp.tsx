@@ -18,7 +18,9 @@ export default function TempFullBleedImageScreen() {
       />
       <Image
         contentFit="cover"
-        source={require("../../../assets/tickets/don-toliver.png")}
+        source={{
+          uri: "https://images.unsplash.com/photo-1501386761578-eac5c94b800a?auto=format&fit=crop&w=1600&q=88",
+        }}
         style={[
           styles.image,
           {
