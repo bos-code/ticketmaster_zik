@@ -9,7 +9,7 @@ export function buildTicketFlowDataFromOrder(
 ): TicketFlowContextValue {
   return {
     event: {
-      directionsEventId: undefined,
+      directionsEventId: order.event.id,
       id: order.event.id,
       title: summaryViewModel.eventTitle,
       shortTitle: summaryViewModel.eventTitle,
