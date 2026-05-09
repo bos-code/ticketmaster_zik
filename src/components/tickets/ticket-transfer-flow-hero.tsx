@@ -9,6 +9,7 @@ import Animated, {
   useAnimatedStyle,
   type SharedValue,
 } from "react-native-reanimated";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import {
   absoluteFill,
@@ -31,13 +32,16 @@ export function CollapsibleEventHero({
   scrollY: SharedValue<number>;
 }) {
   const { event, order } = useTicketFlowData();
+  const insets = useSafeAreaInsets();
+  const topInset = insets.top;
   const heroHeightStyle = useAnimatedStyle(() => ({
-    height: interpolate(
-      scrollY.value,
-      [0, HERO_COLLAPSE_DISTANCE],
-      [HERO_EXPANDED_HEIGHT, HERO_COLLAPSED_HEIGHT],
-      Extrapolation.CLAMP,
-    ),
+    height:
+      interpolate(
+        scrollY.value,
+        [0, HERO_COLLAPSE_DISTANCE],
+        [HERO_EXPANDED_HEIGHT, HERO_COLLAPSED_HEIGHT],
+        Extrapolation.CLAMP,
+      ) + topInset,
   }));
 
   const expandedContentStyle = useAnimatedStyle(() => ({
@@ -81,12 +85,12 @@ export function CollapsibleEventHero({
   return (
     <Animated.View
       className="absolute  inset-x-0 top-0 z-20 overflow-hidden"
-      style={heroHeightStyle}
+      style={[heroHeightStyle, { top: -topInset }]}
     >
       <Image
         contentFit="cover"
         source={event.heroImage}
-        style={{ height: HERO_IMAGE_HEIGHT, width: "100%" }}
+        style={{ height: HERO_IMAGE_HEIGHT + topInset, width: "100%" }}
       />
       <Image
         blurRadius={14}
@@ -94,7 +98,7 @@ export function CollapsibleEventHero({
         pointerEvents="none"
         source={event.heroImage}
         style={{
-          height: HERO_IMAGE_HEIGHT + 28,
+          height: HERO_IMAGE_HEIGHT + topInset + 28,
           left: -14,
           opacity: 0.34,
           position: "absolute",
@@ -107,7 +111,7 @@ export function CollapsibleEventHero({
         locations={[0, 1]}
         pointerEvents="none"
         style={{
-          height: HERO_IMAGE_HEIGHT,
+          height: HERO_IMAGE_HEIGHT + topInset,
           left: 0,
           position: "absolute",
           right: 0,
@@ -116,7 +120,7 @@ export function CollapsibleEventHero({
       />
 
       <View style={absoluteFill}>
-        <View className="px-4 pt-4">
+        <View className="px-4" style={{ paddingTop: topInset * 2 + 16 }}>
           <View className=" mt-3 flex-row items-center justify-between">
             <Pressable
               accessibilityRole="button"
@@ -165,7 +169,7 @@ export function CollapsibleEventHero({
           style={[
             expandedContentStyle,
             {
-              top: HERO_IMAGE_HEIGHT,
+              top: HERO_IMAGE_HEIGHT + topInset,
               pointerEvents: isHeroCollapsed ? "none" : "auto",
             },
           ]}
@@ -180,14 +184,11 @@ export function CollapsibleEventHero({
               <View className="absolute inset-x-0 -bottom-4 h-4 bg-[#232126]" />
             </View>
             <View className="bg-[#232126] px-4 pt-2">
-              <Text
-                numberOfLines={1}
-                className="ticket-summary-hero-title pt-1 text-lg font-bold leading-6 text-white"
-              >
+              <Text className="ticket-summary-hero-title pt-1 text-lg font-bold leading-6 text-white">
                 {event.title}
               </Text>
 
-              <View className="mt-3 flex-row items-center justify-between pb-2">
+              <View className="mt-2 flex-row items-center justify-between pb-2">
                 <Text
                   numberOfLines={1}
                   className="ticket-summary-hero-venue mr-3 flex-1 text-[13px] font-normal leading-[17px] text-[rgba(255,255,255,0.76)]"
