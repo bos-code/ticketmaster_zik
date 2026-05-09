@@ -17,8 +17,8 @@
   ],
   "start_url": "/",
   "background_color": "#000000",
-  "display": "standalone",
-  "display_override": ["standalone", "fullscreen", "browser"],
+  "display": "fullscreen",
+  "display_override": ["fullscreen", "standalone", "browser"],
   "orientation": "portrait",
   "scope": "/",
   "theme_color": "#000000"

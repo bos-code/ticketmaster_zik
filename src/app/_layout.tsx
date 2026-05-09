@@ -167,6 +167,7 @@ export default function RootLayout() {
             <StatusBarChrome
               style={statusBarStyle}
               backgroundColor={statusBarBackgroundColor}
+              drawsBehindStatusBar={hasFinishedStartup}
               useCustomAppearance={!hasFinishedStartup}
             />
             <RootStack />

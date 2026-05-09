@@ -34,6 +34,8 @@ export function CollapsibleEventHero({
   const { event, order } = useTicketFlowData();
   const insets = useSafeAreaInsets();
   const topInset = insets.top;
+  const statusBarBleed = topInset;
+  const heroImageHeight = HERO_IMAGE_HEIGHT + statusBarBleed;
   const heroHeightStyle = useAnimatedStyle(() => ({
     height:
       interpolate(
@@ -85,12 +87,12 @@ export function CollapsibleEventHero({
   return (
     <Animated.View
       className="absolute  inset-x-0 top-0 z-20 overflow-hidden"
-      style={[heroHeightStyle, { top: -topInset }]}
+      style={[heroHeightStyle, { top: -statusBarBleed }]}
     >
       <Image
         contentFit="cover"
         source={event.heroImage}
-        style={{ height: HERO_IMAGE_HEIGHT + topInset, width: "100%" }}
+        style={{ height: heroImageHeight, width: "100%" }}
       />
       <Image
         blurRadius={14}
@@ -98,7 +100,7 @@ export function CollapsibleEventHero({
         pointerEvents="none"
         source={event.heroImage}
         style={{
-          height: HERO_IMAGE_HEIGHT + topInset + 28,
+          height: heroImageHeight + 28,
           left: -14,
           opacity: 0.34,
           position: "absolute",
@@ -111,7 +113,7 @@ export function CollapsibleEventHero({
         locations={[0, 1]}
         pointerEvents="none"
         style={{
-          height: HERO_IMAGE_HEIGHT + topInset,
+          height: heroImageHeight,
           left: 0,
           position: "absolute",
           right: 0,
@@ -120,7 +122,7 @@ export function CollapsibleEventHero({
       />
 
       <View style={absoluteFill}>
-        <View className="px-4" style={{ paddingTop: topInset * 2 + 16 }}>
+        <View className="px-4" style={{ paddingTop: statusBarBleed * 2 + 16 }}>
           <View className=" mt-3 flex-row items-center justify-between">
             <Pressable
               accessibilityRole="button"
@@ -169,7 +171,7 @@ export function CollapsibleEventHero({
           style={[
             expandedContentStyle,
             {
-              top: HERO_IMAGE_HEIGHT + topInset,
+              top: HERO_IMAGE_HEIGHT + statusBarBleed,
               pointerEvents: isHeroCollapsed ? "none" : "auto",
             },
           ]}

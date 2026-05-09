@@ -1,6 +1,7 @@
 import Head from "expo-router/head";
 import { StatusBar, type StatusBarStyle } from "expo-status-bar";
-import { Platform, View } from "react-native";
+import { Platform, StatusBar as NativeStatusBar, View } from "react-native";
+import { useEffect } from "react";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { useAppStore } from "@/store/use-app-store";
@@ -37,11 +38,80 @@ export function StatusBarChrome({
   const shouldDrawBehindStatusBar = drawsBehindStatusBar && !isStartupLocked;
   const shouldRenderStatusBarFill =
     topInsetHeight > 0 && !shouldDrawBehindStatusBar;
+  const appleStatusBarStyle = shouldDrawBehindStatusBar
+    ? "black-translucent"
+    : resolvedStyle === "dark"
+      ? "default"
+      : "black";
+
+  useEffect(() => {
+    if (Platform.OS !== "web") {
+      NativeStatusBar.setBarStyle(
+        resolvedStyle === "dark" ? "dark-content" : "light-content",
+        true,
+      );
+
+      if (Platform.OS === "android") {
+        NativeStatusBar.setTranslucent(shouldDrawBehindStatusBar);
+        NativeStatusBar.setBackgroundColor(
+          shouldDrawBehindStatusBar ? "transparent" : resolvedBackgroundColor,
+          true,
+        );
+      }
+    }
+
+    if (Platform.OS !== "web" || typeof document === "undefined") {
+      return;
+    }
+
+    const setMeta = (selector: string, name: string, content: string) => {
+      let meta = document.head.querySelector<HTMLMetaElement>(selector);
+
+      if (!meta) {
+        meta = document.createElement("meta");
+        meta.setAttribute(
+          selector.includes("property=") ? "property" : "name",
+          name,
+        );
+        document.head.appendChild(meta);
+      }
+
+      meta.setAttribute("content", content);
+    };
+
+    setMeta('meta[name="theme-color"]', "theme-color", resolvedBackgroundColor);
+    setMeta(
+      'meta[name="apple-mobile-web-app-capable"]',
+      "apple-mobile-web-app-capable",
+      "yes",
+    );
+    setMeta(
+      'meta[name="mobile-web-app-capable"]',
+      "mobile-web-app-capable",
+      "yes",
+    );
+    setMeta(
+      'meta[name="apple-mobile-web-app-status-bar-style"]',
+      "apple-mobile-web-app-status-bar-style",
+      appleStatusBarStyle,
+    );
+  }, [
+    appleStatusBarStyle,
+    resolvedBackgroundColor,
+    resolvedStyle,
+    shouldDrawBehindStatusBar,
+  ]);
 
   return (
     <>
       <Head>
         <meta name="theme-color" content={resolvedBackgroundColor} />
+        <meta name="mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta
+          name="apple-mobile-web-app-status-bar-style"
+          content={appleStatusBarStyle}
+        />
       </Head>
       {shouldRenderStatusBarFill ? (
         <View

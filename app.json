@@ -34,7 +34,7 @@
       "shortName": "Tickets",
       "themeColor": "#F8FAFC",
       "backgroundColor": "#F8FAFC",
-      "display": "standalone",
+      "display": "fullscreen",
       "orientation": "portrait"
     },
     "plugins": [
