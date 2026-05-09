@@ -37,7 +37,6 @@ const styles = StyleSheet.create({
   root: {
     backgroundColor: "#000000",
     flex: 1,
-    overflow: "hidden",
   },
   image: {
     left: 0,
