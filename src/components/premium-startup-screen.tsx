@@ -65,9 +65,9 @@ export function PremiumStartupScreen({ onFinish }: PremiumStartupScreenProps) {
     <View pointerEvents="none" className="absolute inset-0 z-[1000]">
       <SafeAreaView
         edges={["top"]}
-        style={{ backgroundColor: STARTUP_STATUS_BAR_COLOR }}
+        style={{ backgroundColor: STARTUP_STATUS_BAR_COLOR, marginBottom: -50 }}
       >
-        <View style={{ height: 0 }} />
+        <View style={{ height: 50 }} />
       </SafeAreaView>
 
       <View

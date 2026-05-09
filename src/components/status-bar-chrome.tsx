@@ -15,6 +15,7 @@ type StatusBarChromeProps = {
 
 export const APP_STATUS_BAR_BLACK = "#050505";
 export const SPLASH_STATUS_BAR_COLOR = "#007AFF";
+const STATUS_BAR_FILL_OVERLAP = 50;
 
 export function StatusBarChrome({
   backgroundColor = APP_STATUS_BAR_BLACK,
@@ -121,7 +122,7 @@ export function StatusBarChrome({
           pointerEvents="none"
           style={{
             backgroundColor: resolvedBackgroundColor,
-            height: topInsetHeight,
+            height: topInsetHeight + STATUS_BAR_FILL_OVERLAP,
             left: 0,
             position: "absolute",
             right: 0,
