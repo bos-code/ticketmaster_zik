@@ -6,12 +6,13 @@ import { ChooseTransferMethodScreen } from "@/components/tickets/ChooseTransferM
 import { EnterRecipientDetailsScreen } from "@/components/tickets/EnterRecipientDetailsScreen";
 import { ReviewTransferScreen } from "@/components/tickets/ReviewTransferScreen";
 import { SelectTicketsScreen } from "@/components/tickets/SelectTicketsScreen";
-import { StatusBarChrome } from "@/components/status-bar-chrome";
 import { TicketTransferAuthModal } from "@/components/tickets/ticket-transfer-flow-auth-modal";
 import { TicketsUnavailable } from "@/components/tickets/ticket-transfer-flow-components";
 import { TicketFlowContext } from "@/components/tickets/TicketFlowContext";
 import { TicketTransferStatusModal } from "@/components/tickets/TicketTransferStatusModal";
 import { useTicketTransferFlowController } from "@/components/tickets/use-ticket-transfer-flow-controller";
+import { StatusBar } from "expo-status-bar";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export function TicketTransferFlow({
   initialScreen = "list",
@@ -28,6 +29,8 @@ export function TicketTransferFlow({
     orderId,
   });
 
+  const insets = useSafeAreaInsets();
+
   if (!flow.ticketFlowData) {
     return <TicketsUnavailable />;
   }
@@ -35,12 +38,25 @@ export function TicketTransferFlow({
   return (
     <TicketFlowContext.Provider value={flow.ticketFlowData}>
       <View className="flex-1">
-        <StatusBarChrome
+        <StatusBar
           backgroundColor={flow.isViewerScreen ? "#F9F8F4" : "transparent"}
-          drawsBehindStatusBar={!flow.isViewerScreen}
           style={flow.isViewerScreen ? "dark" : "light"}
-          useCustomAppearance
+          translucent
         />
+        {flow.isViewerScreen ? (
+          <View
+            pointerEvents="none"
+            style={{
+              backgroundColor: "#F9F8F4",
+              height: insets.top,
+              left: 0,
+              position: "absolute",
+              right: 0,
+              top: 0,
+              zIndex: 10,
+            }}
+          />
+        ) : null}
         <View className=" flex-1 w-full">
           {["list", "select", "recipientChoice", "recipientForm"].includes(
             flow.screen,

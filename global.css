@@ -4,6 +4,7 @@
 @import "nativewind/theme";
 
 :root {
+  color-scheme: dark;
   --safe-area-top: 0px;
   --safe-area-right: 0px;
   --safe-area-bottom: 0px;

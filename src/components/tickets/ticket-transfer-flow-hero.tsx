@@ -1,16 +1,18 @@
 import { Ionicons } from "@expo/vector-icons";
 import { Image } from "expo-image";
-import { LinearGradient } from "expo-linear-gradient";
-import React, { useEffect, useState } from "react";
-import { Platform, Pressable, Text, View } from "react-native";
+import React from "react";
+import { Pressable, Text, View } from "react-native";
 import Animated, {
   Extrapolation,
   interpolate,
   useAnimatedStyle,
   type SharedValue,
 } from "react-native-reanimated";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import {
+  EdgeToEdgeHeroMedia,
+  useImmersiveSafeAreaInsets,
+} from "@/components/immersive/edge-to-edge-hero";
 import {
   absoluteFill,
   HERO_COLLAPSE_DISTANCE,
@@ -32,10 +34,8 @@ export function CollapsibleEventHero({
   scrollY: SharedValue<number>;
 }) {
   const { event, order } = useTicketFlowData();
-  const insets = useSafeAreaInsets();
-  const topInset = insets.top;
-  const webSafeAreaTop = useWebSafeAreaTop();
-  const statusBarBleed = Platform.OS === "web" ? webSafeAreaTop : topInset;
+  const insets = useImmersiveSafeAreaInsets();
+  const statusBarBleed = insets.top;
   const heroImageHeight = HERO_IMAGE_HEIGHT + statusBarBleed;
   const heroHeightStyle = useAnimatedStyle(() => ({
     height:
@@ -44,7 +44,7 @@ export function CollapsibleEventHero({
         [0, HERO_COLLAPSE_DISTANCE],
         [HERO_EXPANDED_HEIGHT, HERO_COLLAPSED_HEIGHT],
         Extrapolation.CLAMP,
-      ) + topInset,
+      ) + statusBarBleed,
   }));
 
   const expandedContentStyle = useAnimatedStyle(() => ({
@@ -90,39 +90,7 @@ export function CollapsibleEventHero({
       className="absolute  inset-x-0 top-0 z-20 overflow-hidden"
       style={[heroHeightStyle, { top: -statusBarBleed }]}
     >
-      <Image
-        contentFit="cover"
-        source={event.heroImage}
-        style={{ height: heroImageHeight, width: "100%" }}
-      />
-      <Image
-        blurRadius={14}
-        contentFit="cover"
-        pointerEvents="none"
-        source={event.heroImage}
-        style={[
-          {
-            height: heroImageHeight + 28,
-            left: -14,
-            opacity: 0.34,
-            position: "absolute",
-            right: -14,
-            top: -14,
-          },
-        ]}
-      />
-      <LinearGradient
-        colors={["transparent", "rgba(0,0,0,0.5)"]}
-        locations={[0, 1]}
-        pointerEvents="none"
-        style={{
-          height: heroImageHeight,
-          left: 0,
-          position: "absolute",
-          right: 0,
-          top: 0,
-        }}
-      />
+      <EdgeToEdgeHeroMedia height={heroImageHeight} source={event.heroImage} />
 
       <View style={absoluteFill}>
         <View
@@ -232,40 +200,4 @@ export function CollapsibleEventHero({
       </View>
     </Animated.View>
   );
-}
-
-function useWebSafeAreaTop() {
-  const [safeAreaTop, setSafeAreaTop] = useState(0);
-
-  useEffect(() => {
-    if (Platform.OS !== "web" || typeof document === "undefined") {
-      return;
-    }
-
-    const measureSafeAreaTop = () => {
-      const probe = document.createElement("div");
-      probe.style.paddingTop = "env(safe-area-inset-top)";
-      probe.style.position = "fixed";
-      probe.style.visibility = "hidden";
-      document.body.appendChild(probe);
-
-      const measuredTop = Number.parseFloat(
-        window.getComputedStyle(probe).paddingTop,
-      );
-
-      document.body.removeChild(probe);
-      setSafeAreaTop(Number.isFinite(measuredTop) ? measuredTop : 0);
-    };
-
-    measureSafeAreaTop();
-    window.addEventListener("resize", measureSafeAreaTop);
-    window.visualViewport?.addEventListener("resize", measureSafeAreaTop);
-
-    return () => {
-      window.removeEventListener("resize", measureSafeAreaTop);
-      window.visualViewport?.removeEventListener("resize", measureSafeAreaTop);
-    };
-  }, []);
-
-  return safeAreaTop;
 }
