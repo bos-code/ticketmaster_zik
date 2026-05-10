@@ -12,7 +12,7 @@ import {
   View,
 } from "react-native";
 import CountryFlag from "react-native-country-flag";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import {
   AccountIcon,
@@ -218,6 +218,7 @@ function ValueRow({
 
 export default function MyAccountScreen() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const scrollRef = useRef<ScrollView | null>(null);
   const scrollOffsetYRef = useRef(WELCOME_PANEL_LOCK_HEIGHT);
   const [receiveNotifs, setReceiveNotifs] = useState(false);
@@ -299,26 +300,13 @@ export default function MyAccountScreen() {
     await refreshLocationDetails(true);
   }
 
-  function snapWelcomePanel() {
-    const offsetY = scrollOffsetYRef.current;
-
-    if (offsetY <= 0 || offsetY >= WELCOME_PANEL_LOCK_HEIGHT) {
-      return;
-    }
-
-    const nextOffset =
-      offsetY <= WELCOME_PANEL_REVEAL_THRESHOLD ? 0 : WELCOME_PANEL_LOCK_HEIGHT;
-
-    requestAnimationFrame(() => {
-      scrollRef.current?.scrollTo({ x: 0, y: nextOffset, animated: true });
-    });
   }
 
   return (
     <View className="flex-1 bg-white">
       <StatusBarChrome backgroundColor="#000000" style="light" />
 
-      <SafeAreaView edges={["top"]} className="bg-black">
+      <View style={{ backgroundColor: "#000000", paddingTop: Math.max(insets.top, 12) }}>
         <View className="h-11 items-center justify-center bg-black px-4">
           <Text
             className="text-white text-base font-semibold text-center"
@@ -327,23 +315,23 @@ export default function MyAccountScreen() {
             Account
           </Text>
         </View>
-      </SafeAreaView>
+      </View>
 
       <ScrollView
         ref={scrollRef}
         alwaysBounceVertical
         contentContainerStyle={{ paddingBottom: 32 }}
         contentOffset={{ x: 0, y: WELCOME_PANEL_LOCK_HEIGHT }}
-        onMomentumScrollEnd={snapWelcomePanel}
+        decelerationRate="fast"
         onScroll={(event) => {
           scrollOffsetYRef.current = event.nativeEvent.contentOffset.y;
         }}
-        onScrollEndDrag={snapWelcomePanel}
         scrollEventThrottle={16}
         showsVerticalScrollIndicator={false}
+        snapToOffsets={[0, WELCOME_PANEL_LOCK_HEIGHT]}
         className="flex-1 bg-white"
       >
-        <View className="w-full bg-[#161616]">
+        <View className="w-full bg-[#000000]">
           <View
             className="px-5 pt-4 pb-6 items-center"
             style={{ minHeight: WELCOME_PANEL_LOCK_HEIGHT }}

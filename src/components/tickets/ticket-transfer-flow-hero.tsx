@@ -37,6 +37,7 @@ export function CollapsibleEventHero({
   const insets = useImmersiveSafeAreaInsets();
   const statusBarBleed = insets.top;
   const heroImageHeight = HERO_IMAGE_HEIGHT + statusBarBleed;
+  
   const heroHeightStyle = useAnimatedStyle(() => ({
     height:
       interpolate(
@@ -87,17 +88,17 @@ export function CollapsibleEventHero({
 
   return (
     <Animated.View
-      className="absolute  inset-x-0 top-0 z-20 overflow-hidden"
-      style={[heroHeightStyle, { top: -statusBarBleed }]}
+      className="absolute inset-x-0 top-0 z-20 overflow-hidden"
+      style={[heroHeightStyle]}
     >
       <EdgeToEdgeHeroMedia height={heroImageHeight} source={event.heroImage} />
 
       <View style={absoluteFill}>
         <View
           className="px-4"
-          style={{ paddingTop: statusBarBleed * 2 + 16 }}
+          style={{ paddingTop: Math.max(statusBarBleed, 12) + 16 }}
         >
-          <View className=" mt-3 flex-row items-center justify-between">
+          <View className="mt-3 flex-row items-center justify-between">
             <Pressable
               accessibilityRole="button"
               hitSlop={8}
@@ -111,12 +112,12 @@ export function CollapsibleEventHero({
               style={[collapsedTitleStyle, { pointerEvents: "none" }]}
               className="absolute left-16 right-16 items-start"
             >
-              <Text className=" text-[13px] font-extrabold  text-white">
+              <Text className="text-[13px] font-extrabold text-white">
                 {event.title}
               </Text>
               <Text
                 numberOfLines={1}
-                className=" text-center text-[11px] font-normal leading-[13px] text-[rgba(255,255,255,0.84)]"
+                className="text-center text-[11px] font-normal leading-[13px] text-[rgba(255,255,255,0.84)]"
               >
                 {event.venue}
               </Text>
@@ -132,7 +133,7 @@ export function CollapsibleEventHero({
                 <Ionicons color="#FFFFFF" name="barcode-outline" size={20} />
               </Pressable>
             ) : (
-              <View className=" rounded-xl bg-black/10 p-3">
+              <View className="rounded-xl bg-black/10 p-3">
                 <Text className="text-[13px] font-medium leading-4 text-white">
                   Help
                 </Text>
@@ -140,8 +141,9 @@ export function CollapsibleEventHero({
             )}
           </View>
         </View>
+
         <Animated.View
-          className="absolute inset-x-0  px-4"
+          className="absolute inset-x-0 px-4"
           style={[
             expandedContentStyle,
             {
@@ -178,7 +180,7 @@ export function CollapsibleEventHero({
                     source={require("../../../assets/ticketx3.png")}
                     style={{ height: 15, width: 15 }}
                   />
-                  <Text className="text-[17px]  font-bold leading-[19px] text-[#F2F4F7]">
+                  <Text className="text-[17px] font-bold leading-[19px] text-[#F2F4F7]">
                     {`x${order.ticketCount}`}
                   </Text>
                 </View>

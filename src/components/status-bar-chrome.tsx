@@ -31,7 +31,10 @@ export function StatusBarChrome({
     : useCustomAppearance
       ? backgroundColor
       : APP_STATUS_BAR_BLACK;
-  const webThemeColor = Platform.OS === 'web' ? APP_STATUS_BAR_BLACK : resolvedBackgroundColor;
+  // On web, we only want the splash blue during the initial startup lock
+  const webThemeColor = (Platform.OS === 'web' && !isStartupLocked) 
+    ? APP_STATUS_BAR_BLACK 
+    : resolvedBackgroundColor;
   const resolvedStyle = isStartupLocked
     ? "light"
     : useCustomAppearance

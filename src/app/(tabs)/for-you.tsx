@@ -1,15 +1,16 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { Circle, Path, Rect } from 'react-native-svg';
 
 import { StatusBarChrome } from '@/components/status-bar-chrome';
 
 export default function ForYouScreen() {
+  const insets = useSafeAreaInsets();
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
       <StatusBarChrome backgroundColor="#EAEBEE" style="dark" />
-      <View style={styles.content}>
+      <View style={[styles.content, { paddingTop: insets.top }]}>
         
         {/* The White Circle Illustration */}
         <View style={styles.circleContainer}>
@@ -54,7 +55,7 @@ export default function ForYouScreen() {
           <Text style={styles.buttonText}>Sign In</Text>
         </TouchableOpacity>
       </View>
-    </SafeAreaView>
+    </View>
   );
 }
 

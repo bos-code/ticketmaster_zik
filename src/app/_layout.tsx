@@ -103,8 +103,10 @@ export default function RootLayout() {
   const statusBarBackgroundColor = hasFinishedStartup
     ? APP_STATUS_BAR_BLACK
     : startupStatusBarColor;
-  // Use black for root background to prevent blue borders/bleeding on PWA/Web
-  const appBackgroundColor = APP_STATUS_BAR_BLACK;
+  // Use splash blue during startup to ensure no seams, transition to app background after
+  const appBackgroundColor = hasFinishedStartup
+    ? ticketColors.background
+    : startupBackgroundColor;
   const statusBarStyle = "light";
   const isReady = fontsLoaded || Boolean(fontError);
 
@@ -152,7 +154,7 @@ export default function RootLayout() {
             <Head>
               <meta
                 name="viewport"
-                content="width=device-width, initial-scale=1, viewport-fit=cover"
+                content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover"
               />
               <meta name="theme-color" content={statusBarBackgroundColor} />
               <meta name="mobile-web-app-capable" content="yes" />

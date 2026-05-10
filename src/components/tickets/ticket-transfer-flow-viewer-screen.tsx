@@ -22,6 +22,7 @@ import type { Seat } from "@/components/tickets/ticketFlowTypes";
 import { useTicketFlowData } from "@/components/tickets/useTicketFlowData";
 import { BottomDrawer } from "@/components/ui/bottom-drawer";
 import { TicketCard } from "./ticket-card";
+import { StatusBarChrome } from "@/components/status-bar-chrome";
 
 function ViewerHeader({ onBack }: { onBack: () => void }) {
   const { event } = useTicketFlowData();
@@ -102,6 +103,7 @@ export function TicketTransferViewerScreen({
       edges={["left", "right"]}
       style={{ flex: 1, backgroundColor: "#F9F8F4" }}
     >
+      <StatusBarChrome backgroundColor="#F9F8F4" style="dark" />
       <View className="flex-1 bg-[#F9F8F4]">
         <ViewerHeader onBack={onBack} />
 

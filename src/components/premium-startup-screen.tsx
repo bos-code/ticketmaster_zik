@@ -77,15 +77,13 @@ export function PremiumStartupScreen({ onFinish }: PremiumStartupScreenProps) {
 
   return (
     <View pointerEvents="none" className="absolute inset-0 z-[1000]">
-      {Platform.OS !== 'web' ? (
+      {Platform.OS !== "web" && (
         <SafeAreaView
           edges={["top"]}
           style={{ backgroundColor: STARTUP_STATUS_BAR_COLOR, marginBottom: -50 }}
         >
           <View style={{ height: 50 }} />
         </SafeAreaView>
-      ) : (
-        <View style={{ backgroundColor: STARTUP_STATUS_BAR_COLOR, height: 100, position: 'absolute', top: 0, left: 0, right: 0 }} />
       )}
 
       <View

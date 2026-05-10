@@ -1,6 +1,6 @@
 import React from 'react';
 import { Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { Circle, G, Path, Rect } from 'react-native-svg';
 
 import { StatusBarChrome } from '@/components/status-bar-chrome';
@@ -23,9 +23,7 @@ function SellIllustration() {
   return (
     <View style={styles.illustrationWrapper}>
       <Svg width="180" height="180" viewBox="0 0 180 180">
-        {/* Blue Circle on the left */}
         <Circle cx="50" cy="120" r="24" fill={C.blue} />
-        {/* White highlight on Blue Circle (bottom-left) */}
         <Path 
           d="M 32 130 A 20 20 0 0 0 50 140" 
           fill="none" 
@@ -33,8 +31,6 @@ function SellIllustration() {
           strokeWidth="2.5" 
           strokeLinecap="round" 
         />
-
-        {/* White Arrow (Starts left of ticket, curves up and points right) */}
         <Path 
           d="M 60 70 C 60 10, 120 10, 135 40" 
           fill="none" 
@@ -43,8 +39,6 @@ function SellIllustration() {
           strokeLinecap="round" 
         />
         <Path d="M 122 26 L 145 42 L 122 54 Z" fill={C.white} />
-
-        {/* Blue Arrow (Starts right of ticket, curves down and points left) */}
         <Path 
           d="M 135 80 C 145 140, 90 150, 75 115" 
           fill="none" 
@@ -53,25 +47,17 @@ function SellIllustration() {
           strokeLinecap="round" 
         />
         <Path d="M 88 132 L 63 112 L 88 100 Z" fill={C.blue} />
-
-        {/* Wristband (bottom right) */}
         <G transform="translate(105, 125) rotate(-15)">
           <Rect x="0" y="0" width="50" height="14" fill={C.white} rx="7" />
           <Rect x="12" y="0" width="3" height="14" fill={C.blue} />
           <Rect x="18" y="0" width="3" height="14" fill={C.blue} />
           <Rect x="0" y="0" width="50" height="14" fill="none" stroke={C.bg} strokeWidth="2" rx="7" />
         </G>
-
-        {/* Ticket (center, tilted left) */}
         <G transform="translate(65, 35) rotate(-10)">
-          {/* Main Body */}
           <Rect x="0" y="0" width="60" height="85" fill={C.white} rx="2" />
-          {/* Header Rectangle */}
           <Rect x="8" y="8" width="44" height="24" fill={C.blue} rx="1" />
-          {/* Lines */}
           <Rect x="8" y="38" width="44" height="4" fill={C.blue} rx="1" />
           <Rect x="8" y="46" width="28" height="4" fill={C.blue} rx="1" />
-          {/* Star */}
           <Path 
             transform="translate(30, 65) scale(0.9)" 
             d="M 0 -10 L 2.25 -3 L 10 -3 L 4 1.5 L 6.5 9 L 0 5 L -6.5 9 L -4 1.5 L -10 -3 L -2.25 -3 Z" 
@@ -84,38 +70,37 @@ function SellIllustration() {
 }
 
 export default function SellScreen() {
+  const insets = useSafeAreaInsets();
   return (
     <View style={styles.root}>
       <StatusBarChrome backgroundColor={C.bg} style="light" />
-      <SafeAreaView style={styles.safeArea} edges={['top']}>
-        <View style={styles.mainContainer}>
-          <View style={styles.spacer} />
-          
-          <SellIllustration />
-          
-          <Text style={styles.title}>SELL TICKETS FROM ANY SITE</Text>
-          <Text style={styles.subtitle}>
-            Get access to millions of fans, even if you did not buy tickets{'\n'}on Ticketmaster.
-          </Text>
+      <View style={[styles.mainContainer, { paddingTop: insets.top }]}>
+        <View style={styles.spacer} />
+        
+        <SellIllustration />
+        
+        <Text style={styles.title}>SELL TICKETS FROM ANY SITE</Text>
+        <Text style={styles.subtitle}>
+          Get access to millions of fans, even if you did not buy tickets{'\n'}on Ticketmaster.
+        </Text>
 
-          <View style={styles.paginationDots}>
-            <View style={[styles.dot, styles.dotActive]} />
-            <View style={[styles.dot, styles.dotInactive]} />
-          </View>
-
-          <TouchableOpacity style={styles.learnMoreBtn} activeOpacity={0.8}>
-            <Text style={styles.learnMoreText}>Learn How It Works</Text>
-          </TouchableOpacity>
-
-          <View style={styles.spacerFlexible} />
+        <View style={styles.paginationDots}>
+          <View style={[styles.dot, styles.dotActive]} />
+          <View style={[styles.dot, styles.dotInactive]} />
         </View>
+
+        <TouchableOpacity style={styles.learnMoreBtn} activeOpacity={0.8}>
+          <Text style={styles.learnMoreText}>Learn How It Works</Text>
+        </TouchableOpacity>
+
+        <View style={styles.spacerFlexible} />
 
         <View style={styles.bottomAction}>
           <TouchableOpacity style={styles.sellBtn} activeOpacity={0.8}>
             <Text style={styles.sellBtnText}>Sell Your Tickets</Text>
           </TouchableOpacity>
         </View>
-      </SafeAreaView>
+      </View>
     </View>
   );
 }
@@ -124,9 +109,6 @@ const styles = StyleSheet.create({
   root: {
     flex: 1,
     backgroundColor: C.bg,
-  },
-  safeArea: {
-    flex: 1,
   },
   mainContainer: {
     flex: 1,
@@ -196,10 +178,9 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   bottomAction: {
-    paddingHorizontal: 16,
+    width: '100%',
     paddingVertical: 16,
     paddingBottom: Platform.OS === 'ios' ? 8 : 16,
-    backgroundColor: C.bg,
   },
   sellBtn: {
     backgroundColor: C.blue,

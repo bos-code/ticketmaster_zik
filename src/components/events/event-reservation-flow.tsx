@@ -17,7 +17,8 @@ import Animated, {
   FadeInUp,
   LinearTransition,
 } from "react-native-reanimated";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { StatusBarChrome } from "@/components/status-bar-chrome";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { VenueMapCard } from "@/components/events/venue-map-card";
 import {
@@ -169,8 +170,9 @@ export function EventReservationFlow({ eventId }: { eventId: string }) {
     }
   }
 
+  const insets = useSafeAreaInsets();
   const header = (
-    <View style={styles.header}>
+    <View style={[styles.header, { paddingTop: Math.max(insets.top, 12) }]}>
       <Pressable
         accessibilityRole="button"
         hitSlop={8}
@@ -198,7 +200,8 @@ export function EventReservationFlow({ eventId }: { eventId: string }) {
 
   if (step === "seats") {
     return (
-      <SafeAreaView style={styles.root}>
+      <View style={styles.root}>
+        <StatusBarChrome backgroundColor={ticketColors.background} style="dark" />
         {header}
 
         <Animated.View
@@ -222,12 +225,13 @@ export function EventReservationFlow({ eventId }: { eventId: string }) {
             visibleSeats={visibleSeats}
           />
         </Animated.View>
-      </SafeAreaView>
+      </View>
     );
   }
 
   return (
-    <SafeAreaView style={styles.root}>
+    <View style={styles.root}>
+      <StatusBarChrome backgroundColor={ticketColors.background} style="dark" />
       <ScrollView
         contentContainerStyle={[
           styles.content,
@@ -296,7 +300,7 @@ export function EventReservationFlow({ eventId }: { eventId: string }) {
           ) : null}
         </Animated.View>
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }
 

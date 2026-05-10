@@ -11,7 +11,7 @@ import { TicketsUnavailable } from "@/components/tickets/ticket-transfer-flow-co
 import { TicketFlowContext } from "@/components/tickets/TicketFlowContext";
 import { TicketTransferStatusModal } from "@/components/tickets/TicketTransferStatusModal";
 import { useTicketTransferFlowController } from "@/components/tickets/use-ticket-transfer-flow-controller";
-import { StatusBar } from "expo-status-bar";
+import { StatusBarChrome } from "@/components/status-bar-chrome";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export function TicketTransferFlow({
@@ -38,25 +38,11 @@ export function TicketTransferFlow({
   return (
     <TicketFlowContext.Provider value={flow.ticketFlowData}>
       <View className="flex-1">
-        <StatusBar
+        <StatusBarChrome
           backgroundColor={flow.isViewerScreen ? "#F9F8F4" : "transparent"}
           style={flow.isViewerScreen ? "dark" : "light"}
-          translucent
+          drawsBehindStatusBar={!flow.isViewerScreen}
         />
-        {flow.isViewerScreen ? (
-          <View
-            pointerEvents="none"
-            style={{
-              backgroundColor: "#F9F8F4",
-              height: insets.top,
-              left: 0,
-              position: "absolute",
-              right: 0,
-              top: 0,
-              zIndex: 10,
-            }}
-          />
-        ) : null}
         <View className=" flex-1 w-full">
           {["list", "select", "recipientChoice", "recipientForm"].includes(
             flow.screen,
