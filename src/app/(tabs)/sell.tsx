@@ -1,5 +1,5 @@
 import React from 'react';
-import { Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { Circle, G, Path, Rect } from 'react-native-svg';
 
@@ -20,7 +20,7 @@ const C = {
   dotInactive: '#555555',
 };
 
-function SellIllustration() {
+function SellIllustrationStep1() {
   return (
     <View style={styles.illustrationWrapper}>
       <Svg width="180" height="180" viewBox="0 0 180 180">
@@ -70,8 +70,99 @@ function SellIllustration() {
   );
 }
 
+function SellIllustrationStep2() {
+  return (
+    <View style={styles.illustrationWrapper}>
+      <Svg width="180" height="180" viewBox="0 0 180 180">
+        {/* Floating white rectangle top left */}
+        <Rect x="20" y="20" width="30" height="12" fill={C.white} transform="rotate(-5, 35, 26)" />
+        
+        {/* Striped cylinder top center */}
+        <G transform="translate(70, 15) rotate(-15)">
+          <Rect x="0" y="0" width="40" height="14" fill={C.white} rx="7" />
+          <Rect x="10" y="0" width="3" height="14" fill={C.blue} />
+          <Rect x="16" y="0" width="3" height="14" fill={C.blue} />
+        </G>
+
+        {/* Blue card top right */}
+        <G transform="translate(90, 45) rotate(15)">
+          <Rect x="0" y="0" width="80" height="50" fill={C.blue} rx="4" />
+          <Rect x="0" y="10" width="80" height="10" fill={C.white} />
+          <Rect x="10" y="28" width="60" height="6" fill={C.bg} opacity={0.5} />
+        </G>
+
+        {/* White ticket with star */}
+        <G transform="translate(50, 70) rotate(-10)">
+          <Rect x="0" y="0" width="65" height="90" fill={C.white} rx="2" />
+          <Rect x="8" y="8" width="49" height="16" fill="none" stroke={C.blue} strokeWidth="2" />
+          <Rect x="8" y="32" width="40" height="3" fill={C.blue} />
+          <Rect x="8" y="39" width="30" height="3" fill={C.blue} />
+          <Rect x="8" y="46" width="35" height="3" fill={C.blue} />
+          <Path 
+            transform="translate(32.5, 68) scale(1.1)" 
+            d="M 0 -10 L 2.25 -3 L 10 -3 L 4 1.5 L 6.5 9 L 0 5 L -6.5 9 L -4 1.5 L -10 -3 L -2.25 -3 Z" 
+            fill={C.blue} 
+          />
+        </G>
+
+        {/* Blue rectangle bottom right */}
+        <Rect x="120" y="140" width="40" height="12" fill={C.blue} transform="rotate(2, 140, 146)" />
+      </Svg>
+    </View>
+  );
+}
+
+function ListIcon({ name, color = '#7F8280' }: { name: string; color?: string }) {
+  if (name === 'ticket') {
+    return (
+      <Svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <Path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z" />
+        <Path d="M13 5v2" />
+        <Path d="M13 17v2" />
+        <Path d="M13 11v2" />
+      </Svg>
+    );
+  }
+  if (name === 'sold') {
+    return (
+      <Svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <Rect width="20" height="12" x="2" y="6" rx="2" />
+        <Circle cx="12" cy="12" r="2" />
+        <Path d="M6 12h.01M18 12h.01" />
+      </Svg>
+    );
+  }
+  if (name === 'expired') {
+    return (
+      <Svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <Path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z" />
+        <Path d="M12 9v4" />
+        <Path d="M12 17h.01" />
+      </Svg>
+    );
+  }
+  return null;
+}
+
 export default function SellScreen() {
   const insets = useSafeAreaInsets();
+  const [currentStep, setCurrentStep] = React.useState(1); // Set to 1 for the requested "second step"
+
+  const stepData = [
+    {
+      title: 'SELL TICKETS FROM ANY SITE',
+      subtitle: 'Get access to millions of fans, even if you did not buy tickets\non Ticketmaster.',
+      Illustration: SellIllustrationStep1,
+    },
+    {
+      title: 'QUICK AND EASY',
+      subtitle: "List, sell and get paid — it's all here, right in one\nconvenient place.",
+      Illustration: SellIllustrationStep2,
+    },
+  ];
+
+  const currentData = stepData[currentStep];
+
   return (
     <View style={styles.root}>
       <Head>
@@ -79,33 +170,71 @@ export default function SellScreen() {
         <meta name="color-scheme" content="dark" />
       </Head>
       <StatusBar backgroundColor={C.bg} style="light" />
-      <View style={[styles.mainContainer, { paddingTop: insets.top }]}>
-        <View style={styles.spacer} />
-        
-        <SellIllustration />
-        
-        <Text style={styles.title}>SELL TICKETS FROM ANY SITE</Text>
-        <Text style={styles.subtitle}>
-          Get access to millions of fans, even if you did not buy tickets{'\n'}on Ticketmaster.
-        </Text>
+      
+      <ScrollView 
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+        bounces={false}
+      >
+        <View style={[styles.mainContainer, { paddingTop: insets.top }]}>
+          <View style={styles.spacer} />
+          
+          <currentData.Illustration />
+          
+          <Text style={styles.title}>{currentData.title}</Text>
+          <Text style={styles.subtitle}>{currentData.subtitle}</Text>
 
-        <View style={styles.paginationDots}>
-          <View style={[styles.dot, styles.dotActive]} />
-          <View style={[styles.dot, styles.dotInactive]} />
+          <View style={styles.paginationDots}>
+            <View style={[styles.dot, currentStep === 0 ? styles.dotActive : styles.dotInactive]} />
+            <View style={[styles.dot, currentStep === 1 ? styles.dotActive : styles.dotInactive]} />
+          </View>
+
+          <TouchableOpacity style={styles.learnMoreBtn} activeOpacity={0.8}>
+            <Text style={styles.learnMoreText}>Learn How It Works</Text>
+          </TouchableOpacity>
+
+          <View style={styles.bottomAction}>
+            <TouchableOpacity 
+              style={styles.sellBtn} 
+              activeOpacity={0.8}
+              onPress={() => setCurrentStep((s) => (s + 1) % 2)}
+            >
+              <Text style={styles.sellBtnText}>Sell Your Tickets</Text>
+            </TouchableOpacity>
+          </View>
         </View>
 
-        <TouchableOpacity style={styles.learnMoreBtn} activeOpacity={0.8}>
-          <Text style={styles.learnMoreText}>Learn How It Works</Text>
-        </TouchableOpacity>
+        <View style={[styles.whiteSection, { paddingBottom: insets.bottom + 80 }]}>
+          <TouchableOpacity style={styles.listItem} activeOpacity={0.6}>
+            <View style={styles.listItemLeft}>
+              <ListIcon name="ticket" />
+              <Text style={styles.listItemText}>Tickets I'm Selling</Text>
+            </View>
+            <View style={styles.chevron} />
+          </TouchableOpacity>
 
-        <View style={styles.spacerFlexible} />
+          <View style={styles.separator} />
 
-        <View style={styles.bottomAction}>
-          <TouchableOpacity style={styles.sellBtn} activeOpacity={0.8}>
-            <Text style={styles.sellBtnText}>Sell Your Tickets</Text>
+          <TouchableOpacity style={styles.listItem} activeOpacity={0.6}>
+            <View style={styles.listItemLeft}>
+              <ListIcon name="sold" />
+              <Text style={styles.listItemText}>Sold Tickets</Text>
+            </View>
+            <View style={styles.chevron} />
+          </TouchableOpacity>
+
+          <View style={styles.separator} />
+
+          <TouchableOpacity style={styles.listItem} activeOpacity={0.6}>
+            <View style={styles.listItemLeft}>
+              <ListIcon name="expired" />
+              <Text style={styles.listItemText}>Expired Tickets</Text>
+            </View>
+            <View style={styles.chevron} />
           </TouchableOpacity>
         </View>
-      </View>
+      </ScrollView>
     </View>
   );
 }
@@ -115,26 +244,31 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: C.bg,
   },
-  mainContainer: {
+  scrollView: {
     flex: 1,
+  },
+  scrollContent: {
+    flexGrow: 1,
+  },
+  mainContainer: {
     alignItems: 'center',
     paddingHorizontal: 24,
+    backgroundColor: C.bg,
+    paddingBottom: 40,
   },
   spacer: {
-    flex: 0.8,
-  },
-  spacerFlexible: {
-    flex: 1.2,
+    height: 40,
   },
   illustrationWrapper: {
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 44,
+    marginBottom: 32,
+    height: 180,
   },
   title: {
     fontFamily: fontStack,
     color: C.white,
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: '700',
     letterSpacing: 0.5,
     marginBottom: 12,
@@ -147,7 +281,7 @@ const styles = StyleSheet.create({
     fontWeight: '400',
     textAlign: 'center',
     lineHeight: 20,
-    marginBottom: 40,
+    marginBottom: 32,
   },
   paginationDots: {
     flexDirection: 'row',
@@ -175,6 +309,7 @@ const styles = StyleSheet.create({
     borderRadius: 2,
     alignItems: 'center',
     justifyContent: 'center',
+    marginBottom: 40,
   },
   learnMoreText: {
     fontFamily: fontStack,
@@ -184,8 +319,7 @@ const styles = StyleSheet.create({
   },
   bottomAction: {
     width: '100%',
-    paddingVertical: 16,
-    paddingBottom: Platform.OS === 'ios' ? 8 : 16,
+    marginBottom: 0,
   },
   sellBtn: {
     backgroundColor: C.blue,
@@ -199,5 +333,40 @@ const styles = StyleSheet.create({
     color: C.white,
     fontSize: 16,
     fontWeight: '700',
+  },
+  whiteSection: {
+    backgroundColor: C.white,
+    flex: 1,
+  },
+  listItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 20,
+    paddingHorizontal: 24,
+  },
+  listItemLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 16,
+  },
+  listItemText: {
+    fontFamily: fontStack,
+    color: '#262626',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  chevron: {
+    width: 8,
+    height: 8,
+    borderTopWidth: 1.5,
+    borderRightWidth: 1.5,
+    borderColor: '#D1D1D6',
+    transform: [{ rotate: '45deg' }],
+  },
+  separator: {
+    height: 1,
+    backgroundColor: '#F2F2F7',
+    marginLeft: 60,
   },
 });

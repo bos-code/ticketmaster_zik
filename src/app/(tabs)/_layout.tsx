@@ -123,10 +123,11 @@ export default function PremiumTabsLayout() {
 
 const styles = StyleSheet.create({
   tabBar: {
-    backgroundColor: 'transparent',
-    borderTopWidth: 0,
-    elevation: 0,
-    paddingTop: 8,
+    backgroundColor: '#FFFFFF',
+    borderTopWidth: 1,
+    borderTopColor: '#E5E5E5',
+    elevation: 8,
+    paddingTop: 10,
   },
   tabItem: {
     paddingHorizontal: 0,
