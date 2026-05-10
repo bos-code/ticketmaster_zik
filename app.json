@@ -16,7 +16,7 @@
     "android": {
       "package": "com.johnderadev.ticketmasterzik",
       "adaptiveIcon": {
-        "backgroundColor": "#050505",
+        "backgroundColor": "#000000",
         "foregroundImage": "./assets/Correctapp_icon.png"
       },
       "predictiveBackGestureEnabled": false,
@@ -34,7 +34,7 @@
       "shortName": "Tickets",
       "themeColor": "#F8FAFC",
       "backgroundColor": "#F8FAFC",
-      "display": "fullscreen",
+      "display": "standalone",
       "orientation": "portrait"
     },
     "plugins": [
@@ -44,16 +44,24 @@
       [
         "expo-splash-screen",
         {
-          "backgroundColor": "#007AFF",
+          "backgroundColor": "#F8FAFC",
+          "image": "./assets/images/splash-t-mark.png",
+          "imageWidth": 180,
+          "resizeMode": "contain",
           "android": {
-            "backgroundColor": "#007AFF"
+            "backgroundColor": "#F8FAFC",
+            "image": "./assets/images/splash-t-mark.png",
+            "imageWidth": 180,
+            "resizeMode": "contain"
           },
           "ios": {
-            "backgroundColor": "#007AFF"
+            "backgroundColor": "#F8FAFC",
+            "image": "./assets/images/splash-t-mark.png",
+            "imageWidth": 180,
+            "resizeMode": "contain"
           }
         }
       ],
-      "./plugins/with-android-background-only-splash",
       [
         "expo-location",
         {
