@@ -3,8 +3,10 @@ import { Animated, Easing, Platform, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Svg, { Path } from "react-native-svg";
 
+import Head from "expo-router/head";
+import { StatusBar } from "expo-status-bar";
 import { TicketmasterWordmark } from "@/components/ticketmaster-wordmark";
-import { SPLASH_STATUS_BAR_COLOR } from "@/components/status-bar-chrome";
+import { SPLASH_STATUS_BAR_COLOR } from "@/constants/theme";
 
 type PremiumStartupScreenProps = {
   onFinish?: () => void;
@@ -77,6 +79,11 @@ export function PremiumStartupScreen({ onFinish }: PremiumStartupScreenProps) {
 
   return (
     <View pointerEvents="none" className="absolute inset-0 z-[1000]">
+      <Head>
+        <meta name="theme-color" content={STARTUP_STATUS_BAR_COLOR} />
+        <meta name="color-scheme" content="dark" />
+      </Head>
+      <StatusBar backgroundColor={STARTUP_STATUS_BAR_COLOR} style="light" />
       {Platform.OS !== "web" && (
         <SafeAreaView
           edges={["top"]}

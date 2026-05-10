@@ -57,3 +57,6 @@ export const Spacing = {
 
 export const BottomTabInset = Platform.select({ ios: 50, android: 80 }) ?? 0;
 export const MaxContentWidth = 800;
+
+export const APP_STATUS_BAR_BLACK = "#050505";
+export const SPLASH_STATUS_BAR_COLOR = "#007AFF";

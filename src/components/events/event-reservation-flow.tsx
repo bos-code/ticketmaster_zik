@@ -17,7 +17,8 @@ import Animated, {
   FadeInUp,
   LinearTransition,
 } from "react-native-reanimated";
-import { StatusBarChrome } from "@/components/status-bar-chrome";
+import Head from "expo-router/head";
+import { StatusBar } from "expo-status-bar";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { VenueMapCard } from "@/components/events/venue-map-card";
@@ -201,7 +202,11 @@ export function EventReservationFlow({ eventId }: { eventId: string }) {
   if (step === "seats") {
     return (
       <View style={styles.root}>
-        <StatusBarChrome backgroundColor={ticketColors.background} style="dark" />
+      <Head>
+        <meta name="theme-color" content={ticketColors.background} />
+        <meta name="color-scheme" content="light" />
+      </Head>
+      <StatusBar backgroundColor={ticketColors.background} style="dark" />
         {header}
 
         <Animated.View
@@ -231,7 +236,11 @@ export function EventReservationFlow({ eventId }: { eventId: string }) {
 
   return (
     <View style={styles.root}>
-      <StatusBarChrome backgroundColor={ticketColors.background} style="dark" />
+      <Head>
+        <meta name="theme-color" content={ticketColors.background} />
+        <meta name="color-scheme" content="light" />
+      </Head>
+      <StatusBar backgroundColor={ticketColors.background} style="dark" />
       <ScrollView
         contentContainerStyle={[
           styles.content,

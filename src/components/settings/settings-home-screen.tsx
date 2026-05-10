@@ -13,7 +13,8 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { StatusBarChrome } from '@/components/status-bar-chrome';
+import Head from 'expo-router/head';
+import { StatusBar } from 'expo-status-bar';
 import { ticketRadii, ticketSpacing } from '@/constants/ticket-theme';
 import { GradientSurface } from '@/components/ui/gradient-surface';
 import { shellColors, shellGradients } from '@/constants/shell-theme';
@@ -134,7 +135,11 @@ export function SettingsHomeScreen() {
 
   return (
     <View style={styles.root}>
-      <StatusBarChrome backgroundColor={shellGradients.hero[0]} style="light" />
+      <Head>
+        <meta name="theme-color" content={shellGradients.hero[0]} />
+        <meta name="color-scheme" content="dark" />
+      </Head>
+      <StatusBar backgroundColor={shellGradients.hero[0]} style="light" />
       <GradientSurface colors={shellGradients.hero} style={styles.hero}>
         <SafeAreaView edges={['top', 'left', 'right']} style={styles.heroSafeArea}>
           <Pressable accessibilityRole="button" onPress={handleClose} style={styles.closeButton}>

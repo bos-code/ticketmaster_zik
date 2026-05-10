@@ -3,13 +3,18 @@ import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { Circle, Path, Rect } from 'react-native-svg';
 
-import { StatusBarChrome } from '@/components/status-bar-chrome';
+import Head from 'expo-router/head';
+import { StatusBar } from 'expo-status-bar';
 
 export default function ForYouScreen() {
   const insets = useSafeAreaInsets();
   return (
     <View style={styles.container}>
-      <StatusBarChrome backgroundColor="#EAEBEE" style="dark" />
+      <Head>
+        <meta name="theme-color" content="#EAEBEE" />
+        <meta name="color-scheme" content="light" />
+      </Head>
+      <StatusBar backgroundColor="#EAEBEE" style="dark" />
       <View style={[styles.content, { paddingTop: insets.top }]}>
         
         {/* The White Circle Illustration */}

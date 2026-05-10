@@ -14,11 +14,11 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 import { PremiumStartupScreen } from "@/components/premium-startup-screen";
 import { PwaInstallPrompt } from "@/components/pwa-install-prompt";
+import { StatusBar } from "expo-status-bar";
 import {
   APP_STATUS_BAR_BLACK,
   SPLASH_STATUS_BAR_COLOR,
-  StatusBarChrome,
-} from "@/components/status-bar-chrome";
+} from "@/constants/theme";
 import { ticketColors, ticketNavigationTheme } from "@/constants/ticket-theme";
 import { useFirebaseDataSync } from "@/hooks/use-firebase-data-sync";
 import { QueryProvider } from "@/providers/query-provider";
@@ -156,21 +156,12 @@ export default function RootLayout() {
                 name="viewport"
                 content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover"
               />
-              <meta name="theme-color" content={statusBarBackgroundColor} />
-              <meta name="mobile-web-app-capable" content="yes" />
-              <meta name="apple-mobile-web-app-capable" content="yes" />
-              <meta
-                name="apple-mobile-web-app-status-bar-style"
-                content="black-translucent"
-              />
               <link rel="manifest" href="/manifest.json" />
               <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+              <meta name="theme-color" content={APP_STATUS_BAR_BLACK} />
+              <meta name="color-scheme" content="dark" />
             </Head>
-            <StatusBarChrome
-              style={statusBarStyle}
-              backgroundColor={statusBarBackgroundColor}
-              drawsBehindStatusBar={hasFinishedStartup}
-            />
+            <StatusBar backgroundColor={APP_STATUS_BAR_BLACK} style="light" />
             <RootStack />
             <PwaInstallPrompt />
             {!hasFinishedStartup ? (

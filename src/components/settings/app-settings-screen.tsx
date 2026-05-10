@@ -4,7 +4,8 @@ import React from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { StatusBarChrome } from '@/components/status-bar-chrome';
+import Head from 'expo-router/head';
+import { StatusBar } from 'expo-status-bar';
 import { ticketSpacing } from '@/constants/ticket-theme';
 import { shellColors } from '@/constants/shell-theme';
 import { useAppStore, type DistanceUnit, type ThemePreference } from '@/store/use-app-store';
@@ -29,7 +30,11 @@ export function AppSettingsScreen() {
 
   return (
     <View style={styles.root}>
-      <StatusBarChrome backgroundColor={shellColors.lightSurface} style="dark" />
+      <Head>
+        <meta name="theme-color" content={shellColors.lightSurface} />
+        <meta name="color-scheme" content="light" />
+      </Head>
+      <StatusBar backgroundColor={shellColors.lightSurface} style="dark" />
       <SafeAreaView edges={['top', 'left', 'right']} style={styles.safeArea}>
         <View style={styles.header}>
           <Pressable accessibilityRole="button" onPress={() => router.back()} style={styles.backButton}>

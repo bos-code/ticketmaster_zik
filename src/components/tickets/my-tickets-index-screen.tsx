@@ -3,10 +3,9 @@ import React, { useEffect, useMemo, useState } from "react";
 import { Image, Pressable, ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import {
-  APP_STATUS_BAR_BLACK,
-  StatusBarChrome,
-} from "@/components/status-bar-chrome";
+import Head from "expo-router/head";
+import { StatusBar } from "expo-status-bar";
+import { APP_STATUS_BAR_BLACK } from "@/constants/theme";
 import { useTicketOrder } from "@/hooks/useTicketOrder";
 import type { TicketSummaryViewModel } from "@/types/ticket";
 
@@ -70,7 +69,11 @@ export function MyTicketsIndexScreen() {
 
   return (
     <View className="flex-1" style={{ backgroundColor: APP_STATUS_BAR_BLACK }}>
-      <StatusBarChrome backgroundColor={APP_STATUS_BAR_BLACK} style="light" />
+      <Head>
+        <meta name="theme-color" content={APP_STATUS_BAR_BLACK} />
+        <meta name="color-scheme" content="dark" />
+      </Head>
+      <StatusBar backgroundColor={APP_STATUS_BAR_BLACK} style="light" />
 
       <SafeAreaView
         edges={["top", "left", "right"]}

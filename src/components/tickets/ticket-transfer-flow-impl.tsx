@@ -11,7 +11,8 @@ import { TicketsUnavailable } from "@/components/tickets/ticket-transfer-flow-co
 import { TicketFlowContext } from "@/components/tickets/TicketFlowContext";
 import { TicketTransferStatusModal } from "@/components/tickets/TicketTransferStatusModal";
 import { useTicketTransferFlowController } from "@/components/tickets/use-ticket-transfer-flow-controller";
-import { StatusBarChrome } from "@/components/status-bar-chrome";
+import Head from "expo-router/head";
+import { StatusBar } from "expo-status-bar";
 
 
 export function TicketTransferFlow({
@@ -38,10 +39,15 @@ export function TicketTransferFlow({
   return (
     <TicketFlowContext.Provider value={flow.ticketFlowData}>
       <View className="flex-1">
-        <StatusBarChrome
+        <Head>
+          <meta name="theme-color" content={flow.isViewerScreen ? "#F9F8F4" : "transparent"} />
+          <meta name="color-scheme" content={flow.isViewerScreen ? "light" : "dark"} />
+          <meta name="apple-mobile-web-app-status-bar-style" content={!flow.isViewerScreen ? "black-translucent" : "black"} />
+        </Head>
+        <StatusBar
           backgroundColor={flow.isViewerScreen ? "#F9F8F4" : "transparent"}
           style={flow.isViewerScreen ? "dark" : "light"}
-          drawsBehindStatusBar={!flow.isViewerScreen}
+          translucent={!flow.isViewerScreen}
         />
         <View className=" flex-1 w-full">
           {["list", "select", "recipientChoice", "recipientForm"].includes(

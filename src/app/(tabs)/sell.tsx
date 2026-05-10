@@ -3,7 +3,8 @@ import { Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { Circle, G, Path, Rect } from 'react-native-svg';
 
-import { StatusBarChrome } from '@/components/status-bar-chrome';
+import Head from 'expo-router/head';
+import { StatusBar } from 'expo-status-bar';
 
 const fontStack = Platform.select({
   ios: 'SF Pro Display',
@@ -73,7 +74,11 @@ export default function SellScreen() {
   const insets = useSafeAreaInsets();
   return (
     <View style={styles.root}>
-      <StatusBarChrome backgroundColor={C.bg} style="light" />
+      <Head>
+        <meta name="theme-color" content={C.bg} />
+        <meta name="color-scheme" content="dark" />
+      </Head>
+      <StatusBar backgroundColor={C.bg} style="light" />
       <View style={[styles.mainContainer, { paddingTop: insets.top }]}>
         <View style={styles.spacer} />
         

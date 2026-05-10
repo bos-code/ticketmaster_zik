@@ -12,7 +12,8 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { StatusBarChrome } from '@/components/status-bar-chrome';
+import Head from 'expo-router/head';
+import { StatusBar } from 'expo-status-bar';
 
 const fontStack = Platform.select({
   ios: 'SF Pro Display',
@@ -37,7 +38,11 @@ export function DiscoverTabScreen() {
 
   return (
     <View style={styles.root}>
-      <StatusBarChrome backgroundColor="#000000" style="light" />
+      <Head>
+        <meta name="theme-color" content="#000000" />
+        <meta name="color-scheme" content="dark" />
+      </Head>
+      <StatusBar backgroundColor="#000000" style="light" />
 
       {/* Top Black Area uses standard View + SafeArea inside */}
       <View style={[styles.darkHeaderBg, { paddingTop: insets.top }]}>

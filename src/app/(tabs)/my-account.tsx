@@ -19,7 +19,8 @@ import {
   AccountIcon,
   type AccountIconName,
 } from "@/components/account/account-icon";
-import { StatusBarChrome } from "@/components/status-bar-chrome";
+import Head from "expo-router/head";
+import { StatusBar } from "expo-status-bar";
 import {
   getLocationPermissionStatus,
   resolveHomeLocation,
@@ -300,9 +301,24 @@ export default function MyAccountScreen() {
     await refreshLocationDetails(true);
   }
 
+  const handleSnap = (offsetY: number) => {
+    if (Platform.OS !== "web" || !scrollRef.current) return;
+
+    const threshold = WELCOME_PANEL_LOCK_HEIGHT / 2;
+    const targetY = offsetY < threshold ? 0 : WELCOME_PANEL_LOCK_HEIGHT;
+
+    if (offsetY !== targetY) {
+      scrollRef.current.scrollTo({ y: targetY, animated: true });
+    }
+  };
+
   return (
     <View className="flex-1 bg-white">
-      <StatusBarChrome backgroundColor="#000000" style="light" />
+      <Head>
+        <meta name="theme-color" content="#000000" />
+        <meta name="color-scheme" content="dark" />
+      </Head>
+      <StatusBar backgroundColor="#000000" style="light" />
 
       <View style={{ backgroundColor: "#000000", paddingTop: Math.max(insets.top, 12) }}>
         <View className="h-11 items-center justify-center bg-black px-4">
@@ -323,6 +339,12 @@ export default function MyAccountScreen() {
         decelerationRate="fast"
         onScroll={(event) => {
           scrollOffsetYRef.current = event.nativeEvent.contentOffset.y;
+        }}
+        onScrollEndDrag={(event) => {
+          handleSnap(event.nativeEvent.contentOffset.y);
+        }}
+        onMomentumScrollEnd={(event) => {
+          handleSnap(event.nativeEvent.contentOffset.y);
         }}
         scrollEventThrottle={16}
         showsVerticalScrollIndicator={false}

@@ -15,7 +15,8 @@ import {
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { StatusBarChrome } from '@/components/status-bar-chrome';
+import Head from 'expo-router/head';
+import { StatusBar } from 'expo-status-bar';
 import {
   formatTicketDate,
   type TicketRecord,
@@ -107,7 +108,11 @@ export function AdminTicketManagementScreen() {
 
   return (
     <View style={styles.root}>
-      <StatusBarChrome style="dark" backgroundColor="#F5F6F8" />
+      <Head>
+        <meta name="theme-color" content="#F5F6F8" />
+        <meta name="color-scheme" content="light" />
+      </Head>
+      <StatusBar style="dark" backgroundColor="#F5F6F8" />
       <SafeAreaView edges={['top', 'left', 'right']} style={styles.safe}>
         <View style={styles.header}>
           <Pressable onPress={handleExitAdmin} style={styles.iconButton}>

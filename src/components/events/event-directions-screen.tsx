@@ -15,7 +15,8 @@ import MapView, { Marker, Polyline, PROVIDER_GOOGLE } from 'react-native-maps';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { VenueMapMarker } from '@/components/events/venue-map-marker';
-import { StatusBarChrome } from '@/components/status-bar-chrome';
+import Head from 'expo-router/head';
+import { StatusBar } from 'expo-status-bar';
 import {
   premiumMapPalette,
   premiumMapStyle,
@@ -174,7 +175,11 @@ export function EventDirectionsScreen({ eventId }: { eventId: string }) {
   if (!event || !venueCoordinate) {
     return (
       <SafeAreaView style={styles.root}>
-        <StatusBarChrome backgroundColor={premiumMapPalette.cardSurface} style="dark" />
+        <Head>
+          <meta name="theme-color" content={premiumMapPalette.cardSurface} />
+          <meta name="color-scheme" content="light" />
+        </Head>
+        <StatusBar backgroundColor={premiumMapPalette.cardSurface} style="dark" />
         <View style={styles.notFoundWrap}>
           <Pressable
             accessibilityRole="button"
@@ -199,7 +204,11 @@ export function EventDirectionsScreen({ eventId }: { eventId: string }) {
   if (!canShowEmbeddedMap) {
     return (
       <SafeAreaView style={styles.root}>
-        <StatusBarChrome backgroundColor={premiumMapPalette.cardSurface} style="dark" />
+        <Head>
+          <meta name="theme-color" content={premiumMapPalette.cardSurface} />
+          <meta name="color-scheme" content="light" />
+        </Head>
+        <StatusBar backgroundColor={premiumMapPalette.cardSurface} style="dark" />
 
         <View style={styles.headerRow}>
           <Pressable
@@ -350,7 +359,11 @@ export function EventDirectionsScreen({ eventId }: { eventId: string }) {
 
   return (
     <View style={styles.root}>
-      <StatusBarChrome backgroundColor={premiumMapPalette.cardSurface} style="dark" />
+      <Head>
+        <meta name="theme-color" content={premiumMapPalette.cardSurface} />
+        <meta name="color-scheme" content="light" />
+      </Head>
+      <StatusBar backgroundColor={premiumMapPalette.cardSurface} style="dark" />
 
       <MapView
         {...mapPresentationProps}
