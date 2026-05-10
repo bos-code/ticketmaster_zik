@@ -64,7 +64,7 @@ export default function PremiumTabsLayout() {
     web: 4,
     default: 4
   }) as number;
-  const tabBarHeight = 48 + bottomPadding;
+  const tabBarHeight = 52 + bottomPadding;
 
   return (
     <Tabs
@@ -126,7 +126,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
     borderTopWidth: 0,
     elevation: 0,
-    paddingTop: 6,
+    paddingTop: 8,
   },
   tabItem: {
     paddingHorizontal: 0,
@@ -135,13 +135,13 @@ const styles = StyleSheet.create({
   iconWrap: {
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 2,
+    marginBottom: 1,
     minHeight: 28,
   },
   tabLabel: {
     marginTop: 1,
     fontFamily: accountFont,
-    fontSize: 9,
+    fontSize: 10,
     fontWeight: '500',
     letterSpacing: 0,
     lineHeight: 12,
