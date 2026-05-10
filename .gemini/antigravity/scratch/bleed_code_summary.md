@@ -1,9 +1,3 @@
-# PWA Immersive Hero Bleed Implementation
-
-This document summarizes the core logic used to achieve the edge-to-edge "bleed" effect where the hero image sits behind a transparent status bar on both Native and Web (PWA).
-
-## 1. Global CSS Setup (Web/PWA)
-We capture the browser's safe area insets and expose them as CSS variables for the app to consume.
 
 ```css
 :root {
