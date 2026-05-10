@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from "react";
-import { Animated, Easing, View } from "react-native";
+import { Animated, Easing, Platform, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Svg, { Path } from "react-native-svg";
 
@@ -77,12 +77,16 @@ export function PremiumStartupScreen({ onFinish }: PremiumStartupScreenProps) {
 
   return (
     <View pointerEvents="none" className="absolute inset-0 z-[1000]">
-      <SafeAreaView
-        edges={["top"]}
-        style={{ backgroundColor: STARTUP_STATUS_BAR_COLOR, marginBottom: -50 }}
-      >
-        <View style={{ height: 50 }} />
-      </SafeAreaView>
+      {Platform.OS !== 'web' ? (
+        <SafeAreaView
+          edges={["top"]}
+          style={{ backgroundColor: STARTUP_STATUS_BAR_COLOR, marginBottom: -50 }}
+        >
+          <View style={{ height: 50 }} />
+        </SafeAreaView>
+      ) : (
+        <View style={{ backgroundColor: STARTUP_STATUS_BAR_COLOR, height: 100, position: 'absolute', top: 0, left: 0, right: 0 }} />
+      )}
 
       <View
         className="flex-1 items-center justify-center px-8"

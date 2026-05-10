@@ -31,7 +31,7 @@ export function StatusBarChrome({
     : useCustomAppearance
       ? backgroundColor
       : APP_STATUS_BAR_BLACK;
-  const webThemeColor = resolvedBackgroundColor;
+  const webThemeColor = Platform.OS === 'web' ? APP_STATUS_BAR_BLACK : resolvedBackgroundColor;
   const resolvedStyle = isStartupLocked
     ? "light"
     : useCustomAppearance

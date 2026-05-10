@@ -103,9 +103,8 @@ export default function RootLayout() {
   const statusBarBackgroundColor = hasFinishedStartup
     ? APP_STATUS_BAR_BLACK
     : startupStatusBarColor;
-  const appBackgroundColor = hasFinishedStartup
-    ? ticketColors.background
-    : startupBackgroundColor;
+  // Use black for root background to prevent blue borders/bleeding on PWA/Web
+  const appBackgroundColor = APP_STATUS_BAR_BLACK;
   const statusBarStyle = "light";
   const isReady = fontsLoaded || Boolean(fontError);
 
