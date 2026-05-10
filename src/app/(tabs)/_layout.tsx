@@ -58,8 +58,13 @@ const TAB_CONFIG: Record<TabRouteName, TabConfig> = {
 
 export default function PremiumTabsLayout() {
   const insets = useSafeAreaInsets();
-  const bottomPadding = Math.max(insets.bottom, Platform.OS === 'android' ? 16 : 24);
-  const tabBarHeight = 54 + bottomPadding;
+  const bottomPadding = insets.bottom > 0 ? insets.bottom : Platform.select({
+    ios: 4,
+    android: 8,
+    web: 4,
+    default: 4
+  }) as number;
+  const tabBarHeight = 48 + bottomPadding;
 
   return (
     <Tabs
