@@ -12,7 +12,7 @@ import { TicketFlowContext } from "@/components/tickets/TicketFlowContext";
 import { TicketTransferStatusModal } from "@/components/tickets/TicketTransferStatusModal";
 import { useTicketTransferFlowController } from "@/components/tickets/use-ticket-transfer-flow-controller";
 import { StatusBarChrome } from "@/components/status-bar-chrome";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+
 
 export function TicketTransferFlow({
   initialScreen = "list",
@@ -29,7 +29,7 @@ export function TicketTransferFlow({
     orderId,
   });
 
-  const insets = useSafeAreaInsets();
+
 
   if (!flow.ticketFlowData) {
     return <TicketsUnavailable />;

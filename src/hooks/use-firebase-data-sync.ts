@@ -12,7 +12,7 @@ import { useTicketStore } from '@/store/ticketStore';
 export function useFirebaseDataSync() {
   useEffect(() => {
     let isActive = true;
-    const unsubscribeHandlers: Array<() => void> = [];
+    const unsubscribeHandlers: (() => void)[] = [];
 
     void (async () => {
       try {

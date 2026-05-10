@@ -42,6 +42,7 @@ type FlowStep = "detail" | "seats" | "review" | "confirmation";
 const MAX_RESERVED_SEATS = 3;
 
 export function EventReservationFlow({ eventId }: { eventId: string }) {
+  const insets = useSafeAreaInsets();
   const event = useEventStore((state) => selectEventById(state, eventId));
   const reserveTickets = useEventStore((state) => state.reserveTickets);
   const { height } = useWindowDimensions();
@@ -170,7 +171,6 @@ export function EventReservationFlow({ eventId }: { eventId: string }) {
     }
   }
 
-  const insets = useSafeAreaInsets();
   const header = (
     <View style={[styles.header, { paddingTop: Math.max(insets.top, 12) }]}>
       <Pressable
@@ -306,7 +306,7 @@ export function EventReservationFlow({ eventId }: { eventId: string }) {
 
 function ReservationNotFound() {
   return (
-    <SafeAreaView edges={["left", "right"]} style={styles.root}>
+    <View style={styles.root}>
       <View style={styles.notFoundWrap}>
         <Pressable
           accessibilityRole="button"
@@ -334,7 +334,7 @@ function ReservationNotFound() {
           </Pressable>
         </View>
       </View>
-    </SafeAreaView>
+    </View>
   );
 }
 

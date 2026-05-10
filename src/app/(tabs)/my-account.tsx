@@ -1,5 +1,6 @@
 import { useRouter } from "expo-router";
 import enCountryData from "i18n-iso-countries/langs/en.json";
+import * as countries from "i18n-iso-countries";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
@@ -25,7 +26,7 @@ import {
 } from "@/lib/device-permissions";
 import { useAppStore } from "@/store/use-app-store";
 
-const countries: typeof import("i18n-iso-countries") = require("i18n-iso-countries/index");
+
 
 const SWITCH = {
   thumbColor: "#FFFFFF",
@@ -42,7 +43,6 @@ const accountFont = Platform.select({
 
 const fontStyle = { fontFamily: accountFont } as const;
 const WELCOME_PANEL_LOCK_HEIGHT = 132;
-const WELCOME_PANEL_REVEAL_THRESHOLD = 56;
 const COUNTRY_LANGUAGE = "en";
 
 countries.registerLocale(enCountryData);
@@ -298,8 +298,6 @@ export default function MyAccountScreen() {
     }
 
     await refreshLocationDetails(true);
-  }
-
   }
 
   return (

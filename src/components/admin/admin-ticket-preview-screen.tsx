@@ -56,7 +56,6 @@ export function AdminTicketPreviewScreen() {
   // List screen state
   const [activePanel, setActivePanel] = useState<PanelTab>("tickets");
   const scrollY = useSharedValue(0);
-  const [isHeroCollapsed, setIsHeroCollapsed] = useState(false);
 
   const handleListScroll = useAnimatedScrollHandler({
     onScroll: (event) => {
@@ -244,7 +243,7 @@ export function AdminTicketPreviewScreen() {
           <TicketTransferListScreen
             activePanel={activePanel}
             handleListScroll={handleListScroll}
-            isHeroCollapsed={isHeroCollapsed}
+            isHeroCollapsed={false}
             onBack={handleCancel}
             onOpenTicket={() => {}}
             onOpenViewer={() => {}}
