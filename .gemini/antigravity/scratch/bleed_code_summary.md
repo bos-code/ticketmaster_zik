@@ -6,7 +6,6 @@ This document summarizes the core logic used to achieve the edge-to-edge "bleed"
 We capture the browser's safe area insets and expose them as CSS variables for the app to consume.
 
 ```css
-/* global.css */
 :root {
   --safe-area-top: 0px;
 }
@@ -25,7 +24,7 @@ A unified hook that reads `safe-area-inset-top` from CSS on Web and `useSafeArea
 ```typescript
 export function useImmersiveSafeAreaInsets() {
   const nativeInsets = useSafeAreaInsets();
-  const webInsets = useWebSafeAreaInsets(); // Reads window.getComputedStyle(--safe-area-top)
+  const webInsets = useWebSafeAreaInsets();
 
   return Platform.OS === "web" ? webInsets : nativeInsets;
 }
@@ -35,16 +34,13 @@ export function useImmersiveSafeAreaInsets() {
 The container uses `paddingTop` to push content down, while the background image remains at `top: 0` to fill the entire status bar area.
 
 ```tsx
-// src/components/tickets/ticket-transfer-flow-hero.tsx
 const insets = useImmersiveSafeAreaInsets();
-const statusBarBleed = insets.top; // e.g., 44px or 59px depending on device
+const statusBarBleed = insets.top;
 
 return (
   <View style={{ height: 300 + statusBarBleed }}>
-    {/* Background Image - Starts at 0 */}
     <EdgeToEdgeHeroMedia height={300 + statusBarBleed} source={image} />
 
-    {/* Content Container - Pushed down by the bleed */}
     <View style={[absoluteFill, { paddingTop: statusBarBleed }]}>
        <View style={{ paddingTop: 16 }}>
          <BackButton />
@@ -59,7 +55,6 @@ return (
 Every screen explicitly declares its status bar style to ensure it never falls back to a system default.
 
 ```tsx
-// Screen Implementation
 <>
   <Head>
     <meta name="theme-color" content="transparent" />
