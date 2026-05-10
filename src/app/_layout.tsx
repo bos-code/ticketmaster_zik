@@ -170,7 +170,6 @@ export default function RootLayout() {
               style={statusBarStyle}
               backgroundColor={statusBarBackgroundColor}
               drawsBehindStatusBar={hasFinishedStartup}
-              useCustomAppearance={!hasFinishedStartup}
             />
             <RootStack />
             <PwaInstallPrompt />

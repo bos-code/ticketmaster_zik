@@ -10,7 +10,6 @@ type StatusBarChromeProps = {
   backgroundColor?: string;
   drawsBehindStatusBar?: boolean;
   style?: StatusBarStyle;
-  useCustomAppearance?: boolean;
 };
 
 export const APP_STATUS_BAR_BLACK = "#050505";
@@ -21,25 +20,17 @@ export function StatusBarChrome({
   backgroundColor = APP_STATUS_BAR_BLACK,
   drawsBehindStatusBar = false,
   style = "light",
-  useCustomAppearance = false,
 }: StatusBarChromeProps) {
   const insets = useSafeAreaInsets();
   const hasFinishedStartup = useAppStore((state) => state.hasFinishedStartup);
   const isStartupLocked = !hasFinishedStartup;
   const resolvedBackgroundColor = isStartupLocked
     ? SPLASH_STATUS_BAR_COLOR
-    : useCustomAppearance
-      ? backgroundColor
-      : APP_STATUS_BAR_BLACK;
-  // On web, we only want the splash blue during the initial startup lock
-  const webThemeColor = (Platform.OS === 'web' && !isStartupLocked) 
-    ? APP_STATUS_BAR_BLACK 
-    : resolvedBackgroundColor;
-  const resolvedStyle = isStartupLocked
-    ? "light"
-    : useCustomAppearance
-      ? style
-      : "light";
+    : backgroundColor;
+
+  // On web, we use the resolved background color
+  const webThemeColor = resolvedBackgroundColor;
+  const resolvedStyle = isStartupLocked ? "light" : style;
   const topInsetHeight = Platform.OS === "web" ? 0 : insets.top;
   const shouldDrawBehindStatusBar = drawsBehindStatusBar && !isStartupLocked;
   const shouldRenderStatusBarFill =
