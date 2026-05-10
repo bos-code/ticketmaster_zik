@@ -58,13 +58,20 @@ const TAB_CONFIG: Record<TabRouteName, TabConfig> = {
 
 export default function PremiumTabsLayout() {
   const insets = useSafeAreaInsets();
-  const bottomPadding = insets.bottom > 0 ? insets.bottom : Platform.select({
-    ios: 4,
-    android: 8,
-    web: 4,
-    default: 4
+  
+  // On web PWA, insets.bottom might be reported even if not needed, 
+  // or it might be handled by the browser. 
+  // We'll use a more refined approach for web.
+  const isWeb = Platform.OS === 'web';
+  const bottomPadding = insets.bottom > 0 ? (isWeb ? Math.min(insets.bottom, 20) : insets.bottom) : Platform.select({
+    ios: 0,
+    android: 0,
+    web: 0,
+    default: 0
   }) as number;
-  const tabBarHeight = 52 + bottomPadding;
+  
+  // Standard tab bar height is 49-50. We'll use 50 as base.
+  const tabBarHeight = 50 + bottomPadding;
 
   return (
     <Tabs
@@ -77,10 +84,10 @@ export default function PremiumTabsLayout() {
           lazy: true,
           sceneStyle: { backgroundColor: C.background },
           tabBarAccessibilityLabel: config.title,
-          tabBarActiveTintColor: C.active,
           tabBarHideOnKeyboard: true,
           tabBarInactiveTintColor: C.inactive,
           tabBarItemStyle: styles.tabItem,
+          tabBarSafeAreaInsets: { bottom: 0, top: 0, left: 0, right: 0 },
           tabBarStyle: [
             styles.tabBar,
             { height: tabBarHeight, paddingBottom: bottomPadding },
@@ -127,7 +134,7 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: '#E5E5E5',
     elevation: 8,
-    paddingTop: 10,
+    paddingTop: 8,
   },
   tabItem: {
     paddingHorizontal: 0,

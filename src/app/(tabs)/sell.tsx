@@ -205,7 +205,7 @@ export default function SellScreen() {
           </View>
         </View>
 
-        <View style={[styles.whiteSection, { paddingBottom: insets.bottom + 80 }]}>
+        <View style={[styles.whiteSection, { paddingBottom: insets.bottom + 40 }]}>
           <TouchableOpacity style={styles.listItem} activeOpacity={0.6}>
             <View style={styles.listItemLeft}>
               <ListIcon name="ticket" />
