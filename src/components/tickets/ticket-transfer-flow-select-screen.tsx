@@ -32,7 +32,7 @@ export function TicketTransferSelectScreen({
         </Text>
       </View>
 
-      <View className="border-b border-[#F0F0F0] px-[16px] pb-[32px] pt-[24px]">
+      <View className="border-b border-[#F0F0F0] px-[16px] pb-[16px] pt-[24px]">
         <View className="flex-row items-center justify-between">
           <Text className="text-[13px] font-medium leading-[15px] text-[#444B55]">
             {seatSummary}

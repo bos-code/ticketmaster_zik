@@ -16,6 +16,9 @@ import { AppleWalletIcon } from "@/components/tickets/apple-wallet-icon";
 import { EditableText } from "@/components/tickets/EditableText";
 import { ExtrasPanel } from "@/components/tickets/ticket-transfer-flow-extras-panel";
 import {
+  useImmersiveSafeAreaInsets,
+} from "@/components/immersive/edge-to-edge-hero";
+import {
   softPillShadow,
 } from "@/components/tickets/ticketFlowConstants";
 import type { Seat } from "@/components/tickets/ticketFlowTypes";
@@ -27,10 +30,11 @@ import { StatusBar } from "expo-status-bar";
 
 function ViewerHeader({ onBack }: { onBack: () => void }) {
   const { event } = useTicketFlowData();
+  const insets = useImmersiveSafeAreaInsets();
 
   return (
-    <SafeAreaView edges={["top"]} style={{ backgroundColor: "#F9F8F4" }}>
-      <View className="flex-row items-center bg-[#F9F8F4] px-5 py-2">
+    <View style={{ backgroundColor: "#F9F8F4", paddingTop: insets.top }}>
+      <View className="flex-row items-center bg-[#F9F8F4] px-5 pb-2 pt-1">
         <Pressable
           accessibilityRole="button"
           hitSlop={8}
@@ -45,7 +49,7 @@ function ViewerHeader({ onBack }: { onBack: () => void }) {
           <EditableText value={event.headerSubtitle} className="text-[12px] font-medium text-[#6B6B6B]" />
         </View>
       </View>
-    </SafeAreaView>
+    </View>
   );
 }
 

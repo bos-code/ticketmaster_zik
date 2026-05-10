@@ -5,7 +5,7 @@ import Svg, { Path } from "react-native-svg";
 
 import Head from "expo-router/head";
 import { StatusBar } from "expo-status-bar";
-import { TicketmasterWordmark } from "@/components/ticketmaster-wordmark";
+import { TicketmasterWordmark, TicketmasterTMark } from "@/components/ticketmaster-wordmark";
 import { SPLASH_STATUS_BAR_COLOR } from "@/constants/theme";
 
 type PremiumStartupScreenProps = {
@@ -94,7 +94,7 @@ export function PremiumStartupScreen({ onFinish }: PremiumStartupScreenProps) {
       )}
 
       <View
-        className="flex-1 items-center justify-center px-8"
+        className="flex-1 items-center justify-center px-4"
         style={{ backgroundColor: STARTUP_BACKGROUND_COLOR }}
       >
         {/* Standalone 't' Icon */}
@@ -104,15 +104,14 @@ export function PremiumStartupScreen({ onFinish }: PremiumStartupScreenProps) {
             transform: [{ scale: tScale }],
             position: 'absolute',
           }}
+          className="inset-0 items-center justify-center"
         >
-          <Svg viewBox="0 0 8.85 19" width={80} height={172} fill="white">
-            <Path d="M4.19 15.35c0-.47.07-.9.14-1.18l1.16-5.3h2.86l.5-2.32H5.99l.79-3.61-3.43 1.1-.54 2.5H.5L0 8.87h2.3l-.9 4.11c-.21.97-.4 1.89-.4 2.83C1 18.14 2.52 19 4.69 19c.54 0 1.16-.18 1.7-.3l.56-2.45a4.27 4.27 0 0 1-1.55.28c-.71 0-1.22-.44-1.22-1.18z" />
-          </Svg>
+          <TicketmasterTMark fill="white" size={190} />
         </Animated.View>
 
         {/* Full Wordmark */}
         <Animated.View
-          className="absolute items-center justify-center"
+          className="absolute inset-0 items-center justify-center"
           style={[
             {
               opacity: wordmarkOpacity,
@@ -120,7 +119,7 @@ export function PremiumStartupScreen({ onFinish }: PremiumStartupScreenProps) {
             },
           ]}
         >
-          <TicketmasterWordmark fill="#FFFFFF" size={270} />
+          <TicketmasterWordmark fill="#FFFFFF" size={300} />
         </Animated.View>
       </View>
     </View>
