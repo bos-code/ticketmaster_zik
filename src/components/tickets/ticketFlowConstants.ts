@@ -23,7 +23,7 @@ export const EXTRA_CARDS: ExtraCard[] = [
   },
 ];
 
-export const HERO_IMAGE_HEIGHT = 240;
+export const HERO_IMAGE_HEIGHT = 300;
 export const HERO_DETAIL_PANEL_HEIGHT = 122;
 export const HERO_EXPANDED_HEIGHT = HERO_IMAGE_HEIGHT + HERO_DETAIL_PANEL_HEIGHT;
 export const HERO_COLLAPSED_HEIGHT = 124;

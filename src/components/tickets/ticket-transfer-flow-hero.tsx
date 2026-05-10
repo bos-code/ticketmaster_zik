@@ -38,15 +38,15 @@ export function CollapsibleEventHero({
   const statusBarBleed = insets.top;
   const heroImageHeight = HERO_IMAGE_HEIGHT + statusBarBleed;
   
-  const heroHeightStyle = useAnimatedStyle(() => ({
-    height:
-      interpolate(
-        scrollY.value,
-        [0, HERO_COLLAPSE_DISTANCE],
-        [HERO_EXPANDED_HEIGHT, HERO_COLLAPSED_HEIGHT],
-        Extrapolation.CLAMP,
-      ) + statusBarBleed,
-  }));
+  const heroHeightStyle = useAnimatedStyle(() => {
+    const height = interpolate(
+      scrollY.value,
+      [0, HERO_COLLAPSE_DISTANCE],
+      [HERO_EXPANDED_HEIGHT, HERO_COLLAPSED_HEIGHT],
+      Extrapolation.CLAMP,
+    );
+    return { height };
+  });
 
   const expandedContentStyle = useAnimatedStyle(() => ({
     opacity: interpolate(
@@ -93,10 +93,10 @@ export function CollapsibleEventHero({
     >
       <EdgeToEdgeHeroMedia height={heroImageHeight} source={event.heroImage} />
 
-      <View style={absoluteFill}>
+      <View style={[absoluteFill, { paddingTop: statusBarBleed }]}>
         <View
           className="px-4"
-          style={{ paddingTop: Math.max(statusBarBleed, 12) + 16 }}
+          style={{ paddingTop: 16 }}
         >
           <View className="mt-3 flex-row items-center justify-between">
             <Pressable
@@ -147,7 +147,7 @@ export function CollapsibleEventHero({
           style={[
             expandedContentStyle,
             {
-              top: HERO_IMAGE_HEIGHT + statusBarBleed,
+              top: HERO_IMAGE_HEIGHT,
               pointerEvents: isHeroCollapsed ? "none" : "auto",
             },
           ]}

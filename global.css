@@ -54,6 +54,8 @@
     text-size-adjust: 100%;
     /* Prevents the browser from allowing pinch-to-zoom or double-tap-to-zoom */
     touch-action: manipulation;
+    /* Disables pull-to-refresh and overscroll glow on Android */
+    overscroll-behavior-y: none;
   }
 
   #root {
