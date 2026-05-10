@@ -12,7 +12,7 @@ export const ticketOrder: TicketOrderData = {
     date: "Mon, Jun 01",
     time: "7:30 PM",
     fullDateTimeLabel: "Mon, Jun 01, 7:30 PM",
-    heroImage: require("../../assets/tickets/don-toliver.png"),
+    heroImage: { uri: "https://images.unsplash.com/photo-1540039155733-5bb30b53aa1d?auto=format&fit=crop&w=1000&q=80" },
     latitude: 40.7505,
     longitude: -73.9934,
   },
