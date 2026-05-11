@@ -163,7 +163,7 @@ export default function RootLayout() {
             </Head>
             <StatusBar backgroundColor={APP_STATUS_BAR_BLACK} style="light" />
             <RootStack />
-            <PwaInstallPrompt />
+            <PwaInstallPrompt isStartupFinished={hasFinishedStartup} />
             {!hasFinishedStartup ? (
               <PremiumStartupScreen onFinish={handleStartupFinish} />
             ) : null}

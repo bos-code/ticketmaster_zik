@@ -21,7 +21,7 @@ function isStandaloneMode() {
   );
 }
 
-export function PwaInstallPrompt() {
+export function PwaInstallPrompt({ isStartupFinished }: { isStartupFinished?: boolean }) {
   const [installPrompt, setInstallPrompt] =
     useState<BeforeInstallPromptEvent | null>(null);
   const [isVisible, setIsVisible] = useState(false);
@@ -32,28 +32,36 @@ export function PwaInstallPrompt() {
       return;
     }
 
-    // Check if it's iOS
+    // Check if it's iOS (including modern iPad in desktop mode)
     const userAgent = window.navigator.userAgent.toLowerCase();
-    const isIOSDevice = /iphone|ipad|ipod/.test(userAgent);
+    const isIOSDevice =
+      /iphone|ipad|ipod/.test(userAgent) ||
+      (window.navigator.platform === "MacIntel" &&
+        window.navigator.maxTouchPoints > 1);
+    
     setIsIOS(isIOSDevice);
 
     if (isStandaloneMode()) {
       return;
     }
 
-    if (isIOSDevice) {
-      // For iOS, we just show the prompt if not in standalone mode
-      // We can use a timer or scroll listener to show it after a bit
+    // For iOS, we show the prompt after startup and a short delay
+    if (isIOSDevice && isStartupFinished) {
       const timer = setTimeout(() => {
         setIsVisible(true);
-      }, 3000);
+      }, 1500);
       return () => clearTimeout(timer);
     }
 
+    // For Android/Chrome, we listen for beforeinstallprompt
     const handleBeforeInstallPrompt = (event: Event) => {
       event.preventDefault();
       setInstallPrompt(event as BeforeInstallPromptEvent);
-      setIsVisible(true);
+      
+      // Only show if startup is already finished, otherwise we'll show it when it finishes
+      if (isStartupFinished) {
+        setIsVisible(true);
+      }
     };
 
     const handleAppInstalled = () => {
@@ -71,13 +79,21 @@ export function PwaInstallPrompt() {
       );
       window.removeEventListener("appinstalled", handleAppInstalled);
     };
-  }, []);
+  }, [isStartupFinished]);
+
+  // Secondary effect to show the non-iOS prompt if it was received during splash
+  useEffect(() => {
+    if (isStartupFinished && installPrompt && !isIOS) {
+      const timer = setTimeout(() => {
+        setIsVisible(true);
+      }, 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [isStartupFinished, installPrompt, isIOS]);
 
   const handleInstall = async () => {
     if (isIOS) {
-      // iOS doesn't have a programmatic prompt, we can show instructions
-      // but for now we'll just acknowledge the user's intent or show a mock success
-      // In a real app, this would show "Tap the share button and Add to Home Screen"
+      // iOS doesn't have a programmatic prompt, instructions are in the text
       setIsVisible(false);
       return;
     }
@@ -99,22 +115,22 @@ export function PwaInstallPrompt() {
   return (
     <View
       pointerEvents="box-none"
-      className="absolute inset-x-0 bottom-6 z-[2000] items-center px-4"
+      className="absolute inset-x-0 bottom-12 z-[2000] items-center px-4"
     >
-      <View className="w-full max-w-[390px] flex-row items-center gap-3 rounded-[12px] bg-[#111111] px-4 py-3 shadow-lg border border-white/10">
+      <View className="w-full max-w-[390px] flex-row items-center gap-3 rounded-[16px] bg-[#111111] px-4 py-3.5 shadow-2xl border border-white/10">
         <View className="flex-1">
           <Text className="text-[14px] font-bold leading-[17px] text-white">
             Install Tickets
           </Text>
-          <Text className="mt-1 text-[12px] font-medium leading-[15px] text-[rgba(255,255,255,0.72)]">
+          <Text className="mt-1 text-[12px] font-medium leading-[16px] text-[rgba(255,255,255,0.7)]">
             {isIOS 
               ? "Tap the share button and 'Add to Home Screen'."
-              : "Add it to your home screen for quick access."}
+              : "Add to home screen for the best experience."}
           </Text>
         </View>
         <Pressable
           accessibilityRole="button"
-          className="h-9 items-center justify-center rounded-[8px] bg-white px-4"
+          className="h-10 items-center justify-center rounded-[10px] bg-white px-4 active:opacity-80"
           onPress={handleInstall}
         >
           <Text className="text-[13px] font-bold text-[#111111]">
@@ -123,10 +139,10 @@ export function PwaInstallPrompt() {
         </Pressable>
         <Pressable
           accessibilityRole="button"
-          className="h-9 items-center justify-center px-1 ml-1"
+          className="h-10 items-center justify-center px-2 ml-1"
           onPress={() => setIsVisible(false)}
         >
-          <Text className="text-[13px] font-bold text-[rgba(255,255,255,0.5)]">
+          <Text className="text-[13px] font-medium text-[rgba(255,255,255,0.4)]">
             Later
           </Text>
         </Pressable>
@@ -134,3 +150,4 @@ export function PwaInstallPrompt() {
     </View>
   );
 }
+
