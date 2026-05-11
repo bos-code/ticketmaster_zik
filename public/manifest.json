@@ -15,7 +15,7 @@
       "purpose": "any maskable"
     }
   ],
-  "start_url": "/",
+  "start_url": "/my-tickets",
   "background_color": "#050505",
   "display": "standalone",
   "display_override": ["standalone", "fullscreen", "browser"],
