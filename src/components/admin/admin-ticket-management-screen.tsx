@@ -1,6 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
+import { ScreenWrapper } from '@/components/ui/screen-wrapper';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useEffect, useMemo, useState } from 'react';
 import {
@@ -107,14 +108,13 @@ export function AdminTicketManagementScreen() {
   }
 
   return (
-    <View style={styles.root}>
+    <ScreenWrapper backgroundColor="#F5F6F8">
       <Head>
         <meta name="theme-color" content="#F5F6F8" />
         <meta name="color-scheme" content="light" />
       </Head>
       <StatusBar style="dark" backgroundColor="#F5F6F8" />
-      <SafeAreaView edges={['top', 'left', 'right']} style={styles.safe}>
-        <View style={styles.header}>
+      <View style={styles.header}>
           <Pressable onPress={handleExitAdmin} style={styles.iconButton}>
             <Ionicons color="#374151" name="chevron-back" size={20} />
           </Pressable>
@@ -150,7 +150,7 @@ export function AdminTicketManagementScreen() {
             </View>
           </ScrollView>
         </View>
-      </SafeAreaView>
+      </View>
 
       <ScrollView
         contentContainerStyle={[styles.content, { paddingBottom: 112 + insets.bottom }]}
@@ -225,7 +225,7 @@ export function AdminTicketManagementScreen() {
           <Text style={styles.toastText}>{toast}</Text>
         </View>
       ) : null}
-    </View>
+    </ScreenWrapper>
   );
 }
 

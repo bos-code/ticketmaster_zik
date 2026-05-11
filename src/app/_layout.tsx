@@ -161,7 +161,7 @@ export default function RootLayout() {
               <meta name="theme-color" content={APP_STATUS_BAR_BLACK} />
               <meta name="color-scheme" content="dark" />
             </Head>
-            <StatusBar backgroundColor={APP_STATUS_BAR_BLACK} style="light" />
+            <StatusBar translucent backgroundColor="transparent" style="light" />
             <RootStack />
             <PwaInstallPrompt isStartupFinished={hasFinishedStartup} />
             {!hasFinishedStartup ? (

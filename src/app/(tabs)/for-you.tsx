@@ -1,21 +1,20 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { ScreenWrapper } from '@/components/ui/screen-wrapper';
 import Svg, { Circle, Path, Rect } from 'react-native-svg';
 
 import Head from 'expo-router/head';
 import { StatusBar } from 'expo-status-bar';
 
 export default function ForYouScreen() {
-  const insets = useSafeAreaInsets();
   return (
-    <View style={styles.container}>
+    <ScreenWrapper backgroundColor="#EAEBEE">
       <Head>
         <meta name="theme-color" content="#EAEBEE" />
         <meta name="color-scheme" content="light" />
       </Head>
       <StatusBar backgroundColor="#EAEBEE" style="dark" />
-      <View style={[styles.content, { paddingTop: insets.top }]}>
+      <View style={styles.content}>
         
         {/* The White Circle Illustration */}
         <View style={styles.circleContainer}>
@@ -60,7 +59,7 @@ export default function ForYouScreen() {
           <Text style={styles.buttonText}>Sign In</Text>
         </TouchableOpacity>
       </View>
-    </View>
+    </ScreenWrapper>
   );
 }
 

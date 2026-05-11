@@ -1,6 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import { router } from "expo-router";
+import { ScreenWrapper } from "@/components/ui/screen-wrapper";
 import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
@@ -173,7 +174,7 @@ export function EventReservationFlow({ eventId }: { eventId: string }) {
   }
 
   const header = (
-    <View style={[styles.header, { paddingTop: Math.max(insets.top, 12) }]}>
+    <View style={styles.header}>
       <Pressable
         accessibilityRole="button"
         hitSlop={8}
@@ -201,7 +202,7 @@ export function EventReservationFlow({ eventId }: { eventId: string }) {
 
   if (step === "seats") {
     return (
-      <View style={styles.root}>
+      <ScreenWrapper backgroundColor={ticketColors.background}>
       <Head>
         <meta name="theme-color" content={ticketColors.background} />
         <meta name="color-scheme" content="light" />
@@ -230,12 +231,12 @@ export function EventReservationFlow({ eventId }: { eventId: string }) {
             visibleSeats={visibleSeats}
           />
         </Animated.View>
-      </View>
+      </ScreenWrapper>
     );
   }
 
   return (
-    <View style={styles.root}>
+    <ScreenWrapper backgroundColor={ticketColors.background}>
       <Head>
         <meta name="theme-color" content={ticketColors.background} />
         <meta name="color-scheme" content="light" />
@@ -309,13 +310,13 @@ export function EventReservationFlow({ eventId }: { eventId: string }) {
           ) : null}
         </Animated.View>
       </ScrollView>
-    </View>
+    </ScreenWrapper>
   );
 }
 
 function ReservationNotFound() {
   return (
-    <View style={styles.root}>
+    <ScreenWrapper backgroundColor={ticketColors.background}>
       <View style={styles.notFoundWrap}>
         <Pressable
           accessibilityRole="button"
@@ -343,7 +344,7 @@ function ReservationNotFound() {
           </Pressable>
         </View>
       </View>
-    </View>
+    </ScreenWrapper>
   );
 }
 

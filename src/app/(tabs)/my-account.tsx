@@ -1,4 +1,5 @@
 import { useRouter } from "expo-router";
+import { ScreenWrapper } from "@/components/ui/screen-wrapper";
 import enCountryData from "i18n-iso-countries/langs/en.json";
 import * as countries from "i18n-iso-countries";
 import React, { useEffect, useMemo, useRef, useState } from "react";
@@ -313,22 +314,20 @@ export default function MyAccountScreen() {
   };
 
   return (
-    <View className="flex-1 bg-white">
+    <ScreenWrapper backgroundColor="#000000">
       <Head>
         <meta name="theme-color" content="#000000" />
         <meta name="color-scheme" content="dark" />
       </Head>
       <StatusBar backgroundColor="#000000" style="light" />
 
-      <View style={{ backgroundColor: "#000000", paddingTop: Math.max(insets.top, 12) }}>
-        <View className="h-11 items-center justify-center bg-black px-4">
-          <Text
-            className="text-white text-base font-semibold text-center"
-            style={fontStyle}
-          >
-            Account
-          </Text>
-        </View>
+      <View className="h-11 items-center justify-center bg-black px-4">
+        <Text
+          className="text-white text-base font-semibold text-center"
+          style={fontStyle}
+        >
+          Account
+        </Text>
       </View>
 
       <ScrollView
@@ -463,7 +462,7 @@ export default function MyAccountScreen() {
 
         <View className="h-8" />
       </ScrollView>
-    </View>
+    </ScreenWrapper>
   );
 }
 

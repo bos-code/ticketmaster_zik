@@ -59,11 +59,6 @@ const TAB_CONFIG: Record<TabRouteName, TabConfig> = {
 export default function PremiumTabsLayout() {
   const insets = useSafeAreaInsets();
   
-  // On web PWA, insets.bottom might be reported even if not needed, 
-  // or it might be handled by the browser. 
-  // We'll use a more refined approach for web.
-  const bottomPadding = insets.bottom;
-  const tabBarHeight = 50 + bottomPadding;
 
   return (
     <Tabs
@@ -76,13 +71,15 @@ export default function PremiumTabsLayout() {
           lazy: true,
           sceneStyle: { backgroundColor: C.background },
           tabBarAccessibilityLabel: config.title,
-          tabBarHideOnKeyboard: true,
           tabBarInactiveTintColor: C.inactive,
           tabBarItemStyle: styles.tabItem,
-          tabBarSafeAreaInsets: { bottom: 0, top: 0, left: 0, right: 0 },
           tabBarStyle: [
             styles.tabBar,
-            { height: tabBarHeight, paddingBottom: bottomPadding },
+            {
+              height: Platform.OS === 'web' ? 50 + insets.bottom : undefined,
+              paddingBottom: Platform.OS === 'web' ? insets.bottom : 0,
+              backgroundColor: '#FFFFFF',
+            },
           ],
           tabBarIcon: ({ focused }) => (
             <View style={styles.iconWrap}>

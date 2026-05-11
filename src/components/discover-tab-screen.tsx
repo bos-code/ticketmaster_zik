@@ -10,7 +10,7 @@ import {
   TextInput,
   View,
 } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { ScreenWrapper } from '@/components/ui/screen-wrapper';
 
 import Head from 'expo-router/head';
 import { StatusBar } from 'expo-status-bar';
@@ -32,20 +32,18 @@ const DC = {
 };
 
 export function DiscoverTabScreen() {
-  const insets = useSafeAreaInsets();
-
-  const [searchValue, setSearchValue] = useState('');
+  const [searchValue, setSearchValue] = useState("");
 
   return (
-    <View style={styles.root}>
+    <ScreenWrapper backgroundColor="#000000">
       <Head>
         <meta name="theme-color" content="#000000" />
         <meta name="color-scheme" content="dark" />
       </Head>
       <StatusBar backgroundColor="#000000" style="light" />
 
-      {/* Top Black Area uses standard View + SafeArea inside */}
-      <View style={[styles.darkHeaderBg, { paddingTop: insets.top }]}>
+      {/* Top Black Area */}
+      <View style={styles.darkHeaderBg}>
         
         {/* Logo and New Button Row */}
         <View style={styles.topNavRow}>
@@ -179,7 +177,7 @@ export function DiscoverTabScreen() {
         </View>
 
       </ScrollView>
-    </View>
+    </ScreenWrapper>
   );
 }
 

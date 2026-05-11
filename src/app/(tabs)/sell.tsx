@@ -160,7 +160,7 @@ const STEP_DATA = [
 
 export default function SellScreen() {
   const insets = useSafeAreaInsets();
-  const { width: windowWidth, height: windowHeight } = useWindowDimensions();
+  const { width: windowWidth } = useWindowDimensions();
   const [currentStep, setCurrentStep] = useState(0);
   
   const verticalScrollRef = useRef<ScrollView>(null);
@@ -176,7 +176,7 @@ export default function SellScreen() {
 
   const handleSellPress = () => {
     verticalScrollRef.current?.scrollTo({
-      y: windowHeight - 100, // Roughly scroll past the black section
+      y: 400, // Reasonable scroll to reveal white section
       animated: true,
     });
   };
@@ -187,7 +187,7 @@ export default function SellScreen() {
         <meta name="theme-color" content={C.bg} />
         <meta name="color-scheme" content="dark" />
       </Head>
-      <StatusBar backgroundColor={C.bg} style="light" />
+      <StatusBar translucent backgroundColor="transparent" style="light" />
       
       <ScrollView 
         ref={verticalScrollRef}
@@ -196,49 +196,55 @@ export default function SellScreen() {
         showsVerticalScrollIndicator={false}
         bounces={false}
       >
-        <View style={[styles.mainContainer, { minHeight: windowHeight - (50 + insets.bottom), paddingTop: insets.top }]}>
-          <View style={styles.carouselContainer}>
-            <ScrollView
-              ref={horizontalScrollRef}
-              horizontal
-              pagingEnabled
-              showsHorizontalScrollIndicator={false}
-              onScroll={handleHorizontalScroll}
-              scrollEventThrottle={16}
-              style={{ width: windowWidth }}
-            >
-              {STEP_DATA.map((item, index) => (
-                <View key={index} style={[styles.stepItem, { width: windowWidth }]}>
-                  <View style={styles.spacer} />
-                  <item.Illustration />
-                  <Text style={styles.title}>{item.title}</Text>
-                  <Text style={styles.subtitle}>{item.subtitle}</Text>
-                </View>
+        <View style={[styles.mainContainer, { flex: 1, paddingTop: insets.top }]}>
+          <View style={{ flex: 1 }}>
+            <View style={styles.carouselContainer}>
+              <ScrollView
+                ref={horizontalScrollRef}
+                horizontal
+                pagingEnabled
+                showsHorizontalScrollIndicator={false}
+                onScroll={handleHorizontalScroll}
+                scrollEventThrottle={16}
+                style={{ width: windowWidth }}
+              >
+                {STEP_DATA.map((item, index) => (
+                  <View key={index} style={[styles.stepItem, { width: windowWidth }]}>
+                    <View style={styles.spacer} />
+                    <item.Illustration />
+                    <Text style={styles.title}>{item.title}</Text>
+                    <Text style={styles.subtitle}>{item.subtitle}</Text>
+                  </View>
+                ))}
+              </ScrollView>
+            </View>
+
+            <View style={styles.paginationDots}>
+              {STEP_DATA.map((_, index) => (
+                <View 
+                  key={index} 
+                  style={[styles.dot, currentStep === index ? styles.dotActive : styles.dotInactive]} 
+                />
               ))}
-            </ScrollView>
+            </View>
+
+            <View style={{ alignItems: 'center' }}>
+              <TouchableOpacity style={styles.learnMoreBtn} activeOpacity={0.8}>
+                <Text style={styles.learnMoreText}>Learn How It Works</Text>
+              </TouchableOpacity>
+            </View>
           </View>
 
-          <View style={styles.paginationDots}>
-            {STEP_DATA.map((_, index) => (
-              <View 
-                key={index} 
-                style={[styles.dot, currentStep === index ? styles.dotActive : styles.dotInactive]} 
-              />
-            ))}
-          </View>
-
-          <TouchableOpacity style={styles.learnMoreBtn} activeOpacity={0.8}>
-            <Text style={styles.learnMoreText}>Learn How It Works</Text>
-          </TouchableOpacity>
-
-          <View style={styles.bottomAction}>
-            <TouchableOpacity 
-              style={styles.sellBtn} 
-              activeOpacity={0.8}
-              onPress={handleSellPress}
-            >
-              <Text style={styles.sellBtnText}>Sell Your Tickets</Text>
-            </TouchableOpacity>
+          <View style={{ paddingBottom: 20 }}>
+            <View style={styles.bottomAction}>
+              <TouchableOpacity 
+                style={styles.sellBtn} 
+                activeOpacity={0.8}
+                onPress={handleSellPress}
+              >
+                <Text style={styles.sellBtnText}>Sell Your Tickets</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
 
