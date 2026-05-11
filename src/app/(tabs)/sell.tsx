@@ -256,7 +256,7 @@ export default function SellScreen() {
           <TouchableOpacity style={styles.listItem} activeOpacity={0.6}>
             <View style={styles.listItemLeft}>
               <ListIcon name="ticket" />
-              <Text style={styles.listItemText}>Tickets I'm Selling</Text>
+              <Text style={styles.listItemText}>Tickets I&apos;m Selling</Text>
             </View>
             <View style={styles.chevron} />
           </TouchableOpacity>

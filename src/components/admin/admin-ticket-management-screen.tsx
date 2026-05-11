@@ -14,7 +14,7 @@ import {
   Text,
   View,
 } from 'react-native';
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import Head from 'expo-router/head';
 import { StatusBar } from 'expo-status-bar';
@@ -129,27 +129,26 @@ export function AdminTicketManagementScreen() {
           </View>
         </View>
 
-        <View style={styles.filterWrap}>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-            <View style={styles.filterRow}>
-              {filters.map((filter) => {
-                const active = activeFilter === filter;
+      <View style={styles.filterWrap}>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+          <View style={styles.filterRow}>
+            {filters.map((filter) => {
+              const active = activeFilter === filter;
 
-                return (
-                  <Pressable
-                    key={filter}
-                    onPress={() => setActiveFilter(filter)}
-                    style={[styles.filterChip, active && styles.filterChipActive]}
-                  >
-                    <Text style={[styles.filterText, active && styles.filterTextActive]}>
-                      {filter}
-                    </Text>
-                  </Pressable>
-                );
-              })}
-            </View>
-          </ScrollView>
-        </View>
+              return (
+                <Pressable
+                  key={filter}
+                  onPress={() => setActiveFilter(filter)}
+                  style={[styles.filterChip, active && styles.filterChipActive]}
+                >
+                  <Text style={[styles.filterText, active && styles.filterTextActive]}>
+                    {filter}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </View>
+        </ScrollView>
       </View>
 
       <ScrollView

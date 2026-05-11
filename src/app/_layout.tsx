@@ -98,16 +98,11 @@ export default function RootLayout() {
   const hasFinishedStartup = useAppStore((state) => state.hasFinishedStartup);
   const finishStartup = useAppStore((state) => state.finishStartup);
   const hasHiddenNativeSplash = useRef(false);
-  const startupStatusBarColor = SPLASH_STATUS_BAR_COLOR;
   const startupBackgroundColor = SPLASH_STATUS_BAR_COLOR;
-  const statusBarBackgroundColor = hasFinishedStartup
-    ? APP_STATUS_BAR_BLACK
-    : startupStatusBarColor;
   // Use splash blue during startup to ensure no seams, transition to app background after
   const appBackgroundColor = hasFinishedStartup
     ? ticketColors.background
     : startupBackgroundColor;
-  const statusBarStyle = "light";
   const isReady = fontsLoaded || Boolean(fontError);
 
   useEffect(() => {

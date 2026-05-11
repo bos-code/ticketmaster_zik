@@ -1,8 +1,6 @@
 import React, { useEffect, useRef } from "react";
 import { Animated, Easing, Platform, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import Svg, { Path } from "react-native-svg";
-
 import Head from "expo-router/head";
 import { StatusBar } from "expo-status-bar";
 import { TicketmasterWordmark, TicketmasterTMark } from "@/components/ticketmaster-wordmark";

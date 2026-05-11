@@ -20,7 +20,6 @@ import Animated, {
 } from "react-native-reanimated";
 import Head from "expo-router/head";
 import { StatusBar } from "expo-status-bar";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { VenueMapCard } from "@/components/events/venue-map-card";
 import {
@@ -44,7 +43,6 @@ type FlowStep = "detail" | "seats" | "review" | "confirmation";
 const MAX_RESERVED_SEATS = 3;
 
 export function EventReservationFlow({ eventId }: { eventId: string }) {
-  const insets = useSafeAreaInsets();
   const event = useEventStore((state) => selectEventById(state, eventId));
   const reserveTickets = useEventStore((state) => state.reserveTickets);
   const { height } = useWindowDimensions();

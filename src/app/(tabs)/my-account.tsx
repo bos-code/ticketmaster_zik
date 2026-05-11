@@ -14,8 +14,6 @@ import {
   View,
 } from "react-native";
 import CountryFlag from "react-native-country-flag";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-
 import {
   AccountIcon,
   type AccountIconName,
@@ -220,7 +218,6 @@ function ValueRow({
 
 export default function MyAccountScreen() {
   const router = useRouter();
-  const insets = useSafeAreaInsets();
   const scrollRef = useRef<ScrollView | null>(null);
   const scrollOffsetYRef = useRef(WELCOME_PANEL_LOCK_HEIGHT);
   const [receiveNotifs, setReceiveNotifs] = useState(false);
