@@ -120,8 +120,9 @@ export function MyTicketsIndexScreen() {
         </View>
 
         <ScrollView
+          className="flex-1 bg-white"
+          contentContainerStyle={{ flexGrow: 1 }}
           contentContainerClassName="gap-5 px-4 pb-10 pt-5"
-          style={{ backgroundColor: "#FFFFFF" }}
           showsVerticalScrollIndicator={true}
         >
           {visibleEvents.length ? (

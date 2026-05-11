@@ -151,7 +151,7 @@ export function TicketTransferViewerScreen({
 
         <Animated.View
           entering={FadeInUp.duration(260)}
-          className="mt-auto items-center gap-10 px-5 pb-8"
+          className="mt-auto items-center gap-10 px-5 pb-1"
         >
           <View
             className="rounded-full bg-white px-5 py-[10px]"
