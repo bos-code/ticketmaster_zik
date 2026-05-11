@@ -62,16 +62,8 @@ export default function PremiumTabsLayout() {
   // On web PWA, insets.bottom might be reported even if not needed, 
   // or it might be handled by the browser. 
   // We'll use a more refined approach for web.
-  const isWeb = Platform.OS === 'web';
-  const bottomPadding = insets.bottom > 0 ? (isWeb ? Math.min(insets.bottom, 20) : insets.bottom) : Platform.select({
-    ios: 0,
-    android: 0,
-    web: 0,
-    default: 0
-  }) as number;
-  
-  // Standard tab bar height is 49-50. We'll use 50 as base.
-  const tabBarHeight = 50 + (bottomPadding > 0 ? bottomPadding - 4 : 0);
+  const bottomPadding = insets.bottom;
+  const tabBarHeight = 50 + bottomPadding;
 
   return (
     <Tabs

@@ -1,5 +1,15 @@
-import React from 'react';
-import { Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import React, { useRef, useState, useCallback } from 'react';
+import { 
+  Platform, 
+  ScrollView, 
+  StyleSheet, 
+  Text, 
+  TouchableOpacity, 
+  View, 
+  useWindowDimensions,
+  NativeScrollEvent,
+  NativeSyntheticEvent
+} from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { Circle, G, Path, Rect } from 'react-native-svg';
 
@@ -74,24 +84,17 @@ function SellIllustrationStep2() {
   return (
     <View style={styles.illustrationWrapper}>
       <Svg width="180" height="180" viewBox="0 0 180 180">
-        {/* Floating white rectangle top left */}
         <Rect x="20" y="20" width="30" height="12" fill={C.white} transform="rotate(-5, 35, 26)" />
-        
-        {/* Striped cylinder top center */}
         <G transform="translate(70, 15) rotate(-15)">
           <Rect x="0" y="0" width="40" height="14" fill={C.white} rx="7" />
           <Rect x="10" y="0" width="3" height="14" fill={C.blue} />
           <Rect x="16" y="0" width="3" height="14" fill={C.blue} />
         </G>
-
-        {/* Blue card top right */}
         <G transform="translate(90, 45) rotate(15)">
           <Rect x="0" y="0" width="80" height="50" fill={C.blue} rx="4" />
           <Rect x="0" y="10" width="80" height="10" fill={C.white} />
           <Rect x="10" y="28" width="60" height="6" fill={C.bg} opacity={0.5} />
         </G>
-
-        {/* White ticket with star */}
         <G transform="translate(50, 70) rotate(-10)">
           <Rect x="0" y="0" width="65" height="90" fill={C.white} rx="2" />
           <Rect x="8" y="8" width="49" height="16" fill="none" stroke={C.blue} strokeWidth="2" />
@@ -104,8 +107,6 @@ function SellIllustrationStep2() {
             fill={C.blue} 
           />
         </G>
-
-        {/* Blue rectangle bottom right */}
         <Rect x="120" y="140" width="40" height="12" fill={C.blue} transform="rotate(2, 140, 146)" />
       </Svg>
     </View>
@@ -144,24 +145,41 @@ function ListIcon({ name, color = '#7F8280' }: { name: string; color?: string })
   return null;
 }
 
+const STEP_DATA = [
+  {
+    title: 'SELL TICKETS FROM ANY SITE',
+    subtitle: 'Get access to millions of fans, even if you did not buy tickets on Ticketmaster.',
+    Illustration: SellIllustrationStep1,
+  },
+  {
+    title: 'QUICK AND EASY',
+    subtitle: "List, sell and get paid — it's all here, right in one convenient place.",
+    Illustration: SellIllustrationStep2,
+  },
+];
+
 export default function SellScreen() {
   const insets = useSafeAreaInsets();
-  const [currentStep, setCurrentStep] = React.useState(1); // Set to 1 for the requested "second step"
+  const { width: windowWidth, height: windowHeight } = useWindowDimensions();
+  const [currentStep, setCurrentStep] = useState(0);
+  
+  const verticalScrollRef = useRef<ScrollView>(null);
+  const horizontalScrollRef = useRef<ScrollView>(null);
 
-  const stepData = [
-    {
-      title: 'SELL TICKETS FROM ANY SITE',
-      subtitle: 'Get access to millions of fans, even if you did not buy tickets\non Ticketmaster.',
-      Illustration: SellIllustrationStep1,
-    },
-    {
-      title: 'QUICK AND EASY',
-      subtitle: "List, sell and get paid — it's all here, right in one\nconvenient place.",
-      Illustration: SellIllustrationStep2,
-    },
-  ];
+  const handleHorizontalScroll = useCallback((event: NativeSyntheticEvent<NativeScrollEvent>) => {
+    const offsetX = event.nativeEvent.contentOffset.x;
+    const step = Math.round(offsetX / windowWidth);
+    if (step !== currentStep) {
+      setCurrentStep(step);
+    }
+  }, [currentStep, windowWidth]);
 
-  const currentData = stepData[currentStep];
+  const handleSellPress = () => {
+    verticalScrollRef.current?.scrollTo({
+      y: windowHeight - 100, // Roughly scroll past the black section
+      animated: true,
+    });
+  };
 
   return (
     <View style={styles.root}>
@@ -172,22 +190,41 @@ export default function SellScreen() {
       <StatusBar backgroundColor={C.bg} style="light" />
       
       <ScrollView 
+        ref={verticalScrollRef}
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
         bounces={false}
       >
-        <View style={[styles.mainContainer, { paddingTop: insets.top }]}>
-          <View style={styles.spacer} />
-          
-          <currentData.Illustration />
-          
-          <Text style={styles.title}>{currentData.title}</Text>
-          <Text style={styles.subtitle}>{currentData.subtitle}</Text>
+        <View style={[styles.mainContainer, { minHeight: windowHeight - (50 + insets.bottom), paddingTop: insets.top }]}>
+          <View style={styles.carouselContainer}>
+            <ScrollView
+              ref={horizontalScrollRef}
+              horizontal
+              pagingEnabled
+              showsHorizontalScrollIndicator={false}
+              onScroll={handleHorizontalScroll}
+              scrollEventThrottle={16}
+              style={{ width: windowWidth }}
+            >
+              {STEP_DATA.map((item, index) => (
+                <View key={index} style={[styles.stepItem, { width: windowWidth }]}>
+                  <View style={styles.spacer} />
+                  <item.Illustration />
+                  <Text style={styles.title}>{item.title}</Text>
+                  <Text style={styles.subtitle}>{item.subtitle}</Text>
+                </View>
+              ))}
+            </ScrollView>
+          </View>
 
           <View style={styles.paginationDots}>
-            <View style={[styles.dot, currentStep === 0 ? styles.dotActive : styles.dotInactive]} />
-            <View style={[styles.dot, currentStep === 1 ? styles.dotActive : styles.dotInactive]} />
+            {STEP_DATA.map((_, index) => (
+              <View 
+                key={index} 
+                style={[styles.dot, currentStep === index ? styles.dotActive : styles.dotInactive]} 
+              />
+            ))}
           </View>
 
           <TouchableOpacity style={styles.learnMoreBtn} activeOpacity={0.8}>
@@ -198,14 +235,18 @@ export default function SellScreen() {
             <TouchableOpacity 
               style={styles.sellBtn} 
               activeOpacity={0.8}
-              onPress={() => setCurrentStep((s) => (s + 1) % 2)}
+              onPress={handleSellPress}
             >
               <Text style={styles.sellBtnText}>Sell Your Tickets</Text>
             </TouchableOpacity>
           </View>
         </View>
 
-        <View style={[styles.whiteSection, { paddingBottom: insets.bottom + 40 }]}>
+        <View style={[styles.whiteSection, { minHeight: 400, paddingBottom: insets.bottom + 40 }]}>
+          <View style={styles.whiteSectionHeader}>
+            <Text style={styles.whiteSectionTitle}>Manage Listings</Text>
+          </View>
+
           <TouchableOpacity style={styles.listItem} activeOpacity={0.6}>
             <View style={styles.listItemLeft}>
               <ListIcon name="ticket" />
@@ -252,9 +293,16 @@ const styles = StyleSheet.create({
   },
   mainContainer: {
     alignItems: 'center',
-    paddingHorizontal: 24,
     backgroundColor: C.bg,
+    justifyContent: 'space-between',
     paddingBottom: 40,
+  },
+  carouselContainer: {
+    flex: 1,
+  },
+  stepItem: {
+    alignItems: 'center',
+    paddingHorizontal: 32,
   },
   spacer: {
     height: 40,
@@ -262,7 +310,7 @@ const styles = StyleSheet.create({
   illustrationWrapper: {
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 32,
+    marginBottom: 40,
     height: 180,
   },
   title: {
@@ -271,16 +319,17 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '700',
     letterSpacing: 0.5,
-    marginBottom: 12,
+    marginBottom: 16,
     textAlign: 'center',
+    textTransform: 'uppercase',
   },
   subtitle: {
     fontFamily: fontStack,
     color: C.greyText,
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: '400',
     textAlign: 'center',
-    lineHeight: 20,
+    lineHeight: 22,
     marginBottom: 32,
   },
   paginationDots: {
@@ -291,9 +340,9 @@ const styles = StyleSheet.create({
     marginBottom: 32,
   },
   dot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
+    width: 7,
+    height: 7,
+    borderRadius: 3.5,
   },
   dotActive: {
     backgroundColor: C.white,
@@ -305,21 +354,22 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: C.white,
     paddingVertical: 12,
-    paddingHorizontal: 24,
+    paddingHorizontal: 28,
     borderRadius: 2,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 40,
+    marginBottom: 48,
   },
   learnMoreText: {
     fontFamily: fontStack,
     color: C.white,
-    fontSize: 15,
-    fontWeight: '600',
+    fontSize: 14,
+    fontWeight: '700',
+    letterSpacing: 0.5,
   },
   bottomAction: {
     width: '100%',
-    marginBottom: 0,
+    paddingHorizontal: 24,
   },
   sellBtn: {
     backgroundColor: C.blue,
@@ -336,13 +386,25 @@ const styles = StyleSheet.create({
   },
   whiteSection: {
     backgroundColor: C.white,
-    flex: 1,
+    borderTopLeftRadius: 0,
+    borderTopRightRadius: 0,
+  },
+  whiteSectionHeader: {
+    paddingHorizontal: 24,
+    paddingTop: 32,
+    paddingBottom: 8,
+  },
+  whiteSectionTitle: {
+    fontFamily: fontStack,
+    fontSize: 22,
+    fontWeight: '700',
+    color: '#000',
   },
   listItem: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingVertical: 20,
+    paddingVertical: 22,
     paddingHorizontal: 24,
   },
   listItemLeft: {
@@ -352,15 +414,15 @@ const styles = StyleSheet.create({
   },
   listItemText: {
     fontFamily: fontStack,
-    color: '#262626',
+    color: '#111',
     fontSize: 16,
     fontWeight: '600',
   },
   chevron: {
     width: 8,
     height: 8,
-    borderTopWidth: 1.5,
-    borderRightWidth: 1.5,
+    borderTopWidth: 2,
+    borderRightWidth: 2,
     borderColor: '#D1D1D6',
     transform: [{ rotate: '45deg' }],
   },
@@ -370,3 +432,4 @@ const styles = StyleSheet.create({
     marginLeft: 60,
   },
 });
+
