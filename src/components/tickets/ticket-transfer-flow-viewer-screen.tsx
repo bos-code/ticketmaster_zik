@@ -34,7 +34,7 @@ function ViewerHeader({ onBack }: { onBack: () => void }) {
 
   return (
     <View style={{ backgroundColor: "#F9F8F4", paddingTop: insets.top }}>
-      <View className="flex-row items-center bg-[#F9F8F4] px-5 pb-2 pt-1">
+      <View className="flex-row items-center bg-[#F9F8F4] px-5 pb-2 pt-0">
         <Pressable
           accessibilityRole="button"
           hitSlop={8}
@@ -105,7 +105,7 @@ export function TicketTransferViewerScreen({
 
   return (
     <SafeAreaView
-      edges={["left", "right"]}
+      edges={["bottom", "left", "right"]}
       style={{ flex: 1, backgroundColor: "#F9F8F4" }}
     >
       <Head>

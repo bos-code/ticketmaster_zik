@@ -71,7 +71,7 @@ export default function PremiumTabsLayout() {
   }) as number;
   
   // Standard tab bar height is 49-50. We'll use 50 as base.
-  const tabBarHeight = 50 + bottomPadding;
+  const tabBarHeight = 50 + (bottomPadding > 0 ? bottomPadding - 4 : 0);
 
   return (
     <Tabs
@@ -134,7 +134,7 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: '#E5E5E5',
     elevation: 8,
-    paddingTop: 8,
+    paddingTop: 5,
   },
   tabItem: {
     paddingHorizontal: 0,
