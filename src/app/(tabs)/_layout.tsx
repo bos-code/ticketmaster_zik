@@ -77,7 +77,7 @@ export default function PremiumTabsLayout() {
           tabBarStyle: [
             styles.tabBar,
             {
-              height: 30 + insets.bottom,
+              height: 44 + insets.bottom,
               paddingBottom: insets.bottom,
               backgroundColor: '#FFFFFF',
             },
