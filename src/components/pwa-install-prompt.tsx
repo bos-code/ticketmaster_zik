@@ -7,6 +7,8 @@ type BeforeInstallPromptEvent = Event & {
   userChoice: Promise<{ outcome: "accepted" | "dismissed"; platform: string }>;
 };
 
+const TAB_BAR_BASE_HEIGHT = 65;
+
 function isStandaloneMode() {
   if (typeof window === "undefined") {
     return true;
@@ -29,7 +31,7 @@ export function PwaInstallPrompt({ isStartupFinished }: { isStartupFinished?: bo
   const [isIOS, setIsIOS] = useState(false);
   
   const insets = useSafeAreaInsets();
-  const TAB_BAR_HEIGHT = 50 + insets.bottom;
+  const TAB_BAR_HEIGHT = TAB_BAR_BASE_HEIGHT + insets.bottom;
   const PROMPT_BOTTOM_GAP = 12;
 
   useEffect(() => {
@@ -156,4 +158,3 @@ export function PwaInstallPrompt({ isStartupFinished }: { isStartupFinished?: bo
     </View>
   );
 }
-

@@ -15,6 +15,8 @@ type TabConfig = {
   icon: TicketmasterTabIconName;
 };
 
+const TAB_BAR_BASE_HEIGHT = 65;
+
 const C = {
   active: '#0F56F4',
   inactive: '#7F8280',
@@ -77,7 +79,7 @@ export default function PremiumTabsLayout() {
           tabBarStyle: [
             styles.tabBar,
             {
-              height: 50 + insets.bottom,
+              height: TAB_BAR_BASE_HEIGHT + insets.bottom,
               paddingBottom: insets.bottom,
               backgroundColor: '#FFFFFF',
             },
