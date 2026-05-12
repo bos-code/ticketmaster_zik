@@ -40,6 +40,22 @@ export default function RootHtml({ children }: PropsWithChildren) {
                 -webkit-font-smoothing: antialiased;
                 -webkit-tap-highlight-color: transparent;
               }
+              @media (display-mode: standalone), (display-mode: fullscreen) {
+                html, body {
+                  height: 100%;
+                  min-height: 100%;
+                }
+                #root {
+                  bottom: 0;
+                  height: auto;
+                  left: 0;
+                  overflow: hidden;
+                  position: fixed;
+                  right: 0;
+                  top: 0;
+                  width: 100vw;
+                }
+              }
             `,
           }}
         />
