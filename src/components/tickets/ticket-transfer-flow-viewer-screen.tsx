@@ -10,7 +10,7 @@ import {
   type NativeSyntheticEvent,
 } from "react-native";
 import Animated, { FadeInUp } from "react-native-reanimated";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { AppleWalletIcon } from "@/components/tickets/apple-wallet-icon";
 import { EditableText } from "@/components/tickets/EditableText";
@@ -33,7 +33,7 @@ function ViewerHeader({ onBack }: { onBack: () => void }) {
   const insets = useImmersiveSafeAreaInsets();
 
   return (
-    <View style={{ backgroundColor: "#F9F8F4", paddingTop: insets.top }}>
+    <View style={{ backgroundColor: "#F9F8F4", paddingTop: Platform.OS === 'ios' ? 0 : insets.top + 4 }}>
       <View className="flex-row items-center bg-[#F9F8F4] px-5 pb-2 pt-0">
         <Pressable
           accessibilityRole="button"
@@ -100,19 +100,20 @@ export function TicketTransferViewerScreen({
   }
 
   const { width } = useWindowDimensions();
+  const insets = useSafeAreaInsets();
   const screenWidth = Math.min(width, 430);
   const sidePadding = (screenWidth - carouselCardWidth) / 2;
 
   return (
     <SafeAreaView
-      edges={["left", "right", "bottom"]}
+      edges={["left", "right"]}
       style={{ flex: 1, backgroundColor: "#F9F8F4" }}
     >
       <Head>
         <meta name="theme-color" content="#F9F8F4" />
         <meta name="color-scheme" content="light" />
       </Head>
-      <StatusBar backgroundColor="#F9F8F4" style="dark" />
+      <StatusBar backgroundColor="#F9F8F4" style="dark" translucent={true} />
       <View className="flex-1 bg-[#F9F8F4]">
         <ViewerHeader onBack={onBack} />
 
@@ -121,7 +122,7 @@ export function TicketTransferViewerScreen({
             paddingBottom: 20,
             paddingLeft: sidePadding,
             paddingRight: sidePadding,
-            paddingTop: 16,
+            paddingTop: Platform.OS === 'ios' ? 16 + insets.top : 16,
           }}
           data={seats}
           decelerationRate="fast"
@@ -151,7 +152,8 @@ export function TicketTransferViewerScreen({
 
         <Animated.View
           entering={FadeInUp.duration(260)}
-          className="mt-auto items-center gap-10 px-5 pb-1"
+          className="mt-auto items-center gap-10 px-5"
+          style={{ paddingBottom: Platform.OS === 'ios' ? insets.bottom * 0.6 : Math.max(insets.bottom + 30, 30) }}
         >
           <View
             className="rounded-full bg-white px-5 py-[10px]"
