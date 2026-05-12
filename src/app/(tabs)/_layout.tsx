@@ -80,17 +80,8 @@ export default function PremiumTabsLayout() {
           tabBarStyle: [
             styles.tabBar,
             {
-<<<<<<< HEAD
-<<<<<<< HEAD
-              height: TAB_BAR_BASE_HEIGHT + insets.bottom,
-              paddingBottom: insets.bottom,
-=======
-              height: 47 + bottomInset,
-=======
-              height: 54 + bottomInset,
->>>>>>> c64d3ac98aabefbae9ca5f55d5f7130522a05e53
+              height: 56 + bottomInset,
               paddingBottom: bottomInset,
->>>>>>> 5d8d02b4110d7988820b569723ab68f99de354dc
               backgroundColor: '#FFFFFF',
             },
           ],
