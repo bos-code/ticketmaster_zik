@@ -25,6 +25,26 @@ export default function RootHtml({ children }: PropsWithChildren) {
         <meta name="apple-mobile-web-app-title" content="Tickets" />
         <link rel="manifest" href="/manifest.json" />
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function () {
+                try {
+                  var navigatorWithStandalone = window.navigator;
+                  var isStandalone =
+                    navigatorWithStandalone.standalone === true ||
+                    (window.matchMedia &&
+                      (window.matchMedia("(display-mode: standalone)").matches ||
+                        window.matchMedia("(display-mode: fullscreen)").matches));
+
+                  if (isStandalone) {
+                    document.documentElement.classList.add("is-standalone-pwa");
+                  }
+                } catch (_) {}
+              })();
+            `,
+          }}
+        />
         <ScrollViewStyleReset />
         <style
           dangerouslySetInnerHTML={{
@@ -39,6 +59,23 @@ export default function RootHtml({ children }: PropsWithChildren) {
                 margin: 0;
                 -webkit-font-smoothing: antialiased;
                 -webkit-tap-highlight-color: transparent;
+              }
+              html.is-standalone-pwa,
+              html.is-standalone-pwa body {
+                background: #FFFFFF;
+                height: 100%;
+                min-height: 100%;
+              }
+              html.is-standalone-pwa #root {
+                background: #FFFFFF;
+                bottom: 0;
+                height: auto;
+                left: 0;
+                overflow: hidden;
+                position: fixed;
+                right: 0;
+                top: 0;
+                width: 100vw;
               }
               @media (display-mode: standalone), (display-mode: fullscreen) {
                 html, body {

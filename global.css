@@ -89,6 +89,26 @@
   }
 }
 
+@media screen {
+  html.is-standalone-pwa,
+  html.is-standalone-pwa body {
+    background-color: #FFFFFF;
+    height: 100%;
+    min-height: 100%;
+  }
+
+  html.is-standalone-pwa #root {
+    background-color: #FFFFFF;
+    bottom: 0;
+    height: auto;
+    left: 0;
+    position: fixed;
+    right: 0;
+    top: 0;
+    width: 100vw;
+  }
+}
+
 @media screen and (max-height: 700px), screen and (max-width: 400px) {
   .ticket-summary-hero-card {
     padding-top: 10px !important;
