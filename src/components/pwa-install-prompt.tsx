@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Platform, Pressable, Text, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 type BeforeInstallPromptEvent = Event & {
   prompt: () => Promise<void>;
@@ -26,6 +27,10 @@ export function PwaInstallPrompt({ isStartupFinished }: { isStartupFinished?: bo
     useState<BeforeInstallPromptEvent | null>(null);
   const [isVisible, setIsVisible] = useState(false);
   const [isIOS, setIsIOS] = useState(false);
+  
+  const insets = useSafeAreaInsets();
+  const TAB_BAR_HEIGHT = 50 + insets.bottom;
+  const PROMPT_BOTTOM_GAP = 12;
 
   useEffect(() => {
     if (Platform.OS !== "web" || typeof window === "undefined") {
@@ -115,7 +120,8 @@ export function PwaInstallPrompt({ isStartupFinished }: { isStartupFinished?: bo
   return (
     <View
       pointerEvents="box-none"
-      className="absolute inset-x-0 bottom-12 z-[2000] items-center px-4"
+      className="absolute inset-x-0 z-[2000] items-center px-4"
+      style={{ bottom: TAB_BAR_HEIGHT + PROMPT_BOTTOM_GAP }}
     >
       <View className="w-full max-w-[390px] flex-row items-center gap-3 rounded-[16px] bg-[#111111] px-4 py-3.5 shadow-2xl border border-white/10">
         <View className="flex-1">

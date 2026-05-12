@@ -62,6 +62,7 @@ export default function PremiumTabsLayout() {
 
   return (
     <Tabs
+      safeAreaInsets={{ bottom: 0 }}
       initialRouteName="my-tickets"
       screenOptions={({ route }) => {
         const config = TAB_CONFIG[route.name as TabRouteName] ?? TAB_CONFIG.discover;
@@ -76,8 +77,8 @@ export default function PremiumTabsLayout() {
           tabBarStyle: [
             styles.tabBar,
             {
-              height: 50 + Math.max(insets.bottom, Platform.OS === 'android' ? 24 : 0) + 20,
-              paddingBottom: Math.max(insets.bottom, Platform.OS === 'android' ? 24 : 0) + 20,
+              height: 50 + insets.bottom,
+              paddingBottom: insets.bottom,
               backgroundColor: '#FFFFFF',
             },
           ],
