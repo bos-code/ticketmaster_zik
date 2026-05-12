@@ -153,7 +153,7 @@ export function TicketTransferViewerScreen({
         <Animated.View
           entering={FadeInUp.duration(260)}
           className="mt-auto items-center gap-10 px-5"
-          style={{ paddingBottom: Platform.OS === 'ios' ? insets.bottom * 0.6 : Math.max(insets.bottom + 30, 30) }}
+          style={{ paddingBottom: Platform.OS === 'ios' ? insets.bottom * 0.25 : Math.max(insets.bottom + 60, 60) }}
         >
           <View
             className="rounded-full bg-white px-5 py-[10px]"

@@ -76,8 +76,8 @@ export default function PremiumTabsLayout() {
           tabBarStyle: [
             styles.tabBar,
             {
-              height: 50 + Math.max(insets.bottom, Platform.OS === 'android' ? 24 : 0),
-              paddingBottom: Math.max(insets.bottom, Platform.OS === 'android' ? 24 : 0),
+              height: 50 + Math.max(insets.bottom, Platform.OS === 'android' ? 24 : 0) + 20,
+              paddingBottom: Math.max(insets.bottom, Platform.OS === 'android' ? 24 : 0) + 20,
               backgroundColor: '#FFFFFF',
             },
           ],
