@@ -142,7 +142,7 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: "#E5E5E5",
     elevation: 8,
-    paddingTop: 5,
+    paddingTop: 2,
   },
   tabItem: {
     paddingHorizontal: 0,
