@@ -68,7 +68,7 @@ export function MyTicketsIndexScreen() {
       : "Tickets marked as past by admin will show up here.";
 
   return (
-    <View className="flex-1" style={{ backgroundColor: "#F8FAFC"}}>
+    <View className="flex-1" style={{ backgroundColor: "#FFFFFF" }}>
       <Head>
         <meta name="theme-color" content={APP_STATUS_BAR_BLACK} />
         <meta name="color-scheme" content="dark" />
@@ -77,7 +77,6 @@ export function MyTicketsIndexScreen() {
 
       <SafeAreaView
         edges={["top", "left", "right"]}
-        className="flex-1"
         style={{ backgroundColor: APP_STATUS_BAR_BLACK }}
       >
         <View
@@ -118,36 +117,37 @@ export function MyTicketsIndexScreen() {
             />
           </View>
         </View>
-
-        <ScrollView
-          className="flex-1 bg-white"
-          contentContainerStyle={{ flexGrow: 1 }}
-          contentContainerClassName="gap-5 px-4 pb-10 pt-5"
-          showsVerticalScrollIndicator={true}
-        >
-          {visibleEvents.length ? (
-            visibleEvents.map((ticket) => (
-              <TicketIndexCard
-                key={ticket.orderId}
-                onPress={() =>
-                  router.push(buildTicketSummaryHref(ticket.orderId))
-                }
-                ticket={ticket}
-              />
-            ))
-          ) : (
-            <View className="mt-4 items-center gap-2 border border-[rgba(255,255,255,0.08)] bg-[#111111] px-6 py-8">
-              <Text className="text-center text-[18px] font-black leading-[22px] text-white">
-                {emptyTitle}
-              </Text>
-
-              <Text className="text-center text-[14px] font-semibold leading-5 text-[rgba(255,255,255,0.68)]">
-                {emptyBody}
-              </Text>
-            </View>
-          )}
-        </ScrollView>
       </SafeAreaView>
+
+      <ScrollView
+        className="flex-1 bg-white"
+        contentContainerStyle={{ flexGrow: 1 }}
+        contentContainerClassName="gap-5 px-4 pb-10 pt-5"
+        showsVerticalScrollIndicator={true}
+        style={{ backgroundColor: "#FFFFFF" }}
+      >
+        {visibleEvents.length ? (
+          visibleEvents.map((ticket) => (
+            <TicketIndexCard
+              key={ticket.orderId}
+              onPress={() =>
+                router.push(buildTicketSummaryHref(ticket.orderId))
+              }
+              ticket={ticket}
+            />
+          ))
+        ) : (
+          <View className="mt-4 items-center gap-2 border border-[rgba(255,255,255,0.08)] bg-[#111111] px-6 py-8">
+            <Text className="text-center text-[18px] font-black leading-[22px] text-white">
+              {emptyTitle}
+            </Text>
+
+            <Text className="text-center text-[14px] font-semibold leading-5 text-[rgba(255,255,255,0.68)]">
+              {emptyBody}
+            </Text>
+          </View>
+        )}
+      </ScrollView>
     </View>
   );
 }
