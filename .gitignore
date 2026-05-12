@@ -36,7 +36,7 @@ yarn-error.*
 
 
 vsce-debug.log
-.firebase\logs
+.firebase/logs/
 
 # typescript
 *.tsbuildinfo
