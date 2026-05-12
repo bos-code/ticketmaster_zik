@@ -117,7 +117,11 @@ export function DiscoverTabScreen() {
         </ScrollView>
       </View>
 
-      <ScrollView showsVerticalScrollIndicator={false} style={styles.contentScroll}>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        style={[styles.contentScroll, { backgroundColor: DC.white }]}
+        contentContainerStyle={{ flexGrow: 1 }}
+      >
         <View style={styles.sectionContainer}>
           <View style={styles.sectionIndicator} />
           <Text style={styles.sectionTitle}>SPONSORED PRESALES AND{'\n'}OFFERS</Text>

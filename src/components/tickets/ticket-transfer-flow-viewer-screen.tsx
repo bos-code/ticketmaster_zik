@@ -105,7 +105,7 @@ export function TicketTransferViewerScreen({
 
   return (
     <SafeAreaView
-      edges={["bottom", "left", "right"]}
+      edges={["left", "right"]}
       style={{ flex: 1, backgroundColor: "#F9F8F4" }}
     >
       <Head>
