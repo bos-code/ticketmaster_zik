@@ -60,6 +60,7 @@ const TAB_CONFIG: Record<TabRouteName, TabConfig> = {
 
 export default function PremiumTabsLayout() {
   const insets = useSafeAreaInsets();
+  const bottomInset = Platform.OS === 'web' ? 0 : insets.bottom;
   
 
   return (
@@ -79,8 +80,13 @@ export default function PremiumTabsLayout() {
           tabBarStyle: [
             styles.tabBar,
             {
+<<<<<<< HEAD
               height: TAB_BAR_BASE_HEIGHT + insets.bottom,
               paddingBottom: insets.bottom,
+=======
+              height: 47 + bottomInset,
+              paddingBottom: bottomInset,
+>>>>>>> 5d8d02b4110d7988820b569723ab68f99de354dc
               backgroundColor: '#FFFFFF',
             },
           ],
