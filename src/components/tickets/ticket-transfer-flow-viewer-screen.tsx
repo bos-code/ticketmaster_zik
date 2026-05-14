@@ -132,7 +132,7 @@ export function TicketTransferViewerScreen({
             paddingBottom: 20,
             paddingLeft: sidePadding,
             paddingRight: sidePadding,
-            paddingTop: Platform.OS === "ios" ? 16 + insets.top : 16,
+            paddingTop: 16,
           }}
           data={seats}
           decelerationRate="fast"
@@ -162,12 +162,9 @@ export function TicketTransferViewerScreen({
 
         <Animated.View
           entering={FadeInUp.duration(260)}
-          className="mt-auto  items-center gap-10 px-5"
+          className="mt-auto items-center gap-10 px-5"
           style={{
-            paddingBottom:
-              Platform.OS === "ios"
-                ? Math.max(insets.bottom + 60, 60)
-                : Math.max(insets.bottom + 60, 60),
+            paddingBottom: Math.max(insets.bottom + 72, 72),
           }}
         >
           <View
