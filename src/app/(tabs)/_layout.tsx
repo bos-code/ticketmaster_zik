@@ -87,7 +87,7 @@ export default function PremiumTabsLayout() {
               paddingBottom: bottomInset,
               backgroundColor: "#F8FAFC",
               position: "absolute",
-              bottom: 0,
+              bottom: -4,
               left: 0,
               right: 0,
               zIndex: 50,

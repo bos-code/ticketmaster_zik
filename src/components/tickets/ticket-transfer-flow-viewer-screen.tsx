@@ -10,30 +10,35 @@ import {
   type NativeSyntheticEvent,
 } from "react-native";
 import Animated, { FadeInUp } from "react-native-reanimated";
-import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from "react-native-safe-area-context";
 
+import { useImmersiveSafeAreaInsets } from "@/components/immersive/edge-to-edge-hero";
 import { AppleWalletIcon } from "@/components/tickets/apple-wallet-icon";
 import { EditableText } from "@/components/tickets/EditableText";
 import { ExtrasPanel } from "@/components/tickets/ticket-transfer-flow-extras-panel";
-import {
-  useImmersiveSafeAreaInsets,
-} from "@/components/immersive/edge-to-edge-hero";
-import {
-  softPillShadow,
-} from "@/components/tickets/ticketFlowConstants";
+import { softPillShadow } from "@/components/tickets/ticketFlowConstants";
 import type { Seat } from "@/components/tickets/ticketFlowTypes";
 import { useTicketFlowData } from "@/components/tickets/useTicketFlowData";
 import { BottomDrawer } from "@/components/ui/bottom-drawer";
-import { TicketCard } from "./ticket-card";
 import Head from "expo-router/head";
 import { StatusBar } from "expo-status-bar";
+import { TicketCard } from "./ticket-card";
+import { Platform } from "react-native";
 
 function ViewerHeader({ onBack }: { onBack: () => void }) {
   const { event } = useTicketFlowData();
   const insets = useImmersiveSafeAreaInsets();
 
   return (
-    <View style={{ backgroundColor: "#F9F8F4", paddingTop: Platform.OS === 'ios' ? 0 : insets.top + 4 }}>
+    <View
+      style={{
+        backgroundColor: "#F9F8F4",
+        paddingTop: Platform.OS === "ios" ? 0 : insets.top + 4,
+      }}
+    >
       <View className="flex-row items-center bg-[#F9F8F4] px-5 pb-2 pt-0">
         <Pressable
           accessibilityRole="button"
@@ -45,8 +50,15 @@ function ViewerHeader({ onBack }: { onBack: () => void }) {
         </Pressable>
 
         <View className="justify-center">
-          <EditableText field="eventName" value={event.shortTitle} className="text-[17px] font-bold text-[#000000]" />
-          <EditableText value={event.headerSubtitle} className="text-[12px] font-medium text-[#6B6B6B]" />
+          <EditableText
+            field="eventName"
+            value={event.shortTitle}
+            className="text-[17px] font-bold text-[#000000]"
+          />
+          <EditableText
+            value={event.headerSubtitle}
+            className="text-[12px] font-medium text-[#6B6B6B]"
+          />
         </View>
       </View>
     </View>
@@ -89,9 +101,7 @@ export function TicketTransferViewerScreen({
   };
 
   function updateViewerIndexFromOffset(offsetX: number) {
-    const nextIndex = Math.round(
-      offsetX / carouselSnapInterval,
-    );
+    const nextIndex = Math.round(offsetX / carouselSnapInterval);
     const clampedIndex = Math.max(0, Math.min(seats.length - 1, nextIndex));
 
     if (clampedIndex !== viewerIndex) {
@@ -122,7 +132,7 @@ export function TicketTransferViewerScreen({
             paddingBottom: 20,
             paddingLeft: sidePadding,
             paddingRight: sidePadding,
-            paddingTop: Platform.OS === 'ios' ? 16 + insets.top : 16,
+            paddingTop: Platform.OS === "ios" ? 16 + insets.top : 16,
           }}
           data={seats}
           decelerationRate="fast"
@@ -152,8 +162,13 @@ export function TicketTransferViewerScreen({
 
         <Animated.View
           entering={FadeInUp.duration(260)}
-          className="mt-auto items-center gap-10 px-5"
-          style={{ paddingBottom: Platform.OS === 'ios' ? insets.bottom * 0.25 : Math.max(insets.bottom + 60, 60) }}
+          className="mt-auto  items-center gap-10 px-5"
+          style={{
+            paddingBottom:
+              Platform.OS === "ios"
+                ? insets.bottom * 0.25
+                : Math.max(insets.bottom + 60, 60),
+          }}
         >
           <View
             className="rounded-full bg-white px-5 py-[10px]"
@@ -164,15 +179,19 @@ export function TicketTransferViewerScreen({
             </Text>
           </View>
 
-          <View className="flex-row w-full justify-between gap-3 px-2">
+          <View className="flex-row mt-auto w-full justify-between gap-3 px-2">
             <Pressable
               accessibilityRole="button"
               className="h-[44px] flex-row items-center justify-center gap-2 rounded-[8px] bg-[#111111] px-4"
             >
               <AppleWalletIcon height={24} width={34} />
-              <View className="flex flex-col items-center" >
-                <Text className="text-[8px] font-medium text-white leading-tight">Add to</Text>
-                <Text className="text-[12px] font-bold text-white leading-tight">Apple Wallet</Text>
+              <View className="flex flex-col items-center">
+                <Text className="text-[8px] font-medium text-white leading-tight">
+                  Add to
+                </Text>
+                <Text className="text-[12px] font-bold text-white leading-tight">
+                  Apple Wallet
+                </Text>
               </View>
             </Pressable>
 
@@ -182,11 +201,7 @@ export function TicketTransferViewerScreen({
               onPress={() => setIsTicketInfoOpen(true)}
             >
               <View className="h-6 w-6 items-center justify-center rounded-full bg-black">
-                  <Ionicons
-                    color="#FFFFFF"
-                    name="information"
-                    size={15}
-                  />
+                <Ionicons color="#FFFFFF" name="information" size={15} />
               </View>
               <Text className="text-[13px] font-bold text-[#111111]">
                 Ticket Info
