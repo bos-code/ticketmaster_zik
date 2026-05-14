@@ -83,11 +83,11 @@ export default function PremiumTabsLayout() {
           tabBarStyle: [
             styles.tabBar,
             {
-              height: 60,
-              paddingBottom: 0,
+              height: 58 + bottomInset,
+              paddingBottom: bottomInset,
               backgroundColor: "#F8FAFC",
               position: "absolute",
-              bottom: -20,
+              bottom: 0,
               left: 0,
               right: 0,
               zIndex: 50,
