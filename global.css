@@ -75,13 +75,13 @@ screen and (display-mode: fullscreen) {
 
   html,
   body {
-    background-color: #FFFFFF;
+    background-color: #050505;
     height: 100%;
     min-height: 100%;
   }
 
   #root {
-    background-color: #FFFFFF;
+    background-color: #050505;
     bottom: 0;
     height: auto;
     left: 0;
@@ -96,13 +96,13 @@ screen and (display-mode: fullscreen) {
 
   html.is-standalone-pwa,
   html.is-standalone-pwa body {
-    background-color: #FFFFFF;
+    background-color: #050505;
     height: 100%;
     min-height: 100%;
   }
 
   html.is-standalone-pwa #root {
-    background-color: #FFFFFF;
+    background-color: #050505;
     bottom: 0;
     height: auto;
     left: 0;

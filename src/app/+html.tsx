@@ -62,12 +62,12 @@ export default function RootHtml({ children }: PropsWithChildren) {
               }
               html.is-standalone-pwa,
               html.is-standalone-pwa body {
-                background: #FFFFFF;
+                background: ${APP_THEME_COLOR};
                 height: 100%;
                 min-height: 100%;
               }
               html.is-standalone-pwa #root {
-                background: #FFFFFF;
+                background: ${APP_THEME_COLOR};
                 bottom: 0;
                 height: auto;
                 left: 0;
