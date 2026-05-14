@@ -4,7 +4,7 @@
     "slug": "zik",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/Correctapp_icon.png",
+    "icon": "./public/icon.png",
     "scheme": "ticketmasterzik",
     "userInterfaceStyle": "light",
     "ios": {
@@ -17,7 +17,7 @@
       "package": "com.johnderadev.ticketmasterzik",
       "adaptiveIcon": {
         "backgroundColor": "#000000",
-        "foregroundImage": "./assets/Correctapp_icon.png"
+        "foregroundImage": "./public/icon.png"
       },
       "predictiveBackGestureEnabled": false,
       "permissions": [
@@ -29,7 +29,7 @@
     "web": {
       "bundler": "metro",
       "output": "static",
-      "favicon": "./assets/Correctapp_icon.png",
+      "favicon": "./public/icon.png",
       "name": "Ticketmaster Admin",
       "shortName": "Tickets",
       "themeColor": "#050505",

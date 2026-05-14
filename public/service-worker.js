@@ -1,10 +1,11 @@
-const CACHE_NAME = "ticketmaster-zik-v8";
+const CACHE_NAME = "ticketmaster-zik-v9";
 const APP_SHELL_ASSETS = [
   "/",
   "/index.html",
   "/manifest.json",
-  "/assets/Correctapp_icon.png",
-  "/assets/Correctapp_icon-512.png",
+  "/icon.png",
+  "/icon-192.png",
+  "/icon-512.png",
   "/apple-touch-icon.png",
 ];
 

@@ -3,13 +3,13 @@
   "name": "Ticketmaster Admin",
   "icons": [
     {
-      "src": "/assets/Correctapp_icon.png",
+      "src": "/icon-192.png",
       "type": "image/png",
       "sizes": "192x192",
       "purpose": "any maskable"
     },
     {
-      "src": "/assets/Correctapp_icon-512.png",
+      "src": "/icon-512.png",
       "type": "image/png",
       "sizes": "512x512",
       "purpose": "any maskable"

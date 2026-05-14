@@ -13,6 +13,7 @@ import Animated, {
 } from "react-native-reanimated";
 
 import { EditableText } from "@/components/tickets/EditableText";
+import { TicketBarcodeSvg } from "@/components/tickets/ticket-barcode-svg";
 import type { Seat } from "@/components/tickets/ticketFlowTypes";
 import { useTicketFlowData } from "@/components/tickets/useTicketFlowData";
 
@@ -120,11 +121,7 @@ function TicketBarcodeBand() {
 
   return (
     <View className="relative h-[58px] w-full items-center justify-center overflow-hidden bg-white px-2">
-      <Image
-        contentFit="contain"
-        source={require("../../../assets/image.png")}
-        style={{ height: 90, width: "100%" }}
-      />
+      <TicketBarcodeSvg />
 
       <Animated.View
         className="absolute w-[6px] bg-[#026CDF]"

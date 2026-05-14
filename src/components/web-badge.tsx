@@ -16,7 +16,7 @@ export function WebBadge() {
       <ThemedText type="code" themeColor="textSecondary" style={styles.versionText}>
         v{appVersion}
       </ThemedText>
-      <Image source={require('@/assets/Correctapp_icon.png')} style={styles.badgeImage} />
+      <Image source={require('../../public/icon.png')} style={styles.badgeImage} />
     </ThemedView>
   );
 }
