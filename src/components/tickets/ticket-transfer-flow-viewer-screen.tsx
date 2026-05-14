@@ -1,18 +1,18 @@
 import { Ionicons } from "@expo/vector-icons";
 import React, { useEffect, useRef } from "react";
 import {
-  FlatList,
-  Pressable,
-  Text,
-  View,
-  useWindowDimensions,
-  type NativeScrollEvent,
-  type NativeSyntheticEvent,
+    FlatList,
+    Pressable,
+    Text,
+    View,
+    useWindowDimensions,
+    type NativeScrollEvent,
+    type NativeSyntheticEvent,
 } from "react-native";
 import Animated, { FadeInUp } from "react-native-reanimated";
 import {
-  SafeAreaView,
-  useSafeAreaInsets,
+    SafeAreaView,
+    useSafeAreaInsets,
 } from "react-native-safe-area-context";
 
 import { useImmersiveSafeAreaInsets } from "@/components/immersive/edge-to-edge-hero";
@@ -25,8 +25,8 @@ import { useTicketFlowData } from "@/components/tickets/useTicketFlowData";
 import { BottomDrawer } from "@/components/ui/bottom-drawer";
 import Head from "expo-router/head";
 import { StatusBar } from "expo-status-bar";
-import { TicketCard } from "./ticket-card";
 import { Platform } from "react-native";
+import { TicketCard } from "./ticket-card";
 
 function ViewerHeader({ onBack }: { onBack: () => void }) {
   const { event } = useTicketFlowData();
