@@ -85,9 +85,9 @@ export default function PremiumTabsLayout() {
             {
               height: 60,
               paddingBottom: 0,
-              backgroundColor: "#FFFFFF",
+              backgroundColor: "#F8FAFC",
               position: "absolute",
-              bottom: -10,
+              bottom: -20,
               left: 0,
               right: 0,
               zIndex: 50,
@@ -143,7 +143,7 @@ export default function PremiumTabsLayout() {
 
 const styles = StyleSheet.create({
   tabBar: {
-    backgroundColor: "#FFFFFF",
+    backgroundColor: "#F8FAFC",
     borderTopWidth: 1,
     borderTopColor: "#E5E5E5",
     elevation: 8,
