@@ -117,8 +117,8 @@ export function TicketTransferViewerScreen({
   // Reserve space for header (~insets.top + 60px) and bottom section (~220px)
   // so the card image height never causes clipping on any device
   const HEADER_HEIGHT = insets.top + 60;
-  const BOTTOM_SECTION_HEIGHT = 220;
-  const CARD_CHROME_HEIGHT = 13 + 120 + 36; // blue bar + card footer + flatlist padding
+  const BOTTOM_SECTION_HEIGHT = 240;
+  const CARD_CHROME_HEIGHT = 13 + 132 + 36; // blue bar + card footer + flatlist padding
   const cardImageHeight = Math.max(
     screenHeight - HEADER_HEIGHT - BOTTOM_SECTION_HEIGHT - CARD_CHROME_HEIGHT,
     180, // minimum image height
@@ -126,7 +126,7 @@ export function TicketTransferViewerScreen({
 
   return (
     <SafeAreaView
-      edges={["left", "right"]}
+      edges={["left", "right", "bottom"]}
       style={{ flex: 1, backgroundColor: "#F9F8F4" }}
     >
       <Head>
@@ -138,8 +138,9 @@ export function TicketTransferViewerScreen({
         <ViewerHeader onBack={onBack} />
 
         <FlatList
+          style={{ flex: 1 }}
           contentContainerStyle={{
-            paddingBottom: 20,
+            paddingBottom: insets.bottom + 20,
             paddingLeft: sidePadding,
             paddingRight: sidePadding,
             paddingTop: 16,
