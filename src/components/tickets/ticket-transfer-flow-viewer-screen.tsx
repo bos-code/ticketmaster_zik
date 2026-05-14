@@ -36,7 +36,7 @@ function ViewerHeader({ onBack }: { onBack: () => void }) {
     <View
       style={{
         backgroundColor: "#F9F8F4",
-        paddingTop: insets.top + (Platform.OS === "ios" ? 12 : 4),
+        paddingTop: insets.top + (Platform.OS === "ios" ? 4 : 2),
       }}
     >
       <View className="flex-row items-center bg-[#F9F8F4] px-5 pb-2 pt-0">
@@ -109,10 +109,20 @@ export function TicketTransferViewerScreen({
     }
   }
 
-  const { width } = useWindowDimensions();
+  const { width, height: screenHeight } = useWindowDimensions();
   const insets = useSafeAreaInsets();
   const screenWidth = Math.min(width, 430);
   const sidePadding = (screenWidth - carouselCardWidth) / 2;
+
+  // Reserve space for header (~insets.top + 60px) and bottom section (~220px)
+  // so the card image height never causes clipping on any device
+  const HEADER_HEIGHT = insets.top + 60;
+  const BOTTOM_SECTION_HEIGHT = 220;
+  const CARD_CHROME_HEIGHT = 13 + 120 + 36; // blue bar + card footer + flatlist padding
+  const cardImageHeight = Math.max(
+    screenHeight - HEADER_HEIGHT - BOTTOM_SECTION_HEIGHT - CARD_CHROME_HEIGHT,
+    180, // minimum image height
+  );
 
   return (
     <SafeAreaView
@@ -151,6 +161,7 @@ export function TicketTransferViewerScreen({
           renderItem={({ item, index }) => (
             <TicketCard
               cardWidth={carouselCardWidth}
+              imageHeight={cardImageHeight}
               index={index}
               seat={item}
             />
