@@ -126,7 +126,7 @@ export default function PremiumTabsLayout() {
         name="my-tickets"
         options={{ title: TAB_CONFIG["my-tickets"].title }}
       />
-      <Tabs.Screen name="add-event" options={{ href: null }} />
+      <Tabs.Screen name="add-event" options={{ href: null, tabBarStyle: { display: "none" } }} />
       <Tabs.Screen name="sell" options={{ title: TAB_CONFIG.sell.title }} />
       <Tabs.Screen
         name="my-account"
