@@ -36,7 +36,7 @@ function ViewerHeader({ onBack }: { onBack: () => void }) {
     <View
       style={{
         backgroundColor: "#F9F8F4",
-        paddingTop: Platform.OS === "ios" ? 0 : insets.top + 4,
+        paddingTop: insets.top + (Platform.OS === "ios" ? 12 : 4),
       }}
     >
       <View className="flex-row items-center bg-[#F9F8F4] px-5 pb-2 pt-0">
@@ -166,7 +166,7 @@ export function TicketTransferViewerScreen({
           style={{
             paddingBottom:
               Platform.OS === "ios"
-                ? insets.bottom * 0.25
+                ? Math.max(insets.bottom + 60, 60)
                 : Math.max(insets.bottom + 60, 60),
           }}
         >

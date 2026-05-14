@@ -86,11 +86,6 @@ export default function PremiumTabsLayout() {
               height: 54 + bottomInset,
               paddingBottom: bottomInset,
               backgroundColor: "#F8FAFC",
-              position: "absolute",
-              bottom: -4,
-              left: 0,
-              right: 0,
-              zIndex: 50,
             },
           ],
           tabBarIcon: ({ focused }) => (
