@@ -25,7 +25,7 @@ export function useTicketOrder(orderId?: string) {
         ? mapTicketRecordsToTicketOrders(storeTickets)
         : hasSyncedTickets
           ? []
-        : fallbackTicketOrders,
+        : [],
     [hasSyncedTickets, storeTickets],
   );
 

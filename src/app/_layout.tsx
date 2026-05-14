@@ -162,11 +162,14 @@ export default function RootLayout() {
                 <meta name="color-scheme" content="dark" />
               </Head>
               <StatusBar translucent backgroundColor="#FFFFFF" style="dark" />
-              <RootStack />
-              <PwaInstallPrompt isStartupFinished={hasFinishedStartup} />
               {!hasFinishedStartup ? (
                 <PremiumStartupScreen onFinish={handleStartupFinish} />
-              ) : null}
+              ) : (
+                <>
+                  <RootStack />
+                  <PwaInstallPrompt isStartupFinished={hasFinishedStartup} />
+                </>
+              )}
             </View>
           </ThemeProvider>
         </QueryProvider>

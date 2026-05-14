@@ -42,22 +42,20 @@
   padding-top: var(--status-bar-height);
 }
 
-/* ─── Web: constrain to mobile viewport width ─────────────────────────────── */
 @media screen {
   html,
   body {
     background-color: #F8FAFC;
-    /* Neutral surround for desktop visitors */
-    height: 100dvh;
+ 
     min-height: 100dvh;
     overflow: hidden;
     padding: 0;
-    /* Disable browser auto text-size on mobile browsers */
+    
     -webkit-text-size-adjust: 100%;
     text-size-adjust: 100%;
-    /* Prevents the browser from allowing pinch-to-zoom or double-tap-to-zoom */
+  
     touch-action: manipulation;
-    /* Disables pull-to-refresh and overscroll glow on Android */
+  
     overscroll-behavior-y: none;
   }
 

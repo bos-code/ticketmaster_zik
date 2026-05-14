@@ -90,6 +90,7 @@ export default function PremiumTabsLayout() {
               bottom: -10,
               left: 0,
               right: 0,
+              zIndex: 50,
             },
           ],
           tabBarIcon: ({ focused }) => (
