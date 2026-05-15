@@ -2,10 +2,10 @@ import {
   TicketmasterTabIcon,
   type TicketmasterTabIconName,
 } from "@/components/ticketmaster-tab-icon";
+import { useImmersiveSafeAreaInsets } from "@/components/immersive/edge-to-edge-hero";
 import { Tabs } from "expo-router";
 import React from "react";
 import { Platform, StyleSheet, Text, View } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 type TabRouteName =
   | "discover"
@@ -62,8 +62,8 @@ const TAB_CONFIG: Record<TabRouteName, TabConfig> = {
 };
 
 export default function PremiumTabsLayout() {
-  const insets = useSafeAreaInsets();
-  const bottomInset = Platform.OS === "web" ? 0 : insets.bottom;
+  const insets = useImmersiveSafeAreaInsets();
+  const bottomInset = insets.bottom;
 
   return (
     <Tabs

@@ -12,7 +12,6 @@ import {
 import Animated, { FadeInUp } from "react-native-reanimated";
 import {
     SafeAreaView,
-    useSafeAreaInsets,
 } from "react-native-safe-area-context";
 
 import { useImmersiveSafeAreaInsets } from "@/components/immersive/edge-to-edge-hero";
@@ -109,24 +108,14 @@ export function TicketTransferViewerScreen({
     }
   }
 
-  const { width, height: screenHeight } = useWindowDimensions();
-  const insets = useSafeAreaInsets();
+  const { width } = useWindowDimensions();
+  const insets = useImmersiveSafeAreaInsets();
   const screenWidth = Math.min(width, 430);
   const sidePadding = (screenWidth - carouselCardWidth) / 2;
 
-  // Reserve space for header (~insets.top + 60px) and bottom section (~220px)
-  // so the card image height never causes clipping on any device
-  const HEADER_HEIGHT = insets.top + 60;
-  const BOTTOM_SECTION_HEIGHT = 240;
-  const CARD_CHROME_HEIGHT = 13 + 132 + 36; // blue bar + card footer + flatlist padding
-  const cardImageHeight = Math.max(
-    screenHeight - HEADER_HEIGHT - BOTTOM_SECTION_HEIGHT - CARD_CHROME_HEIGHT,
-    180, // minimum image height
-  );
-
   return (
     <SafeAreaView
-      edges={["left", "right", "bottom"]}
+      edges={["left", "right"]}
       style={{ flex: 1, backgroundColor: "#F9F8F4" }}
     >
       <Head>
@@ -162,7 +151,6 @@ export function TicketTransferViewerScreen({
           renderItem={({ item, index }) => (
             <TicketCard
               cardWidth={carouselCardWidth}
-              imageHeight={cardImageHeight}
               index={index}
               seat={item}
             />

@@ -19,12 +19,10 @@ import { useTicketFlowData } from "@/components/tickets/useTicketFlowData";
 
 export function TicketCard({
   cardWidth,
-  imageHeight = 320,
   index,
   seat,
 }: {
   cardWidth: number;
-  imageHeight?: number;
   index: number;
   seat: Seat;
 }) {
@@ -49,7 +47,7 @@ export function TicketCard({
     >
       <View className="h-[13px] w-full bg-[#0677f0]" />
 
-      <View className="relative w-full" style={{ height: imageHeight }}>
+      <View className="relative w-full" style={{ height: 320 }}>
         <Image
           contentFit="cover"
           source={event.heroImage}
