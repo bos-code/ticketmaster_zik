@@ -20,7 +20,7 @@ export function PromoCard() {
   );
 
   return (
-    <View className="mx-[22px] mb-24 mt-4 overflow-hidden rounded-[4px] border border-[#f0f0f0]">
+    <View className="mx-[22px] mb-5 mt-4 overflow-hidden rounded-[4px] border border-[#f0f0f0]">
       <View className="relative h-[220px] overflow-hidden justify-end px-4">
         <Image
           source={event.heroImage}

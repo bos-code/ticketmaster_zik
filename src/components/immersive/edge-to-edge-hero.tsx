@@ -1,5 +1,6 @@
 import { Image, type ImageProps } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
+import React from "react";
 import { useEffect, useState } from "react";
 import { Platform } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
