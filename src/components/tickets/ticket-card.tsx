@@ -35,14 +35,14 @@ export function TicketCard({
   return (
     <Animated.View
       entering={FadeInDown.duration(280).delay(40 + index * 70)}
-      className="mr-[12px] relative  rounded-[8px] bg-white flex-none self-start"
+      className="mr-[12px] relative rounded-[12px] bg-white flex-none"
       style={{
         width: cardWidth,
         shadowColor: "#000",
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.15,
-        shadowRadius: 12,
-        elevation: 6,
+        shadowOffset: { width: 0, height: 8 },
+        shadowOpacity: 0.2,
+        shadowRadius: 24,
+        elevation: 8,
       }}
     >
       <View className="h-[13px] w-full bg-[#0677f0]" />

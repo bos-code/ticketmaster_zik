@@ -42,22 +42,9 @@ export function EdgeToEdgeHeroMedia({
         source={source}
         style={{ height, width: "100%" }}
       />
-      <Image
-        blurRadius={14}
-        contentFit="cover"
-        pointerEvents="none"
-        source={source}
-        style={{
-          height: height + 28,
-          left: -14,
-          opacity: 0.34,
-          position: "absolute",
-          right: -14,
-          top: -14,
-        }}
-      />
+
       <LinearGradient
-        colors={["transparent", "rgba(0,0,0,0.56)"]}
+        colors={["transparent", "rgba(0,0,0,0.3)"]}
         locations={[0, 1]}
         pointerEvents="none"
         style={{

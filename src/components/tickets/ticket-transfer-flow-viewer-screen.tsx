@@ -127,12 +127,13 @@ export function TicketTransferViewerScreen({
         <ViewerHeader onBack={onBack} />
 
         <FlatList
-          style={{ flex: 1 }}
+          style={{ flex: 1, overflow: 'visible' }}
           contentContainerStyle={{
-            paddingBottom: insets.bottom + 20,
+            paddingBottom: insets.bottom + 40,
             paddingLeft: sidePadding,
             paddingRight: sidePadding,
-            paddingTop: 16,
+            paddingTop: 30,
+            alignItems: 'center',
           }}
           data={seats}
           decelerationRate="fast"
@@ -164,7 +165,7 @@ export function TicketTransferViewerScreen({
           entering={FadeInUp.duration(260)}
           className="mt-auto items-center gap-10 px-5"
           style={{
-            paddingBottom: Math.max(insets.bottom + 72, 72),
+            paddingBottom: Math.max(insets.bottom + 24, 24),
           }}
         >
           <View
