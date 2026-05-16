@@ -2,10 +2,10 @@ import { Ionicons } from "@expo/vector-icons";
 import React from "react";
 import { Pressable, Text, View } from "react-native";
 import Animated, { FadeInUp } from "react-native-reanimated";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useImmersiveSafeAreaInsets } from "@/components/immersive/edge-to-edge-hero";
 
 export function BottomDock({ onTransfer }: { onTransfer: () => void }) {
-  const insets = useSafeAreaInsets();
+  const insets = useImmersiveSafeAreaInsets();
   return (
     <Animated.View
       entering={FadeInUp.duration(320).delay(220)}

@@ -10,7 +10,8 @@ import {
   NativeScrollEvent,
   NativeSyntheticEvent
 } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useImmersiveSafeAreaInsets } from '@/components/immersive/edge-to-edge-hero';
+import { BOTTOM_TAB_BAR_CONTENT_HEIGHT } from '@/constants/theme';
 import Svg, { Circle, G, Path, Rect } from 'react-native-svg';
 
 import Head from 'expo-router/head';
@@ -159,7 +160,7 @@ const STEP_DATA = [
 ];
 
 export default function SellScreen() {
-  const insets = useSafeAreaInsets();
+  const insets = useImmersiveSafeAreaInsets();
   const { width: windowWidth } = useWindowDimensions();
   const [currentStep, setCurrentStep] = useState(0);
   
@@ -248,7 +249,16 @@ export default function SellScreen() {
           </View>
         </View>
 
-        <View style={[styles.whiteSection, { minHeight: 400, paddingBottom: insets.bottom + 40 }]}>
+        <View
+          style={[
+            styles.whiteSection,
+            {
+              minHeight: 400,
+              paddingBottom:
+                BOTTOM_TAB_BAR_CONTENT_HEIGHT + insets.bottom + 40,
+            },
+          ]}
+        >
           <View style={styles.whiteSectionHeader}>
             <Text style={styles.whiteSectionTitle}>Manage Listings</Text>
           </View>

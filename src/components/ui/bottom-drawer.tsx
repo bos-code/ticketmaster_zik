@@ -1,6 +1,6 @@
 import React from "react";
 import { Modal, Pressable, View } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useImmersiveSafeAreaInsets } from "@/components/immersive/edge-to-edge-hero";
 
 export function BottomDrawer({
   children,
@@ -15,7 +15,7 @@ export function BottomDrawer({
   onClose: () => void;
   visible: boolean;
 }) {
-  const insets = useSafeAreaInsets();
+  const insets = useImmersiveSafeAreaInsets();
   return (
     <Modal
       animationType="slide"

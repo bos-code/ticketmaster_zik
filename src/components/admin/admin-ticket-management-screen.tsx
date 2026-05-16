@@ -14,7 +14,7 @@ import {
   Text,
   View,
 } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useImmersiveSafeAreaInsets } from '@/components/immersive/edge-to-edge-hero';
 
 import Head from 'expo-router/head';
 import { StatusBar } from 'expo-status-bar';
@@ -31,7 +31,7 @@ const filters: TicketFilter[] = ['All', 'Upcoming', 'VIP', 'Standard', 'General'
 
 export function AdminTicketManagementScreen() {
   const router = useRouter();
-  const insets = useSafeAreaInsets();
+  const insets = useImmersiveSafeAreaInsets();
   const params = useLocalSearchParams<{ toast?: string }>();
   const tickets = useTicketStore((state) => state.tickets);
   const removeEvent = useTicketStore((state) => state.removeEvent);

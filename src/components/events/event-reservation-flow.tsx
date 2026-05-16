@@ -21,6 +21,7 @@ import Animated, {
 import Head from "expo-router/head";
 import { StatusBar } from "expo-status-bar";
 
+import { useImmersiveSafeAreaInsets } from "@/components/immersive/edge-to-edge-hero";
 import { VenueMapCard } from "@/components/events/venue-map-card";
 import {
   ticketColors,
@@ -46,6 +47,7 @@ export function EventReservationFlow({ eventId }: { eventId: string }) {
   const event = useEventStore((state) => selectEventById(state, eventId));
   const reserveTickets = useEventStore((state) => state.reserveTickets);
   const { height } = useWindowDimensions();
+  const insets = useImmersiveSafeAreaInsets();
 
   const [step, setStep] = useState<FlowStep>("detail");
   const [focusedSectionId, setFocusedSectionId] = useState(
@@ -243,6 +245,7 @@ export function EventReservationFlow({ eventId }: { eventId: string }) {
       <ScrollView
         contentContainerStyle={[
           styles.content,
+          { paddingBottom: ticketSpacing.xxl + insets.bottom },
           step === "detail" && { flexGrow: 1, minHeight: height },
         ]}
         showsVerticalScrollIndicator={false}
@@ -499,10 +502,15 @@ function SeatSelectionStep({
   selectedSeatIds: string[];
   visibleSeats: EventSeatOption[];
 }) {
+  const insets = useImmersiveSafeAreaInsets();
+
   return (
     <View style={styles.seatSelectionLayout}>
       <ScrollView
-        contentContainerStyle={styles.seatSelectionContent}
+        contentContainerStyle={[
+          styles.seatSelectionContent,
+          { paddingBottom: ticketSpacing.xl + insets.bottom },
+        ]}
         showsVerticalScrollIndicator={false}
         style={styles.seatSelectionScroll}
       >
@@ -682,7 +690,10 @@ function SeatSelectionStep({
 
       <Animated.View
         entering={FadeInUp.duration(280)}
-        style={styles.stickyFooter}
+        style={[
+          styles.stickyFooter,
+          { paddingBottom: ticketSpacing.md + insets.bottom },
+        ]}
       >
         <View style={styles.stickyFooterSummary}>
           <Text style={styles.stickyFooterTitle}>

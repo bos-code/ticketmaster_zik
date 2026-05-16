@@ -2,6 +2,7 @@ import React from "react";
 import { View } from "react-native";
 import Animated from "react-native-reanimated";
 
+import { useImmersiveSafeAreaInsets } from "@/components/immersive/edge-to-edge-hero";
 import { BottomDock } from "@/components/tickets/ticket-transfer-flow-bottom-dock";
 import {
   CollapsibleEventHero,
@@ -35,6 +36,8 @@ export function TicketTransferListScreen({
   onTransfer: () => void;
   scrollY: React.ComponentProps<typeof CollapsibleEventHero>["scrollY"];
 }) {
+  const insets = useImmersiveSafeAreaInsets();
+
   return (
     <View style={{ backgroundColor: "#FFFFFF", flex: 1 }}>
       <View className="flex-1 overflow-hidden bg-white">
@@ -47,7 +50,7 @@ export function TicketTransferListScreen({
 
         <Animated.ScrollView
           contentContainerStyle={{
-            paddingBottom: 132,
+            paddingBottom: 132 + insets.bottom,
             paddingTop: HERO_EXPANDED_HEIGHT,
           }}
           onScroll={handleListScroll}

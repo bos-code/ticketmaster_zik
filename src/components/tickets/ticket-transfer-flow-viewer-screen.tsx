@@ -10,9 +10,6 @@ import {
     type NativeSyntheticEvent,
 } from "react-native";
 import Animated, { FadeInUp } from "react-native-reanimated";
-import {
-    useSafeAreaInsets,
-} from "react-native-safe-area-context";
 
 import { useImmersiveSafeAreaInsets } from "@/components/immersive/edge-to-edge-hero";
 import { AppleWalletIcon } from "@/components/tickets/apple-wallet-icon";

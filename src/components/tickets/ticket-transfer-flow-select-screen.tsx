@@ -2,7 +2,7 @@ import { Ionicons } from "@expo/vector-icons";
 import React from "react";
 import { Pressable, Text, View } from "react-native";
 import Animated, { LinearTransition } from "react-native-reanimated";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useImmersiveSafeAreaInsets } from "@/components/immersive/edge-to-edge-hero";
 
 import { cx } from "@/components/tickets/cx";
 import type { Seat } from "@/components/tickets/ticketFlowTypes";
@@ -25,7 +25,7 @@ export function TicketTransferSelectScreen({
   selectedSeatIds: string[];
   ticketCount: string;
 }) {
-  const insets = useSafeAreaInsets();
+  const insets = useImmersiveSafeAreaInsets();
   return (
     <BottomDrawer minHeight="62%" onClose={onBack} visible={true}>
       <View className="border-b border-[#F0F0F0] py-4">

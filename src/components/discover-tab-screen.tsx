@@ -11,6 +11,8 @@ import {
   View,
 } from 'react-native';
 import { ScreenWrapper } from '@/components/ui/screen-wrapper';
+import { useImmersiveSafeAreaInsets } from '@/components/immersive/edge-to-edge-hero';
+import { BOTTOM_TAB_BAR_CONTENT_HEIGHT } from '@/constants/theme';
 
 import Head from 'expo-router/head';
 import { StatusBar } from 'expo-status-bar';
@@ -33,6 +35,7 @@ const DC = {
 
 export function DiscoverTabScreen() {
   const [searchValue, setSearchValue] = useState("");
+  const insets = useImmersiveSafeAreaInsets();
 
   return (
     <ScreenWrapper backgroundColor="#000000">
@@ -120,7 +123,10 @@ export function DiscoverTabScreen() {
       <ScrollView
         showsVerticalScrollIndicator={false}
         style={[styles.contentScroll, { backgroundColor: DC.white }]}
-        contentContainerStyle={{ flexGrow: 1 }}
+        contentContainerStyle={{
+          flexGrow: 1,
+          paddingBottom: BOTTOM_TAB_BAR_CONTENT_HEIGHT + insets.bottom + 24,
+        }}
       >
         <View style={styles.sectionContainer}>
           <View style={styles.sectionIndicator} />

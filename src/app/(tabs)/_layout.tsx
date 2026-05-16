@@ -3,6 +3,7 @@ import {
   type TicketmasterTabIconName,
 } from "@/components/ticketmaster-tab-icon";
 import { useImmersiveSafeAreaInsets } from "@/components/immersive/edge-to-edge-hero";
+import { BOTTOM_TAB_BAR_CONTENT_HEIGHT } from "@/constants/theme";
 import { Tabs } from "expo-router";
 import React from "react";
 import { Platform, StyleSheet, Text, View } from "react-native";
@@ -63,6 +64,7 @@ const TAB_CONFIG: Record<TabRouteName, TabConfig> = {
 
 export default function PremiumTabsLayout() {
   const insets = useImmersiveSafeAreaInsets();
+  const tabBarHeight = BOTTOM_TAB_BAR_CONTENT_HEIGHT + insets.bottom;
 
   return (
     <Tabs
@@ -77,12 +79,16 @@ export default function PremiumTabsLayout() {
           sceneContainerStyle: { backgroundColor: C.background },
           tabBarAccessibilityLabel: config.title,
           tabBarInactiveTintColor: C.inactive,
-          tabBarItemStyle: styles.tabItem,
+          tabBarItemStyle: [
+            styles.tabItem,
+            { height: BOTTOM_TAB_BAR_CONTENT_HEIGHT },
+          ],
           tabBarStyle: [
             styles.tabBar,
             {
-              height: 52,
+              height: tabBarHeight,
               backgroundColor: "#F8FAFC",
+              paddingBottom: insets.bottom,
               position: "absolute",
               bottom: 0,
               left: 0,
@@ -90,7 +96,7 @@ export default function PremiumTabsLayout() {
             },
           ],
           tabBarIcon: ({ focused }) => (
-            <View style={{ flex: 1, alignItems: "center", justifyContent: "center", width: "100%", paddingTop: 8 }}>
+            <View style={styles.tabButtonContent}>
               <View style={styles.iconWrap}>
                 <TicketmasterTabIcon
                   focused={focused}
@@ -151,7 +157,13 @@ const styles = StyleSheet.create({
     paddingTop: 0,
     paddingBottom: 0,
     overflow: "visible",
-    height: "100%",
+  },
+  tabButtonContent: {
+    alignItems: "center",
+    height: BOTTOM_TAB_BAR_CONTENT_HEIGHT,
+    justifyContent: "center",
+    paddingTop: 8,
+    width: "100%",
   },
   iconWrap: {
     alignItems: "center",
