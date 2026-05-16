@@ -74,43 +74,44 @@ export default function PremiumTabsLayout() {
         return {
           headerShown: false,
           lazy: true,
-          sceneStyle: { backgroundColor: C.background },
+          sceneContainerStyle: { backgroundColor: C.background },
           tabBarAccessibilityLabel: config.title,
           tabBarInactiveTintColor: C.inactive,
           tabBarItemStyle: styles.tabItem,
           tabBarStyle: [
             styles.tabBar,
             {
-              height: 49,
+              height: 52,
               backgroundColor: "#F8FAFC",
               position: "absolute",
-              bottom: -20, // Test offset: pushing it off-screen
+              bottom: 0,
               left: 0,
               right: 0,
             },
           ],
           tabBarIcon: ({ focused }) => (
-            <View style={styles.iconWrap}>
-              <TicketmasterTabIcon
-                focused={focused}
-                name={config.icon}
-                size={25}
-              />
+            <View style={{ flex: 1, alignItems: "center", justifyContent: "center", width: "100%", paddingTop: 8 }}>
+              <View style={styles.iconWrap}>
+                <TicketmasterTabIcon
+                  focused={focused}
+                  name={config.icon}
+                  size={25}
+                />
+              </View>
+              <Text
+                allowFontScaling={false}
+                numberOfLines={1}
+                style={[
+                  styles.tabLabel,
+                  focused && styles.tabLabelActive,
+                  { color: focused ? C.active : C.inactive },
+                ]}
+              >
+                {config.title}
+              </Text>
             </View>
           ),
-          tabBarLabel: ({ focused }) => (
-            <Text
-              allowFontScaling={false}
-              numberOfLines={1}
-              style={[
-                styles.tabLabel,
-                focused && styles.tabLabelActive,
-                { color: focused ? C.active : C.inactive },
-              ]}
-            >
-              {config.title}
-            </Text>
-          ),
+          tabBarLabel: () => null,
         };
       }}
     >
@@ -147,7 +148,7 @@ const styles = StyleSheet.create({
   },
   tabItem: {
     paddingHorizontal: 0,
-    paddingTop: 12,
+    paddingTop: 0,
     paddingBottom: 0,
     overflow: "visible",
     height: "100%",
@@ -159,10 +160,6 @@ const styles = StyleSheet.create({
     minHeight: 25,
   },
   tabLabel: {
-    position: "absolute",
-    bottom: 2,
-    left: 0,
-    right: 0,
     fontFamily: accountFont,
     fontSize: 10,
     fontWeight: "500",

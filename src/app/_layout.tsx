@@ -8,7 +8,7 @@ import { Stack } from "expo-router";
 import Head from "expo-router/head";
 import * as SplashScreen from "expo-splash-screen";
 import * as SystemUI from "expo-system-ui";
-import { useCallback, useEffect, useRef } from "react";
+import React, { useCallback, useEffect, useRef } from "react";
 import { Platform, View } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaProvider } from "react-native-safe-area-context";
@@ -101,15 +101,14 @@ export default function RootLayout() {
   const hasHiddenNativeSplash = useRef(false);
   const startupBackgroundColor = SPLASH_STATUS_BAR_COLOR;
   // Use splash blue during startup to ensure no seams, transition to app background after
-  const appBackgroundColor = hasFinishedStartup
-    ? ticketColors.background
-    : startupBackgroundColor;
+  const appBackgroundColor = "#050505";
   const isReady = fontsLoaded || Boolean(fontError);
 
   useEffect(() => {
     void SystemUI.setBackgroundColorAsync("transparent").catch(
       () => {},
     );
+
 
     if (Platform.OS === "web" && typeof window !== "undefined" && "serviceWorker" in navigator) {
       navigator.serviceWorker.register("/service-worker.js").catch(() => {
@@ -161,7 +160,7 @@ export default function RootLayout() {
                 <meta name="theme-color" content={APP_STATUS_BAR_BLACK} />
                 <meta name="color-scheme" content="dark" />
               </Head>
-              <StatusBar translucent backgroundColor="#FFFFFF" style="dark" />
+              <StatusBar translucent backgroundColor="transparent" style="light" />
               {!hasFinishedStartup ? (
                 <PremiumStartupScreen onFinish={handleStartupFinish} />
               ) : (
