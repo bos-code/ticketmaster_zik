@@ -5,6 +5,7 @@ import { Pressable, Text, View } from "react-native";
 
 import { BackLink } from "@/components/tickets/BackLink";
 import { BottomDrawer } from "@/components/ui/bottom-drawer";
+import { ticketTransferChoiceIconSources } from "../../../asset-sources";
 
 export function TicketTransferRecipientChoiceScreen({
   onBack,
@@ -25,7 +26,7 @@ export function TicketTransferRecipientChoiceScreen({
         </Text>
 
         <RecipientChoiceButton
-          iconSource={require("../../../assets/tabicon/contacts-book.png")}
+          iconSource={ticketTransferChoiceIconSources.contactsBook}
           label="Select From Contacts"
           onPress={onSelectContact}
         />
@@ -38,7 +39,7 @@ export function TicketTransferRecipientChoiceScreen({
 
         <View className="mt-12 items-center justify-center">
           <Image
-            source={require("../../../assets/tabicon/send.png")}
+            source={ticketTransferChoiceIconSources.send}
             style={{ width: 90, height: 90 }}
             contentFit="contain"
           />
