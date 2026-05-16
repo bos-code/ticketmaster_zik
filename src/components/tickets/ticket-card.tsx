@@ -1,16 +1,13 @@
 import { Ionicons } from "@expo/vector-icons";
 import { Image } from "expo-image";
-import React, { useEffect } from "react";
-import { Text, View } from "react-native";
-import Animated, {
+import React, { useEffect, useRef } from "react";
+import {
+  Animated as RNAnimated,
   Easing,
-  FadeInDown,
-  interpolate,
-  useAnimatedStyle,
-  useSharedValue,
-  withRepeat,
-  withTiming,
-} from "react-native-reanimated";
+  Text,
+  View,
+} from "react-native";
+import Animated, { FadeInDown } from "react-native-reanimated";
 
 import { EditableText } from "@/components/tickets/EditableText";
 import { TicketBarcodeSvg } from "@/components/tickets/ticket-barcode-svg";
@@ -117,46 +114,55 @@ export function TicketCard({
 }
 
 function TicketBarcodeBand() {
-  const beamProgress = useSharedValue(0);
+  const beamTranslateX = useRef(new RNAnimated.Value(-160)).current;
 
   useEffect(() => {
-    beamProgress.value = withRepeat(
-      withTiming(1, { duration: 1800, easing: Easing.inOut(Easing.ease) }),
-      -1,
-      true,
+    const animation = RNAnimated.loop(
+      RNAnimated.sequence([
+        RNAnimated.timing(beamTranslateX, {
+          duration: 1800,
+          easing: Easing.inOut(Easing.ease),
+          toValue: 160,
+          useNativeDriver: true,
+        }),
+        RNAnimated.timing(beamTranslateX, {
+          duration: 1800,
+          easing: Easing.inOut(Easing.ease),
+          toValue: -160,
+          useNativeDriver: true,
+        }),
+      ]),
     );
-  }, [beamProgress]);
 
-  const beamAnimatedStyle = useAnimatedStyle(() => {
-    return {
-      transform: [
-        {
-          translateX: interpolate(beamProgress.value, [0, 1], [-160, 160]),
-        },
-      ],
+    animation.start();
+
+    return () => {
+      animation.stop();
     };
-  });
+  }, [beamTranslateX]);
 
   return (
     <View className="relative h-[58px] w-full items-center justify-center overflow-hidden bg-white px-2">
       <TicketBarcodeSvg />
 
-      <Animated.View
-        className="absolute rounded-t-lg w-[6px] bg-[#026CDF]"
-        style={[
-          {
-            height: "100%",
-            top: 0,
-            left: "50%",
-            opacity: 1,
-            shadowColor: "#026CDF",
-            shadowOffset: { width: 0, height: 0 },
-            shadowOpacity: 1,
-            shadowRadius: 10,
-            elevation: 5,
-          },
-          beamAnimatedStyle,
-        ]}
+      <RNAnimated.View
+        style={{
+          backgroundColor: "#026CDF",
+          borderTopLeftRadius: 6,
+          borderTopRightRadius: 6,
+          elevation: 5,
+          height: "100%",
+          left: "50%",
+          opacity: 1,
+          position: "absolute",
+          shadowColor: "#026CDF",
+          shadowOffset: { width: 0, height: 0 },
+          shadowOpacity: 1,
+          shadowRadius: 10,
+          top: 0,
+          transform: [{ translateX: beamTranslateX }],
+          width: 6,
+        }}
       />
     </View>
   );

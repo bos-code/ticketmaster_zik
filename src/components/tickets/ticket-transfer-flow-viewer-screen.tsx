@@ -21,7 +21,6 @@ import { useTicketFlowData } from "@/components/tickets/useTicketFlowData";
 import { BottomDrawer } from "@/components/ui/bottom-drawer";
 import Head from "expo-router/head";
 import { StatusBar } from "expo-status-bar";
-import { Platform } from "react-native";
 import { TicketCard } from "./ticket-card";
 
 const VIEWER_HEADER_TOP_PADDING = 6;
@@ -47,11 +46,12 @@ function ViewerHeader({ onBack }: { onBack: () => void }) {
           <Ionicons color="#000000" name="chevron-back" size={28} />
         </Pressable>
 
-        <View className="justify-center">
+        <View className="flex-1 justify-center">
           <EditableText
             field="eventName"
             value={event.shortTitle}
-            className="text-[17px] font-bold text-[#000000]"
+            className="text-[14px] font-bold text-[#000000]"
+            style={{ flexShrink: 1, flexWrap: "wrap", lineHeight: 17 }}
           />
           <EditableText
             value={event.headerSubtitle}
@@ -148,9 +148,7 @@ export function TicketTransferViewerScreen({
           horizontal
           keyExtractor={(item) => item.id}
           onMomentumScrollEnd={handleViewerScrollEnd}
-          onScroll={(event) => {
-            updateViewerIndexFromOffset(event.nativeEvent.contentOffset.x);
-          }}
+          onScrollEndDrag={handleViewerScrollEnd}
           ref={viewerListRef}
           renderItem={({ item, index }) => (
             <TicketCard

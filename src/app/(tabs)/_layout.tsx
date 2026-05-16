@@ -6,7 +6,7 @@ import { useImmersiveSafeAreaInsets } from "@/components/immersive/edge-to-edge-
 import { BOTTOM_TAB_BAR_CONTENT_HEIGHT } from "@/constants/theme";
 import { Tabs } from "expo-router";
 import React from "react";
-import { Platform, StyleSheet, Text, View } from "react-native";
+import { Platform, StyleSheet } from "react-native";
 
 type TabRouteName =
   | "discover"
@@ -64,7 +64,7 @@ const TAB_CONFIG: Record<TabRouteName, TabConfig> = {
 
 export default function PremiumTabsLayout() {
   const insets = useImmersiveSafeAreaInsets();
-  const tabBarHeight = BOTTOM_TAB_BAR_CONTENT_HEIGHT - insets.bottom;
+  const tabBarHeight = BOTTOM_TAB_BAR_CONTENT_HEIGHT + insets.bottom;
 
   return (
     <Tabs
@@ -78,6 +78,9 @@ export default function PremiumTabsLayout() {
           lazy: true,
           sceneContainerStyle: { backgroundColor: C.background },
           tabBarAccessibilityLabel: config.title,
+          tabBarAllowFontScaling: false,
+          tabBarLabel: config.title,
+          tabBarLabelStyle: styles.tabLabel,
           tabBarInactiveTintColor: C.inactive,
           tabBarItemStyle: [
             styles.tabItem,
@@ -96,27 +99,12 @@ export default function PremiumTabsLayout() {
             },
           ],
           tabBarIcon: ({ focused }) => (
-            <View style={styles.tabButtonContent}>
-              <View style={styles.iconWrap}>
-                <TicketmasterTabIcon
-                  focused={focused}
-                  name={config.icon}
-                  size={25}
-                />
-              </View>
-              <Text
-                allowFontScaling={false}
-                style={[
-                  styles.tabLabel,
-                  focused && styles.tabLabelActive,
-                  { color: focused ? C.active : C.inactive },
-                ]}
-              >
-                {config.title}
-              </Text>
-            </View>
+            <TicketmasterTabIcon
+              focused={focused}
+              name={config.icon}
+              size={25}
+            />
           ),
-          tabBarLabel: () => null,
         };
       }}
     >
@@ -157,30 +145,12 @@ const styles = StyleSheet.create({
     paddingBottom: 0,
     overflow: "visible",
   },
-  tabButtonContent: {
-    alignItems: "center",
-    height: BOTTOM_TAB_BAR_CONTENT_HEIGHT,
-    justifyContent: "center",
-    paddingTop: 8,
-    width: "100%",
-  },
-  iconWrap: {
-    alignItems: "center",
-    justifyContent: "center",
-    marginBottom: 0,
-    minHeight: 25,
-  },
   tabLabel: {
     fontFamily: accountFont,
     fontSize: 10,
     fontWeight: "500",
     letterSpacing: 0,
     lineHeight: 12,
-    paddingHorizontal: 2,
     textAlign: "center",
-    width: "100%",
-  },
-  tabLabelActive: {
-    fontWeight: "700",
   },
 });

@@ -110,14 +110,17 @@ export function CollapsibleEventHero({
 
             <Animated.View
               style={[collapsedTitleStyle, { pointerEvents: "none" }]}
-              className="absolute left-16 right-16 items-start"
+              className="absolute left-16 right-16 items-center"
             >
-              <Text className="text-[13px] font-extrabold text-white">
+              <Text
+                numberOfLines={1}
+                className="w-full text-center text-[13px] font-extrabold text-white"
+              >
                 {event.title}
               </Text>
               <Text
                 numberOfLines={1}
-                className="text-center text-[11px] font-normal leading-[13px] text-[rgba(255,255,255,0.84)]"
+                className="w-full text-center text-[11px] font-normal leading-[13px] text-[rgba(255,255,255,0.84)]"
               >
                 {event.venue}
               </Text>
