@@ -142,17 +142,17 @@ const styles = StyleSheet.create({
   },
   tabItem: {
     paddingHorizontal: 0,
-    paddingTop: 0,
+    paddingTop: 10,
     paddingBottom: 0,
   },
   iconWrap: {
     alignItems: "center",
     justifyContent: "center",
-    marginBottom: 1,
-    minHeight: 28,
+    marginBottom: 0,
+    minHeight: 25,
   },
   tabLabel: {
-    marginTop: 1,
+    marginTop: 0,
     fontFamily: accountFont,
     fontSize: 10,
     fontWeight: "500",
