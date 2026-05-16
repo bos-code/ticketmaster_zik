@@ -63,11 +63,9 @@ const TAB_CONFIG: Record<TabRouteName, TabConfig> = {
 
 export default function PremiumTabsLayout() {
   const insets = useImmersiveSafeAreaInsets();
-  const bottomInset = insets.bottom;
 
   return (
     <Tabs
-      safeAreaInsets={{ bottom: 0 }}
       initialRouteName="my-tickets"
       screenOptions={({ route }) => {
         const config =
@@ -83,8 +81,7 @@ export default function PremiumTabsLayout() {
           tabBarStyle: [
             styles.tabBar,
             {
-              height: 54 + bottomInset,
-              paddingBottom: bottomInset,
+              height: 49,
               backgroundColor: "#F8FAFC",
             },
           ],
@@ -142,11 +139,11 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: "#E5E5E5",
     elevation: 8,
-    paddingTop: 2,
   },
   tabItem: {
     paddingHorizontal: 0,
     paddingTop: 0,
+    paddingBottom: 0,
   },
   iconWrap: {
     alignItems: "center",
