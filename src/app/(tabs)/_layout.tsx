@@ -143,11 +143,13 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: "#E5E5E5",
     elevation: 8,
+    overflow: "visible",
   },
   tabItem: {
     paddingHorizontal: 0,
-    paddingTop: 10,
+    paddingTop: 12,
     paddingBottom: 0,
+    overflow: "visible",
   },
   iconWrap: {
     alignItems: "center",
@@ -156,7 +158,8 @@ const styles = StyleSheet.create({
     minHeight: 25,
   },
   tabLabel: {
-    marginTop: 0,
+    position: "absolute",
+    bottom: 2,
     fontFamily: accountFont,
     fontSize: 10,
     fontWeight: "500",
