@@ -2,6 +2,7 @@ import { Ionicons } from "@expo/vector-icons";
 import React from "react";
 import { Pressable, Text, View } from "react-native";
 import Animated, { LinearTransition } from "react-native-reanimated";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { cx } from "@/components/tickets/cx";
 import type { Seat } from "@/components/tickets/ticketFlowTypes";
@@ -24,6 +25,7 @@ export function TicketTransferSelectScreen({
   selectedSeatIds: string[];
   ticketCount: string;
 }) {
+  const insets = useSafeAreaInsets();
   return (
     <BottomDrawer minHeight="62%" onClose={onBack} visible={true}>
       <View className="border-b border-[#F0F0F0] py-4">
@@ -79,7 +81,10 @@ export function TicketTransferSelectScreen({
 
       <View className="flex-1 bg-white" />
 
-      <View className="flex-row items-center justify-between bg-[#F9F9F9] px-[16px] pb-[40px] pt-[20px]">
+      <View 
+        className="flex-row items-center justify-between bg-[#F9F9F9] px-[16px] pt-[20px]"
+        style={{ paddingBottom: Math.max(insets.bottom, 20) }}
+      >
         <Text className="text-[12px] font-normal leading-[14px] text-[#5D6773]">
           {`${selectedSeatIds.length} Selected`}
         </Text>

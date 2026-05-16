@@ -2,13 +2,15 @@ import { Ionicons } from "@expo/vector-icons";
 import React from "react";
 import { Pressable, Text, View } from "react-native";
 import Animated, { FadeInUp } from "react-native-reanimated";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export function BottomDock({ onTransfer }: { onTransfer: () => void }) {
+  const insets = useSafeAreaInsets();
   return (
     <Animated.View
       entering={FadeInUp.duration(320).delay(220)}
-      className="absolute inset-x-0 bottom-10 z-30 items-center"
-      style={{ pointerEvents: 'box-none' }}
+      className="absolute inset-x-0 z-30 items-center"
+      style={{ pointerEvents: 'box-none', bottom: insets.bottom + 16 }}
     >
       <View
         className="overflow-hidden rounded-[30px] border border-white bg-white"

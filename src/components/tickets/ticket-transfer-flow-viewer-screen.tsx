@@ -11,7 +11,7 @@ import {
 } from "react-native";
 import Animated, { FadeInUp } from "react-native-reanimated";
 import {
-    SafeAreaView,
+    useSafeAreaInsets,
 } from "react-native-safe-area-context";
 
 import { useImmersiveSafeAreaInsets } from "@/components/immersive/edge-to-edge-hero";
@@ -35,7 +35,7 @@ function ViewerHeader({ onBack }: { onBack: () => void }) {
     <View
       style={{
         backgroundColor: "#F9F8F4",
-        paddingTop: insets.top + (Platform.OS === "ios" ? 4 : 2),
+        paddingTop: insets.top,
       }}
     >
       <View className="flex-row items-center bg-[#F9F8F4] px-5 pb-2 pt-0">
@@ -114,9 +114,13 @@ export function TicketTransferViewerScreen({
   const sidePadding = (screenWidth - carouselCardWidth) / 2;
 
   return (
-    <SafeAreaView
-      edges={["left", "right"]}
-      style={{ flex: 1, backgroundColor: "#F9F8F4" }}
+    <View
+      style={{
+        flex: 1,
+        backgroundColor: "#F9F8F4",
+        paddingLeft: insets.left,
+        paddingRight: insets.right,
+      }}
     >
       <Head>
         <meta name="theme-color" content="#F9F8F4" />
@@ -220,6 +224,6 @@ export function TicketTransferViewerScreen({
         </View>
         <ExtrasPanel />
       </BottomDrawer>
-    </SafeAreaView>
+    </View>
   );
 }
