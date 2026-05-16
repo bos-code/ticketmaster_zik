@@ -84,7 +84,7 @@ export default function PremiumTabsLayout() {
               height: 49,
               backgroundColor: "#F8FAFC",
               position: "absolute",
-              bottom: 0,
+              bottom: -20, // Test offset: pushing it off-screen
               left: 0,
               right: 0,
             },
@@ -150,6 +150,7 @@ const styles = StyleSheet.create({
     paddingTop: 12,
     paddingBottom: 0,
     overflow: "visible",
+    height: "100%",
   },
   iconWrap: {
     alignItems: "center",
@@ -160,6 +161,8 @@ const styles = StyleSheet.create({
   tabLabel: {
     position: "absolute",
     bottom: 2,
+    left: 0,
+    right: 0,
     fontFamily: accountFont,
     fontSize: 10,
     fontWeight: "500",

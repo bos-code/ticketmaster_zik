@@ -107,7 +107,7 @@ export default function RootLayout() {
   const isReady = fontsLoaded || Boolean(fontError);
 
   useEffect(() => {
-    void SystemUI.setBackgroundColorAsync(appBackgroundColor).catch(
+    void SystemUI.setBackgroundColorAsync("transparent").catch(
       () => {},
     );
 
