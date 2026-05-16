@@ -24,6 +24,8 @@ import { StatusBar } from "expo-status-bar";
 import { Platform } from "react-native";
 import { TicketCard } from "./ticket-card";
 
+const VIEWER_HEADER_TOP_PADDING = 6;
+
 function ViewerHeader({ onBack }: { onBack: () => void }) {
   const { event } = useTicketFlowData();
   const insets = useImmersiveSafeAreaInsets();
@@ -32,7 +34,7 @@ function ViewerHeader({ onBack }: { onBack: () => void }) {
     <View
       style={{
         backgroundColor: "#F9F8F4",
-        paddingTop: insets.top,
+        paddingTop: insets.top + VIEWER_HEADER_TOP_PADDING,
       }}
     >
       <View className="flex-row items-center bg-[#F9F8F4] px-5 pb-2 pt-0">

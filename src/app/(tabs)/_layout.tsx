@@ -64,7 +64,7 @@ const TAB_CONFIG: Record<TabRouteName, TabConfig> = {
 
 export default function PremiumTabsLayout() {
   const insets = useImmersiveSafeAreaInsets();
-  const tabBarHeight = BOTTOM_TAB_BAR_CONTENT_HEIGHT + insets.bottom;
+  const tabBarHeight = BOTTOM_TAB_BAR_CONTENT_HEIGHT - insets.bottom;
 
   return (
     <Tabs
@@ -106,7 +106,6 @@ export default function PremiumTabsLayout() {
               </View>
               <Text
                 allowFontScaling={false}
-                numberOfLines={1}
                 style={[
                   styles.tabLabel,
                   focused && styles.tabLabelActive,
@@ -177,7 +176,9 @@ const styles = StyleSheet.create({
     fontWeight: "500",
     letterSpacing: 0,
     lineHeight: 12,
+    paddingHorizontal: 2,
     textAlign: "center",
+    width: "100%",
   },
   tabLabelActive: {
     fontWeight: "700",
