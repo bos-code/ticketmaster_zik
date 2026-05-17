@@ -221,6 +221,6 @@ export function TicketTransferViewerScreen({
         </View>
         <ExtrasPanel />
       </BottomDrawer>
-    </SafeAreaView>
+    </View>
   );
 }
