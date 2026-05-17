@@ -1,9 +1,9 @@
-import { useRouter } from "expo-router";
-import { Image } from "expo-image";
-import React from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { useRouter } from 'expo-router';
+import { Image } from 'expo-image';
+import React from 'react';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 
-import VenueMap from "@/components/VenueMap";
+import VenueMap from '@/components/VenueMap';
 import {
   buildStaticMapPreviewUrl,
   canRenderEmbeddedMap,
@@ -11,7 +11,7 @@ import {
   openExternalMaps,
   toCoordinate,
   type VenueMapData,
-} from "@/lib/map-utils";
+} from '@/lib/map-utils';
 
 const FALLBACK_MAP_CENTER = {
   latitude: 6.42674716,
@@ -39,7 +39,7 @@ export function VenueMapCard({
   function handleOpenDirections() {
     if (eventId) {
       router.push({
-        pathname: "/event-directions/[id]",
+        pathname: '/event-directions/[id]',
         params: { id: eventId },
       });
       return;
@@ -67,14 +67,14 @@ export function VenueMapCard({
           />
         ) : staticMapUrl ? (
           <Image
-            contentFit="cover"
+            contentFit='cover'
             source={{ uri: staticMapUrl }}
             style={styles.staticMap}
           />
         ) : null}
       </View>
       <Pressable
-        accessibilityRole="button"
+        accessibilityRole='button'
         onPress={handleOpenDirections}
         style={styles.button}
       >
@@ -86,26 +86,26 @@ export function VenueMapCard({
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: "#ffffff",
-    overflow: "hidden",
+    backgroundColor: '#ffffff',
+    overflow: 'hidden',
   },
   mapContainer: {
-    width: "100%",
+    width: '100%',
   },
   staticMap: {
-    height: "100%",
-    width: "100%",
+    height: '100%',
+    width: '100%',
   },
   button: {
-    alignItems: "center",
-    backgroundColor: "#F2F1F5",
-    justifyContent: "center",
-    minHeight: 66,
+    alignItems: 'center',
+    backgroundColor: '#F2F1F5',
+    justifyContent: 'center',
+    minHeight: 35,
     paddingVertical: 0,
   },
   buttonText: {
-    color: "#272529",
+    color: '#272529',
     fontSize: 17,
-    fontWeight: "700",
+    fontWeight: '700',
   },
 });
