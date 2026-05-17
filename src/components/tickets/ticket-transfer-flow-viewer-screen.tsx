@@ -1,61 +1,66 @@
-import { Ionicons } from "@expo/vector-icons";
-import React, { useEffect, useRef } from "react";
+import { Ionicons } from '@expo/vector-icons';
+import React, { useEffect, useRef } from 'react';
 import {
-    FlatList,
-    Pressable,
-    Text,
-    View,
-    useWindowDimensions,
-    type NativeScrollEvent,
-    type NativeSyntheticEvent,
-} from "react-native";
-import Animated, { FadeInUp } from "react-native-reanimated";
+  FlatList,
+  Pressable,
+  Text,
+  View,
+  useWindowDimensions,
+  type NativeScrollEvent,
+  type NativeSyntheticEvent,
+} from 'react-native';
+import Animated, { FadeInUp } from 'react-native-reanimated';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { useImmersiveSafeAreaInsets } from "@/components/immersive/edge-to-edge-hero";
-import { AppleWalletIcon } from "@/components/tickets/apple-wallet-icon";
-import { EditableText } from "@/components/tickets/EditableText";
-import { ExtrasPanel } from "@/components/tickets/ticket-transfer-flow-extras-panel";
-import { softPillShadow } from "@/components/tickets/ticketFlowConstants";
-import type { Seat } from "@/components/tickets/ticketFlowTypes";
-import { useTicketFlowData } from "@/components/tickets/useTicketFlowData";
-import { BottomDrawer } from "@/components/ui/bottom-drawer";
-import Head from "expo-router/head";
-import { StatusBar } from "expo-status-bar";
-import { TicketCard } from "./ticket-card";
+import { useImmersiveSafeAreaInsets } from '@/components/immersive/edge-to-edge-hero';
+import { AppleWalletIcon } from '@/components/tickets/apple-wallet-icon';
+import { EditableText } from '@/components/tickets/EditableText';
+import { ExtrasPanel } from '@/components/tickets/ticket-transfer-flow-extras-panel';
+import { softPillShadow } from '@/components/tickets/ticketFlowConstants';
+import type { Seat } from '@/components/tickets/ticketFlowTypes';
+import { useTicketFlowData } from '@/components/tickets/useTicketFlowData';
+import { BottomDrawer } from '@/components/ui/bottom-drawer';
+import Head from 'expo-router/head';
+import { StatusBar } from 'expo-status-bar';
+import { Platform } from 'react-native';
+import { TicketCard } from './ticket-card';
 
 const VIEWER_HEADER_TOP_PADDING = 6;
 
 function ViewerHeader({ onBack }: { onBack: () => void }) {
   const { event } = useTicketFlowData();
   const insets = useImmersiveSafeAreaInsets();
+  console.log('event.shortTitle', event.shortTitle);
 
   return (
     <View
       style={{
-        backgroundColor: "#F9F8F4",
-        paddingTop: insets.top + VIEWER_HEADER_TOP_PADDING,
+        backgroundColor: '#F9F8F4',
+        paddingTop:
+          Platform.OS === 'web'
+            ? 12
+            : insets.top + (Platform.OS === 'ios' ? 4 : 2),
       }}
     >
-      <View className="flex-row items-center bg-[#F9F8F4] px-5 pb-2 pt-0">
+      <View className='flex-row items-center bg-[#F9F8F4] px-5 pb-4 pt-0'>
         <Pressable
-          accessibilityRole="button"
+          accessibilityRole='button'
           hitSlop={8}
           onPress={onBack}
-          className="mr-2"
+          className='mr-4'
         >
-          <Ionicons color="#000000" name="chevron-back" size={28} />
+          <Ionicons color='#000000' name='chevron-back' size={28} />
         </Pressable>
 
-        <View className="flex-1 justify-center">
+        <View className='justify-center'>
           <EditableText
-            field="eventName"
+            field='eventName'
             value={event.shortTitle}
-            className="text-[14px] font-bold text-[#000000]"
-            style={{ flexShrink: 1, flexWrap: "wrap", lineHeight: 17 }}
+            className='text-[17px] font-bold text-[#000000] mb-2 capitalize'
           />
           <EditableText
             value={event.headerSubtitle}
-            className="text-[12px] font-medium text-[#6B6B6B]"
+            className='text-[12px] font-medium text-[#6B6B6B]'
           />
         </View>
       </View>
@@ -113,20 +118,16 @@ export function TicketTransferViewerScreen({
   const sidePadding = (screenWidth - carouselCardWidth) / 2;
 
   return (
-    <View
-      style={{
-        flex: 1,
-        backgroundColor: "#F9F8F4",
-        paddingLeft: insets.left,
-        paddingRight: insets.right,
-      }}
+    <SafeAreaView
+      edges={['left', 'right']}
+      style={{ flex: 1, backgroundColor: '#F9F8F4' }}
     >
       <Head>
-        <meta name="theme-color" content="#F9F8F4" />
-        <meta name="color-scheme" content="light" />
+        <meta name='theme-color' content='#F9F8F4' />
+        <meta name='color-scheme' content='light' />
       </Head>
-      <StatusBar backgroundColor="#F9F8F4" style="dark" translucent={true} />
-      <View className="flex-1 bg-[#F9F8F4]">
+      <StatusBar backgroundColor='#F9F8F4' style='dark' translucent={true} />
+      <View className='flex-1 bg-[#F9F8F4]'>
         <ViewerHeader onBack={onBack} />
 
         <FlatList
@@ -139,7 +140,7 @@ export function TicketTransferViewerScreen({
             alignItems: 'center',
           }}
           data={seats}
-          decelerationRate="fast"
+          decelerationRate='fast'
           getItemLayout={(_, index) => ({
             index,
             length: carouselSnapInterval,
@@ -158,51 +159,51 @@ export function TicketTransferViewerScreen({
             />
           )}
           showsHorizontalScrollIndicator={false}
-          snapToAlignment="center"
+          snapToAlignment='center'
           snapToInterval={carouselSnapInterval}
         />
 
         <Animated.View
           entering={FadeInUp.duration(260)}
-          className="mt-auto items-center gap-10 px-5"
+          className='mt-auto items-center gap-10 px-5'
           style={{
             paddingBottom: Math.max(insets.bottom + 24, 24),
           }}
         >
           <View
-            className="rounded-full bg-white px-5 py-[10px]"
+            className='rounded-full bg-white px-5 py-[10px]'
             style={softPillShadow}
           >
-            <Text className="text-center text-[12px] font-bold text-[#111111]">
+            <Text className='text-center text-[12px] font-bold text-[#111111]'>
               {positionLabel ?? `${viewerIndex + 1} of ${seats.length}`}
             </Text>
           </View>
 
-          <View className="flex-row mt-auto w-full justify-between gap-3 px-2">
+          <View className='flex-row mt-auto w-full justify-between gap-3 px-2'>
             <Pressable
-              accessibilityRole="button"
-              className="h-[44px] flex-row items-center justify-center gap-2 rounded-[8px] bg-[#111111] px-4"
+              accessibilityRole='button'
+              className='h-[44px] flex-row items-center justify-center gap-2 rounded-[8px] bg-[#111111] px-4'
             >
               <AppleWalletIcon height={24} width={34} />
-              <View className="flex flex-col items-center">
-                <Text className="text-[8px] font-medium text-white leading-tight">
+              <View className='flex flex-col items-center'>
+                <Text className='text-[8px] font-medium text-white leading-tight'>
                   Add to
                 </Text>
-                <Text className="text-[12px] font-bold text-white leading-tight">
+                <Text className='text-[12px] font-bold text-white leading-tight'>
                   Apple Wallet
                 </Text>
               </View>
             </Pressable>
 
             <Pressable
-              accessibilityRole="button"
-              className="h-[44px] flex-row items-center justify-center gap-2 rounded-full border border-[#D7DBE2] bg-[#F9F8F4] px-4"
+              accessibilityRole='button'
+              className='h-[44px] flex-row items-center justify-center gap-2 rounded-full border border-[#D7DBE2] bg-[#F9F8F4] px-4'
               onPress={() => setIsTicketInfoOpen(true)}
             >
-              <View className="h-6 w-6 items-center justify-center rounded-full bg-black">
-                <Ionicons color="#FFFFFF" name="information" size={15} />
+              <View className='h-6 w-6 items-center justify-center rounded-full bg-black'>
+                <Ionicons color='#FFFFFF' name='information' size={15} />
               </View>
-              <Text className="text-[13px] font-bold text-[#111111]">
+              <Text className='text-[13px] font-bold text-[#111111]'>
                 Ticket Info
               </Text>
             </Pressable>
@@ -210,12 +211,12 @@ export function TicketTransferViewerScreen({
         </Animated.View>
       </View>
       <BottomDrawer
-        minHeight="62%"
+        minHeight='62%'
         onClose={() => setIsTicketInfoOpen(false)}
         visible={isTicketInfoOpen}
       >
-        <View className="border-b border-[#F0F0F0] px-5 py-4">
-          <Text className="text-center text-[12px] font-medium leading-[15px] text-[#70757E]">
+        <View className='border-b border-[#F0F0F0] px-5 py-4'>
+          <Text className='text-center text-[12px] font-medium leading-[15px] text-[#70757E]'>
             TICKET INFO
           </Text>
         </View>

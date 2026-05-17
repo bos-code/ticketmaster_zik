@@ -5,7 +5,6 @@ import { ThemeProvider } from "@react-navigation/native";
 import Constants from "expo-constants";
 import { useFonts } from "expo-font";
 import { Stack } from "expo-router";
-import Head from "expo-router/head";
 import * as SplashScreen from "expo-splash-screen";
 import * as SystemUI from "expo-system-ui";
 import React, { useCallback, useEffect, useRef } from "react";
@@ -16,10 +15,7 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import { PremiumStartupScreen } from "@/components/premium-startup-screen";
 import { PwaInstallPrompt } from "@/components/pwa-install-prompt";
 import { StatusBar } from "expo-status-bar";
-import {
-  APP_STATUS_BAR_BLACK,
-  SPLASH_STATUS_BAR_COLOR,
-} from "@/constants/theme";
+import { SPLASH_STATUS_BAR_COLOR } from "@/constants/theme";
 import { ticketColors, ticketNavigationTheme } from "@/constants/ticket-theme";
 import { useFirebaseDataSync } from "@/hooks/use-firebase-data-sync";
 import { QueryProvider } from "@/providers/query-provider";
@@ -108,7 +104,14 @@ export default function RootLayout() {
   const isReady = fontsLoaded || Boolean(fontError);
 
   useEffect(() => {
-    void SystemUI.setBackgroundColorAsync(rootBackgroundColor).catch(
+    if (Platform.OS === "web" && typeof document !== "undefined") {
+      document.documentElement.style.setProperty(
+        "--app-shell-background",
+        appBackgroundColor,
+      );
+    }
+
+    void SystemUI.setBackgroundColorAsync(appBackgroundColor).catch(
       () => {},
     );
 
@@ -150,20 +153,7 @@ export default function RootLayout() {
               style={{ flex: 1, backgroundColor: rootBackgroundColor }}
               onLayout={handleRootLayout}
             >
-              <Head>
-                <meta
-                  name="viewport"
-                  content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover"
-                />
-                <link rel="manifest" href="/manifest.json" />
-                <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-                <meta name="apple-mobile-web-app-capable" content="yes" />
-                <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-                <meta name="apple-mobile-web-app-title" content="Tickets" />
-                <meta name="theme-color" content={APP_STATUS_BAR_BLACK} />
-                <meta name="color-scheme" content="dark" />
-              </Head>
-              <StatusBar translucent backgroundColor="transparent" style="light" />
+              <StatusBar translucent backgroundColor="#FFFFFF" style="dark" />
               {!hasFinishedStartup ? (
                 <PremiumStartupScreen onFinish={handleStartupFinish} />
               ) : (
