@@ -6,7 +6,7 @@ import {
 import { BOTTOM_TAB_BAR_CONTENT_HEIGHT } from '@/constants/theme';
 import { Tabs } from 'expo-router';
 import React from 'react';
-import { Platform, StyleSheet, Text, View } from 'react-native';
+import { Platform, StyleSheet } from 'react-native';
 
 type TabRouteName =
   | 'discover'
@@ -68,7 +68,6 @@ export default function PremiumTabsLayout() {
 
   return (
     <Tabs
-      safeAreaInsets={{ bottom: 0 }}
       initialRouteName='my-tickets'
       screenOptions={({ route }) => {
         const config =
@@ -90,9 +89,13 @@ export default function PremiumTabsLayout() {
           tabBarStyle: [
             styles.tabBar,
             {
-              height: 54 + bottomInset,
-              paddingBottom: bottomInset,
+              height: tabBarHeight,
               backgroundColor: '#F8FAFC',
+              paddingBottom: insets.bottom,
+              position: 'absolute',
+              bottom: 0,
+              left: 0,
+              right: 0,
             },
           ],
           tabBarIcon: ({ focused }) => (
@@ -137,17 +140,13 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: '#E5E5E5',
     elevation: 8,
-    overflow: "visible",
+    overflow: 'visible',
   },
   tabItem: {
     paddingHorizontal: 0,
     paddingTop: 0,
-  },
-  iconWrap: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 1,
-    minHeight: 28,
+    paddingBottom: 0,
+    overflow: 'visible',
   },
   tabLabel: {
     fontFamily: accountFont,
@@ -156,8 +155,5 @@ const styles = StyleSheet.create({
     letterSpacing: 0,
     lineHeight: 12,
     textAlign: 'center',
-  },
-  tabLabelActive: {
-    fontWeight: '700',
   },
 });

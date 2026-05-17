@@ -5,7 +5,11 @@ const { withNativewind } = require("nativewind/metro");
 const config = getDefaultConfig(__dirname);
 
 const { transformer, resolver } = config;
-const rewriteExpoRequestUrl = config.server?.rewriteRequestUrl;
+const firebaseModules = new Set([
+  "firebase/app",
+  "firebase/firestore",
+  "firebase/storage",
+]);
 
 // SVG Support
 // Added react-native-svg-transformer to support .svg files as components
@@ -20,46 +24,14 @@ config.resolver = {
   sourceExts: [...resolver.sourceExts, "svg"],
   unstable_enablePackageExports: true,
   resolveRequest: (context, moduleName, platform) => {
-    if (moduleName === "i18n-iso-countries" && platform === "web") {
+    if (firebaseModules.has(moduleName)) {
       return {
         type: "sourceFile",
-        filePath: require.resolve("i18n-iso-countries/index"),
-      };
-    }
-
-    if (moduleName === "react-easy-crop" && platform === "web") {
-      return {
-        type: "sourceFile",
-        filePath: require.resolve("react-easy-crop"),
-      };
-    }
-
-    if (moduleName === "expo-router/head" && platform !== "web") {
-      return {
-        type: "sourceFile",
-        filePath: require.resolve("./src/lib/native-head.tsx"),
-      };
-    }
-
-    if (moduleName === "punycode") {
-      return {
-        type: "sourceFile",
-        filePath: require.resolve("punycode/punycode.js"),
+        filePath: require.resolve(moduleName),
       };
     }
 
     return context.resolveRequest(context, moduleName, platform);
-  },
-};
-
-config.server = {
-  ...config.server,
-  rewriteRequestUrl: (url) => {
-    const rewritten = rewriteExpoRequestUrl ? rewriteExpoRequestUrl(url) : url;
-
-    return rewritten
-      .replace(/\.%252Fassets%252Ftabicon/gi, "assets%2Ftabicon")
-      .replace(/\.%2Fassets%2Ftabicon/gi, "assets%2Ftabicon");
   },
 };
 
