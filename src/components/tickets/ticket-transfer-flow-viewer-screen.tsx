@@ -182,7 +182,7 @@ export function TicketTransferViewerScreen({
           <View className='flex-row mt-auto w-full justify-between gap-3 px-2'>
             <Pressable
               accessibilityRole='button'
-              className='h-[44px] flex-row items-center justify-center gap-2 rounded-[8px] bg-[#111111] px-4'
+              className='h-11 flex-row items-center justify-center gap-2 rounded-lg bg-[#111111] px-4'
             >
               <AppleWalletIcon height={24} width={34} />
               <View className='flex flex-col items-center'>
@@ -222,6 +222,6 @@ export function TicketTransferViewerScreen({
         </View>
         <ExtrasPanel />
       </BottomDrawer>
-    </View>
+    </SafeAreaView>
   );
 }
