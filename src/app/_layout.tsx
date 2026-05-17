@@ -152,9 +152,24 @@ export default function RootLayout() {
     void SplashScreen.hideAsync().catch(() => {});
   }, [isReady]);
 
+  useEffect(() => {
+    if (!isReady) {
+      return;
+    }
+
+    if (hasHiddenNativeSplash.current) {
+      return;
+    }
+
+    hasHiddenNativeSplash.current = true;
+    console.log("[RootLayout] Hiding splash screen from effect");
+    void SplashScreen.hideAsync().catch(() => {});
+  }, [isReady]);
+
   const handleStartupFinish = useCallback(() => {
     finishStartup();
   }, [finishStartup]);
+
   // Log font loading status
   useEffect(() => {
     console.log("[RootLayout] Font loading status:", {

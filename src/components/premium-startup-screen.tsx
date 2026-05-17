@@ -23,59 +23,69 @@ export function PremiumStartupScreen({ onFinish }: PremiumStartupScreenProps) {
   const wordmarkTranslateX = useRef(new Animated.Value(44)).current;
 
   useEffect(() => {
+    const useNativeDriver = Platform.OS !== "web";
+    let timeout: ReturnType<typeof setTimeout>;
+
     // Diagnostic logging
-    console.log("[PremiumStartupScreen] Component mounted");
+    console.log("[PremiumStartupScreen] Component mounted", { useNativeDriver });
 
-    // Animation Sequence
-    Animated.sequence([
-      // 1. Animate the 't' icon in
-      Animated.parallel([
-        Animated.timing(tOpacity, {
-          toValue: 1,
-          duration: 600,
-          easing: Easing.out(Easing.cubic),
-          useNativeDriver: true,
-        }),
-        Animated.timing(tScale, {
-          toValue: 1.1,
-          duration: 1000,
-          easing: Easing.out(Easing.cubic),
-          useNativeDriver: true,
-        }),
-      ]),
+    if (Platform.OS === "web") {
+      timeout = setTimeout(() => {
+        console.log("[PremiumStartupScreen] Web startup timeout complete");
+        onFinish?.();
+      }, 3200);
+    } else {
+      // Animation Sequence
+      Animated.sequence([
+        // 1. Animate the 't' icon in
+        Animated.parallel([
+          Animated.timing(tOpacity, {
+            toValue: 1,
+            duration: 600,
+            easing: Easing.out(Easing.cubic),
+            useNativeDriver,
+          }),
+          Animated.timing(tScale, {
+            toValue: 1.1,
+            duration: 1000,
+            easing: Easing.out(Easing.cubic),
+            useNativeDriver,
+          }),
+        ]),
 
-      // 2. Short pause
-      Animated.delay(200),
+        // 2. Short pause
+        Animated.delay(200),
 
-      // 3. Fade out 't' and fade in wordmark
-      Animated.parallel([
-        Animated.timing(tOpacity, {
-          toValue: 0,
-          duration: 400,
-          easing: Easing.in(Easing.cubic),
-          useNativeDriver: true,
-        }),
-        Animated.timing(wordmarkOpacity, {
-          toValue: 1,
-          duration: 480,
-          delay: 200,
-          easing: Easing.out(Easing.cubic),
-          useNativeDriver: true,
-        }),
-        Animated.timing(wordmarkTranslateX, {
-          toValue: 0,
-          duration: 480,
-          delay: 200,
-          easing: Easing.out(Easing.cubic),
-          useNativeDriver: true,
-        }),
-      ]),
-    ]).start();
+        // 3. Fade out 't' and fade in wordmark
+        Animated.parallel([
+          Animated.timing(tOpacity, {
+            toValue: 0,
+            duration: 400,
+            easing: Easing.in(Easing.cubic),
+            useNativeDriver,
+          }),
+          Animated.timing(wordmarkOpacity, {
+            toValue: 1,
+            duration: 480,
+            delay: 200,
+            easing: Easing.out(Easing.cubic),
+            useNativeDriver,
+          }),
+          Animated.timing(wordmarkTranslateX, {
+            toValue: 0,
+            duration: 480,
+            delay: 200,
+            easing: Easing.out(Easing.cubic),
+            useNativeDriver,
+          }),
+        ]),
+      ]).start();
 
-    const timeout = setTimeout(() => {
-      console.log("[PremiumStartupScreen] Calling onFinish");
-      onFinish?.();
-    }, 3200); // Slightly longer to accommodate both animations
+      timeout = setTimeout(() => {
+        console.log("[PremiumStartupScreen] Calling onFinish");
+        onFinish?.();
+      }, 3200); // Slightly longer to accommodate both animations
+    }
 
     return () => {
       clearTimeout(timeout);
