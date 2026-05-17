@@ -25,6 +25,8 @@ import { StatusBar } from 'expo-status-bar';
 import { Platform } from 'react-native';
 import { TicketCard } from './ticket-card';
 
+const VIEWER_HEADER_TOP_PADDING = 6;
+
 function ViewerHeader({ onBack }: { onBack: () => void }) {
   const { event } = useTicketFlowData();
   const insets = useImmersiveSafeAreaInsets();
@@ -147,9 +149,7 @@ export function TicketTransferViewerScreen({
           horizontal
           keyExtractor={(item) => item.id}
           onMomentumScrollEnd={handleViewerScrollEnd}
-          onScroll={(event) => {
-            updateViewerIndexFromOffset(event.nativeEvent.contentOffset.x);
-          }}
+          onScrollEndDrag={handleViewerScrollEnd}
           ref={viewerListRef}
           renderItem={({ item, index }) => (
             <TicketCard
@@ -182,7 +182,7 @@ export function TicketTransferViewerScreen({
           <View className='flex-row mt-auto w-full justify-between gap-3 px-2'>
             <Pressable
               accessibilityRole='button'
-              className='h-[44px] flex-row items-center justify-center gap-2 rounded-[8px] bg-[#111111] px-4'
+              className='h-11 flex-row items-center justify-center gap-2 rounded-lg bg-[#111111] px-4'
             >
               <AppleWalletIcon height={24} width={34} />
               <View className='flex flex-col items-center'>

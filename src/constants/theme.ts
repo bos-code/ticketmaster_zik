@@ -56,6 +56,7 @@ export const Spacing = {
 } as const;
 
 export const BottomTabInset = Platform.select({ ios: 50, android: 80 }) ?? 0;
+export const BOTTOM_TAB_BAR_CONTENT_HEIGHT = 52;
 export const MaxContentWidth = 800;
 
 export const APP_STATUS_BAR_BLACK = "#050505";

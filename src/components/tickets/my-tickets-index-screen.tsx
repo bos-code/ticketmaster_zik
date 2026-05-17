@@ -3,9 +3,13 @@ import React, { useEffect, useMemo, useState } from "react";
 import { Image, Pressable, ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import { useImmersiveSafeAreaInsets } from "@/components/immersive/edge-to-edge-hero";
+import {
+  APP_STATUS_BAR_BLACK,
+  BOTTOM_TAB_BAR_CONTENT_HEIGHT,
+} from "@/constants/theme";
 import Head from "expo-router/head";
 import { StatusBar } from "expo-status-bar";
-import { APP_STATUS_BAR_BLACK } from "@/constants/theme";
 import { useTicketOrder } from "@/hooks/useTicketOrder";
 import type { TicketSummaryViewModel } from "@/types/ticket";
 
@@ -21,6 +25,7 @@ function buildTicketSummaryHref(orderId: string): Href {
 
 export function MyTicketsIndexScreen() {
   const router = useRouter();
+  const insets = useImmersiveSafeAreaInsets();
   const { pastSummaryViewModels, upcomingSummaryViewModels } =
     useTicketOrder();
 
@@ -73,7 +78,7 @@ export function MyTicketsIndexScreen() {
         <meta name="theme-color" content={APP_STATUS_BAR_BLACK} />
         <meta name="color-scheme" content="dark" />
       </Head>
-      <StatusBar backgroundColor={APP_STATUS_BAR_BLACK} style="light" />
+      <StatusBar translucent backgroundColor="transparent" style="light" />
 
       <SafeAreaView
         edges={["top", "left", "right"]}
@@ -121,8 +126,11 @@ export function MyTicketsIndexScreen() {
 
       <ScrollView
         className="flex-1 bg-white"
-        contentContainerStyle={{ flexGrow: 1 }}
-        contentContainerClassName="gap-5 px-4 pb-10 pt-5"
+        contentContainerStyle={{
+          flexGrow: 1,
+          paddingBottom: BOTTOM_TAB_BAR_CONTENT_HEIGHT + insets.bottom + 40,
+        }}
+        contentContainerClassName="gap-5 px-4 pt-5"
         showsVerticalScrollIndicator={true}
         style={{ backgroundColor: "#FFFFFF" }}
       >

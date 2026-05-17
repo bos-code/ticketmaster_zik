@@ -14,7 +14,8 @@ import {
   TextInput,
   View,
 } from 'react-native';
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useImmersiveSafeAreaInsets } from '@/components/immersive/edge-to-edge-hero';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { AdminDateTimeField } from '@/components/admin/admin-date-time-field';
 import {
@@ -91,7 +92,7 @@ const EMPTY_CREATE_FORM: FormState = {
 
 export function AddEventAdminScreen() {
   const router = useRouter();
-  const insets = useSafeAreaInsets();
+  const insets = useImmersiveSafeAreaInsets();
   const imageCropperRef = useRef<WebImageCropperHandle | null>(null);
   const params = useLocalSearchParams<{ mode?: string; ticketId?: string }>();
   const mode = params.mode === 'edit' ? 'edit' : 'create';

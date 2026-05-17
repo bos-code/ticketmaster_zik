@@ -24,6 +24,7 @@ export function TicketTransferSelectScreen({
   selectedSeatIds: string[];
   ticketCount: string;
 }) {
+  const insets = useImmersiveSafeAreaInsets();
   return (
     <BottomDrawer minHeight='62%' onClose={onBack} visible={true}>
       <View className='border-b border-[#F0F0F0] py-4'>

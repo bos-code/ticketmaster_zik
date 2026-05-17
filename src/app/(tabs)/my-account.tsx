@@ -18,6 +18,8 @@ import {
   AccountIcon,
   type AccountIconName,
 } from "@/components/account/account-icon";
+import { useImmersiveSafeAreaInsets } from "@/components/immersive/edge-to-edge-hero";
+import { BOTTOM_TAB_BAR_CONTENT_HEIGHT } from "@/constants/theme";
 import Head from "expo-router/head";
 import { StatusBar } from "expo-status-bar";
 import {
@@ -218,6 +220,7 @@ function ValueRow({
 
 export default function MyAccountScreen() {
   const router = useRouter();
+  const insets = useImmersiveSafeAreaInsets();
   const scrollRef = useRef<ScrollView | null>(null);
   const scrollOffsetYRef = useRef(WELCOME_PANEL_LOCK_HEIGHT);
   const [receiveNotifs, setReceiveNotifs] = useState(false);
@@ -330,7 +333,9 @@ export default function MyAccountScreen() {
       <ScrollView
         ref={scrollRef}
         alwaysBounceVertical
-        contentContainerStyle={{ paddingBottom: 32 }}
+        contentContainerStyle={{
+          paddingBottom: BOTTOM_TAB_BAR_CONTENT_HEIGHT + insets.bottom + 32,
+        }}
         contentOffset={{ x: 0, y: WELCOME_PANEL_LOCK_HEIGHT }}
         decelerationRate="fast"
         onScroll={(event) => {

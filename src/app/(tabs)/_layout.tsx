@@ -63,7 +63,7 @@ const TAB_CONFIG: Record<TabRouteName, TabConfig> = {
 
 export default function PremiumTabsLayout() {
   const insets = useImmersiveSafeAreaInsets();
-  const bottomInset = insets.bottom;
+  const tabBarHeight = BOTTOM_TAB_BAR_CONTENT_HEIGHT + insets.bottom;
 
   return (
     <Tabs
@@ -76,10 +76,16 @@ export default function PremiumTabsLayout() {
         return {
           headerShown: false,
           lazy: true,
-          sceneStyle: { backgroundColor: C.background },
+          sceneContainerStyle: { backgroundColor: C.background },
           tabBarAccessibilityLabel: config.title,
+          tabBarAllowFontScaling: false,
+          tabBarLabel: config.title,
+          tabBarLabelStyle: styles.tabLabel,
           tabBarInactiveTintColor: C.inactive,
-          tabBarItemStyle: styles.tabItem,
+          tabBarItemStyle: [
+            styles.tabItem,
+            { height: BOTTOM_TAB_BAR_CONTENT_HEIGHT },
+          ],
           tabBarStyle: [
             styles.tabBar,
             {
@@ -89,26 +95,11 @@ export default function PremiumTabsLayout() {
             },
           ],
           tabBarIcon: ({ focused }) => (
-            <View style={styles.iconWrap}>
-              <TicketmasterTabIcon
-                focused={focused}
-                name={config.icon}
-                size={25}
-              />
-            </View>
-          ),
-          tabBarLabel: ({ focused }) => (
-            <Text
-              allowFontScaling={false}
-              numberOfLines={1}
-              style={[
-                styles.tabLabel,
-                focused && styles.tabLabelActive,
-                { color: focused ? C.active : C.inactive },
-              ]}
-            >
-              {config.title}
-            </Text>
+            <TicketmasterTabIcon
+              focused={focused}
+              name={config.icon}
+              size={25}
+            />
           ),
         };
       }}
@@ -145,7 +136,7 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: '#E5E5E5',
     elevation: 8,
-    paddingTop: 2,
+    overflow: "visible",
   },
   tabItem: {
     paddingHorizontal: 0,
@@ -158,7 +149,6 @@ const styles = StyleSheet.create({
     minHeight: 28,
   },
   tabLabel: {
-    marginTop: 1,
     fontFamily: accountFont,
     fontSize: 10,
     fontWeight: '500',

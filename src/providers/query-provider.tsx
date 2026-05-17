@@ -1,14 +1,10 @@
 import { QueryClientProvider, focusManager } from '@tanstack/react-query';
-import { ReactNode, useEffect } from 'react';
+import React, { ReactNode, useEffect } from 'react';
 import { AppState, Platform } from 'react-native';
 
 import { queryClient } from '@/lib/query-client';
 
-type QueryProviderProps = {
-  children: ReactNode;
-};
-
-export function QueryProvider({ children }: QueryProviderProps) {
+export function QueryProvider({ children }: React.PropsWithChildren) {
   useEffect(() => {
     if (Platform.OS === 'web') {
       return undefined;

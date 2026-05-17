@@ -1,13 +1,12 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Platform, Pressable, Text, View } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useImmersiveSafeAreaInsets } from "@/components/immersive/edge-to-edge-hero";
+import { BOTTOM_TAB_BAR_CONTENT_HEIGHT } from "@/constants/theme";
 
 type BeforeInstallPromptEvent = Event & {
   prompt: () => Promise<void>;
   userChoice: Promise<{ outcome: "accepted" | "dismissed"; platform: string }>;
 };
-
-const TAB_BAR_BASE_HEIGHT = 65;
 
 function isStandaloneMode() {
   if (typeof window === "undefined") {
@@ -30,8 +29,8 @@ export function PwaInstallPrompt({ isStartupFinished }: { isStartupFinished?: bo
   const [isVisible, setIsVisible] = useState(false);
   const [isIOS, setIsIOS] = useState(false);
   
-  const insets = useSafeAreaInsets();
-  const TAB_BAR_HEIGHT = TAB_BAR_BASE_HEIGHT + insets.bottom;
+  const insets = useImmersiveSafeAreaInsets();
+  const TAB_BAR_HEIGHT = BOTTOM_TAB_BAR_CONTENT_HEIGHT + insets.bottom;
   const PROMPT_BOTTOM_GAP = 12;
 
   useEffect(() => {

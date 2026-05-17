@@ -15,7 +15,7 @@ import Animated, {
   useAnimatedScrollHandler,
   useSharedValue,
 } from "react-native-reanimated";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useImmersiveSafeAreaInsets } from "@/components/immersive/edge-to-edge-hero";
 
 import {
   EditableProvider,
@@ -37,7 +37,7 @@ import {
 
 export function AdminTicketPreviewScreen() {
   const router = useRouter();
-  const insets = useSafeAreaInsets();
+  const insets = useImmersiveSafeAreaInsets();
   const params = useLocalSearchParams<{ ticketId?: string }>();
   const ticketId =
     typeof params.ticketId === "string" ? params.ticketId : undefined;

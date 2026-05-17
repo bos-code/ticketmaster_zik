@@ -96,9 +96,10 @@ export default function RootLayout() {
   const finishStartup = useAppStore((state) => state.finishStartup);
   const hasHiddenNativeSplash = useRef(false);
   const startupBackgroundColor = SPLASH_STATUS_BAR_COLOR;
-  // Use splash blue during startup to ensure no seams, transition to app background after
-  const appBackgroundColor = hasFinishedStartup
-    ? ticketColors.background
+  // Use splash blue during startup to ensure no seams, then let screens own the background.
+  const appBackgroundColor = "transparent";
+  const rootBackgroundColor = hasFinishedStartup
+    ? appBackgroundColor
     : startupBackgroundColor;
   const isReady = fontsLoaded || Boolean(fontError);
 
@@ -114,12 +115,13 @@ export default function RootLayout() {
       () => {},
     );
 
+
     if (Platform.OS === "web" && typeof window !== "undefined" && "serviceWorker" in navigator) {
       navigator.serviceWorker.register("/service-worker.js").catch(() => {
         // Ignore registration errors
       });
     }
-  }, [appBackgroundColor]);
+  }, [rootBackgroundColor]);
 
   const handleRootLayout = useCallback(() => {
     if (!isReady) {
@@ -148,7 +150,7 @@ export default function RootLayout() {
         <QueryProvider>
           <ThemeProvider value={ticketNavigationTheme}>
             <View
-              style={{ flex: 1, backgroundColor: appBackgroundColor }}
+              style={{ flex: 1, backgroundColor: rootBackgroundColor }}
               onLayout={handleRootLayout}
             >
               <StatusBar translucent backgroundColor="#FFFFFF" style="dark" />
