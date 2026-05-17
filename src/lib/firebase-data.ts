@@ -106,9 +106,6 @@ export function ensureFirebaseSeedData() {
 
 async function runSeedTransaction() {
   await runTransaction(firestore, async (transaction) => {
-    const missingEventRefs: ReturnType<typeof doc>[] = [];
-    const missingReservationRefs: ReturnType<typeof doc>[] = [];
-    const missingTicketRefs: ReturnType<typeof doc>[] = [];
     const seedStateRef = doc(
       firestore,
       SEED_STATE_COLLECTION,
@@ -128,7 +125,7 @@ async function runSeedTransaction() {
       const eventSnapshot = await transaction.get(eventRef);
 
       if (!eventSnapshot.exists()) {
-        missingEventRefs.push(eventRef);
+        transaction.set(eventRef, event);
       }
     }
 
@@ -141,7 +138,7 @@ async function runSeedTransaction() {
       const reservationSnapshot = await transaction.get(reservationRef);
 
       if (!reservationSnapshot.exists()) {
-        missingReservationRefs.push(reservationRef);
+        transaction.set(reservationRef, reservation);
       }
     }
 
@@ -150,35 +147,9 @@ async function runSeedTransaction() {
       const ticketSnapshot = await transaction.get(ticketRef);
 
       if (!ticketSnapshot.exists()) {
-        missingTicketRefs.push(ticketRef);
-      }
-    }
-
-    missingEventRefs.forEach((eventRef) => {
-      const event = eventCatalog.find((item) => item.id === eventRef.id);
-
-      if (event) {
-        transaction.set(eventRef, event);
-      }
-    });
-
-    missingReservationRefs.forEach((reservationRef) => {
-      const reservation = initialReservations.find(
-        (item) => item.id === reservationRef.id,
-      );
-
-      if (reservation) {
-        transaction.set(reservationRef, reservation);
-      }
-    });
-
-    missingTicketRefs.forEach((ticketRef) => {
-      const ticket = mockTickets.find((item) => item.id === ticketRef.id);
-
-      if (ticket) {
         transaction.set(ticketRef, ticket);
       }
-    });
+    }
 
     transaction.set(seedStateRef, {
       seededAt: new Date().toISOString(),

@@ -1,25 +1,26 @@
-import React from 'react';
-import { View } from 'react-native';
+import React from "react";
+import { View } from "react-native";
 
-import { ChooseRecipientTypeScreen } from '@/components/tickets/ChooseRecipientTypeScreen';
-import { ChooseTransferMethodScreen } from '@/components/tickets/ChooseTransferMethodScreen';
-import { EnterRecipientDetailsScreen } from '@/components/tickets/EnterRecipientDetailsScreen';
-import { ReviewTransferScreen } from '@/components/tickets/ReviewTransferScreen';
-import { SelectTicketsScreen } from '@/components/tickets/SelectTicketsScreen';
-import { TicketTransferAuthModal } from '@/components/tickets/ticket-transfer-flow-auth-modal';
-import { TicketsUnavailable } from '@/components/tickets/ticket-transfer-flow-components';
-import { TicketFlowContext } from '@/components/tickets/TicketFlowContext';
-import { TicketTransferStatusModal } from '@/components/tickets/TicketTransferStatusModal';
-import { useTicketTransferFlowController } from '@/components/tickets/use-ticket-transfer-flow-controller';
-import Head from 'expo-router/head';
-import { StatusBar } from 'expo-status-bar';
+import { ChooseRecipientTypeScreen } from "@/components/tickets/ChooseRecipientTypeScreen";
+import { ChooseTransferMethodScreen } from "@/components/tickets/ChooseTransferMethodScreen";
+import { EnterRecipientDetailsScreen } from "@/components/tickets/EnterRecipientDetailsScreen";
+import { ReviewTransferScreen } from "@/components/tickets/ReviewTransferScreen";
+import { SelectTicketsScreen } from "@/components/tickets/SelectTicketsScreen";
+import { TicketTransferAuthModal } from "@/components/tickets/ticket-transfer-flow-auth-modal";
+import { TicketsUnavailable } from "@/components/tickets/ticket-transfer-flow-components";
+import { TicketFlowContext } from "@/components/tickets/TicketFlowContext";
+import { TicketTransferStatusModal } from "@/components/tickets/TicketTransferStatusModal";
+import { useTicketTransferFlowController } from "@/components/tickets/use-ticket-transfer-flow-controller";
+import Head from "expo-router/head";
+import { StatusBar } from "expo-status-bar";
+
 
 export function TicketTransferFlow({
-  initialScreen = 'list',
+  initialScreen = "list",
   initialTicketIndex = 0,
   orderId,
 }: {
-  initialScreen?: 'list' | 'viewer';
+  initialScreen?: "list" | "viewer";
   initialTicketIndex?: number;
   orderId?: string;
 }) {
@@ -29,34 +30,27 @@ export function TicketTransferFlow({
     orderId,
   });
 
+
+
   if (!flow.ticketFlowData) {
     return <TicketsUnavailable />;
   }
 
   return (
     <TicketFlowContext.Provider value={flow.ticketFlowData}>
-      <View className='flex-1'>
+      <View className="flex-1">
         <Head>
-          <meta
-            name='theme-color'
-            content={flow.isViewerScreen ? '#F9F8F4' : 'transparent'}
-          />
-          <meta
-            name='color-scheme'
-            content={flow.isViewerScreen ? 'light' : 'dark'}
-          />
-          <meta
-            name='apple-mobile-web-app-status-bar-style'
-            content={!flow.isViewerScreen ? 'black-translucent' : 'black'}
-          />
+          <meta name="theme-color" content={flow.isViewerScreen ? "#F9F8F4" : "transparent"} />
+          <meta name="color-scheme" content={flow.isViewerScreen ? "light" : "dark"} />
+          <meta name="apple-mobile-web-app-status-bar-style" content={!flow.isViewerScreen ? "black-translucent" : "black"} />
         </Head>
         <StatusBar
-          backgroundColor={flow.isViewerScreen ? '#F9F8F4' : 'transparent'}
-          style={flow.isViewerScreen ? 'dark' : 'light'}
+          backgroundColor={flow.isViewerScreen ? "#F9F8F4" : "transparent"}
+          style={flow.isViewerScreen ? "dark" : "light"}
           translucent={!flow.isViewerScreen}
         />
-        <View className=' flex-1 w-full'>
-          {['list', 'select', 'recipientChoice', 'recipientForm'].includes(
+        <View className=" flex-1 w-full">
+          {["list", "select", "recipientChoice", "recipientForm"].includes(
             flow.screen,
           ) ? (
             <SelectTicketsScreen
@@ -72,10 +66,10 @@ export function TicketTransferFlow({
             />
           ) : null}
 
-          {flow.screen === 'select' ? (
+          {flow.screen === "select" ? (
             <ChooseTransferMethodScreen
-              onBack={() => flow.setScreen('list')}
-              onContinue={() => flow.setScreen('recipientChoice')}
+              onBack={() => flow.setScreen("list")}
+              onContinue={() => flow.setScreen("recipientChoice")}
               onToggleSeat={flow.toggleSeat}
               seatSummary={flow.seatSummary}
               seats={flow.seats}
@@ -84,15 +78,15 @@ export function TicketTransferFlow({
             />
           ) : null}
 
-          {flow.screen === 'recipientChoice' ? (
+          {flow.screen === "recipientChoice" ? (
             <ChooseRecipientTypeScreen
-              onBack={() => flow.setScreen('select')}
+              onBack={() => flow.setScreen("select")}
               onManualEntry={() =>
                 flow.handleOpenRecipientForm({
-                  destination: '',
-                  firstName: '',
-                  lastName: '',
-                  note: '',
+                  destination: "",
+                  firstName: "",
+                  lastName: "",
+                  note: "",
                 })
               }
               onOpenViewer={flow.handleOpenViewer}
@@ -100,12 +94,12 @@ export function TicketTransferFlow({
             />
           ) : null}
 
-          {flow.screen === 'recipientForm' ? (
+          {flow.screen === "recipientForm" ? (
             <EnterRecipientDetailsScreen
               deliveryMode={flow.deliveryMode}
               form={flow.recipientForm}
               formErrors={flow.formErrors}
-              onBack={() => flow.setScreen('recipientChoice')}
+              onBack={() => flow.setScreen("recipientChoice")}
               onOpenViewer={flow.handleOpenViewer}
               onRequestTransfer={flow.handleRequestTransfer}
               onToggleDeliveryMode={flow.handleToggleDeliveryMode}
@@ -114,7 +108,7 @@ export function TicketTransferFlow({
             />
           ) : null}
 
-          {flow.screen === 'viewer' ? (
+          {flow.screen === "viewer" ? (
             <ReviewTransferScreen
               carouselCardWidth={flow.carouselCardWidth}
               carouselSnapInterval={flow.carouselSnapInterval}
@@ -129,18 +123,18 @@ export function TicketTransferFlow({
 
         <TicketTransferAuthModal
           confirmCodeReady={flow.confirmCodeReady}
-          onCancel={() => flow.setTransferModal('none')}
+          onCancel={() => flow.setTransferModal("none")}
           onConfirm={flow.handleConfirmCode}
           onOtpChange={flow.setOtpCode}
           otpCode={flow.otpCode}
-          visible={flow.transferModal === 'auth'}
+          visible={flow.transferModal === "auth"}
         />
 
         <TicketTransferStatusModal
           frameWidth={flow.frameWidth}
           status={flow.transferModal}
           onRetry={flow.handleRetryTransfer}
-          onClose={() => flow.setTransferModal('none')}
+          onClose={() => flow.setTransferModal("none")}
         />
       </View>
     </TicketFlowContext.Provider>

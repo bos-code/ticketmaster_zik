@@ -1,16 +1,17 @@
-import React from 'react';
-import { View } from 'react-native';
-import Animated from 'react-native-reanimated';
+import React from "react";
+import { View } from "react-native";
+import Animated from "react-native-reanimated";
 
-import { BottomDock } from '@/components/tickets/ticket-transfer-flow-bottom-dock';
+import { useImmersiveSafeAreaInsets } from "@/components/immersive/edge-to-edge-hero";
+import { BottomDock } from "@/components/tickets/ticket-transfer-flow-bottom-dock";
 import {
   CollapsibleEventHero,
   ExtrasPanel,
   PanelTabs,
   TicketListPanel,
-} from '@/components/tickets/ticket-transfer-flow-components';
-import { HERO_EXPANDED_HEIGHT } from '@/components/tickets/ticketFlowConstants';
-import type { PanelTab } from '@/components/tickets/ticketFlowTypes';
+} from "@/components/tickets/ticket-transfer-flow-components";
+import { HERO_EXPANDED_HEIGHT } from "@/components/tickets/ticketFlowConstants";
+import type { PanelTab } from "@/components/tickets/ticketFlowTypes";
 
 export function TicketTransferListScreen({
   activePanel,
@@ -26,20 +27,20 @@ export function TicketTransferListScreen({
   activePanel: PanelTab;
   handleListScroll: React.ComponentProps<
     typeof Animated.ScrollView
-  >['onScroll'];
+  >["onScroll"];
   isHeroCollapsed: boolean;
   onBack: () => void;
   onOpenTicket: (ticketIndex: number) => void;
   onOpenViewer: () => void;
   onPanelChange: (value: PanelTab) => void;
   onTransfer: () => void;
-  scrollY: React.ComponentProps<typeof CollapsibleEventHero>['scrollY'];
+  scrollY: React.ComponentProps<typeof CollapsibleEventHero>["scrollY"];
 }) {
   const insets = useImmersiveSafeAreaInsets();
 
   return (
-    <View style={{ backgroundColor: '#FFFFFF', flex: 1 }}>
-      <View className='flex-1 overflow-hidden bg-white'>
+    <View style={{ backgroundColor: "#FFFFFF", flex: 1 }}>
+      <View className="flex-1 overflow-hidden bg-white">
         <CollapsibleEventHero
           isHeroCollapsed={isHeroCollapsed}
           onBack={onBack}
@@ -59,7 +60,7 @@ export function TicketTransferListScreen({
         >
           <PanelTabs activePanel={activePanel} onChange={onPanelChange} />
 
-          {activePanel === 'tickets' ? (
+          {activePanel === "tickets" ? (
             <TicketListPanel onOpenTicket={onOpenTicket} />
           ) : (
             <ExtrasPanel />

@@ -83,7 +83,7 @@ importers:
         version: 0.32.17(expo@54.0.34)(react-native@0.81.5(@babel/core@7.29.0)(@types/react@19.1.17)(bufferutil@4.1.0)(react@19.1.0))(react@19.1.0)(typescript@5.9.3)
       expo-router:
         specifier: ~6.0.23
-        version: 6.0.23(43bd536ae55ddbb54ff10a0a79ac3bc7)
+        version: 6.0.23(qrwytkitf7xjzuyo6uuhr2otqu)
       expo-secure-store:
         specifier: ~15.0.8
         version: 15.0.8(expo@54.0.34)
@@ -168,9 +168,6 @@ importers:
       react-native-worklets:
         specifier: 0.5.1
         version: 0.5.1(@babel/core@7.29.0)(react-native@0.81.5(@babel/core@7.29.0)(@types/react@19.1.17)(bufferutil@4.1.0)(react@19.1.0))(react@19.1.0)
-      tslib:
-        specifier: 2.8.1
-        version: 2.8.1
       zustand:
         specifier: ^5.0.12
         version: 5.0.12(@types/react@19.1.17)(react@19.1.0)(use-sync-external-store@1.6.0(react@19.1.0))
@@ -6063,7 +6060,7 @@ snapshots:
       wrap-ansi: 7.0.0
       ws: 8.20.0(bufferutil@4.1.0)
     optionalDependencies:
-      expo-router: 6.0.23(43bd536ae55ddbb54ff10a0a79ac3bc7)
+      expo-router: 6.0.23(qrwytkitf7xjzuyo6uuhr2otqu)
       react-native: 0.81.5(@babel/core@7.29.0)(@types/react@19.1.17)(bufferutil@4.1.0)(react@19.1.0)
     transitivePeerDependencies:
       - bufferutil
@@ -8871,7 +8868,7 @@ snapshots:
       - supports-color
       - typescript
 
-  expo-router@6.0.23(43bd536ae55ddbb54ff10a0a79ac3bc7):
+  expo-router@6.0.23(qrwytkitf7xjzuyo6uuhr2otqu):
     dependencies:
       '@expo/metro-runtime': 6.1.2(expo@54.0.34)(react-dom@19.1.0(react@19.1.0))(react-native@0.81.5(@babel/core@7.29.0)(@types/react@19.1.17)(bufferutil@4.1.0)(react@19.1.0))(react@19.1.0)
       '@expo/schema-utils': 0.1.8

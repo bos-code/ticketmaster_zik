@@ -1,14 +1,14 @@
-import { useRouter } from 'expo-router';
-import maplibregl, { type Map as MapLibreMap } from 'maplibre-gl';
-import 'maplibre-gl/dist/maplibre-gl.css';
-import React, { useEffect, useMemo, useRef } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { useRouter } from "expo-router";
+import maplibregl, { type Map as MapLibreMap } from "maplibre-gl";
+import "maplibre-gl/dist/maplibre-gl.css";
+import React, { useEffect, useMemo, useRef } from "react";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import {
   openExternalMaps,
   toCoordinate,
   type VenueMapData,
-} from '@/lib/map-utils';
+} from "@/lib/map-utils";
 
 const FALLBACK_MAP_CENTER = {
   latitude: 6.42674716,
@@ -52,13 +52,13 @@ export function VenueMapCard({
       container: mapContainerRef.current,
       maxPitch: 45,
       pitch: 0,
-      style: 'https://tiles.openfreemap.org/styles/bright',
+      style: "https://tiles.openfreemap.org/styles/bright",
       zoom: 14.65,
     });
 
     mapRef.current = map;
 
-    map.on('load', () => {
+    map.on("load", () => {
       applyAppleMapsPaint(map);
       markerRef.current = createVenueMarker(venueName)
         .setLngLat(mapCenter)
@@ -76,7 +76,7 @@ export function VenueMapCard({
   function handleOpenDirections() {
     if (eventId) {
       router.push({
-        pathname: '/event-directions/[id]',
+        pathname: "/event-directions/[id]",
         params: { id: eventId },
       });
       return;
@@ -99,18 +99,18 @@ export function VenueMapCard({
   return (
     <View style={styles.card}>
       <View style={[styles.mapFrame, { height: mapHeight }]}>
-        {React.createElement('div', {
+        {React.createElement("div", {
           ref: mapContainerRef,
           style: domMapStyle,
         })}
-        <View pointerEvents='none' style={styles.mapAttribution}>
+        <View pointerEvents="none" style={styles.mapAttribution}>
           <Text style={styles.mapsText}>Maps</Text>
           <Text style={styles.legalText}>Legal</Text>
         </View>
       </View>
 
       <Pressable
-        accessibilityRole='button'
+        accessibilityRole="button"
         onPress={handleOpenDirections}
         style={styles.button}
       >
@@ -121,38 +121,38 @@ export function VenueMapCard({
 }
 
 function createVenueMarker(venueName: string) {
-  const markerWrap = document.createElement('div');
-  markerWrap.className = 'apple-venue-marker';
+  const markerWrap = document.createElement("div");
+  markerWrap.className = "apple-venue-marker";
 
-  const markerLabel = document.createElement('div');
-  markerLabel.className = 'apple-venue-label';
+  const markerLabel = document.createElement("div");
+  markerLabel.className = "apple-venue-label";
   markerLabel.textContent = venueName;
 
-  const markerElement = document.createElement('div');
-  markerElement.className = 'apple-venue-pin';
+  const markerElement = document.createElement("div");
+  markerElement.className = "apple-venue-pin";
 
-  const info = document.createElement('div');
-  info.className = 'apple-venue-pin-info';
-  info.textContent = 'i';
+  const info = document.createElement("div");
+  info.className = "apple-venue-pin-info";
+  info.textContent = "i";
   markerElement.appendChild(info);
 
   markerWrap.appendChild(markerElement);
   markerWrap.appendChild(markerLabel);
 
   return new maplibregl.Marker({
-    anchor: 'bottom',
+    anchor: "bottom",
     element: markerWrap,
     offset: [0, 2],
   });
 }
 
 function ensureAppleMarkerStyles() {
-  if (document.getElementById('apple-marker-styles')) {
+  if (document.getElementById("apple-marker-styles")) {
     return;
   }
 
-  const style = document.createElement('style');
-  style.id = 'apple-marker-styles';
+  const style = document.createElement("style");
+  style.id = "apple-marker-styles";
   style.textContent = `
     .apple-venue-marker {
       height: 42px;
@@ -209,44 +209,44 @@ function applyAppleMapsPaint(map: MapLibreMap) {
 
   (loadedStyle.layers || []).forEach((layer) => {
     const sourceLayer = String(
-      (layer as { 'source-layer'?: string })['source-layer'] || '',
+      (layer as { "source-layer"?: string })["source-layer"] || "",
     ).toLowerCase();
     const id = layer.id.toLowerCase();
     const name = `${id} ${sourceLayer}`;
 
     try {
-      if (layer.type === 'background') {
-        map.setPaintProperty(layer.id, 'background-color', '#F6F5F1');
-      } else if (layer.type === 'fill' && name.includes('water')) {
-        map.setPaintProperty(layer.id, 'fill-color', '#B7DDEA');
+      if (layer.type === "background") {
+        map.setPaintProperty(layer.id, "background-color", "#F6F5F1");
+      } else if (layer.type === "fill" && name.includes("water")) {
+        map.setPaintProperty(layer.id, "fill-color", "#B7DDEA");
       } else if (
-        layer.type === 'fill' &&
+        layer.type === "fill" &&
         /(park|landcover|wood|grass|green)/.test(name)
       ) {
-        map.setPaintProperty(layer.id, 'fill-color', '#DCECC9');
-      } else if (layer.type === 'fill' && name.includes('building')) {
-        map.setPaintProperty(layer.id, 'fill-color', '#EAE8E2');
+        map.setPaintProperty(layer.id, "fill-color", "#DCECC9");
+      } else if (layer.type === "fill" && name.includes("building")) {
+        map.setPaintProperty(layer.id, "fill-color", "#EAE8E2");
       } else if (
-        layer.type === 'line' &&
+        layer.type === "line" &&
         /(road|transport|highway|street)/.test(name)
       ) {
         map.setPaintProperty(
           layer.id,
-          'line-color',
-          /(case|outline|border)/.test(name) ? '#D1D2CF' : '#FFFCF7',
+          "line-color",
+          /(case|outline|border)/.test(name) ? "#D1D2CF" : "#FFFCF7",
         );
-        map.setPaintProperty(layer.id, 'line-opacity', 0.96);
-      } else if (layer.type === 'line' && name.includes('boundary')) {
-        map.setPaintProperty(layer.id, 'line-color', '#D4D0CA');
-        map.setPaintProperty(layer.id, 'line-opacity', 0.32);
-      } else if (layer.type === 'symbol') {
+        map.setPaintProperty(layer.id, "line-opacity", 0.96);
+      } else if (layer.type === "line" && name.includes("boundary")) {
+        map.setPaintProperty(layer.id, "line-color", "#D4D0CA");
+        map.setPaintProperty(layer.id, "line-opacity", 0.32);
+      } else if (layer.type === "symbol") {
         map.setPaintProperty(
           layer.id,
-          'text-color',
-          /(place|city|town)/.test(name) ? '#4D4742' : '#827E79',
+          "text-color",
+          /(place|city|town)/.test(name) ? "#4D4742" : "#827E79",
         );
-        map.setPaintProperty(layer.id, 'text-halo-color', '#F6F5F1');
-        map.setPaintProperty(layer.id, 'text-halo-width', 1.9);
+        map.setPaintProperty(layer.id, "text-halo-color", "#F6F5F1");
+        map.setPaintProperty(layer.id, "text-halo-width", 1.9);
       }
     } catch {
       // Some third-party style layers do not expose every paint property.
@@ -257,52 +257,52 @@ function applyAppleMapsPaint(map: MapLibreMap) {
 const domMapStyle: React.CSSProperties = {
   bottom: 0,
   left: 0,
-  position: 'absolute',
+  position: "absolute",
   right: 0,
   top: 0,
 };
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: '#FFFFFF',
-    overflow: 'hidden',
+    backgroundColor: "#FFFFFF",
+    overflow: "hidden",
   },
   mapFrame: {
-    backgroundColor: '#F6F5F1',
-    overflow: 'hidden',
-    position: 'relative',
-    width: '100%',
+    backgroundColor: "#F6F5F1",
+    overflow: "hidden",
+    position: "relative",
+    width: "100%",
   },
   mapAttribution: {
-    alignItems: 'center',
+    alignItems: "center",
     bottom: 9,
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: 6,
     left: 14,
-    position: 'absolute',
+    position: "absolute",
   },
   mapsText: {
-    color: '#4B4B4B',
+    color: "#4B4B4B",
     fontSize: 16,
-    fontWeight: '700',
+    fontWeight: "700",
     letterSpacing: 0,
   },
   legalText: {
-    color: '#4F4F4F',
+    color: "#4F4F4F",
     fontSize: 9,
-    fontWeight: '500',
+    fontWeight: "500",
     letterSpacing: 0,
   },
   button: {
-    alignItems: 'center',
-    backgroundColor: '#F2F1F5',
-    justifyContent: 'center',
-    minHeight: 50,
+    alignItems: "center",
+    backgroundColor: "#F2F1F5",
+    justifyContent: "center",
+    minHeight: 66,
     paddingVertical: 0,
   },
   buttonText: {
-    color: '#272529',
-    fontSize: 16,
-    fontWeight: '700',
+    color: "#272529",
+    fontSize: 17,
+    fontWeight: "700",
   },
 });
