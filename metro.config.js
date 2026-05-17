@@ -20,6 +20,20 @@ config.resolver = {
   sourceExts: [...resolver.sourceExts, "svg"],
   unstable_enablePackageExports: true,
   resolveRequest: (context, moduleName, platform) => {
+    if (moduleName === "i18n-iso-countries" && platform === "web") {
+      return {
+        type: "sourceFile",
+        filePath: require.resolve("i18n-iso-countries/index"),
+      };
+    }
+
+    if (moduleName === "react-easy-crop" && platform === "web") {
+      return {
+        type: "sourceFile",
+        filePath: require.resolve("react-easy-crop"),
+      };
+    }
+
     if (moduleName === "expo-router/head" && platform !== "web") {
       return {
         type: "sourceFile",

@@ -1,30 +1,31 @@
-import { ScrollViewStyleReset } from "expo-router/html";
-import type { PropsWithChildren } from "react";
+import { ScrollViewStyleReset } from 'expo-router/html';
+import React, { type PropsWithChildren } from 'react';
 
-const APP_THEME_COLOR = "#050505";
+const APP_THEME_COLOR = '#050505';
 
 export default function RootHtml({ children }: PropsWithChildren) {
   return (
-    <html lang="en">
+    <html lang='en'>
       <head>
-        <meta charSet="utf-8" />
-        <meta httpEquiv="X-UA-Compatible" content="IE=edge" />
+        <meta charSet='utf-8' />
+        <meta httpEquiv='X-UA-Compatible' content='IE=edge' />
+        <meta name='theme-color' content={APP_THEME_COLOR} />
+        <meta name='mobile-web-app-capable' content='yes' />
+        <meta name='apple-mobile-web-app-capable' content='yes' />
         <meta
-          name="viewport"
-          content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no"
+          name='apple-mobile-web-app-status-bar-style'
+          content='black-translucent'
         />
-        <meta name="theme-color" content={APP_THEME_COLOR} />
-        <meta name="mobile-web-app-capable" content="yes" />
-        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name='color-scheme' content='dark' />
+        <meta name='format-detection' content='telephone=no' />
+        <meta name='application-name' content='Tickets' />
+        <meta name='apple-mobile-web-app-title' content='Tickets' />
         <meta
-          name="apple-mobile-web-app-status-bar-style"
-          content="black-translucent"
+          name='viewport'
+          content='width=device-width, initial-scale=1.0, viewport-fit=cover'
         />
-        <meta name="format-detection" content="telephone=no" />
-        <meta name="application-name" content="Tickets" />
-        <meta name="apple-mobile-web-app-title" content="Tickets" />
-        <link rel="manifest" href="/manifest.json" />
-        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+        <link rel='manifest' href='/manifest.json' />
+        <link rel='apple-touch-icon' href='/apple-touch-icon.png' />
         <script
           dangerouslySetInnerHTML={{
             __html: `
@@ -60,35 +61,29 @@ export default function RootHtml({ children }: PropsWithChildren) {
                 -webkit-font-smoothing: antialiased;
                 -webkit-tap-highlight-color: transparent;
               }
-              html.is-standalone-pwa,
-              html.is-standalone-pwa body {
-                background: ${APP_THEME_COLOR};
-                height: 100%;
-                min-height: 100%;
+
+                :root {
+                --ios-pwa-bottom-gap: 0px;
               }
-              html.is-standalone-pwa #root {
-                background: ${APP_THEME_COLOR};
-                bottom: 0;
-                height: auto;
-                left: 0;
-                overflow: hidden;
-                position: fixed;
-                right: 0;
-                top: 0;
-                width: 100vw;
-              }
+
+
               @media (display-mode: standalone), (display-mode: fullscreen) {
-                html, body {
-                  height: 100%;
-                  min-height: 100%;
+                html,
+                body {
+                  height: 100vh;
+                  height: 100svh;
+                  height: -webkit-fill-available;
+                  min-height: calc(100vh + var(--ios-pwa-bottom-gap)) !important;
+                  overflow: hidden;
+                  width: 100%;
                 }
+
                 #root {
-                  bottom: 0;
-                  height: auto;
+                  height: calc(100vh + var(--ios-pwa-bottom-gap)) !important;
+                  min-height: calc(100svh + var(--ios-pwa-bottom-gap)) !important;
                   left: 0;
                   overflow: hidden;
                   position: fixed;
-                  right: 0;
                   top: 0;
                   width: 100vw;
                 }
