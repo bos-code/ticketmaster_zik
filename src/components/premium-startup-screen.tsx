@@ -1,10 +1,13 @@
+import {
+  TicketmasterTMark,
+  TicketmasterWordmark,
+} from "@/components/ticketmaster-wordmark";
+import { SPLASH_STATUS_BAR_COLOR } from "@/constants/theme";
+import Head from "expo-router/head";
+import { StatusBar } from "expo-status-bar";
 import React, { useEffect, useRef } from "react";
 import { Animated, Easing, Platform, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import Head from "expo-router/head";
-import { StatusBar } from "expo-status-bar";
-import { TicketmasterWordmark, TicketmasterTMark } from "@/components/ticketmaster-wordmark";
-import { SPLASH_STATUS_BAR_COLOR } from "@/constants/theme";
 
 type PremiumStartupScreenProps = {
   onFinish?: () => void;
@@ -20,6 +23,9 @@ export function PremiumStartupScreen({ onFinish }: PremiumStartupScreenProps) {
   const wordmarkTranslateX = useRef(new Animated.Value(44)).current;
 
   useEffect(() => {
+    // Diagnostic logging
+    console.log("[PremiumStartupScreen] Component mounted");
+
     // Animation Sequence
     Animated.sequence([
       // 1. Animate the 't' icon in
@@ -37,7 +43,7 @@ export function PremiumStartupScreen({ onFinish }: PremiumStartupScreenProps) {
           useNativeDriver: true,
         }),
       ]),
-      
+
       // 2. Short pause
       Animated.delay(200),
 
@@ -67,6 +73,7 @@ export function PremiumStartupScreen({ onFinish }: PremiumStartupScreenProps) {
     ]).start();
 
     const timeout = setTimeout(() => {
+      console.log("[PremiumStartupScreen] Calling onFinish");
       onFinish?.();
     }, 3200); // Slightly longer to accommodate both animations
 
@@ -85,7 +92,10 @@ export function PremiumStartupScreen({ onFinish }: PremiumStartupScreenProps) {
       {Platform.OS !== "web" && (
         <SafeAreaView
           edges={["top"]}
-          style={{ backgroundColor: STARTUP_STATUS_BAR_COLOR, marginBottom: -50 }}
+          style={{
+            backgroundColor: STARTUP_STATUS_BAR_COLOR,
+            marginBottom: -50,
+          }}
         >
           <View style={{ height: 50 }} />
         </SafeAreaView>
@@ -100,7 +110,7 @@ export function PremiumStartupScreen({ onFinish }: PremiumStartupScreenProps) {
           style={{
             opacity: tOpacity,
             transform: [{ scale: tScale }],
-            position: 'absolute',
+            position: "absolute",
           }}
           className="inset-0 items-center justify-center"
         >

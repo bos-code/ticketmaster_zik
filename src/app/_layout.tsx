@@ -1,5 +1,5 @@
-import "../../global.css";
 import "@/lib/firebase";
+import "../../global.css";
 
 import { ThemeProvider } from "@react-navigation/native";
 import Constants from "expo-constants";
@@ -14,12 +14,12 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 
 import { PremiumStartupScreen } from "@/components/premium-startup-screen";
 import { PwaInstallPrompt } from "@/components/pwa-install-prompt";
-import { StatusBar } from "expo-status-bar";
 import { SPLASH_STATUS_BAR_COLOR } from "@/constants/theme";
 import { ticketColors, ticketNavigationTheme } from "@/constants/ticket-theme";
 import { useFirebaseDataSync } from "@/hooks/use-firebase-data-sync";
 import { QueryProvider } from "@/providers/query-provider";
 import { useAppStore } from "@/store/use-app-store";
+import { StatusBar } from "expo-status-bar";
 import { fonts } from "../../theme/fonts";
 
 if (Constants.expoGoConfig === null) {
@@ -103,6 +103,20 @@ export default function RootLayout() {
     : startupBackgroundColor;
   const isReady = fontsLoaded || Boolean(fontError);
 
+  // Diagnostic logging for debugging blank screen
+  if (typeof window !== "undefined" && typeof console !== "undefined") {
+    console.log(
+      "[RootLayout] fontsLoaded:",
+      fontsLoaded,
+      "fontError:",
+      fontError,
+      "isReady:",
+      isReady,
+      "hasFinishedStartup:",
+      hasFinishedStartup,
+    );
+  }
+
   useEffect(() => {
     if (Platform.OS === "web" && typeof document !== "undefined") {
       document.documentElement.style.setProperty(
@@ -111,12 +125,13 @@ export default function RootLayout() {
       );
     }
 
-    void SystemUI.setBackgroundColorAsync(appBackgroundColor).catch(
-      () => {},
-    );
+    void SystemUI.setBackgroundColorAsync(appBackgroundColor).catch(() => {});
 
-
-    if (Platform.OS === "web" && typeof window !== "undefined" && "serviceWorker" in navigator) {
+    if (
+      Platform.OS === "web" &&
+      typeof window !== "undefined" &&
+      "serviceWorker" in navigator
+    ) {
       navigator.serviceWorker.register("/service-worker.js").catch(() => {
         // Ignore registration errors
       });
@@ -133,15 +148,28 @@ export default function RootLayout() {
     }
 
     hasHiddenNativeSplash.current = true;
+    console.log("[handleRootLayout] Hiding splash screen");
     void SplashScreen.hideAsync().catch(() => {});
   }, [isReady]);
 
   const handleStartupFinish = useCallback(() => {
     finishStartup();
   }, [finishStartup]);
+  // Log font loading status
+  useEffect(() => {
+    console.log("[RootLayout] Font loading status:", {
+      fontsLoaded,
+      fontError,
+      isReady,
+    });
+  }, [fontsLoaded, fontError, isReady]);
 
-  if (!isReady) {
-    return null;
+  // CRITICAL FIX: Don't block rendering on font loading
+  // Render the app even if fonts aren't loaded yet - they'll apply when ready
+  // This prevents blank screens when fonts are slow to load
+  if (fontError && !fontsLoaded) {
+    console.error("[RootLayout] Font loading error:", fontError);
+    // Continue rendering anyway with system fonts as fallback
   }
 
   return (
