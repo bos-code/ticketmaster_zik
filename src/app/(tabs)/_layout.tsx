@@ -3,6 +3,7 @@ import {
   TicketmasterTabIcon,
   type TicketmasterTabIconName,
 } from '@/components/ticketmaster-tab-icon';
+import { BOTTOM_TAB_BAR_CONTENT_HEIGHT } from '@/constants/theme';
 import { Tabs } from 'expo-router';
 import React from 'react';
 import { Platform, StyleSheet, Text, View } from 'react-native';
@@ -63,7 +64,7 @@ const TAB_CONFIG: Record<TabRouteName, TabConfig> = {
 
 export default function PremiumTabsLayout() {
   const insets = useImmersiveSafeAreaInsets();
-  const tabBarHeight = BOTTOM_TAB_BAR_CONTENT_HEIGHT + insets.bottom;
+  const bottomInset = insets.bottom;
 
   return (
     <Tabs
