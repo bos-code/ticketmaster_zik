@@ -47,8 +47,8 @@ export function TicketCard({
         shadowColor: "#000",
         shadowOffset: { width: 0, height: 4 },
         shadowOpacity: 0.08,
-        shadowRadius: 10,
-        elevation: 4,
+        shadowRadius: 3,
+        elevation: 3,
       }}
     >
       <View className="h-[17px] w-full rounded-t-lg bg-[#0444f3]" />
@@ -75,18 +75,18 @@ export function TicketCard({
 
         <View className="absolute bottom-0 left-0 w-full">
           <View
-            className="bg-white pt-1 pl-2 pb-1"
+            className="bg-white pt-1 pl-2 -mb-1"
             style={{ width: "75%", height: 46 }}
           >
             <EditableText
               field="seatLabel"
               value={seatLabel}
-              className="text-sm mb-1  tracking-wider text-[#000000] leading-tight"
+              className="text-[12px]  font-bold mb-1  tracking-wider text-[#000000] leading-tight"
             />
             <EditableText
               field="ticketNote"
               value={ticketNote}
-              className="text-sm text-[#8B8F96] uppercase leading-tight"
+              className="text-xs text-[#8B8F96] uppercase leading-tight"
             />
           </View>
         </View>

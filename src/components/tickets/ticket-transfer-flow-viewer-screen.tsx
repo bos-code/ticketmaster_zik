@@ -8,6 +8,7 @@ import {
   useWindowDimensions,
   type NativeScrollEvent,
   type NativeSyntheticEvent,
+  type ViewToken,
 } from 'react-native';
 import Animated, { FadeInUp } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -71,7 +72,6 @@ export function TicketTransferViewerScreen({
   carouselSnapInterval,
   onBack,
   onViewerIndexChange,
-  positionLabel,
   seats,
   viewerIndex,
 }: {
@@ -79,41 +79,137 @@ export function TicketTransferViewerScreen({
   carouselSnapInterval: number;
   onBack: () => void;
   onViewerIndexChange: (index: number) => void;
-  positionLabel?: string;
   seats: Seat[];
   viewerIndex: number;
 }) {
   const viewerListRef = useRef<FlatList<Seat>>(null);
+  const onViewerIndexChangeRef = useRef(onViewerIndexChange);
+  const viewerIndexRef = useRef(viewerIndex);
+  const seatsLengthRef = useRef(seats.length);
+  const dragStartOffsetRef = useRef(0);
   const [isTicketInfoOpen, setIsTicketInfoOpen] = React.useState(false);
+  const normalizedViewerIndex = seats.length
+    ? Math.max(0, Math.min(seats.length - 1, viewerIndex))
+    : 0;
+
+  useEffect(() => {
+    onViewerIndexChangeRef.current = onViewerIndexChange;
+  }, [onViewerIndexChange]);
+
+  useEffect(() => {
+    seatsLengthRef.current = seats.length;
+  }, [seats.length]);
+
+  useEffect(() => {
+    if (normalizedViewerIndex === viewerIndexRef.current) {
+      return;
+    }
+
+    viewerIndexRef.current = normalizedViewerIndex;
+    requestAnimationFrame(() => {
+      viewerListRef.current?.scrollToOffset({
+        animated: true,
+        offset: normalizedViewerIndex * carouselSnapInterval,
+      });
+    });
+  }, [carouselSnapInterval, normalizedViewerIndex]);
+
+  const viewabilityConfig = useRef({
+    itemVisiblePercentThreshold: 60,
+  }).current;
+  const seatSetKey = `${seats.length}:${seats[0]?.id ?? ''}:${
+    seats[seats.length - 1]?.id ?? ''
+  }`;
+
+  const handleViewableItemsChanged = useRef(
+    ({ viewableItems }: { viewableItems: ViewToken<Seat>[] }) => {
+      const activeItem = viewableItems.find(
+        (item) => item.isViewable && typeof item.index === 'number',
+      );
+
+      if (typeof activeItem?.index !== 'number' || seatsLengthRef.current <= 0) {
+        return;
+      }
+
+      const nextIndex = Math.max(
+        0,
+        Math.min(seatsLengthRef.current - 1, activeItem.index),
+      );
+
+      if (nextIndex !== viewerIndexRef.current) {
+        viewerIndexRef.current = nextIndex;
+        onViewerIndexChangeRef.current(nextIndex);
+      }
+    },
+  ).current;
 
   useEffect(() => {
     requestAnimationFrame(() => {
       viewerListRef.current?.scrollToOffset({
         animated: false,
-        offset: viewerIndex * carouselSnapInterval,
+        offset: viewerIndexRef.current * carouselSnapInterval,
       });
     });
-  }, [carouselSnapInterval, viewerIndex]);
+  }, [carouselSnapInterval, seatSetKey]);
 
-  const handleViewerScrollEnd = (
+  const handleViewerScrollBeginDrag = (
     event: NativeSyntheticEvent<NativeScrollEvent>,
   ) => {
-    updateViewerIndexFromOffset(event.nativeEvent.contentOffset.x);
+    dragStartOffsetRef.current = event.nativeEvent.contentOffset.x;
   };
 
-  function updateViewerIndexFromOffset(offsetX: number) {
-    const nextIndex = Math.round(offsetX / carouselSnapInterval);
-    const clampedIndex = Math.max(0, Math.min(seats.length - 1, nextIndex));
+  const handleViewerScrollEndDrag = (
+    event: NativeSyntheticEvent<NativeScrollEvent>,
+  ) => {
+    const offsetX = event.nativeEvent.contentOffset.x;
+    const dragDelta = offsetX - dragStartOffsetRef.current;
+    const velocityX = event.nativeEvent.velocity?.x ?? 0;
+    const dragDirection =
+      Math.abs(velocityX) > 0.12 ? Math.sign(velocityX) : Math.sign(dragDelta);
+    const startingIndex = Math.round(
+      dragStartOffsetRef.current / carouselSnapInterval,
+    );
+    const shouldStep =
+      Math.abs(velocityX) > 0.12 ||
+      Math.abs(dragDelta) > carouselSnapInterval * 0.18;
 
-    if (clampedIndex !== viewerIndex) {
-      onViewerIndexChange(clampedIndex);
+    settleViewerAtIndex(
+      shouldStep
+        ? startingIndex + dragDirection
+        : Math.round(offsetX / carouselSnapInterval),
+    );
+  };
+
+  const handleViewerMomentumScrollEnd = (
+    event: NativeSyntheticEvent<NativeScrollEvent>,
+  ) => {
+    settleViewerAtIndex(
+      Math.round(event.nativeEvent.contentOffset.x / carouselSnapInterval),
+    );
+  };
+
+  function settleViewerAtIndex(nextIndex: number) {
+    const clampedIndex = Math.max(0, Math.min(seats.length - 1, nextIndex));
+    const targetOffset = clampedIndex * carouselSnapInterval;
+
+    if (clampedIndex !== viewerIndexRef.current) {
+      viewerIndexRef.current = clampedIndex;
+      onViewerIndexChangeRef.current(clampedIndex);
     }
+
+    requestAnimationFrame(() => {
+      viewerListRef.current?.scrollToOffset({
+        animated: true,
+        offset: targetOffset,
+      });
+    });
   }
 
   const { width } = useWindowDimensions();
   const insets = useImmersiveSafeAreaInsets();
   const screenWidth = Math.min(width, 430);
   const sidePadding = (screenWidth - carouselCardWidth) / 2;
+  const snapOffsets = seats.map((_, index) => index * carouselSnapInterval);
 
   return (
     <SafeAreaView
@@ -129,7 +225,7 @@ export function TicketTransferViewerScreen({
         <ViewerHeader onBack={onBack} />
 
         <FlatList
-          style={{ flex: 1, overflow: 'visible' }}
+          style={{ alignSelf: 'center', flex: 1, width: screenWidth }}
           contentContainerStyle={{
             paddingBottom: insets.bottom + 40,
             paddingLeft: sidePadding,
@@ -138,15 +234,20 @@ export function TicketTransferViewerScreen({
             alignItems: 'center',
           }}
           data={seats}
-          decelerationRate='fast'
+          decelerationRate='normal'
+          disableIntervalMomentum
           getItemLayout={(_, index) => ({
             index,
             length: carouselSnapInterval,
             offset: carouselSnapInterval * index,
           })}
           horizontal
+          initialScrollIndex={normalizedViewerIndex}
           keyExtractor={(item) => item.id}
-          onMomentumScrollEnd={handleViewerScrollEnd}
+          onMomentumScrollEnd={handleViewerMomentumScrollEnd}
+          onScrollBeginDrag={handleViewerScrollBeginDrag}
+          onScrollEndDrag={handleViewerScrollEndDrag}
+          onViewableItemsChanged={handleViewableItemsChanged}
           ref={viewerListRef}
           removeClippedSubviews={false}
           renderItem={({ item, index }) => (
@@ -159,7 +260,8 @@ export function TicketTransferViewerScreen({
           scrollEnabled={seats.length > 1}
           showsHorizontalScrollIndicator={false}
           snapToAlignment='start'
-          snapToInterval={carouselSnapInterval}
+          snapToOffsets={snapOffsets}
+          viewabilityConfig={viewabilityConfig}
         />
 
         <Animated.View
@@ -174,7 +276,7 @@ export function TicketTransferViewerScreen({
             style={softPillShadow}
           >
             <Text className='text-center text-[12px] font-bold text-[#111111]'>
-              {positionLabel ?? `${viewerIndex + 1} of ${seats.length}`}
+              {`${normalizedViewerIndex + 1} of ${seats.length}`}
             </Text>
           </View>
 

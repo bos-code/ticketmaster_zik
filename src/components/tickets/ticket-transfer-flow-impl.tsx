@@ -132,7 +132,6 @@ export function TicketTransferFlow({
               carouselSnapInterval={flow.carouselSnapInterval}
               onBack={flow.handleViewerBack}
               onViewerIndexChange={flow.setViewerIndex}
-              positionLabel={flow.activeTicketDetails.positionLabel}
               seats={flow.transferredSeats}
               viewerIndex={flow.viewerIndex}
             />
