@@ -30,7 +30,7 @@ function ViewerHeader({ onBack }: { onBack: () => void }) {
   const { event } = useTicketFlowData();
   const insets = useImmersiveSafeAreaInsets();
   const { width } = useWindowDimensions();
-  const shortTitleWidth = Math.round(width * 0.9);
+  const shortTitleWidth = Math.round((width - 60) * 0.9);
   const shortTitle = toCapitalizedTitle(event.shortTitle);
   console.log('event.shortTitle', event.shortTitle);
 

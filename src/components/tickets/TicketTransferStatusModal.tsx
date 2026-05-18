@@ -33,7 +33,7 @@ export function TicketTransferStatusModal({
             <Text className="flex-1 text-center text-[15px] font-bold leading-[18px] text-white">
               {status === "loading" ? "Transferring" : status === "success" ? "Success" : "Error"}
             </Text>
-            {status === "error" ? (
+            {status === "error" || status === "success" ? (
                <Pressable onPress={onClose} style={{ minWidth: 42 }}>
                   <Ionicons name="close" size={24} color="white" />
                </Pressable>
@@ -67,6 +67,13 @@ export function TicketTransferStatusModal({
               <Text className="mt-2 text-[14px] text-gray-500 text-center">
                 Your tickets have been sent to the recipient.
               </Text>
+              
+              <Pressable
+                onPress={onClose}
+                className="mt-10 h-[48px] w-full items-center justify-center bg-black rounded-lg"
+              >
+                <Text className="text-white font-bold text-[16px]">Done</Text>
+              </Pressable>
             </>
           )}
 

@@ -60,13 +60,13 @@ export function TicketTransferListScreen({
           <PanelTabs activePanel={activePanel} onChange={onPanelChange} />
 
           {activePanel === 'tickets' ? (
-            <TicketListPanel onOpenTicket={onOpenTicket} isListLoading={isListLoading} />
+            <TicketListPanel onOpenTicket={onOpenTicket} />
           ) : (
             <ExtrasPanel />
           )}
         </Animated.ScrollView>
 
-        <BottomDock onTransfer={onTransfer} disabled={isListLoading} />
+        {!isListLoading && <BottomDock onTransfer={onTransfer} />}
       </View>
     </View>
   );

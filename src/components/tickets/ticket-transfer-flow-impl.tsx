@@ -1,5 +1,6 @@
 import React from 'react';
-import { View } from 'react-native';
+import { ActivityIndicator, View } from 'react-native';
+import { CustomSpinner } from '@/components/tickets/custom-spinner';
 
 import { ChooseRecipientTypeScreen } from '@/components/tickets/ChooseRecipientTypeScreen';
 import { ChooseTransferMethodScreen } from '@/components/tickets/ChooseTransferMethodScreen';
@@ -64,7 +65,11 @@ export function TicketTransferFlow({
           style={flow.isViewerScreen ? 'dark' : 'light'}
           translucent={!flow.isViewerScreen}
         />
-        <View className=' flex-1 w-full'>
+        <View
+          className=' flex-1 w-full'
+          pointerEvents={flow.isListLoading ? 'none' : 'auto'}
+          style={{ opacity: flow.isListLoading ? 0.35 : 1 }}
+        >
           {['list', 'select', 'recipientChoice', 'recipientForm'].includes(
             flow.screen,
           ) ? (
@@ -155,6 +160,24 @@ export function TicketTransferFlow({
           onRetry={flow.handleRetryTransfer}
           onClose={() => flow.setTransferModal('none')}
         />
+
+        {flow.isListLoading && (
+          <View
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              justifyContent: 'center',
+              alignItems: 'center',
+              zIndex: 999,
+              backgroundColor: 'transparent',
+            }}
+          >
+            <CustomSpinner color="#80858E" size={26} />
+          </View>
+        )}
       </View>
     </TicketFlowContext.Provider>
   );

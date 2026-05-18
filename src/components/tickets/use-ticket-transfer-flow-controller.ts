@@ -336,8 +336,13 @@ export function useTicketTransferFlowController({
       if (isSuccess) {
         setViewerIndex(0);
         setSelectedSeatIds([]);
-        setScreen("list");
-        setTransferModal("none");
+        if (screen === "list") {
+          setScreen("select");
+          setTransferModal("none");
+        } else {
+          setScreen("list");
+          setTransferModal("success");
+        }
       } else {
         setTransferModal("error");
       }
