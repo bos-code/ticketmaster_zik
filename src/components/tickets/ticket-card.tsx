@@ -17,8 +17,11 @@ import { TicketBarcodeSvg } from "@/components/tickets/ticket-barcode-svg";
 import type { Seat } from "@/components/tickets/ticketFlowTypes";
 import { useTicketFlowData } from "@/components/tickets/useTicketFlowData";
 
-const BARCODE_HEIGHT = 96;
-const BARCODE_BAND_HEIGHT = BARCODE_HEIGHT + 8;
+const BARCODE_HEIGHT = 86;
+const BARCODE_BOTTOM_SPACING = 16;
+const BARCODE_BAND_HEIGHT = BARCODE_HEIGHT;
+const BARCODE_VISIBLE_HEIGHT = BARCODE_HEIGHT;
+const BARCODE_ARTWORK_HEIGHT = BARCODE_HEIGHT - BARCODE_BOTTOM_SPACING;
 const BARCODE_SCAN_LINE_WIDTH = 6;
 
 export function TicketCard({
@@ -44,14 +47,14 @@ export function TicketCard({
         width: cardWidth,
         shadowColor: "#000",
         shadowOffset: { width: 0, height: 8 },
-        shadowOpacity: 0.2,
+        shadowOpacity: 0.1,
         shadowRadius: 24,
         elevation: 8,
       }}
     >
-      <View className="h-[13px] w-full rounded-t-lg bg-[#0677f0]" />
+      <View className="h-[17px] w-full rounded-t-lg bg-[#0444f3]" />
 
-      <View className="relative w-full  rounded-b-lg"  style={{ height: 320 }}>
+      <View className="relative w-full  rounded-b-lg" style={{ height: 320 }}>
         <Image
           contentFit="cover"
           source={event.heroImage}
@@ -90,7 +93,7 @@ export function TicketCard({
         </View>
       </View>
 
-      <View className="bg-white px-5 pt-2 pb-3">
+      <View className="rounded-b-[12px] bg-white px-5 pt-2 pb-3">
         <View className="mt-1">
           <Text className="text-xs font-bold tracking-[1.5px] text-[#93969c] uppercase">
             SECTION
@@ -102,16 +105,16 @@ export function TicketCard({
           />
         </View>
 
-        <View className="mt-1 h-[32px] w-full items-center justify-center bg-[#111111]">
+        <View className="mt-1 h-8 w-full items-center justify-center bg-[#111111]">
           <EditableText
             field="ticketNote"
             value={ticketNote}
-            className="text-base font-bold uppercase text-white tracking-[2px]"
+            className="text-sm font-bold uppercase text-white tracking-[2px]"
           />
         </View>
 
-        <View className="mt-3 mb-4">
-          <Text className="text-[12px] font-medium text-[#8B8F96] uppercase">
+        <View className="mt-3 mb-2">
+          <Text className="text-[10px] font-medium text-[#8B8F96] uppercase">
             {`ROW ${seat.row}  •  SEAT ${seat.seat}`}
           </Text>
         </View>
@@ -143,25 +146,25 @@ function TicketBarcodeBand() {
 
   return (
     <View
-      className="relative w-full items-center justify-center overflow-hidden bg-white px-2"
+      className="relative w-full items-center justify-center overflow-hidden bg-white px-[8px]"
       style={{ height: BARCODE_BAND_HEIGHT }}
     >
-      <TicketBarcodeSvg style={{ height: BARCODE_HEIGHT }} />
+      <TicketBarcodeSvg style={{ height: BARCODE_ARTWORK_HEIGHT }} />
 
       <Animated.View
         style={[
           {
-            backgroundColor: "#026CDF",
+            backgroundColor: "#0444f3",
             borderRadius: BARCODE_SCAN_LINE_WIDTH / 2,
-            height: BARCODE_HEIGHT,
+            height: BARCODE_ARTWORK_HEIGHT,
             left: "50%",
             opacity: 1,
             position: "absolute",
-            shadowColor: "#026CDF",
+            shadowColor: "#0444f3",
             shadowOffset: { width: 0, height: 0 },
             shadowOpacity: 1,
             shadowRadius: 10,
-            top: (BARCODE_BAND_HEIGHT - BARCODE_HEIGHT) / 2,
+            top: 0,
             width: BARCODE_SCAN_LINE_WIDTH,
             elevation: 5,
           },

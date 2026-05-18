@@ -14,7 +14,8 @@ export const TicketBarcodeSvg = memo(function TicketBarcodeSvg({
     <View pointerEvents="none" style={[styles.artwork, style]}>
       <BarcodeArtwork
         height="100%"
-        preserveAspectRatio="xMidYMid meet"
+        preserveAspectRatio="none"
+        viewBox="50 131 1504 252"
         width="100%"
       />
     </View>
@@ -24,6 +25,7 @@ export const TicketBarcodeSvg = memo(function TicketBarcodeSvg({
 const styles = StyleSheet.create({
   artwork: {
     height: 90,
+    overflow: "hidden",
     width: "100%",
   },
 });
