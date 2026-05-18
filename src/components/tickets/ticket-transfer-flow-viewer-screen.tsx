@@ -147,9 +147,6 @@ export function TicketTransferViewerScreen({
           horizontal
           keyExtractor={(item) => item.id}
           onMomentumScrollEnd={handleViewerScrollEnd}
-          onScroll={(event) => {
-            updateViewerIndexFromOffset(event.nativeEvent.contentOffset.x);
-          }}
           ref={viewerListRef}
           removeClippedSubviews={false}
           renderItem={({ item, index }) => (
@@ -159,8 +156,9 @@ export function TicketTransferViewerScreen({
               seat={item}
             />
           )}
+          scrollEnabled={seats.length > 1}
           showsHorizontalScrollIndicator={false}
-          snapToAlignment='center'
+          snapToAlignment='start'
           snapToInterval={carouselSnapInterval}
         />
 
