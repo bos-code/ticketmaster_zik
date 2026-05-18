@@ -1,6 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import React from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, Pressable, StyleSheet, Text, View } from "react-native";
 import Animated, { FadeInDown } from "react-native-reanimated";
 
 import { MapPreviewCard } from "@/components/tickets/ticket-transfer-flow-map-preview-card";
@@ -11,43 +11,52 @@ import { useTicketFlowData } from "@/components/tickets/useTicketFlowData";
 import { fonts } from "../../../theme/fonts";
 
 export function TicketListPanel({
+  isListLoading,
   onOpenTicket,
 }: {
+  isListLoading?: boolean;
   onOpenTicket: (ticketIndex: number) => void;
 }) {
   const { order, seats } = useTicketFlowData();
 
   return (
     <View style={styles.panel}>
-      <View style={styles.orderHeader}>
-        <View style={styles.orderHeaderRow}>
-          <View style={styles.orderTextGroup}>
-            <Text style={styles.orderId}>{`Order ${order.orderNumber}`}</Text>
-            <Text style={styles.ticketCount}>{order.ticketCountLabel}</Text>
+      <View style={{ opacity: isListLoading ? 0.25 : 1, flex: 1 }}>
+        <View style={styles.orderHeader}>
+          <View style={styles.orderHeaderRow}>
+            <View style={styles.orderTextGroup}>
+              <Text style={styles.orderId}>{`Order ${order.orderNumber}`}</Text>
+              <Text style={styles.ticketCount}>{order.ticketCountLabel}</Text>
+            </View>
+
+            <Pressable
+              accessibilityRole="button"
+              hitSlop={8}
+              style={styles.menuButton}
+            >
+              <Ionicons color="#242424" name="ellipsis-vertical" size={20} />
+            </Pressable>
           </View>
-
-          <Pressable
-            accessibilityRole="button"
-            hitSlop={8}
-            style={styles.menuButton}
-          >
-            <Ionicons color="#242424" name="ellipsis-vertical" size={20} />
-          </Pressable>
         </View>
-      </View>
 
-      <View style={styles.ticketList}>
-        {seats.map((seat, index) => (
-          <TicketSeatCard
-            index={index}
-            key={seat.id}
-            onPress={() => onOpenTicket(Math.max(0, seat.ticketIndex - 1))}
-            seat={seat}
-          />
-        ))}
+        <View style={styles.ticketList}>
+          {seats.map((seat, index) => (
+            <TicketSeatCard
+              index={index}
+              key={seat.id}
+              onPress={() => !isListLoading && onOpenTicket(Math.max(0, seat.ticketIndex - 1))}
+              seat={seat}
+            />
+          ))}
+        </View>
+        <MapPreviewCard />
+        <PromoCard />
       </View>
-      <MapPreviewCard />
-      <PromoCard />
+      {isListLoading && (
+        <View style={styles.spinnerOverlay}>
+          <ActivityIndicator color="#5C94DA" size="large" />
+        </View>
+      )}
     </View>
   );
 }
@@ -223,5 +232,11 @@ const styles = StyleSheet.create({
   },
   textRight: {
     textAlign: "right",
+  },
+  spinnerOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: 99,
   },
 });
