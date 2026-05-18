@@ -327,7 +327,8 @@ export function useTicketTransferFlowController({
         setTransferModal("success");
         setTimeout(() => {
           setViewerIndex(0);
-          setScreen("viewer");
+          setSelectedSeatIds([]);
+          setScreen("list");
           setTransferModal("none");
         }, 1500);
       } else {

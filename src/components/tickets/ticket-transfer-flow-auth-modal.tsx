@@ -93,7 +93,7 @@ export function TicketTransferAuthModal({
                 onConfirm();
               }
             }}
-            placeholder={`Enter ${OTP_LENGTH}-digit code`}
+            placeholder=""
             placeholderTextColor="#80858E"
             returnKeyType="done"
             selectionColor="#2F88F3"
