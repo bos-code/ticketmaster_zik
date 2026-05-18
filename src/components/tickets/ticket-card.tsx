@@ -47,8 +47,8 @@ export function TicketCard({
         shadowColor: "#000",
         shadowOffset: { width: 0, height: 4 },
         shadowOpacity: 0.08,
-        shadowRadius: 3,
-        elevation: 3,
+        shadowRadius: 6,
+        elevation: 5,
       }}
     >
       <View className="h-[17px] w-full rounded-t-lg bg-[#0444f3]" />

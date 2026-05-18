@@ -261,6 +261,17 @@ export default function MyAccountScreen() {
     };
   }, [setHomeLocationLabel, setLocationEnabled]);
 
+  useEffect(() => {
+    const frame = requestAnimationFrame(() => {
+      scrollRef.current?.scrollTo({
+        animated: false,
+        y: WELCOME_PANEL_LOCK_HEIGHT,
+      });
+    });
+
+    return () => cancelAnimationFrame(frame);
+  }, []);
+
   const locationDetails = useMemo(
     () => splitLocationLabel(homeLocationLabel),
     [homeLocationLabel],
@@ -300,7 +311,7 @@ export default function MyAccountScreen() {
   }
 
   const handleSnap = (offsetY: number) => {
-    if (Platform.OS !== "web" || !scrollRef.current) return;
+    if (!scrollRef.current) return;
 
     const threshold = WELCOME_PANEL_LOCK_HEIGHT / 2;
     const targetY = offsetY < threshold ? 0 : WELCOME_PANEL_LOCK_HEIGHT;

@@ -1,6 +1,7 @@
 import React, { useRef, useState, useCallback } from 'react';
 import { 
   Platform, 
+  Pressable,
   ScrollView, 
   StyleSheet, 
   Text, 
@@ -162,6 +163,7 @@ export default function SellScreen() {
   const insets = useSafeAreaInsets();
   const { width: windowWidth } = useWindowDimensions();
   const [currentStep, setCurrentStep] = useState(0);
+  const [isListingsVisible, setIsListingsVisible] = useState(false);
   
   const verticalScrollRef = useRef<ScrollView>(null);
   const horizontalScrollRef = useRef<ScrollView>(null);
@@ -174,10 +176,29 @@ export default function SellScreen() {
     }
   }, [currentStep, windowWidth]);
 
-  const handleSellPress = () => {
+  const hideListings = useCallback(() => {
+    if (!isListingsVisible) {
+      return;
+    }
+
+    setIsListingsVisible(false);
     verticalScrollRef.current?.scrollTo({
-      y: 400, // Reasonable scroll to reveal white section
+      y: 0,
       animated: true,
+    });
+  }, [isListingsVisible]);
+
+  const handleSellPress = () => {
+    if (isListingsVisible) {
+      hideListings();
+      return;
+    }
+
+    setIsListingsVisible(true);
+    requestAnimationFrame(() => {
+      verticalScrollRef.current?.scrollToEnd({
+        animated: true,
+      });
     });
   };
 
@@ -197,7 +218,7 @@ export default function SellScreen() {
         bounces={false}
       >
         <View style={[styles.mainContainer, { flex: 1, paddingTop: insets.top }]}>
-          <View style={{ flex: 1 }}>
+          <Pressable style={styles.blackContent} onPress={hideListings}>
             <View style={styles.carouselContainer}>
               <ScrollView
                 ref={horizontalScrollRef}
@@ -233,9 +254,9 @@ export default function SellScreen() {
                 <Text style={styles.learnMoreText}>Learn How It Works</Text>
               </TouchableOpacity>
             </View>
-          </View>
+          </Pressable>
 
-          <View style={{ paddingBottom: 20 }}>
+          <View style={styles.bottomActionWrap}>
             <View style={styles.bottomAction}>
               <TouchableOpacity 
                 style={styles.sellBtn} 
@@ -248,39 +269,41 @@ export default function SellScreen() {
           </View>
         </View>
 
-        <View style={[styles.whiteSection, { minHeight: 400, paddingBottom: insets.bottom + 40 }]}>
-          <View style={styles.whiteSectionHeader}>
-            <Text style={styles.whiteSectionTitle}>Manage Listings</Text>
+        {isListingsVisible ? (
+          <View style={[styles.whiteSection, { minHeight: 400, paddingBottom: insets.bottom + 40 }]}>
+            <View style={styles.whiteSectionHeader}>
+              <Text style={styles.whiteSectionTitle}>Manage Listings</Text>
+            </View>
+
+            <TouchableOpacity style={styles.listItem} activeOpacity={0.6}>
+              <View style={styles.listItemLeft}>
+                <ListIcon name="ticket" />
+                <Text style={styles.listItemText}>Tickets I&apos;m Selling</Text>
+              </View>
+              <View style={styles.chevron} />
+            </TouchableOpacity>
+
+            <View style={styles.separator} />
+
+            <TouchableOpacity style={styles.listItem} activeOpacity={0.6}>
+              <View style={styles.listItemLeft}>
+                <ListIcon name="sold" />
+                <Text style={styles.listItemText}>Sold Tickets</Text>
+              </View>
+              <View style={styles.chevron} />
+            </TouchableOpacity>
+
+            <View style={styles.separator} />
+
+            <TouchableOpacity style={styles.listItem} activeOpacity={0.6}>
+              <View style={styles.listItemLeft}>
+                <ListIcon name="expired" />
+                <Text style={styles.listItemText}>Expired Tickets</Text>
+              </View>
+              <View style={styles.chevron} />
+            </TouchableOpacity>
           </View>
-
-          <TouchableOpacity style={styles.listItem} activeOpacity={0.6}>
-            <View style={styles.listItemLeft}>
-              <ListIcon name="ticket" />
-              <Text style={styles.listItemText}>Tickets I&apos;m Selling</Text>
-            </View>
-            <View style={styles.chevron} />
-          </TouchableOpacity>
-
-          <View style={styles.separator} />
-
-          <TouchableOpacity style={styles.listItem} activeOpacity={0.6}>
-            <View style={styles.listItemLeft}>
-              <ListIcon name="sold" />
-              <Text style={styles.listItemText}>Sold Tickets</Text>
-            </View>
-            <View style={styles.chevron} />
-          </TouchableOpacity>
-
-          <View style={styles.separator} />
-
-          <TouchableOpacity style={styles.listItem} activeOpacity={0.6}>
-            <View style={styles.listItemLeft}>
-              <ListIcon name="expired" />
-              <Text style={styles.listItemText}>Expired Tickets</Text>
-            </View>
-            <View style={styles.chevron} />
-          </TouchableOpacity>
-        </View>
+        ) : null}
       </ScrollView>
     </View>
   );
@@ -305,6 +328,10 @@ const styles = StyleSheet.create({
   },
   carouselContainer: {
     flex: 1,
+  },
+  blackContent: {
+    flex: 1,
+    width: '100%',
   },
   stepItem: {
     alignItems: 'center',
@@ -373,12 +400,16 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     letterSpacing: 0.5,
   },
+  bottomActionWrap: {
+    paddingBottom: 20,
+    width: '100%',
+  },
   bottomAction: {
     width: '100%',
-    paddingHorizontal: 24,
   },
   sellBtn: {
     backgroundColor: C.blue,
+    width: '100%',
     paddingVertical: 16,
     borderRadius: 4,
     alignItems: 'center',
