@@ -41,7 +41,7 @@ export function TicketCard({
   return (
     <Animated.View
       entering={FadeInDown.duration(280).delay(40 + index * 70)}
-      className="mr-[12px] relative rounded-[12px] bg-white flex-none"
+      className="mr-[24px] relative rounded-[12px] bg-white flex-none"
       style={{
         width: cardWidth,
         shadowColor: "#000",
@@ -81,26 +81,26 @@ export function TicketCard({
             <EditableText
               field="seatLabel"
               value={seatLabel}
-              className="text-[12px]  font-bold mb-1  tracking-wider text-[#000000] leading-tight"
+              className="text-[12px]  font-extrabold mb-1  tracking-wider text-[#000000] leading-tight"
             />
             <EditableText
               field="ticketNote"
               value={ticketNote}
-              className="text-xs text-[#8B8F96] uppercase leading-tight"
+              className="text-[11px] text-[#5f5d5d] uppercase leading-tight"
             />
           </View>
         </View>
       </View>
 
       <View className="rounded-b-[12px] bg-white px-5 pt-2 pb-3">
-        <View className="mt-1">
-          <Text className="text-xs font-bold tracking-[1.5px] text-[#93969c] uppercase">
+        <View className="mt-1 mb-2">
+          <Text className="text-[10px] font-bold mb-1 text-[#5f5d5d] uppercase">
             SECTION
           </Text>
           <EditableText
             field="section"
-            value={seat.section}
-            className="text-base pt-1 mb-2 font-bold leading-[15px] text-[#000000]"
+            value={"102"}
+            className="text-xm pt-1 mb-2 font-extrabold leading-[15px] text-[#000000]"
           />
         </View>
 
@@ -108,12 +108,12 @@ export function TicketCard({
           <EditableText
             field="ticketNote"
             value={ticketNote}
-            className="text-sm font-bold uppercase text-white tracking-[2px]"
+            className="text-xs font-bold uppercase tracking-wider  text-white"
           />
         </View>
 
         <View className="mt-3 mb-2">
-          <Text className="text-[10px] font-medium text-[#8B8F96] uppercase">
+          <Text className="text-[10px] font-medium text-[#5f5d5d] uppercase">
             {`ROW ${seat.row}  •  SEAT ${seat.seat}`}
           </Text>
         </View>

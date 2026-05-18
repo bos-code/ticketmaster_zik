@@ -28,7 +28,7 @@ import type {
 import { useTicketOrder } from "@/hooks/useTicketOrder";
 
 const CAROUSEL_CARD_WIDTH_RATIO = 0.78;
-const CAROUSEL_GAP = 12;
+const CAROUSEL_GAP = 24;
 
 export function useTicketTransferFlowController({
   initialScreen,
