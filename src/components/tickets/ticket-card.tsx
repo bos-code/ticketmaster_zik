@@ -17,6 +17,10 @@ import { TicketBarcodeSvg } from "@/components/tickets/ticket-barcode-svg";
 import type { Seat } from "@/components/tickets/ticketFlowTypes";
 import { useTicketFlowData } from "@/components/tickets/useTicketFlowData";
 
+const BARCODE_HEIGHT = 96;
+const BARCODE_BAND_HEIGHT = BARCODE_HEIGHT + 8;
+const BARCODE_SCAN_LINE_WIDTH = 6;
+
 export function TicketCard({
   cardWidth,
   index,
@@ -45,9 +49,9 @@ export function TicketCard({
         elevation: 8,
       }}
     >
-      <View className="h-[13px] w-full bg-[#0677f0]" />
+      <View className="h-[13px] w-full rounded-t-lg bg-[#0677f0]" />
 
-      <View className="relative w-full" style={{ height: 320 }}>
+      <View className="relative w-full  rounded-b-lg"  style={{ height: 320 }}>
         <Image
           contentFit="cover"
           source={event.heroImage}
@@ -138,21 +142,27 @@ function TicketBarcodeBand() {
   });
 
   return (
-    <View className="relative h-[58px] w-full items-center justify-center overflow-hidden bg-white px-2">
-      <TicketBarcodeSvg />
+    <View
+      className="relative w-full items-center justify-center overflow-hidden bg-white px-2"
+      style={{ height: BARCODE_BAND_HEIGHT }}
+    >
+      <TicketBarcodeSvg style={{ height: BARCODE_HEIGHT }} />
 
       <Animated.View
-        className="absolute rounded-t-lg w-[6px] bg-[#026CDF]"
         style={[
           {
-            height: "100%",
-            top: 0,
+            backgroundColor: "#026CDF",
+            borderRadius: BARCODE_SCAN_LINE_WIDTH / 2,
+            height: BARCODE_HEIGHT,
             left: "50%",
             opacity: 1,
+            position: "absolute",
             shadowColor: "#026CDF",
             shadowOffset: { width: 0, height: 0 },
             shadowOpacity: 1,
             shadowRadius: 10,
+            top: (BARCODE_BAND_HEIGHT - BARCODE_HEIGHT) / 2,
+            width: BARCODE_SCAN_LINE_WIDTH,
             elevation: 5,
           },
           beamAnimatedStyle,

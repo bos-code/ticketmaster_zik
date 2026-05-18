@@ -7,7 +7,10 @@ import { EnterRecipientDetailsScreen } from '@/components/tickets/EnterRecipient
 import { ReviewTransferScreen } from '@/components/tickets/ReviewTransferScreen';
 import { SelectTicketsScreen } from '@/components/tickets/SelectTicketsScreen';
 import { TicketTransferAuthModal } from '@/components/tickets/ticket-transfer-flow-auth-modal';
-import { TicketsUnavailable } from '@/components/tickets/ticket-transfer-flow-components';
+import {
+  TicketsLoadingShadow,
+  TicketsUnavailable,
+} from '@/components/tickets/ticket-transfer-flow-components';
 import { TicketFlowContext } from '@/components/tickets/TicketFlowContext';
 import { TicketTransferStatusModal } from '@/components/tickets/TicketTransferStatusModal';
 import { useTicketTransferFlowController } from '@/components/tickets/use-ticket-transfer-flow-controller';
@@ -30,6 +33,10 @@ export function TicketTransferFlow({
   });
 
   if (!flow.ticketFlowData) {
+    if (flow.isLoadingTickets) {
+      return <TicketsLoadingShadow />;
+    }
+
     return <TicketsUnavailable />;
   }
 

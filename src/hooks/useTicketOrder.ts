@@ -1,12 +1,12 @@
 import { useCallback, useMemo } from "react";
 
-import {
-  mapTicketRecordsToTicketOrders,
-  ticketOrder,
-  ticketOrders as fallbackTicketOrders,
-} from "@/data/ticketOrder";
+import { mapTicketRecordsToTicketOrders } from "@/data/ticketOrder";
 import { useTicketStore } from "@/store/ticketStore";
-import type { TicketItem } from "@/types/ticket";
+import type {
+  TicketDetailsViewModel,
+  TicketItem,
+  TicketOrderData,
+} from "@/types/ticket";
 import {
   createTicketDetailsViewModel,
   createTicketSummaryViewModel,
@@ -16,24 +16,44 @@ import {
   getTicketIndexById,
 } from "@/utils/ticketUtils";
 
+const EMPTY_TICKET_DETAILS: TicketDetailsViewModel = {
+  eventTitle: "",
+  eventSubtitle: "",
+  heroImage: undefined,
+  activeTicket: getSelectedTicket([]),
+  activeIndex: 0,
+  totalTickets: 0,
+  positionLabel: "0 of 0",
+  canTransfer: false,
+  canSell: false,
+};
+
 export function useTicketOrder(orderId?: string) {
   const storeTickets = useTicketStore((state) => state.tickets);
   const hasSyncedTickets = useTicketStore((state) => state.isSynced);
+  const isLoadingTickets = !hasSyncedTickets && storeTickets.length === 0;
   const ticketOrders = useMemo(
     () =>
-      storeTickets.length
-        ? mapTicketRecordsToTicketOrders(storeTickets)
-        : hasSyncedTickets
-          ? []
-        : [],
-    [hasSyncedTickets, storeTickets],
+      storeTickets.length ? mapTicketRecordsToTicketOrders(storeTickets) : [],
+    [storeTickets],
   );
 
-  const resolvedTicketOrder = useMemo(
-    () =>
-      ticketOrders.find((candidateOrder) => candidateOrder.order.id === orderId) ??
-      ticketOrders[0] ??
-      ticketOrder,
+  const resolvedTicketOrder = useMemo<TicketOrderData | null>(
+    () => {
+      if (!ticketOrders.length) {
+        return null;
+      }
+
+      if (orderId) {
+        return (
+          ticketOrders.find(
+            (candidateOrder) => candidateOrder.order.id === orderId,
+          ) ?? null
+        );
+      }
+
+      return ticketOrders[0];
+    },
     [orderId, ticketOrders],
   );
 
@@ -44,7 +64,7 @@ export function useTicketOrder(orderId?: string) {
 
   const upcomingSummaryViewModels = useMemo(() => {
     if (!storeTickets.length) {
-      return summaryViewModels;
+      return [];
     }
 
     return storeTickets
@@ -52,7 +72,7 @@ export function useTicketOrder(orderId?: string) {
       .map((ticket) =>
         createTicketSummaryViewModel(mapTicketRecordsToTicketOrders([ticket])[0]),
       );
-  }, [storeTickets, summaryViewModels]);
+  }, [storeTickets]);
 
   const pastSummaryViewModels = useMemo(() => {
     if (!storeTickets.length) {
@@ -67,40 +87,47 @@ export function useTicketOrder(orderId?: string) {
   }, [storeTickets]);
 
   const summaryViewModel = useMemo(
-    () => createTicketSummaryViewModel(resolvedTicketOrder),
+    () =>
+      resolvedTicketOrder
+        ? createTicketSummaryViewModel(resolvedTicketOrder)
+        : null,
     [resolvedTicketOrder],
   );
 
   const getDetailsViewModel = useCallback(
     (activeIndex: number) =>
-      createTicketDetailsViewModel(resolvedTicketOrder, activeIndex),
+      resolvedTicketOrder
+        ? createTicketDetailsViewModel(resolvedTicketOrder, activeIndex)
+        : EMPTY_TICKET_DETAILS,
     [resolvedTicketOrder],
   );
 
   const getTicketByIndex = useCallback(
     (ticketIndex?: number): TicketItem =>
-      getSelectedTicket(resolvedTicketOrder.tickets, ticketIndex),
+      getSelectedTicket(resolvedTicketOrder?.tickets ?? [], ticketIndex),
     [resolvedTicketOrder],
   );
 
   const getTicketForId = useCallback(
     (ticketId?: string): TicketItem =>
-      getTicketById(resolvedTicketOrder.tickets, ticketId),
+      getTicketById(resolvedTicketOrder?.tickets ?? [], ticketId),
     [resolvedTicketOrder],
   );
 
   const getTicketIndexForId = useCallback(
     (ticketId?: string) =>
-      getTicketIndexById(resolvedTicketOrder.tickets, ticketId),
+      getTicketIndexById(resolvedTicketOrder?.tickets ?? [], ticketId),
     [resolvedTicketOrder],
   );
 
   const ticketCount = useMemo(
-    () => getTicketCount(resolvedTicketOrder),
+    () => (resolvedTicketOrder ? getTicketCount(resolvedTicketOrder) : 0),
     [resolvedTicketOrder],
   );
 
   return {
+    hasSyncedTickets,
+    isLoadingTickets,
     ticketOrder: resolvedTicketOrder,
     ticketOrders,
     summaryViewModel,

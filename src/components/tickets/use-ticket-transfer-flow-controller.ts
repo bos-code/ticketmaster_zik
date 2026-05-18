@@ -37,7 +37,12 @@ export function useTicketTransferFlowController({
   initialTicketIndex: number;
   orderId?: string;
 }) {
-  const { ticketOrder, summaryViewModel, getDetailsViewModel } =
+  const {
+    getDetailsViewModel,
+    isLoadingTickets,
+    summaryViewModel,
+    ticketOrder,
+  } =
     useTicketOrder(orderId);
   const { width } = useWindowDimensions();
   const frameWidth = Math.min(width, 430);
@@ -49,9 +54,13 @@ export function useTicketTransferFlowController({
     [getDetailsViewModel, initialTicketIndex],
   );
   const ticketFlowData = useMemo(
-    () => buildTicketFlowDataFromOrder(ticketOrder, summaryViewModel),
+    () =>
+      ticketOrder && summaryViewModel
+        ? buildTicketFlowDataFromOrder(ticketOrder, summaryViewModel)
+        : null,
     [summaryViewModel, ticketOrder],
   );
+  const currentOrderId = ticketOrder?.order.id;
 
   const seats = ticketFlowData?.seats ?? EMPTY_SEATS;
   const seatSummary = useMemo(() => buildSeatSummary(seats), [seats]);
@@ -176,17 +185,21 @@ export function useTicketTransferFlowController({
 
   const openTicketDetailsRoute = useCallback(
     (ticketIndex: number) => {
+      if (!currentOrderId) {
+        return;
+      }
+
       const nextDetails = getDetailsViewModel(ticketIndex);
 
       router.push({
         pathname: "/tickets/[orderId]",
         params: {
-          orderId: ticketOrder.order.id,
+          orderId: currentOrderId,
           ticketIndex: String(nextDetails.activeIndex),
         },
       });
     },
-    [getDetailsViewModel, ticketOrder.order.id],
+    [currentOrderId, getDetailsViewModel],
   );
 
   const handleTransferStart = () => {
@@ -205,7 +218,12 @@ export function useTicketTransferFlowController({
         return;
       }
 
-      router.replace(buildTicketSummaryHref(ticketOrder.order.id));
+      if (currentOrderId) {
+        router.replace(buildTicketSummaryHref(currentOrderId));
+        return;
+      }
+
+      router.replace("/my-tickets");
       return;
     }
 
@@ -348,6 +366,7 @@ export function useTicketTransferFlowController({
     handleTransferStart,
     handleViewerBack,
     isHeroCollapsed,
+    isLoadingTickets,
     isViewerScreen,
     openTicketDetailsRoute,
     otpCode,

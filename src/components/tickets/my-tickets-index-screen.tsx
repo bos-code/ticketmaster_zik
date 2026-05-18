@@ -1,6 +1,13 @@
 import { type Href, useRouter } from "expo-router";
 import React, { useEffect, useMemo, useState } from "react";
-import { Image, Pressable, ScrollView, Text, View } from "react-native";
+import {
+  Image,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import Head from "expo-router/head";
@@ -21,7 +28,11 @@ function buildTicketSummaryHref(orderId: string): Href {
 
 export function MyTicketsIndexScreen() {
   const router = useRouter();
-  const { pastSummaryViewModels, upcomingSummaryViewModels } =
+  const {
+    isLoadingTickets,
+    pastSummaryViewModels,
+    upcomingSummaryViewModels,
+  } =
     useTicketOrder();
 
   const upcomingEvents = useMemo(
@@ -126,7 +137,9 @@ export function MyTicketsIndexScreen() {
         showsVerticalScrollIndicator={true}
         style={{ backgroundColor: "#FFFFFF" }}
       >
-        {visibleEvents.length ? (
+        {isLoadingTickets ? (
+          <TicketIndexShadowList />
+        ) : visibleEvents.length ? (
           visibleEvents.map((ticket) => (
             <TicketIndexCard
               key={ticket.orderId}
@@ -148,6 +161,30 @@ export function MyTicketsIndexScreen() {
           </View>
         )}
       </ScrollView>
+    </View>
+  );
+}
+
+function TicketIndexShadowList() {
+  return (
+    <>
+      <TicketIndexShadowCard />
+      <TicketIndexShadowCard />
+    </>
+  );
+}
+
+function TicketIndexShadowCard() {
+  return (
+    <View style={styles.ticketShadowCard}>
+      <View style={styles.ticketShadowImage} />
+
+      <View style={styles.ticketShadowBody}>
+        <View style={[styles.ticketShadowBar, styles.ticketShadowDate]} />
+        <View style={[styles.ticketShadowBar, styles.ticketShadowTitle]} />
+        <View style={[styles.ticketShadowBar, styles.ticketShadowRule]} />
+        <View style={[styles.ticketShadowBar, styles.ticketShadowVenue]} />
+      </View>
     </View>
   );
 }
@@ -207,6 +244,52 @@ function TicketIndexCard({
     </Pressable>
   );
 }
+
+const styles = StyleSheet.create({
+  ticketShadowCard: {
+    backgroundColor: "#FFFFFF",
+    borderColor: "#ECEEF2",
+    borderWidth: 1,
+    shadowColor: "#000000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 10,
+    elevation: 2,
+  },
+  ticketShadowImage: {
+    backgroundColor: "#EEF1F5",
+    height: TICKET_INDEX_IMAGE_HEIGHT,
+    width: "100%",
+  },
+  ticketShadowBody: {
+    backgroundColor: "#FFFFFF",
+    paddingBottom: 18,
+    paddingHorizontal: 14,
+    paddingTop: 14,
+  },
+  ticketShadowBar: {
+    backgroundColor: "#E7EAF0",
+  },
+  ticketShadowDate: {
+    height: 14,
+    width: "46%",
+  },
+  ticketShadowTitle: {
+    height: 26,
+    marginTop: 16,
+    width: "86%",
+  },
+  ticketShadowRule: {
+    height: 3,
+    marginTop: 14,
+    width: 208,
+  },
+  ticketShadowVenue: {
+    height: 18,
+    marginTop: 18,
+    width: "64%",
+  },
+});
 
 function TicketFilterTab({
   active,

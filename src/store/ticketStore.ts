@@ -1,7 +1,6 @@
 import { create } from 'zustand';
 
 import {
-  mockTickets,
   type TicketRecord,
   type TicketStatus,
   type TicketType,
@@ -61,8 +60,8 @@ export const DEFAULT_WIZKID_TICKET: TicketInput = {
 };
 
 export const useTicketStore = create<TicketStore>((set, get) => ({
-  tickets: mockTickets,
-  events: mockTickets,
+  tickets: [],
+  events: [],
   isSynced: false,
   replaceTickets: (tickets) => {
     set({ tickets, events: tickets, isSynced: true });
