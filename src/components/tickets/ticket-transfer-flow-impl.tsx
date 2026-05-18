@@ -140,16 +140,17 @@ export function TicketTransferFlow({
 
         <TicketTransferAuthModal
           confirmCodeReady={flow.confirmCodeReady}
+          isLoading={flow.transferModal === 'loading'}
           onCancel={() => flow.setTransferModal('none')}
           onConfirm={flow.handleConfirmCode}
           onOtpChange={flow.setOtpCode}
           otpCode={flow.otpCode}
-          visible={flow.transferModal === 'auth'}
+          visible={flow.transferModal === 'auth' || flow.transferModal === 'loading'}
         />
 
         <TicketTransferStatusModal
           frameWidth={flow.frameWidth}
-          status={flow.transferModal}
+          status={flow.transferModal === 'loading' ? 'none' : flow.transferModal}
           onRetry={flow.handleRetryTransfer}
           onClose={() => flow.setTransferModal('none')}
         />

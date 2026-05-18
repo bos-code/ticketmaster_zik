@@ -324,13 +324,10 @@ export function useTicketTransferFlowController({
       const isSuccess = Math.random() > 0.1;
 
       if (isSuccess) {
-        setTransferModal("success");
-        setTimeout(() => {
-          setViewerIndex(0);
-          setSelectedSeatIds([]);
-          setScreen("list");
-          setTransferModal("none");
-        }, 1500);
+        setViewerIndex(0);
+        setSelectedSeatIds([]);
+        setScreen("list");
+        setTransferModal("none");
       } else {
         setTransferModal("error");
       }
