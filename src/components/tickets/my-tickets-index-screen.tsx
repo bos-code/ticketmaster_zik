@@ -59,13 +59,6 @@ export function MyTicketsIndexScreen() {
       return;
     }
 
-    if (
-      activeTab === "past" &&
-      pastEvents.length === 0 &&
-      upcomingEvents.length > 0
-    ) {
-      setActiveTab("upcoming");
-    }
   }, [activeTab, pastEvents.length, upcomingEvents.length]);
 
   const visibleEvents = activeTab === "upcoming" ? upcomingEvents : pastEvents;
