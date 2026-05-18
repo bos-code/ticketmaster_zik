@@ -30,12 +30,18 @@ const EMPTY_TICKET_DETAILS: TicketDetailsViewModel = {
 
 export function useTicketOrder(orderId?: string) {
   const storeTickets = useTicketStore((state) => state.tickets);
+  const visibleStoreTickets = useMemo(
+    () => storeTickets.filter((ticket) => !ticket.isHidden),
+    [storeTickets],
+  );
   const hasSyncedTickets = useTicketStore((state) => state.isSynced);
-  const isLoadingTickets = !hasSyncedTickets && storeTickets.length === 0;
+  const isLoadingTickets = !hasSyncedTickets && visibleStoreTickets.length === 0;
   const ticketOrders = useMemo(
     () =>
-      storeTickets.length ? mapTicketRecordsToTicketOrders(storeTickets) : [],
-    [storeTickets],
+      visibleStoreTickets.length
+        ? mapTicketRecordsToTicketOrders(visibleStoreTickets)
+        : [],
+    [visibleStoreTickets],
   );
 
   const resolvedTicketOrder = useMemo<TicketOrderData | null>(
@@ -63,28 +69,28 @@ export function useTicketOrder(orderId?: string) {
   );
 
   const upcomingSummaryViewModels = useMemo(() => {
-    if (!storeTickets.length) {
+    if (!visibleStoreTickets.length) {
       return [];
     }
 
-    return storeTickets
+    return visibleStoreTickets
       .filter((ticket) => ticket.status === "upcoming")
       .map((ticket) =>
         createTicketSummaryViewModel(mapTicketRecordsToTicketOrders([ticket])[0]),
       );
-  }, [storeTickets]);
+  }, [visibleStoreTickets]);
 
   const pastSummaryViewModels = useMemo(() => {
-    if (!storeTickets.length) {
+    if (!visibleStoreTickets.length) {
       return [];
     }
 
-    return storeTickets
+    return visibleStoreTickets
       .filter((ticket) => ticket.status === "past")
       .map((ticket) =>
         createTicketSummaryViewModel(mapTicketRecordsToTicketOrders([ticket])[0]),
       );
-  }, [storeTickets]);
+  }, [visibleStoreTickets]);
 
   const summaryViewModel = useMemo(
     () =>

@@ -27,6 +27,7 @@ export type TicketRecord = {
   backgroundColor: string;
   seatLabel: string;
   ticketNote: string;
+  isHidden: boolean;
   createdAt: string;
   updatedAt: string;
 };
@@ -62,6 +63,7 @@ export const mockTickets: TicketRecord[] = [
     backgroundColor: '#B79E6A',
     seatLabel: 'Artist presale',
     ticketNote: 'Gold circle seating',
+    isHidden: false,
     createdAt: '2026-04-18T11:15:00.000Z',
     updatedAt: '2026-04-18T11:15:00.000Z',
   },
@@ -83,6 +85,7 @@ export const mockTickets: TicketRecord[] = [
     backgroundColor: '#8B5CF6',
     seatLabel: 'Fan verified',
     ticketNote: 'Platinum lounge access',
+    isHidden: false,
     createdAt: '2025-10-12T09:00:00.000Z',
     updatedAt: '2025-12-20T23:30:00.000Z',
   },

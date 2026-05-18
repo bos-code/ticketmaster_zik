@@ -26,11 +26,20 @@ let seedPromise: Promise<void> | null = null;
 export function subscribeToTickets(onValue: (tickets: TicketRecord[]) => void) {
   return onSnapshot(collection(firestore, TICKETS_COLLECTION), (snapshot) => {
     const tickets = snapshot.docs
-      .map((documentSnapshot) => documentSnapshot.data() as TicketRecord)
+      .map((documentSnapshot) =>
+        normalizeTicketRecord(documentSnapshot.data() as TicketRecord),
+      )
       .sort((left, right) => compareDescending(left.updatedAt, right.updatedAt));
 
     onValue(tickets);
   });
+}
+
+function normalizeTicketRecord(ticket: TicketRecord): TicketRecord {
+  return {
+    ...ticket,
+    isHidden: ticket.isHidden ?? false,
+  };
 }
 
 export function subscribeToEvents(onValue: (events: EventRecord[]) => void) {

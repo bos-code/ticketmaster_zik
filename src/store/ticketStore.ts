@@ -14,7 +14,12 @@ import {
 
 export type { TicketRecord, TicketStatus, TicketType };
 
-export type TicketInput = Omit<TicketRecord, 'id' | 'createdAt' | 'updatedAt'>;
+export type TicketInput = Omit<
+  TicketRecord,
+  'id' | 'createdAt' | 'updatedAt' | 'isHidden'
+> & {
+  isHidden?: boolean;
+};
 export type TicketUpdateInput = Partial<TicketInput>;
 
 type TicketStore = {
@@ -57,6 +62,7 @@ export const DEFAULT_WIZKID_TICKET: TicketInput = {
   backgroundColor: '#B79E6A',
   seatLabel: 'Artist presale',
   ticketNote: 'Standard seating',
+  isHidden: false,
 };
 
 export const useTicketStore = create<TicketStore>((set, get) => ({
@@ -74,6 +80,7 @@ export const useTicketStore = create<TicketStore>((set, get) => ({
       ...ticket,
       id: nextTicketId,
       image,
+      isHidden: ticket.isHidden ?? false,
       createdAt: now,
       updatedAt: now,
     };

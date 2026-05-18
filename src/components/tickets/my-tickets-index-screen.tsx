@@ -104,7 +104,7 @@ export function MyTicketsIndexScreen() {
             <Pressable
               accessibilityRole="button"
               className="min-w-12 items-end justify-center py-2"
-              onPress={() => router.push("/settings")}
+              // onPress={() => router.push("/settings")}
             >
               <Text className="text-[12px] font-bold leading-[15px] text-[rgba(255,255,255,0.92)]">
                 Help
@@ -215,7 +215,7 @@ function TicketIndexCard({
             {ticket.ticketType}
           </Text>
         </View> */}
-        <View className="absolute bottom-0 left-0 bg-[#101010] p-3">
+        <View className="absolute bottom-0 left-0 -mb-1 bg-[#101010] p-3">
           <Text className="text-base font-black uppercase leading-3 tracking-[0.6px] text-white">
             {ticket.eventFullDateTimeLabel}
           </Text>

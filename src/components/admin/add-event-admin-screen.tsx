@@ -32,7 +32,8 @@ import {
   useTicketStore,
 } from '@/store/ticketStore';
 
-type FormState = Record<keyof TicketInput, string>;
+type TicketFormInput = Omit<TicketInput, 'isHidden'>;
+type FormState = Record<keyof TicketFormInput, string>;
 type FieldKey = keyof FormState;
 
 const fieldLabels: Record<FieldKey, string> = {
@@ -563,7 +564,9 @@ function validateForm(form: FormState) {
 }
 
 function toFormState(ticket: TicketInput): FormState {
-  return { ...ticket };
+  const { isHidden: _isHidden, ...formState } = ticket;
+
+  return formState;
 }
 
 function toTicketInput(form: FormState): TicketInput {

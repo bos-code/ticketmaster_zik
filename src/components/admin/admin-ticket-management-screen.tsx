@@ -25,9 +25,9 @@ import {
   useTicketStore,
 } from '@/store/ticketStore';
 
-type TicketFilter = 'All' | 'Upcoming' | TicketType | 'Past';
+type TicketFilter = 'All' | 'Upcoming' | TicketType | 'Past' | 'Hidden';
 
-const filters: TicketFilter[] = ['All', 'Upcoming', 'VIP', 'Standard', 'General', 'Past'];
+const filters: TicketFilter[] = ['All', 'Upcoming', 'VIP', 'Standard', 'General', 'Past', 'Hidden'];
 
 export function AdminTicketManagementScreen() {
   const router = useRouter();
@@ -35,9 +35,11 @@ export function AdminTicketManagementScreen() {
   const params = useLocalSearchParams<{ toast?: string }>();
   const tickets = useTicketStore((state) => state.tickets);
   const removeEvent = useTicketStore((state) => state.removeEvent);
+  const updateEvent = useTicketStore((state) => state.updateEvent);
   const [activeFilter, setActiveFilter] = useState<TicketFilter>('All');
   const [deleteTarget, setDeleteTarget] = useState<TicketRecord | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [visibilityUpdatingId, setVisibilityUpdatingId] = useState<string | null>(null);
   const [toast, setToast] = useState<string | null>(null);
 
   useEffect(() => {
@@ -63,6 +65,10 @@ export function AdminTicketManagementScreen() {
 
         if (activeFilter === 'Past') {
           return ticket.status === 'past';
+        }
+
+        if (activeFilter === 'Hidden') {
+          return ticket.isHidden;
         }
 
         return ticket.ticketType === activeFilter;
@@ -95,6 +101,27 @@ export function AdminTicketManagementScreen() {
       );
     } finally {
       setIsDeleting(false);
+    }
+  }
+
+  async function handleToggleHidden(ticket: TicketRecord) {
+    if (visibilityUpdatingId) {
+      return;
+    }
+
+    const nextHidden = !ticket.isHidden;
+
+    try {
+      setVisibilityUpdatingId(ticket.id);
+      await updateEvent(ticket.id, { isHidden: nextHidden });
+      showToast(nextHidden ? 'Ticket hidden' : 'Ticket visible');
+    } catch {
+      Alert.alert(
+        'Visibility update failed',
+        'We could not update this ticket in Firebase right now. Please try again.',
+      );
+    } finally {
+      setVisibilityUpdatingId(null);
     }
   }
 
@@ -171,7 +198,11 @@ export function AdminTicketManagementScreen() {
                   params: { ticketId: ticket.id },
                 })
               }
+              onToggleHidden={(ticket) => {
+                void handleToggleHidden(ticket);
+              }}
               tickets={upcomingTickets}
+              visibilityUpdatingId={visibilityUpdatingId}
               title="Upcoming"
             />
             <TicketSection
@@ -188,7 +219,11 @@ export function AdminTicketManagementScreen() {
                   params: { ticketId: ticket.id },
                 })
               }
+              onToggleHidden={(ticket) => {
+                void handleToggleHidden(ticket);
+              }}
               tickets={pastTickets}
+              visibilityUpdatingId={visibilityUpdatingId}
               title="Past"
             />
           </>
@@ -232,14 +267,18 @@ function TicketSection({
   onDelete,
   onEdit,
   onPreview,
+  onToggleHidden,
   tickets,
   title,
+  visibilityUpdatingId,
 }: {
   onDelete: (ticket: TicketRecord) => void;
   onEdit: (ticket: TicketRecord) => void;
   onPreview: (ticket: TicketRecord) => void;
+  onToggleHidden: (ticket: TicketRecord) => void;
   tickets: TicketRecord[];
   title: string;
+  visibilityUpdatingId: string | null;
 }) {
   if (!tickets.length) {
     return null;
@@ -252,25 +291,40 @@ function TicketSection({
         <Text style={styles.sectionCount}>{tickets.length}</Text>
       </View>
       {tickets.map((ticket) => (
-        <AdminTicketCard key={ticket.id} onDelete={() => onDelete(ticket)} onEdit={() => onEdit(ticket)} onPreview={() => onPreview(ticket)} ticket={ticket} />
+        <AdminTicketCard
+          key={ticket.id}
+          isVisibilityUpdating={visibilityUpdatingId === ticket.id}
+          onDelete={() => onDelete(ticket)}
+          onEdit={() => onEdit(ticket)}
+          onPreview={() => onPreview(ticket)}
+          onToggleHidden={() => onToggleHidden(ticket)}
+          ticket={ticket}
+        />
       ))}
     </View>
   );
 }
 
 function AdminTicketCard({
+  isVisibilityUpdating,
   onDelete,
   onEdit,
   onPreview,
+  onToggleHidden,
   ticket,
 }: {
+  isVisibilityUpdating: boolean;
   onDelete: () => void;
   onEdit: () => void;
   onPreview: () => void;
+  onToggleHidden: () => void;
   ticket: TicketRecord;
 }) {
+  const visibilityIcon = ticket.isHidden ? 'eye-outline' : 'eye-off-outline';
+  const visibilityLabel = ticket.isHidden ? 'Show ticket' : 'Hide ticket';
+
   return (
-    <View style={styles.card}>
+    <View style={[styles.card, ticket.isHidden && styles.hiddenCard]}>
       <View style={styles.artPanel}>
         <Image contentFit="cover" source={{ uri: ticket.image }} style={styles.cardImage} />
         <LinearGradient colors={['transparent', 'rgba(0,0,0,0.82)']} style={styles.imageGradient} />
@@ -278,6 +332,7 @@ function AdminTicketCard({
         <View style={styles.badgeRow}>
           <Badge label={ticket.ticketType} tone="gold" />
           <Badge label={ticket.status} tone={ticket.status === 'upcoming' ? 'blue' : 'muted'} />
+          {ticket.isHidden ? <Badge label="Hidden" tone="muted" /> : null}
         </View>
       </View>
 
@@ -303,6 +358,26 @@ function AdminTicketCard({
           <Pressable onPress={onEdit} style={styles.editButton}>
             <Ionicons color="#FFFFFF" name="create-outline" size={16} />
             <Text style={styles.editButtonText}>Edit</Text>
+          </Pressable>
+          <Pressable
+            accessibilityLabel={visibilityLabel}
+            disabled={isVisibilityUpdating}
+            onPress={onToggleHidden}
+            style={[
+              styles.visibilityButton,
+              ticket.isHidden && styles.visibilityButtonHidden,
+              isVisibilityUpdating && styles.visibilityButtonDisabled,
+            ]}
+          >
+            {isVisibilityUpdating ? (
+              <ActivityIndicator color="#005BD3" size="small" />
+            ) : (
+              <Ionicons
+                color={ticket.isHidden ? '#005BD3' : '#374151'}
+                name={visibilityIcon}
+                size={17}
+              />
+            )}
           </Pressable>
           <Pressable onPress={onDelete} style={styles.deleteButton}>
             <Ionicons color="#FF6B5A" name="trash-outline" size={16} />
@@ -432,6 +507,7 @@ const styles = StyleSheet.create({
   sectionTitle: { color: '#374151', fontSize: 11, fontWeight: '900', letterSpacing: 1.3, textTransform: 'uppercase' },
   sectionCount: { color: '#9CA3AF', fontSize: 12, fontWeight: '700' },
   card: { backgroundColor: '#FFFFFF', borderColor: '#E5E7EB', borderRadius: 10, borderWidth: 1, marginBottom: 12, overflow: 'hidden' },
+  hiddenCard: { borderColor: '#CBD5E1' },
   artPanel: { height: 180, overflow: 'hidden' },
   cardImage: { backgroundColor: '#F3F4F6', height: '100%', width: '100%' },
   imageGradient: { bottom: 0, height: 80, left: 0, position: 'absolute', right: 0 },
@@ -477,6 +553,18 @@ const styles = StyleSheet.create({
     minHeight: 40,
   },
   previewButtonText: { color: '#374151', fontSize: 12, fontWeight: '800', textTransform: 'uppercase' },
+  visibilityButton: {
+    alignItems: 'center',
+    backgroundColor: '#F9FAFB',
+    borderColor: '#D1D5DB',
+    borderRadius: 7,
+    borderWidth: 1,
+    justifyContent: 'center',
+    minHeight: 40,
+    width: 40,
+  },
+  visibilityButtonHidden: { backgroundColor: '#EFF6FF', borderColor: '#93C5FD' },
+  visibilityButtonDisabled: { opacity: 0.7 },
   deleteButton: {
     alignItems: 'center',
     borderColor: '#FCA5A5',
