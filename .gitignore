@@ -28,7 +28,7 @@ yarn-error.*
 
 # macOS
 .DS_Store
-*.pem
+*.pemreduce the shadow spread behind the ticket card
 
 # local env files
 .env

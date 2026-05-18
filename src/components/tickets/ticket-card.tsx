@@ -45,10 +45,10 @@ export function TicketCard({
       style={{
         width: cardWidth,
         shadowColor: "#000",
-        shadowOffset: { width: 0, height: 8 },
-        shadowOpacity: 0.1,
-        shadowRadius: 24,
-        elevation: 8,
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.08,
+        shadowRadius: 10,
+        elevation: 4,
       }}
     >
       <View className="h-[17px] w-full rounded-t-lg bg-[#0444f3]" />

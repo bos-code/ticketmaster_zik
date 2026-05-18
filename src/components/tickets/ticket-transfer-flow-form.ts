@@ -19,6 +19,7 @@ export function inferDeliveryModeFromDestination(
 
 export function validateRecipientForm(
   form: RecipientFormState,
+  deliveryMode?: DeliveryMode,
 ): Partial<RecipientFormState> {
   const errors: Partial<RecipientFormState> = {};
 
@@ -33,7 +34,7 @@ export function validateRecipientForm(
   const destination = form.destination.trim();
   if (!destination) {
     errors.destination = "Recipient contact is required";
-  } else if (destination.includes("@")) {
+  } else if (deliveryMode === "email" || (!deliveryMode && destination.includes("@"))) {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(destination)) {
       errors.destination = "Invalid email format";

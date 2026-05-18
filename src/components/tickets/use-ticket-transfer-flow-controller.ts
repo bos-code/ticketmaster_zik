@@ -12,7 +12,6 @@ import { buildSeatSummary } from "@/components/tickets/buildSeatSummary";
 import { buildTicketFlowDataFromOrder } from "@/components/tickets/ticket-transfer-flow-data";
 import {
   emptyRecipientForm,
-  inferDeliveryModeFromDestination,
   validateRecipientForm,
 } from "@/components/tickets/ticket-transfer-flow-form";
 import {
@@ -146,13 +145,6 @@ export function useTicketTransferFlowController({
         [field]: value,
       };
 
-      if (field === "destination") {
-        const nextDeliveryMode = inferDeliveryModeFromDestination(value);
-        if (nextDeliveryMode && nextDeliveryMode !== deliveryMode) {
-          setDeliveryMode(nextDeliveryMode);
-        }
-      }
-
       if (formErrors[field]) {
         setFormErrors((curr) => {
           const { [field]: _, ...rest } = curr;
@@ -267,6 +259,7 @@ export function useTicketTransferFlowController({
           lastName,
           note: "",
         });
+        setFormErrors({});
         setScreen("recipientForm");
       };
 
@@ -313,6 +306,7 @@ export function useTicketTransferFlowController({
     }
 
     setOtpCode("");
+    setFormErrors({});
     setTransferModal("auth");
   };
 

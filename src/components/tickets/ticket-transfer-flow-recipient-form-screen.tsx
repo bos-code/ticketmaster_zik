@@ -1,5 +1,14 @@
 import React from "react";
-import { Pressable, Text, TextInput, View } from "react-native";
+import {
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from "react-native";
 
 import { cx } from "@/components/tickets/cx";
 import { Field } from "@/components/tickets/Field";
@@ -7,6 +16,8 @@ import type { DeliveryMode, RecipientFormState } from "@/components/tickets/tick
 import { BottomDrawer } from "@/components/ui/bottom-drawer";
 
 import { Ionicons } from "@expo/vector-icons";
+
+const RECIPIENT_INPUT_FONT_SIZE = Platform.OS === "web" ? 16 : 13;
 
 export function TicketTransferRecipientFormScreen({
   deliveryMode,
@@ -36,14 +47,20 @@ export function TicketTransferRecipientFormScreen({
 
   return (
     <BottomDrawer minHeight="62%" onClose={onBack} visible={visible}>
-      <View className="flex-1 px-[20px] pt-4">
-        <Text className="mb-4 text-left text-base tracking-[0.6px] font-black text-black uppercase">
-          RECIPIENT DETAILS
-        </Text>
-
-        <View
-          className="flex-1"
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+        style={styles.keyboardWrap}
+      >
+        <ScrollView
+          contentContainerStyle={styles.formContent}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+          style={styles.formScroll}
         >
+          <Text className="mb-4 text-left text-base tracking-[0.6px] font-black text-black uppercase">
+            RECIPIENT DETAILS
+          </Text>
+
           <Field
             label="First Name"
             error={formErrors.firstName}
@@ -87,35 +104,55 @@ export function TicketTransferRecipientFormScreen({
               multiline
               numberOfLines={5}
               onChangeText={(value) => onUpdateForm("note", value)}
-              style={{ minHeight: 110, textAlignVertical: "top" }}
-              className="border border-[#E0E0E0] bg-white px-[10px] py-2 text-[13px] font-medium text-[#111111]"
+              style={styles.noteInput}
+              className="border border-[#E0E0E0] bg-white px-[10px] py-2 font-medium text-[#111111]"
               value={form.note}
             />
           </View>
+        </ScrollView>
+
+        <View className=" flex-row items-center justify-between bg-white px-[20px] pb-5 pt-2 ">
+          <Pressable onPress={onBack} className="flex-row items-center">
+            <Ionicons name="chevron-back" size={14} color="#026CDF" />
+            <Text className="text-[#026CDF] text-sm tracking-tight">
+              BACK
+            </Text>
+          </Pressable>
+
+          <Pressable
+            accessibilityRole="button"
+            disabled={!transferReady}
+            onPress={onRequestTransfer}
+            className={cx(
+              "h-[34px] px-10 items-center justify-center rounded-[4px]",
+              transferReady ? "bg-black" : "bg-[#C8CCD2]",
+            )}
+          >
+            <Text className="text-[11px] font-black text-white">
+              Transfer Tickets
+            </Text>
+          </Pressable>
         </View>
-      </View>
-
-      <View className=" flex-row items-center justify-between bg-white px-[20px] pb-5 pt-2 ">
-        <Pressable onPress={onBack} className="flex-row items-center">
-          <Ionicons name="chevron-back" size={14} color="#026CDF" />
-          <Text className="text-[#026CDF] text-sm tracking-tight">
-            BACK
-          </Text>
-        </Pressable>
-
-        <Pressable
-          accessibilityRole="button"
-          
-          onPress={onRequestTransfer}
-          className={cx(
-            "h-[34px] px-10 items-center justify-center bg-black rounded-[4px]"
-          )}
-        >
-          <Text className="text-[11px] font-black text-white">
-            Transfer Tickets
-          </Text>
-        </Pressable>
-      </View>
+      </KeyboardAvoidingView>
     </BottomDrawer>
   );
 }
+
+const styles = StyleSheet.create({
+  keyboardWrap: {
+    flex: 1,
+  },
+  formScroll: {
+    flex: 1,
+  },
+  formContent: {
+    paddingBottom: 12,
+    paddingHorizontal: 20,
+    paddingTop: 16,
+  },
+  noteInput: {
+    fontSize: RECIPIENT_INPUT_FONT_SIZE,
+    minHeight: 110,
+    textAlignVertical: "top",
+  },
+});

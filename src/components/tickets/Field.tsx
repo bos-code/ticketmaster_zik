@@ -1,6 +1,8 @@
 import React from "react";
-import { Text, TextInput, View } from "react-native";
+import { Platform, StyleSheet, Text, TextInput, View } from "react-native";
 import { cx } from "@/components/tickets/cx";
+
+const RECIPIENT_INPUT_FONT_SIZE = Platform.OS === "web" ? 16 : 13;
 
 export function Field({
   error,
@@ -24,13 +26,14 @@ export function Field({
       </Text>
       <TextInput
         className={cx(
-          "min-h-[32px] border border-[#333333] px-[8px] py-1 text-[13px] font-medium text-[#111111] bg-white",
+          "min-h-[32px] border border-[#333333] px-[8px] py-1 font-medium text-[#111111] bg-white",
           error && "border-[#FF0000]"
         )}
         keyboardType={keyboardType}
         onChangeText={onChangeText}
         placeholder={placeholder}
         placeholderTextColor="#999999"
+        style={styles.inputText}
         value={value}
       />
       {error ? (
@@ -41,3 +44,9 @@ export function Field({
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  inputText: {
+    fontSize: RECIPIENT_INPUT_FONT_SIZE,
+  },
+});
