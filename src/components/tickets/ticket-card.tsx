@@ -64,7 +64,7 @@ export function TicketCard({
 
         <View className="absolute top-3 left-0 right-0 px-5">
           <View className="bg-white rounded-sm py-0 shadow-lg items-center">
-            <View className="flex-row items-center justify-center gap-1 pt-1">
+            <View className="flex-row items-center justify-center gap-1 pt-2">
               <Text className="text-[10px] font-bold text-[#6B6B6B] tracking-tighter">
                 Screenshots won&apos;t get you in
               </Text>
