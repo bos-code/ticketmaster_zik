@@ -29,10 +29,14 @@ import { TicketCard } from './ticket-card';
 function ViewerHeader({ onBack }: { onBack: () => void }) {
   const { event } = useTicketFlowData();
   const insets = useImmersiveSafeAreaInsets();
+  const { width } = useWindowDimensions();
+  const shortTitleWidth = Math.round(width * 0.9);
+  const shortTitle = toCapitalizedTitle(event.shortTitle);
   console.log('event.shortTitle', event.shortTitle);
 
   return (
     <View
+      className='-mb-6'
       style={{
         backgroundColor: '#F9F8F4',
         paddingTop:
@@ -41,12 +45,12 @@ function ViewerHeader({ onBack }: { onBack: () => void }) {
             : insets.top + (Platform.OS === 'ios' ? 4 : 2),
       }}
     >
-      <View className='flex-row items-center bg-[#F9F8F4] px-5 pb-4 pt-0'>
+      <View className='flex-row items-center justify-left bg-[#F9F8F4] gap-4 pl-4 pb-2 pt-0'>
         <Pressable
           accessibilityRole='button'
           hitSlop={8}
           onPress={onBack}
-          className='mr-4'
+      
         >
           <Ionicons color='#000000' name='chevron-back' size={28} />
         </Pressable>
@@ -54,17 +58,27 @@ function ViewerHeader({ onBack }: { onBack: () => void }) {
         <View className='justify-center'>
           <EditableText
             field='eventName'
-            value={event.shortTitle}
-            className='text-[17px] font-bold text-[#000000] mb-2 capitalize'
+            value={shortTitle}
+            className='text-[16px]  font-extrabold text-[#000000] mb-1.5'
+            style={{
+              textTransform: 'capitalize',
+              width: shortTitleWidth,
+            }}
           />
           <EditableText
             value={event.headerSubtitle}
-            className='text-[12px] font-medium text-[#6B6B6B]'
+            className='text-[14px] font-medium text-[#525050]'
           />
         </View>
       </View>
     </View>
   );
+}
+
+function toCapitalizedTitle(value: string) {
+  return value.replace(/\S+/g, (word) => {
+    return `${word.charAt(0).toUpperCase()}${word.slice(1).toLowerCase()}`;
+  });
 }
 
 export function TicketTransferViewerScreen({
