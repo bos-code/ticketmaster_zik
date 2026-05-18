@@ -77,6 +77,7 @@ export function useTicketTransferFlowController({
   const [recipientForm, setRecipientForm] =
     useState<RecipientFormState>(emptyRecipientForm);
   const [formErrors, setFormErrors] = useState<Partial<RecipientFormState>>({});
+  const [isListLoading, setIsListLoading] = useState(false);
 
   const scrollY = useSharedValue(0);
   const heroCollapsedValue = useSharedValue(0);
@@ -198,7 +199,16 @@ export function useTicketTransferFlowController({
 
   const handleTransferStart = () => {
     setSelectedSeatIds([]);
-    setScreen("select");
+    setIsListLoading(true);
+
+    if (loadingTimerRef.current) {
+      clearTimeout(loadingTimerRef.current);
+    }
+
+    loadingTimerRef.current = setTimeout(() => {
+      setIsListLoading(false);
+      setTransferModal("auth");
+    }, 1500);
   };
 
   const handleOpenViewer = () => {
@@ -360,6 +370,7 @@ export function useTicketTransferFlowController({
     handleTransferStart,
     handleViewerBack,
     isHeroCollapsed,
+    isListLoading,
     isLoadingTickets,
     isViewerScreen,
     openTicketDetailsRoute,

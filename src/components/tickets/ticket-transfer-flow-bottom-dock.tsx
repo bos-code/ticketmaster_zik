@@ -3,7 +3,13 @@ import React from "react";
 import { Pressable, Text, View } from "react-native";
 import Animated, { FadeInUp } from "react-native-reanimated";
 
-export function BottomDock({ onTransfer }: { onTransfer: () => void }) {
+export function BottomDock({
+  disabled,
+  onTransfer,
+}: {
+  disabled?: boolean;
+  onTransfer: () => void;
+}) {
   return (
     <Animated.View
       entering={FadeInUp.duration(320).delay(220)}
@@ -17,16 +23,18 @@ export function BottomDock({ onTransfer }: { onTransfer: () => void }) {
             minWidth: 176,
             boxShadow: '0px 4px 8px rgba(0, 0, 0, 0.20)',
             elevation: 8,
+            opacity: disabled ? 0.6 : 1,
           },
         ]}
       >
         <View className="flex-row items-center">
           <BottomDockAction
+            disabled={disabled}
             iconClassName="rotate-45"
-            iconColor="#2B72D7"
+            iconColor={disabled ? "#D1D5DB" : "#2B72D7"}
             iconName="arrow-up-outline"
             label="Transfer"
-            labelColor="#2b2b2b"
+            labelColor={disabled ? "#D1D5DB" : "#2b2b2b"}
             onPress={onTransfer}
           />
 

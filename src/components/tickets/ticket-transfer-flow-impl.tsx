@@ -72,6 +72,7 @@ export function TicketTransferFlow({
               activePanel={flow.activePanel}
               handleListScroll={flow.handleListScroll}
               isHeroCollapsed={flow.isHeroCollapsed}
+              isListLoading={flow.isListLoading}
               onBack={flow.handleBackToTabs}
               onOpenTicket={flow.openTicketDetailsRoute}
               onOpenViewer={flow.handleOpenViewer}
