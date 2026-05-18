@@ -12,14 +12,16 @@ export function TicketTransferRecipientChoiceScreen({
   onManualEntry,
   onOpenViewer,
   onSelectContact,
+  visible = true,
 }: {
   onBack: () => void;
   onManualEntry: () => void;
   onOpenViewer: () => void;
   onSelectContact: () => void;
+  visible?: boolean;
 }) {
   return (
-    <BottomDrawer minHeight="62%" onClose={onBack} visible={true}>
+    <BottomDrawer minHeight="62%" onClose={onBack} visible={visible}>
       <View className="flex-1 items-center px-[24px] pt-4">
         <Text className="mb-6 text-center text-sm font-semibold tracking-[0.5px] text-[#4F5966]">
           TRANSFER TO

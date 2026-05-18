@@ -17,11 +17,10 @@ import { TicketBarcodeSvg } from "@/components/tickets/ticket-barcode-svg";
 import type { Seat } from "@/components/tickets/ticketFlowTypes";
 import { useTicketFlowData } from "@/components/tickets/useTicketFlowData";
 
-const BARCODE_HEIGHT = 86;
-const BARCODE_BOTTOM_SPACING = 16;
-const BARCODE_BAND_HEIGHT = BARCODE_HEIGHT;
-const BARCODE_VISIBLE_HEIGHT = BARCODE_HEIGHT;
-const BARCODE_ARTWORK_HEIGHT = BARCODE_HEIGHT - BARCODE_BOTTOM_SPACING;
+const BARCODE_BAND_HEIGHT = 70;
+const BARCODE_VERTICAL_PADDING = 6;
+const BARCODE_ARTWORK_HEIGHT =
+  BARCODE_BAND_HEIGHT - BARCODE_VERTICAL_PADDING * 2;
 const BARCODE_SCAN_LINE_WIDTH = 6;
 
 export function TicketCard({
@@ -54,7 +53,7 @@ export function TicketCard({
     >
       <View className="h-[17px] w-full rounded-t-lg bg-[#0444f3]" />
 
-      <View className="relative w-full  rounded-b-lg" style={{ height: 320 }}>
+      <View className="relative w-full  rounded-b-lg" style={{ height: 340 }}>
         <Image
           contentFit="cover"
           source={event.heroImage}
@@ -63,7 +62,7 @@ export function TicketCard({
         <View className="absolute inset-0 bg-black/10" />
 
         <View className="absolute top-3 left-0 right-0 px-5">
-          <View className="bg-white rounded-sm py-0 shadow-lg items-center">
+          <View className="bg-white rounded-sm py-0 shadow-md items-center">
             <View className="flex-row items-center justify-center gap-1 pt-2">
               <Text className="text-[10px] font-bold text-[#6B6B6B] tracking-tighter">
                 Screenshots won&apos;t get you in
@@ -147,7 +146,10 @@ function TicketBarcodeBand() {
   return (
     <View
       className="relative w-full items-center justify-center overflow-hidden bg-white px-[8px]"
-      style={{ height: BARCODE_BAND_HEIGHT }}
+      style={{
+        height: BARCODE_BAND_HEIGHT,
+        paddingVertical: BARCODE_VERTICAL_PADDING,
+      }}
     >
       <TicketBarcodeSvg style={{ height: BARCODE_ARTWORK_HEIGHT }} />
 
@@ -164,7 +166,7 @@ function TicketBarcodeBand() {
             shadowOffset: { width: 0, height: 0 },
             shadowOpacity: 1,
             shadowRadius: 10,
-            top: 0,
+            top: BARCODE_VERTICAL_PADDING,
             width: BARCODE_SCAN_LINE_WIDTH,
             elevation: 5,
           },

@@ -36,7 +36,17 @@ yarn-error.*
 
 
 vsce-debug.log
-.firebase/logs/
+
+.firebase\logs
+# Firebase local/CLI files
+.firebase/
+.firebaserc
+firebase.json
+firebase-debug.log
+firestore-debug.log
+ui-debug.log
+firestore.rules
+storage.rules
 
 # typescript
 *.tsbuildinfo

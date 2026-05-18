@@ -15,6 +15,7 @@ export function TicketTransferSelectScreen({
   seats,
   selectedSeatIds,
   ticketCount,
+  visible = true,
 }: {
   onBack: () => void;
   onContinue: () => void;
@@ -23,9 +24,10 @@ export function TicketTransferSelectScreen({
   seats: Seat[];
   selectedSeatIds: string[];
   ticketCount: string;
+  visible?: boolean;
 }) {
   return (
-    <BottomDrawer minHeight='62%' onClose={onBack} visible={true}>
+    <BottomDrawer minHeight='62%' onClose={onBack} visible={visible}>
       <View className='border-b border-[#F0F0F0] py-4'>
         <Text className='text-center text-[12px] font-medium leading-[15px] text-[#70757E]'>
           SELECT TICKETS TRANSFER TICKET

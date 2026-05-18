@@ -151,6 +151,7 @@ export function TicketTransferViewerScreen({
             updateViewerIndexFromOffset(event.nativeEvent.contentOffset.x);
           }}
           ref={viewerListRef}
+          removeClippedSubviews={false}
           renderItem={({ item, index }) => (
             <TicketCard
               cardWidth={carouselCardWidth}

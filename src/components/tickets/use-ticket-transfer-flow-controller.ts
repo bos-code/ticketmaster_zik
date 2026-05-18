@@ -28,6 +28,9 @@ import type {
 } from "@/components/tickets/ticketFlowTypes";
 import { useTicketOrder } from "@/hooks/useTicketOrder";
 
+const CAROUSEL_CARD_WIDTH_RATIO = 0.78;
+const CAROUSEL_GAP = 12;
+
 export function useTicketTransferFlowController({
   initialScreen,
   initialTicketIndex,
@@ -46,9 +49,8 @@ export function useTicketTransferFlowController({
     useTicketOrder(orderId);
   const { width } = useWindowDimensions();
   const frameWidth = Math.min(width, 430);
-  const carouselCardWidth = Math.round(frameWidth * 0.84);
-  const carouselGap = 12;
-  const carouselSnapInterval = carouselCardWidth + carouselGap;
+  const carouselCardWidth = Math.round(frameWidth * CAROUSEL_CARD_WIDTH_RATIO);
+  const carouselSnapInterval = carouselCardWidth + CAROUSEL_GAP;
   const initialViewerIndex = useMemo(
     () => getDetailsViewModel(initialTicketIndex).activeIndex,
     [getDetailsViewModel, initialTicketIndex],
@@ -330,9 +332,9 @@ export function useTicketTransferFlowController({
       if (isSuccess) {
         setTransferModal("success");
         setTimeout(() => {
-          setTransferModal("none");
           setViewerIndex(0);
           setScreen("viewer");
+          setTransferModal("none");
         }, 1500);
       } else {
         setTransferModal("error");

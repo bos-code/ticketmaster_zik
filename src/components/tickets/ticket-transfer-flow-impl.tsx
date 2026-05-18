@@ -40,6 +40,8 @@ export function TicketTransferFlow({
     return <TicketsUnavailable />;
   }
 
+  const areStepDrawersVisible = flow.transferModal === 'none';
+
   return (
     <TicketFlowContext.Provider value={flow.ticketFlowData}>
       <View className='flex-1'>
@@ -88,6 +90,7 @@ export function TicketTransferFlow({
               seats={flow.seats}
               selectedSeatIds={flow.selectedSeatIds}
               ticketCount={flow.ticketFlowData.order.ticketCountLabel}
+              visible={areStepDrawersVisible}
             />
           ) : null}
 
@@ -104,6 +107,7 @@ export function TicketTransferFlow({
               }
               onOpenViewer={flow.handleOpenViewer}
               onSelectContact={flow.handlePickContact}
+              visible={areStepDrawersVisible}
             />
           ) : null}
 
@@ -118,6 +122,7 @@ export function TicketTransferFlow({
               onToggleDeliveryMode={flow.handleToggleDeliveryMode}
               onUpdateForm={flow.updateRecipientForm}
               transferReady={flow.transferReady}
+              visible={areStepDrawersVisible}
             />
           ) : null}
 

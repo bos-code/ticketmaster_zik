@@ -17,6 +17,7 @@ export function TicketTransferRecipientFormScreen({
   onToggleDeliveryMode,
   onUpdateForm,
   transferReady,
+  visible = true,
 }: {
   deliveryMode: DeliveryMode;
   form: RecipientFormState;
@@ -27,13 +28,14 @@ export function TicketTransferRecipientFormScreen({
   onToggleDeliveryMode: () => void;
   onUpdateForm: (field: keyof RecipientFormState, value: string) => void;
   transferReady: boolean;
+  visible?: boolean;
 }) {
   const recipientLabel = deliveryMode === "email" ? "Email" : "Mobile Number";
   const recipientPlaceholder =
     deliveryMode === "email" ? "Enter Email Address" : "Enter Mobile Number";
 
   return (
-    <BottomDrawer minHeight="62%" onClose={onBack} visible={true}>
+    <BottomDrawer minHeight="62%" onClose={onBack} visible={visible}>
       <View className="flex-1 px-[20px] pt-4">
         <Text className="mb-4 text-left text-base tracking-[0.6px] font-black text-black uppercase">
           RECIPIENT DETAILS
