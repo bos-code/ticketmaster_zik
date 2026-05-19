@@ -128,7 +128,7 @@ export function CollapsibleEventHero({
           <View className='px-4'>
             <View className='mt-3 flex-row items-center justify-between'>
               <HeaderBackButton onBack={onBack} />
-              <View className='rounded-xl bg-black/10 p-3'>
+              <View className='rounded-full bg-black/40 p-3'>
                 <Text className='text-[13px] font-medium leading-4 text-white'>
                   Help
                 </Text>
@@ -201,7 +201,7 @@ function CollapsedHeroLayer({
                 <Ionicons color='#FFFFFF' name='barcode-outline' size={26} />
               </Pressable>
             ) : (
-              <View className='rounded-xl bg-black/10 p-3'>
+              <View className='rounded-full bg-black/40 p-3'>
                 <Text className='text-[13px] font-medium leading-4 text-white'>
                   Help
                 </Text>
@@ -254,7 +254,7 @@ function ExpandedHeroCard({
   venue,
 }: ExpandedHeroCardProps) {
   return (
-    <View className='ticket-summary-hero-card relative -top-8 pt-4'>
+    <View className='ticket-summary-hero-card relative -top-[10px] pt-4'>
       <View className='absolute left-0 -top-4 z-10 self-start'>
         <View className='ticket-summary-hero-date justify-center bg-[#232126] px-4 py-2'>
           <Text className='ticket-summary-hero-date-text text-xs font-extrabold uppercase leading-[13px] tracking-[1px] text-[rgba(255,255,255,0.92)]'>
