@@ -99,7 +99,7 @@ export function TicketCard({
           </Text>
           <EditableText
             field="section"
-            value={"102"}
+            value={seat.section}
             className="text-xm pt-1 mb-2 font-extrabold leading-[15px] text-[#000000]"
           />
         </View>

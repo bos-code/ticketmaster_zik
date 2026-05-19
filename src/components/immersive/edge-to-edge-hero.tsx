@@ -36,26 +36,28 @@ export function EdgeToEdgeHeroMedia({
   source,
 }: EdgeToEdgeHeroMediaProps) {
   return (
-    <>
-      <Image
-        contentFit="cover"
-        source={source}
-        style={{ height, width: "100%" }}
-      />
+    <View style={{ height, width: "100%", backgroundColor: "#050505", alignItems: "center", overflow: "hidden" }}>
+      <View style={{ height, width: "100%", maxWidth: 430, position: "relative" }}>
+        <Image
+          contentFit="cover"
+          source={source}
+          style={{ height, width: "100%" }}
+        />
 
-      <LinearGradient
-        colors={["transparent", "rgba(0,0,0,0.3)"]}
-        locations={[0, 1]}
-        pointerEvents="none"
-        style={{
-          height,
-          left: 0,
-          position: "absolute",
-          right: 0,
-          top: 0,
-        }}
-      />
-    </>
+        <LinearGradient
+          colors={["transparent", "rgba(0,0,0,0.3)"]}
+          locations={[0, 1]}
+          pointerEvents="none"
+          style={{
+            height,
+            left: 0,
+            position: "absolute",
+            right: 0,
+            top: 0,
+          }}
+        />
+      </View>
+    </View>
   );
 }
 
