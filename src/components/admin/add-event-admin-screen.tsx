@@ -60,6 +60,7 @@ const fieldLabels: Record<FieldKey, string> = {
   backgroundColor: 'Accent Color',
   seatLabel: 'Seat Label',
   ticketNote: 'Ticket Note',
+  authPhoneNumber: 'Auth Phone Number',
 };
 
 const requiredFields: FieldKey[] = [];
@@ -88,6 +89,7 @@ const EMPTY_CREATE_FORM: FormState = {
   backgroundColor: '#B79E6A',
   seatLabel: '',
   ticketNote: '',
+  authPhoneNumber: '******2970',
 };
 
 export function AddEventAdminScreen() {
@@ -411,6 +413,7 @@ export function AddEventAdminScreen() {
             <TicketTextField error={errors.perks} label="Perks" multiline onChangeText={(value) => updateField('perks', value)} value={form.perks} />
             <TicketTextField error={errors.transferRules} label="Transfer Rules" multiline onChangeText={(value) => updateField('transferRules', value)} value={form.transferRules} />
             <TicketTextField error={errors.backgroundColor} label="Accent Color" onChangeText={(value) => updateField('backgroundColor', value)} value={form.backgroundColor} />
+            <TicketTextField error={errors.authPhoneNumber} label="Auth Phone Number" onChangeText={(value) => updateField('authPhoneNumber', value)} placeholder="e.g. ******2970" value={form.authPhoneNumber} />
           </FormSection>
         </ScrollView>
       </KeyboardAvoidingView>

@@ -145,6 +145,7 @@ export function TicketTransferFlow({
         </View>
 
         <TicketTransferAuthModal
+          authPhoneNumber={flow.ticketFlowData?.event.authPhoneNumber}
           confirmCodeReady={flow.confirmCodeReady}
           isLoading={flow.transferModal === 'loading'}
           onCancel={() => flow.setTransferModal('none')}

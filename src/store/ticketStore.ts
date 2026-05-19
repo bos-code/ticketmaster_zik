@@ -62,6 +62,7 @@ export const DEFAULT_WIZKID_TICKET: TicketInput = {
   backgroundColor: '#B79E6A',
   seatLabel: 'Artist presale',
   ticketNote: 'Standard seating',
+  authPhoneNumber: '******2970',
   isHidden: false,
 };
 

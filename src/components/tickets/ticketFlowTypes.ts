@@ -46,6 +46,7 @@ export type TicketFlowContextValue = {
     venue: string;
     venueAddress?: string;
     venueSummary?: string;
+    authPhoneNumber?: string;
   };
   order: {
     id: string;

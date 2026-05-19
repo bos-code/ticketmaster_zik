@@ -88,6 +88,7 @@ export function mapTicketRecordToTicketOrderData(
         ticketRecord.time,
       ),
       heroImage: { uri: ticketRecord.image },
+      authPhoneNumber: ticketRecord.authPhoneNumber,
       ...resolveKnownVenueCoordinate(ticketRecord.venue),
     },
     order: {

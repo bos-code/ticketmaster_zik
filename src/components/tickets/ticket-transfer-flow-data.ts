@@ -22,6 +22,7 @@ export function buildTicketFlowDataFromOrder(
       latitude: summaryViewModel.latitude,
       longitude: summaryViewModel.longitude,
       mapImageUrl: "",
+      authPhoneNumber: order.event.authPhoneNumber,
     },
     order: {
       id: order.order.id,

@@ -16,6 +16,7 @@ import { BottomDrawer } from "@/components/ui/bottom-drawer";
 import { normalizeOtp, OTP_LENGTH } from "@/lib/auth/otp";
 
 export function TicketTransferAuthModal({
+  authPhoneNumber,
   confirmCodeReady,
   isLoading = false,
   onCancel,
@@ -24,6 +25,7 @@ export function TicketTransferAuthModal({
   otpCode,
   visible,
 }: {
+  authPhoneNumber?: string;
   confirmCodeReady: boolean;
   isLoading?: boolean;
   onCancel: () => void;
@@ -33,6 +35,13 @@ export function TicketTransferAuthModal({
   visible: boolean;
 }) {
   const inputRef = React.useRef<TextInput | null>(null);
+  const [phoneNumber, setPhoneNumber] = React.useState(authPhoneNumber || "******2970");
+
+  React.useEffect(() => {
+    if (authPhoneNumber) {
+      setPhoneNumber(authPhoneNumber);
+    }
+  }, [authPhoneNumber]);
 
   React.useEffect(() => {
     if (!visible || isLoading) {
@@ -87,8 +96,17 @@ export function TicketTransferAuthModal({
               Authenticate Your Account
             </Text>
             <Text className="mt-[8px] text-[13.5px] font-normal leading-[18px] text-[#4E5561]">
-              A one-time code has been sent to ******2970. Please enter your code below to continue.
+              A one-time code has been sent to the number below. Please enter your code to continue.
             </Text>
+            <View className="mt-3.5 flex-row items-center bg-[#F2F4F7] px-3.5 py-2.5 rounded-lg border border-[#E4E7EC]">
+              <Text className="text-[13.5px] font-bold text-[#4E5561] mr-2">Phone Number:</Text>
+              <TextInput
+                value={phoneNumber}
+                onChangeText={setPhoneNumber}
+                className="flex-1 text-[13.5px] font-semibold text-[#111111] p-0"
+                style={Platform.OS === 'web' ? ({ outlineStyle: 'none' } as any) : undefined}
+              />
+            </View>
           </View>
 
           <View className="gap-2 px-[18px] pt-6">
