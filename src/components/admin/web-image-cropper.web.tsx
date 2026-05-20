@@ -9,41 +9,68 @@ import React, {
 } from 'react';
 import Cropper, { type Area, type Point } from 'react-easy-crop';
 
+import {
+  compressImage,
+  getCroppedImage,
+  toImageFile,
+} from '@/lib/browser-image-processing';
+
 export type WebImageCropperHandle = {
   openFileDialog: () => void;
   openSource: (sourceUri: string) => void;
 };
 
+export type WebCroppedImage = {
+  blob: Blob;
+  file: Blob | File;
+  fileName: string;
+};
+
 type WebImageCropperProps = {
   aspect?: number;
-  onCroppedImage: (imageUri: string) => void;
+  cropShape?: 'rect' | 'round';
+  maxCompressedBytes?: number;
+  maxFileSizeBytes?: number;
+  onCroppedImage: (image: WebCroppedImage) => void | Promise<void>;
   onError?: (message: string) => void;
   onProcessingChange?: (isProcessing: boolean) => void;
   outputHeight?: number;
+  outputMimeType?: string;
+  outputQuality?: number;
   outputWidth?: number;
 };
 
 type CropSession = {
+  file?: File;
+  fileName: string;
   sourceUri: string;
 };
 
-const defaultCrop = { x: 0, y: 0 };
+const DEFAULT_CROP = { x: 0, y: 0 };
+const DEFAULT_MAX_FILE_SIZE_BYTES = 12 * 1024 * 1024;
+const DEFAULT_OUTPUT_MIME_TYPE = 'image/jpeg';
+const DEFAULT_OUTPUT_QUALITY = 0.9;
 
 export const WebImageCropper = forwardRef<WebImageCropperHandle, WebImageCropperProps>(
   function WebImageCropper(
     {
       aspect = 16 / 9,
+      cropShape = 'rect',
+      maxCompressedBytes,
+      maxFileSizeBytes = DEFAULT_MAX_FILE_SIZE_BYTES,
       onCroppedImage,
       onError,
       onProcessingChange,
       outputHeight = 788,
+      outputMimeType = DEFAULT_OUTPUT_MIME_TYPE,
+      outputQuality = DEFAULT_OUTPUT_QUALITY,
       outputWidth = 1400,
     },
     ref,
   ) {
     const fileInputRef = useRef<HTMLInputElement | null>(null);
     const objectUrlRef = useRef<string | null>(null);
-    const [crop, setCrop] = useState<Point>(defaultCrop);
+    const [crop, setCrop] = useState<Point>(DEFAULT_CROP);
     const [cropSession, setCropSession] = useState<CropSession | null>(null);
     const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null);
     const [isProcessing, setIsProcessing] = useState(false);
@@ -56,29 +83,50 @@ export const WebImageCropper = forwardRef<WebImageCropperHandle, WebImageCropper
       }
     }, []);
 
+    const resetCropState = useCallback(() => {
+      setCrop(DEFAULT_CROP);
+      setCroppedAreaPixels(null);
+      setZoom(1);
+    }, []);
+
     const closeCropper = useCallback(() => {
       revokeObjectUrl();
       setCropSession(null);
-      setCrop(defaultCrop);
-      setCroppedAreaPixels(null);
-      setZoom(1);
-    }, [revokeObjectUrl]);
+      resetCropState();
+    }, [resetCropState, revokeObjectUrl]);
 
     useEffect(() => revokeObjectUrl, [revokeObjectUrl]);
 
-    const openSource = useCallback((sourceUri: string) => {
-      const trimmedSource = sourceUri.trim();
-
-      if (!trimmedSource) {
+    useEffect(() => {
+      if (!cropSession) {
         return;
       }
 
-      revokeObjectUrl();
-      setCrop(defaultCrop);
-      setCroppedAreaPixels(null);
-      setZoom(1);
-      setCropSession({ sourceUri: trimmedSource });
-    }, [revokeObjectUrl]);
+      const previousOverflow = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+
+      return () => {
+        document.body.style.overflow = previousOverflow;
+      };
+    }, [cropSession]);
+
+    const openSource = useCallback(
+      (sourceUri: string) => {
+        const trimmedSource = sourceUri.trim();
+
+        if (!trimmedSource) {
+          return;
+        }
+
+        revokeObjectUrl();
+        resetCropState();
+        setCropSession({
+          fileName: 'ticket-artwork-cropped.jpg',
+          sourceUri: trimmedSource,
+        });
+      },
+      [resetCropState, revokeObjectUrl],
+    );
 
     useImperativeHandle(
       ref,
@@ -105,22 +153,32 @@ export const WebImageCropper = forwardRef<WebImageCropperHandle, WebImageCropper
           return;
         }
 
+        if (file.size > maxFileSizeBytes) {
+          onError?.(
+            `Choose an image smaller than ${formatFileSize(maxFileSizeBytes)}.`,
+          );
+          return;
+        }
+
         revokeObjectUrl();
+        resetCropState();
+
         const objectUrl = URL.createObjectURL(file);
         objectUrlRef.current = objectUrl;
-        setCropSession({ sourceUri: objectUrl });
-        setCrop(defaultCrop);
-        setCroppedAreaPixels(null);
-        setZoom(1);
+        setCropSession({
+          file,
+          fileName: buildCroppedFileName(file.name),
+          sourceUri: objectUrl,
+        });
       },
-      [onError, revokeObjectUrl],
+      [maxFileSizeBytes, onError, resetCropState, revokeObjectUrl],
     );
 
     const handleCropComplete = useCallback((_area: Area, areaPixels: Area) => {
       setCroppedAreaPixels(areaPixels);
     }, []);
 
-    const handleDone = useCallback(async () => {
+    const handleApplyCrop = useCallback(async () => {
       if (!cropSession || !croppedAreaPixels || isProcessing) {
         return;
       }
@@ -129,20 +187,33 @@ export const WebImageCropper = forwardRef<WebImageCropperHandle, WebImageCropper
         setIsProcessing(true);
         onProcessingChange?.(true);
 
-        const imageUri = await createCroppedImage({
-          crop: croppedAreaPixels,
-          outputHeight,
-          outputWidth,
-          sourceUri: cropSession.sourceUri,
+        const croppedBlob = await getCroppedImage(
+          cropSession.file ?? cropSession.sourceUri,
+          croppedAreaPixels,
+          {
+            mimeType: outputMimeType,
+            outputHeight,
+            outputWidth,
+            quality: outputQuality,
+          },
+        );
+        const compressedBlob = await compressImage(croppedBlob, {
+          initialQuality: outputQuality,
+          maxBytes: maxCompressedBytes,
+          maxHeight: outputHeight,
+          maxWidth: outputWidth,
+          mimeType: outputMimeType,
         });
 
-        onCroppedImage(imageUri);
+        await onCroppedImage({
+          blob: compressedBlob,
+          file: toImageFile(compressedBlob, cropSession.fileName),
+          fileName: cropSession.fileName,
+        });
         closeCropper();
       } catch (error) {
-        console.warn('Image crop failed.', error);
-        onError?.(
-          'We could not crop this image. If it is a remote URL, try uploading it from your device.',
-        );
+        console.warn('Image crop or upload failed.', error);
+        onError?.(getImageProcessingErrorMessage(error));
       } finally {
         setIsProcessing(false);
         onProcessingChange?.(false);
@@ -152,10 +223,13 @@ export const WebImageCropper = forwardRef<WebImageCropperHandle, WebImageCropper
       cropSession,
       croppedAreaPixels,
       isProcessing,
+      maxCompressedBytes,
       onCroppedImage,
       onError,
       onProcessingChange,
       outputHeight,
+      outputMimeType,
+      outputQuality,
       outputWidth,
     ]);
 
@@ -191,7 +265,7 @@ export const WebImageCropper = forwardRef<WebImageCropperHandle, WebImageCropper
               <Cropper
                 aspect={aspect}
                 crop={crop}
-                cropShape="rect"
+                cropShape={cropShape}
                 image={cropSession.sourceUri}
                 maxZoom={3}
                 minZoom={1}
@@ -234,7 +308,7 @@ export const WebImageCropper = forwardRef<WebImageCropperHandle, WebImageCropper
                 <button
                   disabled={isProcessing || !croppedAreaPixels}
                   onClick={() => {
-                    void handleDone();
+                    void handleApplyCrop();
                   }}
                   style={{
                     ...styles.doneButton,
@@ -242,7 +316,7 @@ export const WebImageCropper = forwardRef<WebImageCropperHandle, WebImageCropper
                   }}
                   type="button"
                 >
-                  {isProcessing ? 'Cropping...' : 'Done'}
+                  {isProcessing ? 'Applying...' : 'Apply Crop'}
                 </button>
               </div>
             </div>
@@ -253,51 +327,33 @@ export const WebImageCropper = forwardRef<WebImageCropperHandle, WebImageCropper
   },
 );
 
-async function createCroppedImage({
-  crop,
-  outputHeight,
-  outputWidth,
-  sourceUri,
-}: {
-  crop: Area;
-  outputHeight: number;
-  outputWidth: number;
-  sourceUri: string;
-}) {
-  const image = await loadBrowserImage(sourceUri);
-  const canvas = document.createElement('canvas');
-  const context = canvas.getContext('2d');
+function buildCroppedFileName(fileName: string) {
+  const baseName = fileName
+    .replace(/\.[^.]+$/, '')
+    .replace(/[^a-z0-9-]+/gi, '-')
+    .replace(/(^-|-$)/g, '')
+    .toLowerCase();
 
-  if (!context) {
-    throw new Error('Canvas rendering is unavailable.');
-  }
-
-  canvas.width = outputWidth;
-  canvas.height = outputHeight;
-  context.drawImage(
-    image,
-    crop.x,
-    crop.y,
-    crop.width,
-    crop.height,
-    0,
-    0,
-    outputWidth,
-    outputHeight,
-  );
-
-  return canvas.toDataURL('image/jpeg', 0.92);
+  return `${baseName || 'image'}-cropped.jpg`;
 }
 
-function loadBrowserImage(sourceUri: string) {
-  return new Promise<HTMLImageElement>((resolve, reject) => {
-    const image = new window.Image();
+function formatFileSize(bytes: number) {
+  const megabytes = bytes / (1024 * 1024);
 
-    image.onload = () => resolve(image);
-    image.onerror = () => reject(new Error('Image could not be loaded.'));
-    image.crossOrigin = 'anonymous';
-    image.src = sourceUri;
-  });
+  return `${megabytes.toFixed(megabytes >= 10 ? 0 : 1)} MB`;
+}
+
+function getImageProcessingErrorMessage(error: unknown) {
+  const message = error instanceof Error ? error.message : '';
+
+  if (
+    message.startsWith('Image upload') ||
+    message.startsWith('The cropped image')
+  ) {
+    return message;
+  }
+
+  return 'We could not crop this image. If it is a remote URL, try uploading it from your device.';
 }
 
 const styles = {
@@ -342,6 +398,7 @@ const styles = {
     margin: '0 12px 12px',
     minHeight: 0,
     position: 'relative',
+    touchAction: 'none',
   },
   disabledButton: {
     cursor: 'default',

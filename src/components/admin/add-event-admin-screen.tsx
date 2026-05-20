@@ -19,10 +19,12 @@ import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 import { AdminDateTimeField } from '@/components/admin/admin-date-time-field';
 import {
   WebImageCropper,
+  type WebCroppedImage,
   type WebImageCropperHandle,
 } from '@/components/admin/web-image-cropper';
 import Head from 'expo-router/head';
 import { StatusBar } from 'expo-status-bar';
+import { uploadImage } from '@/lib/image-upload';
 import {
   TICKET_STATUS_OPTIONS,
   TICKET_TYPE_OPTIONS,
@@ -217,6 +219,18 @@ export function AddEventAdminScreen() {
 
   function openImageCropper(sourceUri = form.image.trim()) {
     imageCropperRef.current?.openSource(sourceUri);
+  }
+
+  async function handleCroppedImage(image: WebCroppedImage) {
+    try {
+      const imageUrl = await uploadTicketArtworkImage(image);
+
+      updateField('image', imageUrl);
+      showToast('Image uploaded');
+    } catch (error) {
+      console.warn('Image upload failed.', error);
+      throw new Error(getTicketImageUploadErrorMessage(error));
+    }
   }
 
   if (mode === 'edit' && ticketId && !selectedTicket) {
@@ -455,8 +469,8 @@ export function AddEventAdminScreen() {
 
       <WebImageCropper
         aspect={16 / 9}
-        onCroppedImage={(imageUri) => updateField('image', imageUri)}
-        onError={(message) => Alert.alert('Could not crop image', message)}
+        onCroppedImage={handleCroppedImage}
+        onError={(message) => Alert.alert('Could not process image', message)}
         onProcessingChange={setIsPickingImage}
         outputHeight={788}
         outputWidth={1400}
@@ -569,7 +583,11 @@ function validateForm(form: FormState) {
 function toFormState(ticket: TicketInput): FormState {
   const { isHidden: _isHidden, ...formState } = ticket;
 
-  return formState;
+  return {
+    ...EMPTY_CREATE_FORM,
+    ...formState,
+    authPhoneNumber: formState.authPhoneNumber ?? EMPTY_CREATE_FORM.authPhoneNumber,
+  };
 }
 
 function toTicketInput(form: FormState): TicketInput {
@@ -592,6 +610,43 @@ function getTicketSaveErrorMessage(error: unknown) {
   }
 
   return 'We could not save this ticket to Firebase right now. Please try again.';
+}
+
+async function uploadTicketArtworkImage(image: WebCroppedImage) {
+  const cloudName = process.env.EXPO_PUBLIC_CLOUDINARY_CLOUD_NAME;
+  const uploadPreset = process.env.EXPO_PUBLIC_CLOUDINARY_UPLOAD_PRESET;
+
+  if (!cloudName || !uploadPreset) {
+    throw new Error('Cloudinary upload is not configured.');
+  }
+
+  return uploadImage(image.file, {
+    cloudName,
+    fileName: image.fileName,
+    folder: 'ticketmaster-zik/tickets',
+    publicId: buildTicketArtworkPublicId(image.fileName),
+    uploadPreset,
+  });
+}
+
+function buildTicketArtworkPublicId(fileName: string) {
+  const safeName = fileName
+    .replace(/\.[^.]+$/, '')
+    .replace(/[^a-z0-9-]+/gi, '-')
+    .replace(/(^-|-$)/g, '')
+    .toLowerCase();
+
+  return `ticket-artwork-${safeName || 'image'}-${Date.now()}`;
+}
+
+function getTicketImageUploadErrorMessage(error: unknown) {
+  const message = error instanceof Error ? error.message : '';
+
+  if (message.toLowerCase().includes('cloudinary')) {
+    return 'Image upload is not configured. Add a Cloudinary unsigned upload preset, or paste an Image URL.';
+  }
+
+  return 'The cropped image could not be uploaded. Check your connection and try again.';
 }
 
 const styles = StyleSheet.create({

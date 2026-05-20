@@ -14,6 +14,7 @@ import {
 } from '@/components/tickets/ticket-transfer-flow-components';
 import { TicketFlowContext } from '@/components/tickets/TicketFlowContext';
 import { TicketTransferStatusModal } from '@/components/tickets/TicketTransferStatusModal';
+import { TicketTransferUnavailableModal } from '@/components/tickets/TicketTransferUnavailableModal';
 import { useTicketTransferFlowController } from '@/components/tickets/use-ticket-transfer-flow-controller';
 import Head from 'expo-router/head';
 import { StatusBar } from 'expo-status-bar';
@@ -90,7 +91,13 @@ export function TicketTransferFlow({
           {flow.screen === 'select' ? (
             <ChooseTransferMethodScreen
               onBack={() => flow.setScreen('list')}
-              onContinue={() => flow.setScreen('recipientChoice')}
+              onContinue={() => {
+                if (flow.seats.length === 3 && flow.selectedSeatIds.length < 3) {
+                  flow.setTransferModal('unavailable');
+                } else {
+                  flow.setScreen('recipientChoice');
+                }
+              }}
               onToggleSeat={flow.toggleSeat}
               seatSummary={flow.seatSummary}
               seats={flow.seats}
@@ -160,6 +167,12 @@ export function TicketTransferFlow({
           status={flow.transferModal === 'loading' ? 'none' : flow.transferModal}
           onRetry={flow.handleRetryTransfer}
           onClose={() => flow.setTransferModal('none')}
+        />
+
+        <TicketTransferUnavailableModal
+          visible={flow.transferModal === 'unavailable'}
+          onClose={() => flow.setTransferModal('none')}
+          ticketCount={flow.seats.length}
         />
 
         {flow.isListLoading && (

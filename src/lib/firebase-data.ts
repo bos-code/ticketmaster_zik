@@ -13,6 +13,7 @@ import {
   type ReservationRecord,
 } from '@/lib/data';
 import { firebaseConfig, firestore } from '@/lib/firebase';
+import { uploadImage } from '@/lib/image-upload';
 
 const EVENTS_COLLECTION = 'events';
 const RESERVATIONS_COLLECTION = 'reservations';
@@ -222,30 +223,16 @@ async function uploadTicketImageToCloudinary(ticketId: string, imageValue: strin
     );
   }
 
-  const formData = new FormData();
   const imageBlob = await fetchImageBlob(imageValue);
+  const imageUrl = await uploadImage(imageBlob, {
+    cloudName,
+    fileName: `${buildStorageSafeId(ticketId)}.jpg`,
+    folder: 'ticketmaster-zik/tickets',
+    publicId: `${buildStorageSafeId(ticketId)}-${Date.now()}`,
+    uploadPreset,
+  });
 
-  formData.append('file', imageBlob, `${buildStorageSafeId(ticketId)}.jpg`);
-  formData.append('upload_preset', uploadPreset);
-  formData.append('folder', 'ticketmaster-zik/tickets');
-  formData.append('public_id', `${buildStorageSafeId(ticketId)}-${Date.now()}`);
-
-  const response = await fetch(
-    `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
-    {
-      body: formData,
-      method: 'POST',
-    },
-  );
-  const payload = await response.json();
-
-  if (!response.ok || typeof payload.secure_url !== 'string') {
-    throw new Error(
-      `Cloudinary upload failed (${response.status}): ${JSON.stringify(payload)}`,
-    );
-  }
-
-  return buildCloudinaryHeroImageUrl(payload.secure_url);
+  return buildCloudinaryHeroImageUrl(imageUrl);
 }
 
 async function fetchImageBlob(imageValue: string) {

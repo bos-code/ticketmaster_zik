@@ -5,12 +5,23 @@ export type WebImageCropperHandle = {
   openSource: (sourceUri: string) => void;
 };
 
+export type WebCroppedImage = {
+  blob: Blob;
+  file: Blob | File;
+  fileName: string;
+};
+
 type WebImageCropperProps = {
   aspect?: number;
-  onCroppedImage: (imageUri: string) => void;
+  cropShape?: 'rect' | 'round';
+  maxCompressedBytes?: number;
+  maxFileSizeBytes?: number;
+  onCroppedImage: (image: WebCroppedImage) => void | Promise<void>;
   onError?: (message: string) => void;
   onProcessingChange?: (isProcessing: boolean) => void;
   outputHeight?: number;
+  outputMimeType?: string;
+  outputQuality?: number;
   outputWidth?: number;
 };
 
