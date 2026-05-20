@@ -17,7 +17,7 @@ export function TicketTransferUnavailableModal({
 }: TicketTransferUnavailableModalProps) {
   return (
     <BottomDrawer
-      minHeight="42%"
+      minHeight="62%"
       onClose={onClose}
       visible={visible}
       className="bg-white rounded-t-[20px] overflow-hidden"
