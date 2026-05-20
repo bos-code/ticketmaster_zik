@@ -30,6 +30,37 @@ export const HERO_EXPANDED_HEIGHT =
 export const HERO_COLLAPSED_HEIGHT = 128;
 export const HERO_COLLAPSE_DISTANCE =
   HERO_EXPANDED_HEIGHT - HERO_COLLAPSED_HEIGHT;
+export const SUMMARY_PHONE_MAX_WIDTH = 430;
+export const SUMMARY_PHONE_HERO_IMAGE_EXTRA_HEIGHT = 24;
+export const SUMMARY_PHONE_HERO_BOTTOM_SPACE = 18;
+
+export function getSummaryPhoneHeroBottomSpace(width: number) {
+  return Math.round(width) <= SUMMARY_PHONE_MAX_WIDTH
+    ? SUMMARY_PHONE_HERO_BOTTOM_SPACE
+    : 0;
+}
+
+export function getSummaryPhoneHeroImageExtraHeight(width: number) {
+  return Math.round(width) <= SUMMARY_PHONE_MAX_WIDTH
+    ? SUMMARY_PHONE_HERO_IMAGE_EXTRA_HEIGHT
+    : 0;
+}
+
+export function getTicketSummaryHeroImageHeight(width: number) {
+  return HERO_IMAGE_HEIGHT + getSummaryPhoneHeroImageExtraHeight(width);
+}
+
+export function getTicketSummaryHeroExpandedHeight(width: number) {
+  return (
+    getTicketSummaryHeroImageHeight(width) +
+    HERO_DETAIL_PANEL_HEIGHT +
+    getSummaryPhoneHeroBottomSpace(width)
+  );
+}
+
+export function getTicketSummaryHeroCollapseDistance(width: number) {
+  return getTicketSummaryHeroExpandedHeight(width) - HERO_COLLAPSED_HEIGHT;
+}
 
 export const absoluteFill = {
   bottom: 0,

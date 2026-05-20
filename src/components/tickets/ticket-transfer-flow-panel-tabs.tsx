@@ -1,9 +1,7 @@
 import React from "react";
 import { Pressable, Text, View } from "react-native";
 
-import {
-  cx,
-} from "@/components/tickets/cx";
+import { cx } from "@/components/tickets/cx";
 import type { PanelTab } from "@/components/tickets/ticketFlowTypes";
 
 export function PanelTabs({

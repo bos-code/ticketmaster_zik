@@ -1,5 +1,5 @@
 import React from 'react';
-import { View } from 'react-native';
+import { useWindowDimensions, View } from 'react-native';
 import Animated from 'react-native-reanimated';
 
 import { BottomDock } from '@/components/tickets/ticket-transfer-flow-bottom-dock';
@@ -9,7 +9,9 @@ import {
   PanelTabs,
   TicketListPanel,
 } from '@/components/tickets/ticket-transfer-flow-components';
-import { HERO_EXPANDED_HEIGHT } from '@/components/tickets/ticketFlowConstants';
+import {
+  getTicketSummaryHeroExpandedHeight,
+} from '@/components/tickets/ticketFlowConstants';
 import type { PanelTab } from '@/components/tickets/ticketFlowTypes';
 
 export function TicketTransferListScreen({
@@ -37,6 +39,9 @@ export function TicketTransferListScreen({
   onTransfer: () => void;
   scrollY: React.ComponentProps<typeof CollapsibleEventHero>['scrollY'];
 }) {
+  const { width } = useWindowDimensions();
+  const heroExpandedHeight = getTicketSummaryHeroExpandedHeight(width);
+
   return (
     <View style={{ backgroundColor: '#FFFFFF', flex: 1 }}>
       <View className='flex-1 overflow-hidden bg-white'>
@@ -50,7 +55,7 @@ export function TicketTransferListScreen({
         <Animated.ScrollView
           contentContainerStyle={{
             paddingBottom: 132,
-            paddingTop: HERO_EXPANDED_HEIGHT,
+            paddingTop: heroExpandedHeight,
           }}
           onScroll={handleListScroll}
           scrollEventThrottle={16}

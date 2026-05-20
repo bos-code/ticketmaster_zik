@@ -4,6 +4,7 @@ import React from 'react';
 import {
   Pressable,
   Text,
+  useWindowDimensions,
   View,
   type StyleProp,
   type ViewStyle,
@@ -21,10 +22,11 @@ import {
 } from '@/components/immersive/edge-to-edge-hero';
 import {
   absoluteFill,
-  HERO_COLLAPSE_DISTANCE,
+  getSummaryPhoneHeroBottomSpace,
+  getTicketSummaryHeroCollapseDistance,
+  getTicketSummaryHeroExpandedHeight,
+  getTicketSummaryHeroImageHeight,
   HERO_COLLAPSED_HEIGHT,
-  HERO_EXPANDED_HEIGHT,
-  HERO_IMAGE_HEIGHT,
 } from '@/components/tickets/ticketFlowConstants';
 import { useTicketFlowData } from '@/components/tickets/useTicketFlowData';
 
@@ -37,6 +39,7 @@ type CollapsedHeroTitleProps = {
 type ExpandedHeroCardProps = {
   dateTime: string;
   onOpenViewer: () => void;
+  bottomSpace: number;
   ticketCount: number;
   title: string;
   venue: string;
@@ -55,13 +58,18 @@ export function CollapsibleEventHero({
 }) {
   const { event, order } = useTicketFlowData();
   const insets = useImmersiveSafeAreaInsets();
+  const { width } = useWindowDimensions();
   const statusBarBleed = insets.top;
-  const heroImageHeight = HERO_IMAGE_HEIGHT + statusBarBleed;
+  const heroImageBaseHeight = getTicketSummaryHeroImageHeight(width);
+  const heroImageHeight = heroImageBaseHeight + statusBarBleed;
+  const heroBottomSpace = getSummaryPhoneHeroBottomSpace(width);
+  const expandedHeroHeight = getTicketSummaryHeroExpandedHeight(width);
+  const heroCollapseDistance = getTicketSummaryHeroCollapseDistance(width);
 
   const expandedLayerStyle = useAnimatedStyle(() => ({
     opacity: interpolate(
       scrollY.value,
-      [0, HERO_COLLAPSE_DISTANCE * 0.72],
+      [0, heroCollapseDistance * 0.72],
       [1, 0],
       Extrapolation.CLAMP,
     ),
@@ -69,8 +77,8 @@ export function CollapsibleEventHero({
       {
         translateY: interpolate(
           scrollY.value,
-          [0, HERO_COLLAPSE_DISTANCE],
-          [0, -HERO_COLLAPSE_DISTANCE * 0.42],
+          [0, heroCollapseDistance],
+          [0, -heroCollapseDistance * 0.42],
           Extrapolation.CLAMP,
         ),
       },
@@ -80,7 +88,7 @@ export function CollapsibleEventHero({
   const collapsedTitleStyle = useAnimatedStyle<ViewStyle>(() => ({
     opacity: interpolate(
       scrollY.value,
-      [HERO_COLLAPSE_DISTANCE * 0.28, HERO_COLLAPSE_DISTANCE * 0.8],
+      [heroCollapseDistance * 0.28, heroCollapseDistance * 0.8],
       [0, 1],
       Extrapolation.CLAMP,
     ),
@@ -88,7 +96,7 @@ export function CollapsibleEventHero({
       {
         translateY: interpolate(
           scrollY.value,
-          [0, HERO_COLLAPSE_DISTANCE],
+          [0, heroCollapseDistance],
           [12, 0],
           Extrapolation.CLAMP,
         ),
@@ -100,7 +108,7 @@ export function CollapsibleEventHero({
     <Animated.View
       pointerEvents='box-none'
       className='absolute inset-x-0 top-0 z-20'
-      style={{ height: HERO_EXPANDED_HEIGHT }}
+      style={{ height: expandedHeroHeight }}
     >
       <CollapsedHeroLayer
         collapsedTitleStyle={collapsedTitleStyle}
@@ -117,9 +125,10 @@ export function CollapsibleEventHero({
       <Animated.View
         pointerEvents={isHeroCollapsed ? 'none' : 'box-none'}
         className='absolute inset-x-0 top-0 overflow-hidden'
-        style={[{ height: HERO_EXPANDED_HEIGHT }, expandedLayerStyle]}
+        style={[{ height: expandedHeroHeight }, expandedLayerStyle]}
       >
         <EdgeToEdgeHeroMedia
+          contentFit="cover"
           height={heroImageHeight}
           source={event.heroImage}
         />
@@ -138,9 +147,10 @@ export function CollapsibleEventHero({
 
           <View
             className='absolute inset-x-0 px-4'
-            style={{ top: HERO_IMAGE_HEIGHT }}
+            style={{ top: heroImageBaseHeight }}
           >
             <ExpandedHeroCard
+              bottomSpace={heroBottomSpace}
               dateTime={event.dateTime}
               onOpenViewer={onOpenViewer}
               ticketCount={order.ticketCount}
@@ -181,7 +191,11 @@ function CollapsedHeroLayer({
       className='absolute inset-x-0 top-0 overflow-hidden'
       style={{ height: HERO_COLLAPSED_HEIGHT }}
     >
-      <EdgeToEdgeHeroMedia height={heroImageHeight} source={heroImage} />
+      <EdgeToEdgeHeroMedia
+        contentFit="cover"
+        height={heroImageHeight}
+        source={heroImage}
+      />
       <View style={[absoluteFill, { paddingTop: statusBarBleed }]}>
         <View className='px-4'>
           <View className='mt-3 flex-row items-center justify-between'>
@@ -247,6 +261,7 @@ function CollapsedHeroTitle({ style, title, venue }: CollapsedHeroTitleProps) {
 }
 
 function ExpandedHeroCard({
+  bottomSpace,
   dateTime,
   onOpenViewer,
   ticketCount,
@@ -254,35 +269,35 @@ function ExpandedHeroCard({
   venue,
 }: ExpandedHeroCardProps) {
   return (
-    <View className='ticket-summary-hero-card relative -top-[10px] pt-4'>
-      <View className='absolute left-0 -top-4 z-10 self-start'>
-        <View className='ticket-summary-hero-date justify-center bg-[#232126] px-4 py-2'>
-          <Text className='ticket-summary-hero-date-text text-xs font-extrabold uppercase leading-[13px] tracking-[1px] text-[rgba(255,255,255,0.92)]'>
+    <View className="ticket-summary-hero-card relative summary-phone:-top-[15.8px] -top-[10px] pt-4 ">
+      <View className="absolute left-0 summary-phone:-top-[12.3px] -top-4 z-10 self-start">
+        <View className="ticket-summary-hero-date  justify-center bg-[#232126] px-4 py-2">
+          <Text className="ticket-summary-hero-date-text text-xs font-extrabold uppercase leading-[13px]  tracking-[1px] text-[rgba(255,255,255,0.92)]">
             {dateTime}
           </Text>
         </View>
-        <View className='absolute inset-x-0 -bottom-4 h-4 bg-[#232126]' />
+        {/* <View className="ticket-summary-hero-date-bridge  absolute inset-x-0 -bottom-4 h-4 bg-[#232126]" /> */}
       </View>
-      <View className='bg-[#232126] px-4 pt-2'>
-        <Text className='ticket-summary-hero-title pt-1 text-lg font-bold leading-6 text-white'>
+      <View className="ticket-summary-hero-info bg-[#232126] px-4 pt-2">
+        <Text className="ticket-summary-hero-title pt-1 text-lg font-bold leading-6 text-white">
           {title}
         </Text>
 
-        <View className='mt-2 flex-row items-center justify-between pb-2'>
+        <View className="mt-2 flex-row items-center justify-between pb-2">
           <Text
             numberOfLines={1}
-            className='ticket-summary-hero-venue mr-3 flex-1 text-[13px] font-normal leading-[17px] text-[rgba(255,255,255,0.76)]'
+            className="ticket-summary-hero-venue mr-3 flex-1 text-[13px] font-normal leading-[17px] text-[rgba(255,255,255,0.76)]"
           >
             {venue}
           </Text>
 
-          <View className='shrink-0 flex-row items-center gap-[5px]'>
+          <View className="shrink-0 flex-row items-center gap-[5px]">
             <Image
-              contentFit='contain'
-              source={require('../../../assets/ticketx3.png')}
+              contentFit="contain"
+              source={require("../../../assets/ticketx3.png")}
               style={{ height: 15, width: 15 }}
             />
-            <Text className='text-[17px] font-bold leading-[19px] text-[#F2F4F7]'>
+            <Text className="text-[17px] font-bold leading-[19px] text-[#F2F4F7]">
               {`x${ticketCount}`}
             </Text>
           </View>
@@ -290,12 +305,13 @@ function ExpandedHeroCard({
       </View>
 
       <Pressable
-        accessibilityRole='button'
+        accessibilityRole="button"
         onPress={onOpenViewer}
-        className='ticket-summary-view-button min-h-[42px] flex-row items-center justify-center gap-[6px] bg-[#0444f3]'
+        className="ticket-summary-view-button min-h-[42px] flex-row items-center justify-center gap-[6px] bg-[#0444f3]"
+        style={bottomSpace ? { marginBottom: bottomSpace } : undefined}
       >
-        <Ionicons color='#CFE0FF' name='barcode-outline' size={14} />
-        <Text className='ticket-summary-view-button-text text-[13px] font-bold leading-[16px] text-[#F5F9FF]'>
+        <Ionicons color="#CFE0FF" name="barcode-outline" size={14} />
+        <Text className="ticket-summary-view-button-text text-[13px] font-bold leading-[16px] text-[#F5F9FF]">
           View Tickets
         </Text>
       </Pressable>

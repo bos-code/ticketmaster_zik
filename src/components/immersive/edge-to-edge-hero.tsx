@@ -1,7 +1,6 @@
 import { Image, type ImageProps } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
-import React from "react";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Platform, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -13,6 +12,7 @@ type ImmersiveInsets = {
 };
 
 type EdgeToEdgeHeroMediaProps = {
+  contentFit?: ImageProps["contentFit"];
   height: number;
   source: ImageProps["source"];
 };
@@ -32,6 +32,7 @@ export function useImmersiveSafeAreaInsets() {
 }
 
 export function EdgeToEdgeHeroMedia({
+  contentFit = "cover",
   height,
   source,
 }: EdgeToEdgeHeroMediaProps) {
@@ -39,7 +40,7 @@ export function EdgeToEdgeHeroMedia({
     <View style={{ height, width: "100%", backgroundColor: "#050505", alignItems: "center", overflow: "hidden" }}>
       <View style={{ height, width: "100%", maxWidth: 430, position: "relative" }}>
         <Image
-          contentFit="cover"
+          contentFit={contentFit}
           source={source}
           style={{ height, width: "100%" }}
         />

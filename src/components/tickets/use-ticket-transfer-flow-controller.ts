@@ -16,7 +16,7 @@ import {
 } from "@/components/tickets/ticket-transfer-flow-form";
 import {
   EMPTY_SEATS,
-  HERO_COLLAPSE_DISTANCE,
+  getTicketSummaryHeroCollapseDistance,
 } from "@/components/tickets/ticketFlowConstants";
 import type {
   DeliveryMode,
@@ -47,6 +47,7 @@ export function useTicketTransferFlowController({
   } =
     useTicketOrder(orderId);
   const { width } = useWindowDimensions();
+  const heroCollapseDistance = getTicketSummaryHeroCollapseDistance(width);
   const frameWidth = Math.min(width, 430);
   const carouselCardWidth = Math.round(frameWidth * CAROUSEL_CARD_WIDTH_RATIO);
   const carouselSnapInterval = carouselCardWidth + CAROUSEL_GAP;
@@ -111,7 +112,7 @@ export function useTicketTransferFlowController({
   const handleListScroll = useAnimatedScrollHandler({
     onScroll: (event) => {
       const nextY = event.contentOffset.y;
-      const nextCollapsed = nextY > HERO_COLLAPSE_DISTANCE * 0.58 ? 1 : 0;
+      const nextCollapsed = nextY > heroCollapseDistance * 0.58 ? 1 : 0;
 
       scrollY.value = nextY;
 
