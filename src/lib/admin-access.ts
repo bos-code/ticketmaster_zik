@@ -24,8 +24,9 @@ export type AdminAccessState = {
 export type AdminRequestRecord = {
   approvedAt?: Timestamp | null;
   approvedBy?: string;
+  email: string;
   id: string;
-  phoneNumber: string;
+  phoneNumber?: string;
   rejectedAt?: Timestamp | null;
   rejectedBy?: string;
   requestedAt?: Timestamp | null;
@@ -41,6 +42,7 @@ type AdminAccessSnapshot = {
 type AdminRequestSnapshot = {
   approvedAt?: Timestamp | null;
   approvedBy?: string;
+  email?: string;
   phoneNumber?: string;
   rejectedAt?: Timestamp | null;
   rejectedBy?: string;
@@ -102,7 +104,7 @@ export function subscribeToAdminAccess(
 
 export async function requestAdminAccess(user: User) {
   await setDoc(doc(firestore, ADMIN_REQUESTS_COLLECTION, user.uid), {
-    phoneNumber: user.phoneNumber ?? '',
+    email: user.email ?? '',
     requestedAt: serverTimestamp(),
     status: 'pending',
     uid: user.uid,
@@ -147,9 +149,9 @@ export async function approveAdminRequest(
     setDoc(
       doc(firestore, ADMINS_COLLECTION, request.uid),
       {
+        email: request.email,
         grantedAt: updatedAt,
         grantedBy: approver.uid,
-        phoneNumber: request.phoneNumber,
         uid: request.uid,
       },
       { merge: true },
@@ -189,8 +191,9 @@ function toAdminRequestRecord(id: string, data: AdminRequestSnapshot): AdminRequ
   return {
     approvedAt: data.approvedAt ?? null,
     approvedBy: data.approvedBy,
+    email: data.email ?? 'Unknown email',
     id,
-    phoneNumber: data.phoneNumber ?? 'Unknown phone',
+    phoneNumber: data.phoneNumber,
     rejectedAt: data.rejectedAt ?? null,
     rejectedBy: data.rejectedBy,
     requestedAt: data.requestedAt ?? null,

@@ -94,7 +94,7 @@ export function AdminSecurityScreen() {
   function handleReject(request: AdminRequestRecord) {
     Alert.alert(
       'Reject admin request?',
-      `${request.phoneNumber} will not be able to access admin tools.`,
+      `${request.email} will not be able to access admin tools.`,
       [
         { style: 'cancel', text: 'Cancel' },
         {
@@ -123,7 +123,7 @@ export function AdminSecurityScreen() {
         <View style={styles.headerCopy}>
           <Text style={styles.eyebrow}>SECURITY</Text>
           <Text style={styles.title}>Admin Requests</Text>
-          <Text style={styles.subtitle}>Approve phone-verified users before they can edit tickets.</Text>
+          <Text style={styles.subtitle}>Approve email-verified users before they can edit tickets.</Text>
         </View>
         <View style={styles.countBadge}>
           <Text style={styles.countNumber}>{requests.length}</Text>
@@ -149,7 +149,7 @@ export function AdminSecurityScreen() {
             </Text>
             <Text style={styles.noticeBody}>
               {requests.length
-                ? 'Grant access only for phone numbers you recognize.'
+                ? 'Grant access only for email addresses you recognize.'
                 : 'New admin requests will appear here and in your account notifications.'}
             </Text>
           </View>
@@ -179,7 +179,7 @@ export function AdminSecurityScreen() {
             <Ionicons color="#9CA3AF" name="person-add-outline" size={32} />
             <Text style={styles.emptyTitle}>No requests to review</Text>
             <Text style={styles.emptyBody}>
-              When a phone-verified user asks for admin access, their request will show up here.
+              When an email-verified user asks for admin access, their request will show up here.
             </Text>
           </View>
         )}
@@ -210,10 +210,10 @@ function AdminRequestCard({
     <View style={styles.card}>
       <View style={styles.cardHeader}>
         <View style={styles.avatar}>
-          <Ionicons color="#005BD3" name="call-outline" size={20} />
+          <Ionicons color="#005BD3" name="mail-outline" size={20} />
         </View>
         <View style={styles.cardCopy}>
-          <Text style={styles.phoneNumber}>{request.phoneNumber}</Text>
+          <Text style={styles.accountIdentifier}>{request.email}</Text>
           <Text style={styles.requestMeta}>Requested {formatRequestDate(request)}</Text>
         </View>
       </View>
@@ -423,7 +423,7 @@ const styles = StyleSheet.create({
     fontWeight: '900',
     lineHeight: 20,
   },
-  phoneNumber: {
+  accountIdentifier: {
     color: '#111827',
     fontSize: 17,
     fontWeight: '900',

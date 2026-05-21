@@ -1,18 +1,14 @@
 import {
+  createUserWithEmailAndPassword,
   onAuthStateChanged,
-  signInWithPhoneNumber,
+  reload,
+  sendEmailVerification,
+  signInWithEmailAndPassword,
   signOut,
   type User,
 } from 'firebase/auth';
 import React, { useEffect, useMemo, useState, type ReactNode } from 'react';
-import {
-  ActivityIndicator,
-  Platform,
-  Pressable,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { AuthButton } from '@/components/auth/auth-button';
 import { AuthErrorMessage } from '@/components/auth/auth-error-message';
@@ -35,18 +31,8 @@ type ProtectedAdminRouteProps = {
   children: ReactNode;
 };
 
-type PhoneConfirmation = Awaited<ReturnType<typeof signInWithPhoneNumber>>;
-type PhoneVerifier = NonNullable<Parameters<typeof signInWithPhoneNumber>[2]>;
+type AuthMode = 'sign-in' | 'sign-up';
 type PinMode = 'create' | 'unlock';
-type RecaptchaVerifierInstance = PhoneVerifier & {
-  clear: () => void;
-  render: () => Promise<number>;
-};
-type RecaptchaVerifierConstructor = new (
-  auth: typeof firebaseAuth,
-  containerOrId: HTMLElement | string,
-  parameters?: { size: 'invisible' },
-) => RecaptchaVerifierInstance;
 
 const EMPTY_ACCESS_STATE: AdminAccessState = {
   isAdmin: false,
@@ -55,18 +41,14 @@ const EMPTY_ACCESS_STATE: AdminAccessState = {
 };
 
 const PIN_DOT_COUNT = 8;
-const RECAPTCHA_CONTAINER_ID = 'admin-phone-recaptcha';
-const PHONE_NUMBER_PATTERN = /^\+[1-9]\d{7,14}$/;
-
-let recaptchaVerifier: RecaptchaVerifierInstance | null = null;
 
 export function ProtectedAdminRoute({ children }: ProtectedAdminRouteProps) {
   const [user, setUser] = useState<User | null>(firebaseAuth.currentUser);
   const [isAuthLoading, setIsAuthLoading] = useState(true);
   const [accessState, setAccessState] = useState<AdminAccessState>(EMPTY_ACCESS_STATE);
-  const [phoneNumber, setPhoneNumber] = useState(firebaseAuth.currentUser?.phoneNumber ?? '');
-  const [otpCode, setOtpCode] = useState('');
-  const [confirmationResult, setConfirmationResult] = useState<PhoneConfirmation | null>(null);
+  const [authMode, setAuthMode] = useState<AuthMode>('sign-in');
+  const [email, setEmail] = useState(firebaseAuth.currentUser?.email ?? '');
+  const [password, setPassword] = useState('');
   const [pin, setPin] = useState('');
   const [pinConfirm, setPinConfirm] = useState('');
   const [pinMode, setPinMode] = useState<PinMode>('unlock');
@@ -93,11 +75,10 @@ export function ProtectedAdminRoute({ children }: ProtectedAdminRouteProps) {
         setPin('');
         setPinConfirm('');
 
-        if (nextUser?.phoneNumber) {
-          setPhoneNumber(nextUser.phoneNumber);
+        if (nextUser?.email) {
+          setEmail(nextUser.email);
         } else if (!nextUser) {
-          setConfirmationResult(null);
-          setOtpCode('');
+          setPassword('');
         }
       });
     });
@@ -155,10 +136,7 @@ export function ProtectedAdminRoute({ children }: ProtectedAdminRouteProps) {
     };
   }, [accessState.isAdmin, user]);
 
-  const normalizedPhoneNumber = useMemo(
-    () => phoneNumber.trim().replace(/[\s()-]/g, ''),
-    [phoneNumber],
-  );
+  const normalizedEmail = useMemo(() => email.trim().toLowerCase(), [email]);
 
   async function runBusyAction(actionName: string, action: () => Promise<void>) {
     if (busyAction) {
@@ -178,57 +156,55 @@ export function ProtectedAdminRoute({ children }: ProtectedAdminRouteProps) {
     }
   }
 
-  function handleSendOtp() {
-    void runBusyAction('send-otp', async () => {
-      if (!PHONE_NUMBER_PATTERN.test(normalizedPhoneNumber)) {
-        throw new Error('Enter a phone number in international format, like +2348012345678.');
+  function handleEmailAuth() {
+    void runBusyAction('email-auth', async () => {
+      if (!normalizedEmail || password.length < 6) {
+        throw new Error('Enter an email and a password with at least 6 characters.');
       }
 
       await firebaseAuthPersistenceReady;
-      const verifier = await getPhoneAuthVerifier();
 
-      try {
-        const nextConfirmationResult = await signInWithPhoneNumber(
+      if (authMode === 'sign-up') {
+        const credential = await createUserWithEmailAndPassword(
           firebaseAuth,
-          normalizedPhoneNumber,
-          verifier,
+          normalizedEmail,
+          password,
         );
 
-        setConfirmationResult(nextConfirmationResult);
-        setMessage('OTP sent. Enter the code from your SMS.');
-      } catch (sendError) {
-        resetPhoneAuthVerifier();
-        throw sendError;
+        await sendEmailVerification(credential.user);
+        setMessage('Account created. Check your email, verify it, then return here.');
+        return;
       }
+
+      await signInWithEmailAndPassword(firebaseAuth, normalizedEmail, password);
     });
   }
 
-  function handleConfirmOtp() {
-    void runBusyAction('confirm-otp', async () => {
-      const normalizedOtpCode = otpCode.trim();
-
-      if (!confirmationResult) {
-        throw new Error('Send the OTP first.');
+  function handleSendVerification() {
+    void runBusyAction('send-verification', async () => {
+      if (!user) {
+        return;
       }
 
-      if (!/^\d{4,8}$/.test(normalizedOtpCode)) {
-        throw new Error('Enter the OTP code from your SMS.');
-      }
-
-      await confirmationResult.confirm(normalizedOtpCode);
-      resetPhoneAuthVerifier();
-      setConfirmationResult(null);
-      setOtpCode('');
-      setMessage('Phone verified.');
+      await sendEmailVerification(user);
+      setMessage('Verification email sent.');
     });
   }
 
-  function handleChangePhoneNumber() {
-    setConfirmationResult(null);
-    setOtpCode('');
-    setError(null);
-    setMessage(null);
-    resetPhoneAuthVerifier();
+  function handleRefreshVerification() {
+    void runBusyAction('refresh-verification', async () => {
+      if (!user) {
+        return;
+      }
+
+      await reload(user);
+      setUser(firebaseAuth.currentUser);
+      setMessage(
+        firebaseAuth.currentUser?.emailVerified
+          ? 'Email verified.'
+          : 'Email is not verified yet.',
+      );
+    });
   }
 
   function handleRequestAdminAccess() {
@@ -294,67 +270,66 @@ export function ProtectedAdminRoute({ children }: ProtectedAdminRouteProps) {
     return (
       <AuthScreen
         eyebrow="Admin Access"
-        subtitle="Verify your phone number before requesting admin access."
-        title={confirmationResult ? 'Enter OTP' : 'Phone Verification'}
+        subtitle="Sign in before opening ticket management."
+        title={authMode === 'sign-up' ? 'Create Admin Account' : 'Admin Sign In'}
       >
-        {Platform.OS === 'web'
-          ? React.createElement('div', {
-              id: RECAPTCHA_CONTAINER_ID,
-              style: { height: 0, overflow: 'hidden', width: 0 },
-            })
-          : null}
         <AuthTextInput
-          autoComplete="tel"
-          editable={!confirmationResult}
-          keyboardType="phone-pad"
-          label="Phone Number"
-          onChangeText={setPhoneNumber}
-          placeholder="+2348012345678"
-          textContentType="telephoneNumber"
-          value={phoneNumber}
+          autoComplete="email"
+          keyboardType="email-address"
+          label="Email"
+          onChangeText={setEmail}
+          placeholder="admin@example.com"
+          textContentType="emailAddress"
+          value={email}
         />
-        {confirmationResult ? (
-          <AuthTextInput
-            keyboardType="number-pad"
-            label="OTP"
-            maxLength={8}
-            onChangeText={setOtpCode}
-            placeholder="SMS code"
-            textContentType="oneTimeCode"
-            value={otpCode}
-          />
-        ) : null}
+        <AuthTextInput
+          label="Password"
+          onChangeText={setPassword}
+          placeholder="At least 6 characters"
+          secureTextEntry
+          textContentType={authMode === 'sign-up' ? 'newPassword' : 'password'}
+          value={password}
+        />
         <AuthErrorMessage message={error} />
         {message ? <Text style={styles.message}>{message}</Text> : null}
         <AuthButton
-          label={confirmationResult ? 'Verify OTP' : 'Send OTP'}
-          loading={busyAction === 'send-otp' || busyAction === 'confirm-otp'}
-          onPress={confirmationResult ? handleConfirmOtp : handleSendOtp}
+          label={authMode === 'sign-up' ? 'Create Account' : 'Sign In'}
+          loading={busyAction === 'email-auth'}
+          onPress={handleEmailAuth}
         />
-        {confirmationResult ? (
-          <AuthButton
-            label="Use Different Number"
-            onPress={handleChangePhoneNumber}
-            variant="ghost"
-          />
-        ) : null}
+        <AuthButton
+          label={
+            authMode === 'sign-up'
+              ? 'Already have access? Sign in'
+              : 'Need access? Sign up'
+          }
+          onPress={() => {
+            setAuthMode(authMode === 'sign-up' ? 'sign-in' : 'sign-up');
+            setError(null);
+            setMessage(null);
+          }}
+          variant="ghost"
+        />
       </AuthScreen>
     );
   }
 
-  if (!user.phoneNumber) {
+  if (!user.emailVerified) {
     return (
       <AdminStateScreen
-        accountLabel={user.email ?? user.uid}
+        accountLabel={user.email}
         busyAction={busyAction}
         error={error}
         message={message}
-        onPrimary={handleSignOut}
+        onPrimary={handleSendVerification}
+        onSecondary={handleRefreshVerification}
         onSignOut={handleSignOut}
-        primaryBusyName="sign-out"
-        primaryLabel="Sign Out"
-        subtitle="This account was not verified with phone OTP. Sign out and use phone verification."
-        title="Phone Verification Required"
+        primaryBusyName="send-verification"
+        primaryLabel="Send Verification Email"
+        secondaryBusyName="refresh-verification"
+        secondaryLabel="I Verified My Email"
+        subtitle="Verify the email address before requesting admin access."
+        title="Verify Your Email"
       />
     );
   }
@@ -369,7 +344,7 @@ export function ProtectedAdminRoute({ children }: ProtectedAdminRouteProps) {
 
     return (
       <AdminStateScreen
-        accountLabel={user.phoneNumber}
+        accountLabel={user.email}
         busyAction={busyAction}
         error={error}
         message={message}
@@ -397,7 +372,7 @@ export function ProtectedAdminRoute({ children }: ProtectedAdminRouteProps) {
         }
         subtitle={
           isRejected
-            ? 'This phone number is not approved for admin access.'
+            ? 'This account is not approved for admin access.'
             : isPending
               ? 'Your request is waiting for approval from an existing admin.'
               : 'Send a request before using ticket management.'
@@ -420,7 +395,7 @@ export function ProtectedAdminRoute({ children }: ProtectedAdminRouteProps) {
   if (!isUnlocked) {
     return (
       <AdminAppLockScreen
-        accountLabel={user.phoneNumber}
+        accountLabel={user.email}
         busyAction={busyAction}
         error={error}
         onPinChange={setPin}
@@ -583,65 +558,23 @@ function AdminAppLockScreen({
   );
 }
 
-async function getPhoneAuthVerifier() {
-  if (Platform.OS !== 'web') {
-    throw new Error(
-      'Phone OTP is available in the web admin flow. Native builds need a Firebase native phone verifier.',
-    );
-  }
-
-  if (typeof document === 'undefined') {
-    throw new Error('Phone OTP can only start after the admin page finishes loading.');
-  }
-
-  if (recaptchaVerifier) {
-    return recaptchaVerifier;
-  }
-
-  const container = document.getElementById(RECAPTCHA_CONTAINER_ID);
-
-  if (!container) {
-    throw new Error('Phone verification is still loading. Try again.');
-  }
-
-  const authModule = (await import('firebase/auth')) as unknown as {
-    RecaptchaVerifier: RecaptchaVerifierConstructor;
-  };
-
-  recaptchaVerifier = new authModule.RecaptchaVerifier(firebaseAuth, container, {
-    size: 'invisible',
-  });
-  await recaptchaVerifier.render();
-
-  return recaptchaVerifier;
-}
-
-function resetPhoneAuthVerifier() {
-  recaptchaVerifier?.clear();
-  recaptchaVerifier = null;
-}
-
 function getAdminAuthErrorMessage(error: unknown) {
   const message = error instanceof Error ? error.message : '';
 
-  if (message.includes('auth/invalid-phone-number')) {
-    return 'Enter a valid phone number in international format.';
+  if (message.includes('auth/email-already-in-use')) {
+    return 'That email already has an account. Sign in instead.';
   }
 
-  if (message.includes('auth/invalid-verification-code')) {
-    return 'That OTP code is not correct.';
+  if (message.includes('auth/invalid-credential')) {
+    return 'Email or password is incorrect.';
   }
 
-  if (message.includes('auth/code-expired')) {
-    return 'That OTP code expired. Send a new one.';
+  if (message.includes('auth/weak-password')) {
+    return 'Use a password with at least 6 characters.';
   }
 
   if (message.includes('auth/too-many-requests')) {
-    return 'Too many OTP attempts. Try again later.';
-  }
-
-  if (message.includes('auth/captcha-check-failed')) {
-    return 'Phone verification failed the reCAPTCHA check. Try again.';
+    return 'Too many attempts. Try again later.';
   }
 
   if (message.includes('permission-denied')) {

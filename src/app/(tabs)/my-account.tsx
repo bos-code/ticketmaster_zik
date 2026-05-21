@@ -266,7 +266,7 @@ export default function MyAccountScreen() {
     return subscribeToAdminAccess(
       adminUser,
       (state) => {
-        const nextIsValidatedAdmin = state.isAdmin && Boolean(adminUser.phoneNumber);
+        const nextIsValidatedAdmin = state.isAdmin && adminUser.emailVerified;
 
         setIsValidatedAdmin(nextIsValidatedAdmin);
 
