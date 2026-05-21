@@ -2,8 +2,37 @@ rules_version = '2';
 
 service firebase.storage {
   match /b/{bucket}/o {
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function hasVerifiedPhone() {
+      return request.auth.token.phone_number is string &&
+        request.auth.token.phone_number.size() > 0;
+    }
+
+    function adminDocPath(uid) {
+      return /databases/(default)/documents/admins/$(uid);
+    }
+
+    function adminRequestPath(uid) {
+      return /databases/(default)/documents/admin_requests/$(uid);
+    }
+
+    function hasApprovedAdminRequest(uid) {
+      return firestore.exists(adminRequestPath(uid)) &&
+        firestore.get(adminRequestPath(uid)).data.status == 'approved';
+    }
+
+    function isAdmin() {
+      return isSignedIn() && hasVerifiedPhone() &&
+        (firestore.exists(adminDocPath(request.auth.uid)) ||
+          hasApprovedAdminRequest(request.auth.uid));
+    }
+
     match /{allPaths=**} {
-      allow read, write: if true;
+      allow read: if true;
+      allow write: if isAdmin();
     }
   }
 }

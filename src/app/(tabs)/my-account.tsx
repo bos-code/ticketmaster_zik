@@ -1,5 +1,6 @@
 import { useRouter } from "expo-router";
 import { ScreenWrapper } from "@/components/ui/screen-wrapper";
+import { onAuthStateChanged, type User } from "firebase/auth";
 import enCountryData from "i18n-iso-countries/langs/en.json";
 import * as countries from "i18n-iso-countries";
 import React, { useEffect, useMemo, useRef, useState } from "react";
@@ -24,6 +25,11 @@ import {
   getLocationPermissionStatus,
   resolveHomeLocation,
 } from "@/lib/device-permissions";
+import {
+  subscribeToAdminAccess,
+  subscribeToPendingAdminRequests,
+} from "@/lib/admin-access";
+import { firebaseAuth } from "@/lib/firebase";
 import { useAppStore } from "@/store/use-app-store";
 
 
@@ -95,18 +101,24 @@ function Divider() {
 }
 
 function ChevronRow({
+  badgeCount = 0,
   icon,
   customIcon,
   label,
   isLast = false,
   onPress,
+  value,
 }: {
+  badgeCount?: number;
   icon?: AccountIconName;
   customIcon?: React.ReactNode;
   label: string;
   isLast?: boolean;
   onPress?: () => void;
+  value?: string;
 }) {
+  const hasBadge = badgeCount > 0;
+
   return (
     <TouchableOpacity
       activeOpacity={0.55}
@@ -121,6 +133,18 @@ function ChevronRow({
           {label}
         </Text>
       </View>
+      {value ? (
+        <Text className="text-[#8E8E93] text-[14px] mr-2" style={fontStyle}>
+          {value}
+        </Text>
+      ) : null}
+      {hasBadge ? (
+        <View className="min-w-[22px] h-[22px] rounded-full bg-[#D70015] px-1.5 items-center justify-center mr-2">
+          <Text className="text-white text-[12px] font-bold" style={fontStyle}>
+            {badgeCount > 99 ? "99+" : badgeCount}
+          </Text>
+        </View>
+      ) : null}
       <View className="w-6 items-end justify-center">
         <AccountIcon color="#C7C7CC" name="chevron-forward" size={17} />
       </View>
@@ -221,11 +245,53 @@ export default function MyAccountScreen() {
   const scrollRef = useRef<ScrollView | null>(null);
   const scrollOffsetYRef = useRef(WELCOME_PANEL_LOCK_HEIGHT);
   const [receiveNotifs, setReceiveNotifs] = useState(false);
+  const [adminUser, setAdminUser] = useState<User | null>(firebaseAuth.currentUser);
+  const [isValidatedAdmin, setIsValidatedAdmin] = useState(false);
+  const [pendingAdminRequestCount, setPendingAdminRequestCount] = useState(0);
   const [isRefreshingLocation, setIsRefreshingLocation] = useState(false);
   const homeLocationLabel = useAppStore((state) => state.homeLocationLabel);
   const locationEnabled = useAppStore((state) => state.locationEnabled);
   const setHomeLocationLabel = useAppStore((state) => state.setHomeLocationLabel);
   const setLocationEnabled = useAppStore((state) => state.setLocationEnabled);
+
+  useEffect(() => onAuthStateChanged(firebaseAuth, setAdminUser), []);
+
+  useEffect(() => {
+    if (!adminUser) {
+      setIsValidatedAdmin(false);
+      setPendingAdminRequestCount(0);
+      return undefined;
+    }
+
+    return subscribeToAdminAccess(
+      adminUser,
+      (state) => {
+        const nextIsValidatedAdmin = state.isAdmin && Boolean(adminUser.phoneNumber);
+
+        setIsValidatedAdmin(nextIsValidatedAdmin);
+
+        if (!nextIsValidatedAdmin) {
+          setPendingAdminRequestCount(0);
+        }
+      },
+      () => {
+        setIsValidatedAdmin(false);
+        setPendingAdminRequestCount(0);
+      },
+    );
+  }, [adminUser]);
+
+  useEffect(() => {
+    if (!isValidatedAdmin) {
+      setPendingAdminRequestCount(0);
+      return undefined;
+    }
+
+    return subscribeToPendingAdminRequests(
+      (requests) => setPendingAdminRequestCount(requests.length),
+      () => setPendingAdminRequestCount(0),
+    );
+  }, [isValidatedAdmin]);
 
   useEffect(() => {
     let isActive = true;
@@ -310,6 +376,15 @@ export default function MyAccountScreen() {
     await refreshLocationDetails(true);
   }
 
+  function handleNotificationsPress() {
+    if (isValidatedAdmin && pendingAdminRequestCount > 0) {
+      router.push("/settings/security");
+      return;
+    }
+
+    Alert.alert("Notifications", "No admin requests need your review right now.");
+  }
+
   const handleSnap = (offsetY: number) => {
     if (!scrollRef.current) return;
 
@@ -387,7 +462,17 @@ export default function MyAccountScreen() {
 
         <SectionHeader label="Notifications" />
         <View className="bg-white">
-          <ChevronRow icon="envelope-outline" label="My Notifications" />
+          <ChevronRow
+            badgeCount={isValidatedAdmin ? pendingAdminRequestCount : 0}
+            icon="envelope-outline"
+            label="My Notifications"
+            onPress={handleNotificationsPress}
+            value={
+              isValidatedAdmin && pendingAdminRequestCount > 0
+                ? "Admin access"
+                : undefined
+            }
+          />
           <ToggleRow
             icon="bell-outline"
             isLast
@@ -436,7 +521,17 @@ export default function MyAccountScreen() {
             label="Edit Details"
             onPress={() => router.push("/admin")}
           />
-          <ChevronRow icon="shield-checkmark-outline" label="Security" />
+          <ChevronRow
+            badgeCount={isValidatedAdmin ? pendingAdminRequestCount : 0}
+            icon="shield-checkmark-outline"
+            label="Security"
+            onPress={() => router.push("/settings/security")}
+            value={
+              isValidatedAdmin && pendingAdminRequestCount > 0
+                ? "Admin requests"
+                : undefined
+            }
+          />
           <ChevronRow icon="card-outline" label="Saved Payment Methods" />
           <ChevronRow
             customIcon={

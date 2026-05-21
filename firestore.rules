@@ -2,8 +2,87 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function owns(uid) {
+      return isSignedIn() && request.auth.uid == uid;
+    }
+
+    function hasVerifiedPhone() {
+      return request.auth.token.phone_number is string &&
+        request.auth.token.phone_number.size() > 0;
+    }
+
+    function adminDocPath(uid) {
+      return /databases/$(database)/documents/admins/$(uid);
+    }
+
+    function adminRequestPath(uid) {
+      return /databases/$(database)/documents/admin_requests/$(uid);
+    }
+
+    function hasApprovedAdminRequest(uid) {
+      return exists(adminRequestPath(uid)) &&
+        get(adminRequestPath(uid)).data.status == 'approved';
+    }
+
+    function isAdmin() {
+      return isSignedIn() && hasVerifiedPhone() &&
+        (exists(adminDocPath(request.auth.uid)) ||
+          hasApprovedAdminRequest(request.auth.uid));
+    }
+
+    function isOwnPendingAdminRequest(uid) {
+      return owns(uid) && hasVerifiedPhone() &&
+        request.resource.data.uid == request.auth.uid &&
+        request.resource.data.phoneNumber == request.auth.token.phone_number &&
+        request.resource.data.status == 'pending' &&
+        request.resource.data.keys().hasOnly([
+          'phoneNumber',
+          'requestedAt',
+          'status',
+          'uid',
+          'updatedAt',
+        ]);
+    }
+
+    match /admin_requests/{uid} {
+      allow read: if isAdmin() || owns(uid);
+      allow create: if isOwnPendingAdminRequest(uid);
+      allow update, delete: if isAdmin();
+    }
+
+    match /admins/{uid} {
+      allow read: if isAdmin() || owns(uid);
+      allow write: if isAdmin();
+    }
+
+    match /tickets/{ticketId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /events/{eventId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /reservations/{reservationId} {
+      allow read: if true;
+      allow create, update: if true;
+      allow delete: if isAdmin();
+    }
+
+    match /app_meta/{documentId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
     match /{document=**} {
-      allow read, write: if true;
+      allow read: if true;
+      allow write: if isAdmin();
     }
   }
 }

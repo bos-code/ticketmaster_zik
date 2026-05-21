@@ -1,6 +1,8 @@
 import { getApp, getApps, initializeApp } from "firebase/app";
+import { getAuth, setPersistence } from "firebase/auth";
 import { getFirestore, initializeFirestore } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
+import { Platform } from "react-native";
 
 const firebaseConfig = {
   apiKey:
@@ -35,5 +37,24 @@ export const firestore = (() => {
 })();
 
 export const storage = getStorage(firebaseApp);
+export const firebaseAuth = getAuth(firebaseApp);
+export const firebaseAuthPersistenceReady =
+  Platform.OS !== "web"
+    ? Promise.resolve()
+    : import("firebase/auth")
+        .then((authModule: unknown) => {
+          const { browserLocalPersistence } = authModule as {
+            browserLocalPersistence?: Parameters<typeof setPersistence>[1];
+          };
+
+          if (!browserLocalPersistence) {
+            return undefined;
+          }
+
+          return setPersistence(firebaseAuth, browserLocalPersistence);
+        })
+        .catch((error) => {
+          console.warn("Firebase auth persistence could not be enabled.", error);
+        });
 
 export { firebaseConfig };

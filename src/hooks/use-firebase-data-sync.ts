@@ -22,7 +22,9 @@ export function useFirebaseDataSync() {
           }),
         );
 
-        await ensureFirebaseSeedData();
+        await ensureFirebaseSeedData().catch((error) => {
+          console.warn('Firebase seed data could not be written.', error);
+        });
 
         if (!isActive) {
           return;
