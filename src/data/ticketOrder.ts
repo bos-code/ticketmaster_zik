@@ -80,7 +80,7 @@ export function mapTicketRecordToTicketOrderData(
       id: ticketRecord.id,
       title: ticketRecord.eventName,
       venue: ticketRecord.venue,
-      venueAddress: buildVenueAddress(ticketRecord),
+      venueAddress: ticketRecord.venueAddress?.trim() || buildVenueAddress(ticketRecord),
       date: formatEventDateLabel(ticketRecord.date),
       time: ticketRecord.time,
       fullDateTimeLabel: formatEventFullDateTimeLabel(
@@ -89,7 +89,7 @@ export function mapTicketRecordToTicketOrderData(
       ),
       heroImage: { uri: ticketRecord.image },
       authPhoneNumber: ticketRecord.authPhoneNumber,
-      ...resolveKnownVenueCoordinate(ticketRecord.venue),
+      ...resolveTicketCoordinates(ticketRecord),
     },
     order: {
       id: ticketRecord.id,
@@ -165,6 +165,33 @@ function buildVenueAddress(ticketRecord: TicketRecord) {
   ].filter(Boolean);
 
   return locationParts.join(", ");
+}
+
+function resolveTicketCoordinates(ticketRecord: TicketRecord) {
+  const latitude = normalizeCoordinateValue(ticketRecord.latitude);
+  const longitude = normalizeCoordinateValue(ticketRecord.longitude);
+
+  if (latitude !== null && longitude !== null) {
+    return {
+      latitude,
+      longitude,
+    };
+  }
+
+  return resolveKnownVenueCoordinate(ticketRecord.venue);
+}
+
+function normalizeCoordinateValue(value: unknown) {
+  if (typeof value === "number") {
+    return Number.isFinite(value) ? value : null;
+  }
+
+  if (typeof value === "string" && value.trim()) {
+    const numericValue = Number(value);
+    return Number.isFinite(numericValue) ? numericValue : null;
+  }
+
+  return null;
 }
 
 function resolveKnownVenueCoordinate(venue: string) {

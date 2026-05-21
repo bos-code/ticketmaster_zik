@@ -113,13 +113,13 @@ export function AdminTicketPreviewScreen() {
         headerSubtitle: `${editedTicket.time} - ${editedTicket.venue}`,
         heroImage: { uri: editedTicket.image },
         id: editedTicket.id,
-        latitude: null,
-        longitude: null,
+        latitude: editedTicket.latitude ?? null,
+        longitude: editedTicket.longitude ?? null,
         mapImageUrl: "",
         shortTitle: editedTicket.eventName,
         title: editedTicket.eventName,
         venue: editedTicket.venue,
-        venueAddress: `${editedTicket.city}, ${editedTicket.state}`,
+        venueAddress: buildPreviewVenueAddress(editedTicket),
         venueSummary: editedTicket.venue,
       },
       order: {
@@ -153,9 +153,13 @@ export function AdminTicketPreviewScreen() {
         artistName: editedTicket.artistName,
         albumName: editedTicket.albumName,
         venue: editedTicket.venue,
+        venueAddress: buildPreviewVenueAddress(editedTicket),
         city: editedTicket.city,
         state: editedTicket.state,
         country: editedTicket.country,
+        latitude: editedTicket.latitude ?? null,
+        longitude: editedTicket.longitude ?? null,
+        venuePlaceId: editedTicket.venuePlaceId ?? "",
         date: editedTicket.date,
         time: editedTicket.time,
         purchaseDate: editedTicket.purchaseDate,
@@ -172,6 +176,7 @@ export function AdminTicketPreviewScreen() {
         backgroundColor: editedTicket.backgroundColor,
         seatLabel: editedTicket.seatLabel,
         ticketNote: editedTicket.ticketNote,
+        authPhoneNumber: editedTicket.authPhoneNumber ?? "",
       };
 
       await updateEvent(ticketId, payload);
@@ -299,6 +304,16 @@ export function AdminTicketPreviewScreen() {
         </Animated.View>
       ) : null}
     </View>
+  );
+}
+
+function buildPreviewVenueAddress(ticket: TicketRecord) {
+  return (
+    ticket.venueAddress?.trim() ||
+    [ticket.venue, ticket.city, ticket.state, ticket.country]
+      .map((part) => part?.trim())
+      .filter(Boolean)
+      .join(", ")
   );
 }
 

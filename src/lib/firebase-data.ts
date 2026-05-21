@@ -39,7 +39,11 @@ export function subscribeToTickets(onValue: (tickets: TicketRecord[]) => void) {
 function normalizeTicketRecord(ticket: TicketRecord): TicketRecord {
   return {
     ...ticket,
+    latitude: normalizeNullableCoordinate(ticket.latitude),
+    longitude: normalizeNullableCoordinate(ticket.longitude),
     isHidden: ticket.isHidden ?? false,
+    venueAddress: ticket.venueAddress ?? buildTicketVenueAddress(ticket),
+    venuePlaceId: ticket.venuePlaceId ?? '',
   };
 }
 
@@ -203,6 +207,26 @@ function compareAscending(left: string, right: string) {
 
 function compareDescending(left: string, right: string) {
   return right.localeCompare(left);
+}
+
+function normalizeNullableCoordinate(value: unknown) {
+  if (typeof value === 'number') {
+    return Number.isFinite(value) ? value : null;
+  }
+
+  if (typeof value === 'string' && value.trim()) {
+    const numericValue = Number(value);
+    return Number.isFinite(numericValue) ? numericValue : null;
+  }
+
+  return null;
+}
+
+function buildTicketVenueAddress(ticket: TicketRecord) {
+  return [ticket.venue, ticket.city, ticket.state, ticket.country]
+    .map((part) => part?.trim())
+    .filter(Boolean)
+    .join(', ');
 }
 
 function buildStorageSafeId(value: string) {

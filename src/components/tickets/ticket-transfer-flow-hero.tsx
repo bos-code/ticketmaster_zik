@@ -269,7 +269,7 @@ function ExpandedHeroCard({
   venue,
 }: ExpandedHeroCardProps) {
   return (
-    <View className="ticket-summary-hero-card relative summary-phone:-top-[15.8px] -top-[10px] pt-4 ">
+    <View className="ticket-summary-hero-card relative summary-phone:-top-[.8px] -top-[10px]  ">
       <View className="absolute left-0 summary-phone:-top-[19.3px] -top-4 z-10 self-start">
         <View className="  justify-center bg-[#232126] px-4 py-2">
           <Text className="ticket-summary-hero-date-text text-xs font-extrabold uppercase leading-[13px]  tracking-[1px] text-[rgba(255,255,255,0.92)]">
@@ -278,7 +278,7 @@ function ExpandedHeroCard({
         </View>
      
       </View>
-      <View className="ticket-summary-hero-info bg-[#232126] px-4 pt-2">
+      <View className="  bg-[#232126] px-4 pt-2 ">
         <Text className="ticket-summary-hero-title pt-1 text-lg font-bold leading-6 text-white">
           {title}
         </Text>

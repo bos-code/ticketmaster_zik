@@ -24,6 +24,10 @@ import {
 } from '@/components/admin/web-image-cropper';
 import Head from 'expo-router/head';
 import { StatusBar } from 'expo-status-bar';
+import {
+  buildVenueGeocodeQuery,
+  geocodeVenueLocation,
+} from '@/lib/geocoding';
 import { uploadImage } from '@/lib/image-upload';
 import {
   TICKET_STATUS_OPTIONS,
@@ -34,7 +38,15 @@ import {
   useTicketStore,
 } from '@/store/ticketStore';
 
-type TicketFormInput = Omit<TicketInput, 'isHidden'>;
+type TicketFormInput = Omit<
+  TicketInput,
+  'isHidden' | 'latitude' | 'longitude' | 'venueAddress' | 'venuePlaceId'
+> & {
+  latitude: string;
+  longitude: string;
+  venueAddress: string;
+  venuePlaceId: string;
+};
 type FormState = Record<keyof TicketFormInput, string>;
 type FieldKey = keyof FormState;
 
@@ -43,9 +55,13 @@ const fieldLabels: Record<FieldKey, string> = {
   artistName: 'Artist Name',
   albumName: 'Album Name',
   venue: 'Venue',
+  venueAddress: 'Venue Address',
   city: 'City',
   state: 'State',
   country: 'Country',
+  latitude: 'Latitude',
+  longitude: 'Longitude',
+  venuePlaceId: 'Venue Place ID',
   date: 'Date',
   time: 'Time',
   purchaseDate: 'Purchase Date',
@@ -66,15 +82,26 @@ const fieldLabels: Record<FieldKey, string> = {
 };
 
 const requiredFields: FieldKey[] = [];
+const locationSourceFields = new Set<FieldKey>([
+  'city',
+  'country',
+  'state',
+  'venue',
+  'venueAddress',
+]);
 
 const EMPTY_CREATE_FORM: FormState = {
   eventName: '',
   artistName: '',
   albumName: '',
   venue: '',
+  venueAddress: '',
   city: '',
   state: '',
   country: '',
+  latitude: '',
+  longitude: '',
+  venuePlaceId: '',
   date: '',
   time: '',
   purchaseDate: '',
@@ -111,6 +138,7 @@ export function AddEventAdminScreen() {
   );
   const [errors, setErrors] = useState<Partial<Record<FieldKey, string>>>({});
   const [isPickingImage, setIsPickingImage] = useState(false);
+  const [isResolvingVenue, setIsResolvingVenue] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
   const screenTitle = mode === 'edit' ? 'Edit Ticket' : 'Create New Ticket';
@@ -137,6 +165,7 @@ export function AddEventAdminScreen() {
     () => `${form.ticketType || 'Ticket'} / ${form.status || 'upcoming'}`,
     [form.status, form.ticketType],
   );
+  const hasResolvedVenueLocation = hasFormCoordinates(form);
 
   function handleLeaveAdminForm() {
     if (router.canGoBack()) {
@@ -148,7 +177,17 @@ export function AddEventAdminScreen() {
   }
 
   function updateField(key: FieldKey, value: string) {
-    setForm((current) => ({ ...current, [key]: value }));
+    setForm((current) => {
+      const next = { ...current, [key]: value };
+
+      if (locationSourceFields.has(key) && current[key] !== value) {
+        next.latitude = '';
+        next.longitude = '';
+        next.venuePlaceId = '';
+      }
+
+      return next;
+    });
     setErrors((current) => {
       if (!current[key]) {
         return current;
@@ -173,10 +212,18 @@ export function AddEventAdminScreen() {
       return;
     }
 
-    const payload = toTicketInput(form);
-
     try {
       setIsSaving(true);
+      const payload = await buildTicketPayloadForSave(form, (nextForm) => {
+        setForm(nextForm);
+        setErrors((current) => {
+          const next = { ...current };
+          delete next.latitude;
+          delete next.longitude;
+          delete next.venueAddress;
+          return next;
+        });
+      });
 
       if (mode === 'edit' && ticketId) {
         await updateEvent(ticketId, payload);
@@ -190,12 +237,41 @@ export function AddEventAdminScreen() {
       router.replace({ pathname: '/admin', params: { toast: 'created' } });
     } catch (error) {
       console.warn('Ticket save failed.', error);
-      Alert.alert(
-        'Save failed',
-        getTicketSaveErrorMessage(error),
-      );
+      if (isVenueLookupError(error)) {
+        Alert.alert('Location lookup failed', getVenueLookupErrorMessage(error));
+      } else {
+        Alert.alert(
+          'Save failed',
+          getTicketSaveErrorMessage(error),
+        );
+      }
     } finally {
       setIsSaving(false);
+    }
+  }
+
+  async function handleResolveVenueLocation() {
+    if (isResolvingVenue) {
+      return;
+    }
+
+    try {
+      setIsResolvingVenue(true);
+      const nextForm = await resolveVenueLocationForForm(form);
+      setForm(nextForm);
+      setErrors((current) => {
+        const next = { ...current };
+        delete next.latitude;
+        delete next.longitude;
+        delete next.venueAddress;
+        return next;
+      });
+      showToast('Venue location matched');
+    } catch (error) {
+      console.warn('Venue lookup failed.', error);
+      Alert.alert('Location lookup failed', getVenueLookupErrorMessage(error));
+    } finally {
+      setIsResolvingVenue(false);
     }
   }
 
@@ -364,11 +440,77 @@ export function AddEventAdminScreen() {
 
           <FormSection title="Venue">
             <TicketTextField error={errors.venue} label="Venue" onChangeText={(value) => updateField('venue', value)} value={form.venue} />
+            <TicketTextField
+              error={errors.venueAddress}
+              label="Venue Address"
+              onChangeText={(value) => updateField('venueAddress', value)}
+              placeholder="Street address, venue address, or landmark"
+              value={form.venueAddress}
+            />
             <View style={styles.row}>
               <TicketTextField error={errors.city} label="City" onChangeText={(value) => updateField('city', value)} value={form.city} />
               <TicketTextField error={errors.state} label="State" onChangeText={(value) => updateField('state', value)} value={form.state} />
             </View>
             <TicketTextField error={errors.country} label="Country" onChangeText={(value) => updateField('country', value)} value={form.country} />
+            <View style={styles.locationActionRow}>
+              <Pressable
+                disabled={isResolvingVenue || isSaving}
+                onPress={() => {
+                  void handleResolveVenueLocation();
+                }}
+                style={[
+                  styles.locationLookupButton,
+                  (isResolvingVenue || isSaving) && styles.buttonDisabled,
+                ]}
+              >
+                {isResolvingVenue ? (
+                  <ActivityIndicator color="#FFFFFF" size="small" />
+                ) : (
+                  <Ionicons color="#FFFFFF" name="location-outline" size={16} />
+                )}
+                <Text style={styles.locationLookupButtonText}>
+                  {isResolvingVenue ? 'Finding Location' : 'Find Location'}
+                </Text>
+              </Pressable>
+              {hasResolvedVenueLocation ? (
+                <Pressable
+                  onPress={() => {
+                    updateField('latitude', '');
+                    updateField('longitude', '');
+                    updateField('venuePlaceId', '');
+                  }}
+                  style={styles.clearLocationButton}
+                >
+                  <Ionicons color="#6B7280" name="close" size={16} />
+                </Pressable>
+              ) : null}
+            </View>
+            {hasResolvedVenueLocation ? (
+              <View style={styles.locationStatus}>
+                <Ionicons color="#15803D" name="checkmark-circle" size={16} />
+                <Text style={styles.locationStatusText}>
+                  {`${formatCoordinateForDisplay(form.latitude)}, ${formatCoordinateForDisplay(form.longitude)}`}
+                </Text>
+              </View>
+            ) : null}
+            <View style={styles.row}>
+              <TicketTextField
+                error={errors.latitude}
+                keyboardType="numbers-and-punctuation"
+                label="Latitude"
+                onChangeText={(value) => updateField('latitude', value)}
+                placeholder="6.426747"
+                value={form.latitude}
+              />
+              <TicketTextField
+                error={errors.longitude}
+                keyboardType="numbers-and-punctuation"
+                label="Longitude"
+                onChangeText={(value) => updateField('longitude', value)}
+                placeholder="3.430099"
+                value={form.longitude}
+              />
+            </View>
           </FormSection>
 
           <FormSection title="Schedule">
@@ -498,6 +640,7 @@ function FormSection({ children, title }: { children: React.ReactNode; title: st
 
 function TicketTextField({
   error,
+  keyboardType,
   label,
   multiline,
   onChangeText,
@@ -505,6 +648,7 @@ function TicketTextField({
   value,
 }: {
   error?: string;
+  keyboardType?: React.ComponentProps<typeof TextInput>['keyboardType'];
   label: string;
   multiline?: boolean;
   onChangeText: (value: string) => void;
@@ -515,6 +659,7 @@ function TicketTextField({
     <View style={styles.field}>
       <Text style={styles.label}>{label}</Text>
       <TextInput
+        keyboardType={keyboardType}
         multiline={multiline}
         onChangeText={onChangeText}
         placeholder={placeholder}
@@ -577,6 +722,25 @@ function validateForm(form: FormState) {
     errors.status = 'Choose upcoming or past.';
   }
 
+  const latitudeError = getCoordinateValidationError(form.latitude, 'Latitude', -90, 90);
+  const longitudeError = getCoordinateValidationError(form.longitude, 'Longitude', -180, 180);
+
+  if (latitudeError) {
+    errors.latitude = latitudeError;
+  }
+
+  if (longitudeError) {
+    errors.longitude = longitudeError;
+  }
+
+  if (
+    (form.latitude.trim() && !form.longitude.trim()) ||
+    (!form.latitude.trim() && form.longitude.trim())
+  ) {
+    errors.latitude = errors.latitude ?? 'Latitude and longitude must be saved together.';
+    errors.longitude = errors.longitude ?? 'Latitude and longitude must be saved together.';
+  }
+
   return errors;
 }
 
@@ -587,15 +751,165 @@ function toFormState(ticket: TicketInput): FormState {
     ...EMPTY_CREATE_FORM,
     ...formState,
     authPhoneNumber: formState.authPhoneNumber ?? EMPTY_CREATE_FORM.authPhoneNumber,
+    latitude: formatCoordinateField(formState.latitude),
+    longitude: formatCoordinateField(formState.longitude),
+    venueAddress: formState.venueAddress ?? buildFormVenueAddress(formState),
+    venuePlaceId: formState.venuePlaceId ?? '',
   };
 }
 
 function toTicketInput(form: FormState): TicketInput {
+  const {
+    latitude: latitudeValue,
+    longitude: longitudeValue,
+    venueAddress,
+    venuePlaceId,
+    ...ticketFields
+  } = form;
+
   return {
-    ...form,
+    ...ticketFields,
+    latitude: parseCoordinateField(latitudeValue),
+    longitude: parseCoordinateField(longitudeValue),
     ticketType: form.ticketType as TicketType,
     status: form.status as TicketStatus,
+    venueAddress: venueAddress.trim() || buildFormVenueAddress(form),
+    venuePlaceId: venuePlaceId.trim(),
   };
+}
+
+async function buildTicketPayloadForSave(
+  form: FormState,
+  onVenueResolved: (nextForm: FormState) => void,
+) {
+  if (hasFormCoordinates(form) || !buildVenueGeocodeQuery(getVenueGeocodeInput(form))) {
+    return toTicketInput(form);
+  }
+
+  try {
+    const nextForm = await resolveVenueLocationForForm(form);
+    onVenueResolved(nextForm);
+    return toTicketInput(nextForm);
+  } catch (error) {
+    throw toVenueLookupError(error);
+  }
+}
+
+async function resolveVenueLocationForForm(form: FormState): Promise<FormState> {
+  const location = await geocodeVenueLocation(getVenueGeocodeInput(form));
+
+  return {
+    ...form,
+    latitude: formatCoordinateField(location.latitude),
+    longitude: formatCoordinateField(location.longitude),
+    venueAddress: location.formattedAddress,
+    venuePlaceId: location.placeId ?? form.venuePlaceId,
+  };
+}
+
+function getVenueGeocodeInput(form: FormState) {
+  return {
+    address: form.venueAddress,
+    city: form.city,
+    country: form.country,
+    state: form.state,
+    venue: form.venue,
+  };
+}
+
+function hasFormCoordinates(form: FormState) {
+  return (
+    parseCoordinateField(form.latitude) !== null &&
+    parseCoordinateField(form.longitude) !== null
+  );
+}
+
+function parseCoordinateField(value: string | number | null | undefined) {
+  if (typeof value === 'number') {
+    return Number.isFinite(value) ? value : null;
+  }
+
+  const trimmedValue = value?.trim();
+
+  if (!trimmedValue) {
+    return null;
+  }
+
+  const coordinate = Number(trimmedValue);
+  return Number.isFinite(coordinate) ? coordinate : null;
+}
+
+function formatCoordinateField(value: string | number | null | undefined) {
+  if (typeof value === 'number' && Number.isFinite(value)) {
+    return String(Number(value.toFixed(7)));
+  }
+
+  if (typeof value === 'string') {
+    return value;
+  }
+
+  return '';
+}
+
+function formatCoordinateForDisplay(value: string) {
+  return parseCoordinateField(value)?.toFixed(6) ?? value;
+}
+
+function getCoordinateValidationError(
+  value: string,
+  label: string,
+  min: number,
+  max: number,
+) {
+  if (!value.trim()) {
+    return undefined;
+  }
+
+  const coordinate = parseCoordinateField(value);
+
+  if (coordinate === null) {
+    return `${label} must be a number.`;
+  }
+
+  if (coordinate < min || coordinate > max) {
+    return `${label} must be between ${min} and ${max}.`;
+  }
+
+  return undefined;
+}
+
+function buildFormVenueAddress(
+  form: Pick<TicketInput, 'city' | 'country' | 'state' | 'venue'>,
+) {
+  return [form.venue, form.city, form.state, form.country]
+    .map((part) => part?.trim())
+    .filter(Boolean)
+    .join(', ');
+}
+
+const VENUE_LOOKUP_ERROR_PREFIX = 'VENUE_LOOKUP_FAILED: ';
+
+function toVenueLookupError(error: unknown) {
+  return new Error(`${VENUE_LOOKUP_ERROR_PREFIX}${getVenueLookupErrorMessage(error)}`);
+}
+
+function isVenueLookupError(error: unknown) {
+  return (
+    error instanceof Error &&
+    error.message.startsWith(VENUE_LOOKUP_ERROR_PREFIX)
+  );
+}
+
+function getVenueLookupErrorMessage(error: unknown) {
+  const message = error instanceof Error ? error.message : '';
+  const normalizedMessage = message.startsWith(VENUE_LOOKUP_ERROR_PREFIX)
+    ? message.slice(VENUE_LOOKUP_ERROR_PREFIX.length)
+    : message;
+
+  return (
+    normalizedMessage ||
+    'We could not match that venue to a map location. Check the venue/address and try again.'
+  );
 }
 
 function getTicketSaveErrorMessage(error: unknown) {
@@ -823,6 +1137,51 @@ const styles = StyleSheet.create({
     fontWeight: '800',
     letterSpacing: 0.8,
     textTransform: 'uppercase',
+  },
+  locationActionRow: { alignItems: 'center', flexDirection: 'row', gap: 10 },
+  locationLookupButton: {
+    alignItems: 'center',
+    backgroundColor: '#005BD3',
+    borderRadius: 8,
+    flex: 1,
+    flexDirection: 'row',
+    gap: 8,
+    justifyContent: 'center',
+    minHeight: 44,
+  },
+  locationLookupButtonText: {
+    color: '#FFFFFF',
+    fontSize: 12,
+    fontWeight: '800',
+    letterSpacing: 0.8,
+    textTransform: 'uppercase',
+  },
+  clearLocationButton: {
+    alignItems: 'center',
+    borderColor: '#E5E7EB',
+    borderRadius: 8,
+    borderWidth: 1,
+    height: 44,
+    justifyContent: 'center',
+    width: 44,
+  },
+  locationStatus: {
+    alignItems: 'center',
+    backgroundColor: '#F0FDF4',
+    borderColor: '#BBF7D0',
+    borderRadius: 8,
+    borderWidth: 1,
+    flexDirection: 'row',
+    gap: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+  },
+  locationStatusText: {
+    color: '#166534',
+    flex: 1,
+    fontSize: 12,
+    fontWeight: '700',
+    lineHeight: 17,
   },
   segmentRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   segment: {

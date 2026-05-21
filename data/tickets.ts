@@ -8,9 +8,13 @@ export type TicketRecord = {
   artistName: string;
   albumName: string;
   venue: string;
+  venueAddress?: string;
   city: string;
   state: string;
   country: string;
+  latitude?: number | null;
+  longitude?: number | null;
+  venuePlaceId?: string;
   date: string;
   time: string;
   purchaseDate: string;
@@ -38,9 +42,14 @@ const sharedEvent = {
   artistName: 'Wizkid',
   albumName: 'Made in Lagos',
   venue: 'Eko Convention Centre',
+  venueAddress:
+    'Plot 1415 Adetokunbo Ademola Street, PMB 12724, Victoria Island, Lagos, Nigeria',
   city: 'Lagos',
   state: 'Lagos',
   country: 'Nigeria',
+  latitude: 6.42674716,
+  longitude: 3.43009885,
+  venuePlaceId: '',
   image:
     'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&w=1200&q=85',
 };
