@@ -29,6 +29,9 @@ import { useTicketOrder } from "@/hooks/useTicketOrder";
 
 const CAROUSEL_CARD_WIDTH_RATIO = 0.78;
 const CAROUSEL_GAP = 24;
+const TRANSFER_SUMMARY_LOADING_MS = 420;
+const TRANSFER_CONFIRM_BUTTON_LOADING_MS = 620;
+const TRANSFER_POST_AUTH_LOADING_MS = 520;
 
 export function useTicketTransferFlowController({
   initialScreen,
@@ -200,6 +203,8 @@ export function useTicketTransferFlowController({
 
   const handleTransferStart = () => {
     setSelectedSeatIds([]);
+    setTransferModal("none");
+    setOtpCode("");
     setIsListLoading(true);
 
     if (loadingTimerRef.current) {
@@ -209,7 +214,17 @@ export function useTicketTransferFlowController({
     loadingTimerRef.current = setTimeout(() => {
       setIsListLoading(false);
       setTransferModal("auth");
-    }, 1500);
+    }, TRANSFER_SUMMARY_LOADING_MS);
+  };
+
+  const handleCancelAuth = () => {
+    if (loadingTimerRef.current) {
+      clearTimeout(loadingTimerRef.current);
+      loadingTimerRef.current = null;
+    }
+
+    setIsListLoading(false);
+    setTransferModal("none");
   };
 
   const handleOpenViewer = () => {
@@ -331,19 +346,29 @@ export function useTicketTransferFlowController({
       clearTimeout(loadingTimerRef.current);
     }
 
+    if (screen === "list") {
+      loadingTimerRef.current = setTimeout(() => {
+        setTransferModal("none");
+        setIsListLoading(true);
+
+        loadingTimerRef.current = setTimeout(() => {
+          setIsListLoading(false);
+          setSelectedSeatIds([]);
+          setViewerIndex(0);
+          setScreen("select");
+        }, TRANSFER_POST_AUTH_LOADING_MS);
+      }, TRANSFER_CONFIRM_BUTTON_LOADING_MS);
+      return;
+    }
+
     loadingTimerRef.current = setTimeout(() => {
       const isSuccess = Math.random() > 0.1;
 
       if (isSuccess) {
         setViewerIndex(0);
         setSelectedSeatIds([]);
-        if (screen === "list") {
-          setScreen("select");
-          setTransferModal("none");
-        } else {
-          setScreen("list");
-          setTransferModal("success");
-        }
+        setScreen("list");
+        setTransferModal("success");
       } else {
         setTransferModal("error");
       }
@@ -365,6 +390,7 @@ export function useTicketTransferFlowController({
     formErrors,
     frameWidth,
     handleBackToTabs,
+    handleCancelAuth,
     handleConfirmCode,
     handleListScroll,
     handleOpenRecipientForm,

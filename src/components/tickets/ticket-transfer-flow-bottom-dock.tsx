@@ -1,7 +1,9 @@
 import { Ionicons } from "@expo/vector-icons";
 import React from "react";
-import { Pressable, Text, View } from "react-native";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 import Animated, { FadeInUp } from "react-native-reanimated";
+
+import { fonts } from "../../../theme/fonts";
 
 export function BottomDock({
   disabled,
@@ -13,21 +15,16 @@ export function BottomDock({
   return (
     <Animated.View
       entering={FadeInUp.duration(320).delay(220)}
-      className="absolute inset-x-0 bottom-10 z-30 items-center"
-      style={{ pointerEvents: 'box-none' }}
+      style={styles.dockPosition}
     >
       <View
-        className="overflow-hidden rounded-[30px] border border-white bg-white"
+        className="overflow-hidden border border-white bg-white"
         style={[
-          {
-            minWidth: 176,
-            boxShadow: '0px 4px 8px rgba(0, 0, 0, 0.20)',
-            elevation: 8,
-            opacity: disabled ? 0.6 : 1,
-          },
+          styles.dock,
+          disabled ? styles.dockDisabled : null,
         ]}
       >
-        <View className="flex-row items-center">
+        <View style={styles.actionsRow}>
           <BottomDockAction
             disabled={disabled}
             iconClassName="rotate-45"
@@ -38,15 +35,14 @@ export function BottomDock({
             onPress={onTransfer}
           />
 
-          <View className="mx-[2px] h-4/6 w-px rounded-2xl bg-[#E5E7EB]" />
+          <View style={styles.divider} />
 
           <BottomDockAction
-            disabled
-            iconClassName="-rotate-90"
-            iconColor="#D1D5DB"
-            iconName="pricetag-outline"
+            iconClassName=""
+            iconColor="#2B72D7"
+            iconName="sync-outline"
             label="Sell"
-            labelColor="#D1D5DB"
+            labelColor="#2b2b2b"
           />
         </View>
       </View>
@@ -74,7 +70,7 @@ function BottomDockAction({
   return (
     <Pressable
       accessibilityRole="button"
-      className="min-h-[42px] min-w-[76px] items-center justify-center"
+      style={styles.action}
       disabled={disabled}
       onPress={onPress}
     >
@@ -82,14 +78,58 @@ function BottomDockAction({
         className={iconClassName}
         color={iconColor}
         name={iconName}
-        size={13}
+        size={22}
       />
       <Text
-        className="text-[10px] font-medium leading-[12px]"
-        style={{ color: labelColor }}
+        style={[styles.label, { color: labelColor }]}
       >
         {label}
       </Text>
     </Pressable>
   );
 }
+
+const styles = StyleSheet.create({
+  action: {
+    alignItems: "center",
+    height: 61,
+    justifyContent: "center",
+    paddingTop: 4,
+    width: 82,
+  },
+  actionsRow: {
+    alignItems: "center",
+    flexDirection: "row",
+    height: 62,
+  },
+  divider: {
+    backgroundColor: "#E5E5E5",
+    height: 38,
+    width: StyleSheet.hairlineWidth,
+  },
+  dock: {
+    borderRadius: 31,
+    boxShadow: "0px 6px 14px rgba(0, 0, 0, 0.24)",
+    elevation: 11,
+    height: 62,
+    width: 165,
+  },
+  dockDisabled: {
+    opacity: 0.6,
+  },
+  dockPosition: {
+    alignItems: "center",
+    bottom: 53,
+    left: 0,
+    pointerEvents: "box-none",
+    position: "absolute",
+    right: 0,
+    zIndex: 30,
+  },
+  label: {
+    fontFamily: fonts.regular,
+    fontSize: 10.5,
+    lineHeight: 14,
+    marginTop: 1,
+  },
+});

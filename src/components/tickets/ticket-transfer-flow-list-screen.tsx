@@ -18,7 +18,6 @@ export function TicketTransferListScreen({
   activePanel,
   handleListScroll,
   isHeroCollapsed,
-  isListLoading,
   onBack,
   onOpenTicket,
   onOpenViewer,
@@ -31,7 +30,6 @@ export function TicketTransferListScreen({
     typeof Animated.ScrollView
   >['onScroll'];
   isHeroCollapsed: boolean;
-  isListLoading?: boolean;
   onBack: () => void;
   onOpenTicket: (ticketIndex: number) => void;
   onOpenViewer: () => void;
@@ -71,7 +69,7 @@ export function TicketTransferListScreen({
           )}
         </Animated.ScrollView>
 
-        {!isListLoading && <BottomDock onTransfer={onTransfer} />}
+        <BottomDock onTransfer={onTransfer} />
       </View>
     </View>
   );

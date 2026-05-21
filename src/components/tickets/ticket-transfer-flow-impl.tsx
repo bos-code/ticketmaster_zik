@@ -1,5 +1,5 @@
 import React from 'react';
-import { ActivityIndicator, View } from 'react-native';
+import { useWindowDimensions, View } from 'react-native';
 import { CustomSpinner } from '@/components/tickets/custom-spinner';
 
 import { ChooseRecipientTypeScreen } from '@/components/tickets/ChooseRecipientTypeScreen';
@@ -12,12 +12,18 @@ import {
   TicketsLoadingShadow,
   TicketsUnavailable,
 } from '@/components/tickets/ticket-transfer-flow-components';
+import { getTicketSummaryHeroExpandedHeight } from '@/components/tickets/ticketFlowConstants';
 import { TicketFlowContext } from '@/components/tickets/TicketFlowContext';
 import { TicketTransferStatusModal } from '@/components/tickets/TicketTransferStatusModal';
 import { TicketTransferUnavailableModal } from '@/components/tickets/TicketTransferUnavailableModal';
 import { useTicketTransferFlowController } from '@/components/tickets/use-ticket-transfer-flow-controller';
 import Head from 'expo-router/head';
 import { StatusBar } from 'expo-status-bar';
+
+const TRANSFER_LOADING_CONTENT_OPACITY = 0.55;
+const TRANSFER_LOADING_SPINNER_COLOR = '#2B72D7';
+const TRANSFER_LOADING_SPINNER_SIZE = 52;
+const TRANSFER_LOADING_SPINNER_TOP_OFFSET = 45;
 
 export function TicketTransferFlow({
   initialScreen = 'list',
@@ -33,6 +39,10 @@ export function TicketTransferFlow({
     initialTicketIndex,
     orderId,
   });
+  const { width } = useWindowDimensions();
+  const transferLoadingSpinnerTop =
+    getTicketSummaryHeroExpandedHeight(width) +
+    TRANSFER_LOADING_SPINNER_TOP_OFFSET;
 
   if (!flow.ticketFlowData) {
     if (flow.isLoadingTickets) {
@@ -69,7 +79,9 @@ export function TicketTransferFlow({
         <View
           className=' flex-1 w-full'
           pointerEvents={flow.isListLoading ? 'none' : 'auto'}
-          style={{ opacity: flow.isListLoading ? 0.35 : 1 }}
+          style={{
+            opacity: flow.isListLoading ? TRANSFER_LOADING_CONTENT_OPACITY : 1,
+          }}
         >
           {['list', 'select', 'recipientChoice', 'recipientForm'].includes(
             flow.screen,
@@ -78,7 +90,6 @@ export function TicketTransferFlow({
               activePanel={flow.activePanel}
               handleListScroll={flow.handleListScroll}
               isHeroCollapsed={flow.isHeroCollapsed}
-              isListLoading={flow.isListLoading}
               onBack={flow.handleBackToTabs}
               onOpenTicket={flow.openTicketDetailsRoute}
               onOpenViewer={flow.handleOpenViewer}
@@ -154,12 +165,15 @@ export function TicketTransferFlow({
         <TicketTransferAuthModal
           authPhoneNumber={flow.ticketFlowData?.event.authPhoneNumber}
           confirmCodeReady={flow.confirmCodeReady}
-          isLoading={flow.transferModal === 'loading'}
-          onCancel={() => flow.setTransferModal('none')}
+          isSubmitting={flow.transferModal === 'loading'}
+          onCancel={flow.handleCancelAuth}
           onConfirm={flow.handleConfirmCode}
           onOtpChange={flow.setOtpCode}
           otpCode={flow.otpCode}
-          visible={flow.transferModal === 'auth' || flow.transferModal === 'loading'}
+          visible={
+            flow.transferModal === 'auth' ||
+            flow.transferModal === 'loading'
+          }
         />
 
         <TicketTransferStatusModal
@@ -177,19 +191,21 @@ export function TicketTransferFlow({
 
         {flow.isListLoading && (
           <View
+            pointerEvents="none"
             style={{
               position: 'absolute',
-              top: 0,
+              top: transferLoadingSpinnerTop,
               left: 0,
               right: 0,
-              bottom: 0,
-              justifyContent: 'center',
               alignItems: 'center',
               zIndex: 999,
               backgroundColor: 'transparent',
             }}
           >
-            <CustomSpinner color="#80858E" size={26} />
+            <CustomSpinner
+              color={TRANSFER_LOADING_SPINNER_COLOR}
+              size={TRANSFER_LOADING_SPINNER_SIZE}
+            />
           </View>
         )}
       </View>

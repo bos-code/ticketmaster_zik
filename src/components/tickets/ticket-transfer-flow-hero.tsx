@@ -270,13 +270,13 @@ function ExpandedHeroCard({
 }: ExpandedHeroCardProps) {
   return (
     <View className="ticket-summary-hero-card relative summary-phone:-top-[15.8px] -top-[10px] pt-4 ">
-      <View className="absolute left-0 summary-phone:-top-[12.3px] -top-4 z-10 self-start">
-        <View className="ticket-summary-hero-date  justify-center bg-[#232126] px-4 py-2">
+      <View className="absolute left-0 summary-phone:-top-[19.3px] -top-4 z-10 self-start">
+        <View className="  justify-center bg-[#232126] px-4 py-2">
           <Text className="ticket-summary-hero-date-text text-xs font-extrabold uppercase leading-[13px]  tracking-[1px] text-[rgba(255,255,255,0.92)]">
             {dateTime}
           </Text>
         </View>
-        {/* <View className="ticket-summary-hero-date-bridge  absolute inset-x-0 -bottom-4 h-4 bg-[#232126]" /> */}
+     
       </View>
       <View className="ticket-summary-hero-info bg-[#232126] px-4 pt-2">
         <Text className="ticket-summary-hero-title pt-1 text-lg font-bold leading-6 text-white">

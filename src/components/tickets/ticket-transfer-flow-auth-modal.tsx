@@ -1,24 +1,27 @@
 import React from "react";
 import {
-  ActivityIndicator,
-  Keyboard,
+  Animated,
+  Easing,
   Platform,
   Pressable,
+  StyleSheet,
   Text,
   TextInput,
   View,
 } from "react-native";
 
-import { Image } from "expo-image";
+import Svg, { Circle } from "react-native-svg";
 
-import { cx } from "@/components/tickets/cx";
 import { BottomDrawer } from "@/components/ui/bottom-drawer";
 import { normalizeOtp, OTP_LENGTH } from "@/lib/auth/otp";
+import { fonts } from "../../../theme/fonts";
+
+const DEFAULT_AUTH_PHONE_NUMBER = "*******1886";
 
 export function TicketTransferAuthModal({
   authPhoneNumber,
   confirmCodeReady,
-  isLoading = false,
+  isSubmitting = false,
   onCancel,
   onConfirm,
   onOtpChange,
@@ -27,7 +30,7 @@ export function TicketTransferAuthModal({
 }: {
   authPhoneNumber?: string;
   confirmCodeReady: boolean;
-  isLoading?: boolean;
+  isSubmitting?: boolean;
   onCancel: () => void;
   onConfirm: () => void;
   onOtpChange: (value: string) => void;
@@ -35,142 +38,277 @@ export function TicketTransferAuthModal({
   visible: boolean;
 }) {
   const inputRef = React.useRef<TextInput | null>(null);
-  const [phoneNumber, setPhoneNumber] = React.useState(authPhoneNumber || "******2970");
-
-  React.useEffect(() => {
-    if (authPhoneNumber) {
-      setPhoneNumber(authPhoneNumber);
-    }
-  }, [authPhoneNumber]);
-
-  React.useEffect(() => {
-    if (!visible || isLoading) {
-      return;
-    }
-
-    const focusTimer = setTimeout(() => {
-      inputRef.current?.focus();
-    }, 220);
-
-    return () => clearTimeout(focusTimer);
-  }, [isLoading, visible]);
-
-  React.useEffect(() => {
-    if (otpCode.length === OTP_LENGTH) {
-      Keyboard.dismiss();
-    }
-  }, [otpCode]);
+  const phoneNumber = formatAuthPhoneNumber(authPhoneNumber);
 
   return (
-    <BottomDrawer minHeight="93%" onClose={onCancel} visible={visible} className="bg-[#007AFF] rounded-t-2xl" >
-      {/* Header Inside Drawer */}
-      <View className="bg-[#007AFF] h-[54px] w-full flex-row rounded-t-2xl items-center px-[18px]">
-        <Pressable accessibilityRole="button" hitSlop={12} onPress={onCancel}>
-          <Text className="text-[14px] font-normal text-white">
-            Cancel
-          </Text>
+    <BottomDrawer
+      className="overflow-hidden rounded-t-[8px] bg-[#292929]"
+      minHeight="91%"
+      onClose={onCancel}
+      visible={visible}
+    >
+      <View style={styles.header}>
+        <Pressable
+          accessibilityRole="button"
+          hitSlop={12}
+          onPress={onCancel}
+          style={styles.headerAction}
+        >
+          <Text style={styles.cancelText}>Cancel</Text>
         </Pressable>
-        <Text className="flex-1 text-center text-[15px] font-bold text-white">
+        <Text style={styles.headerTitle}>
           Authentication
         </Text>
-        <View style={{ minWidth: 44 }} />
+        <View style={styles.headerSpacer} />
       </View>
 
-      {isLoading ? (
-        <View className="flex-1 w-full items-center justify-center bg-white">
-          <ActivityIndicator color="#5C94DA" size="large" />
-        </View>
-      ) : (
-        <View className="flex-1 w-full bg-white">
-          {/* Hero Illustration Section */}
-          <View className="bg-[#111111] py-12 items-center justify-center">
-            <Image
-              source={require("../../../assets/tickets/otp_auth_hero.jpg")}
-              style={{ width: 180, height: 120 }}
-              contentFit="contain"
-            />
-          </View>
+      <View style={styles.authBody}>
+        <View style={styles.authCard}>
+          <Text style={styles.cardTitle}>
+            Authenticate Your Account
+          </Text>
+          <Text style={styles.cardCopy}>
+            A one-time code has been sent to {phoneNumber}. Please enter your code below to continue.
+          </Text>
 
-          <View className="px-5 pt-6">
-            <Text className="text-xl font-bold leading-[22px] tracking-wider text-[#111111]">
-              Authenticate Your Account
-            </Text>
-            <Text className="mt-[8px] text-[13.5px] font-normal leading-[18px] text-[#4E5561]">
-              A one-time code has been sent to the number below. Please enter your code to continue.
-            </Text>
-            <View className="mt-3.5 flex-row items-center bg-[#F2F4F7] px-3.5 py-2.5 rounded-lg border border-[#E4E7EC]">
-              <Text className="text-[13.5px] font-bold text-[#4E5561] mr-2">Phone Number:</Text>
-              <TextInput
-                value={phoneNumber}
-                onChangeText={setPhoneNumber}
-                className="flex-1 text-[13.5px] font-semibold text-[#111111] p-0"
-                style={Platform.OS === 'web' ? ({ outlineStyle: 'none' } as any) : undefined}
-              />
-            </View>
-          </View>
+          <Text style={styles.codeLabel}>
+            One-Time Code
+          </Text>
+          <TextInput
+            ref={inputRef}
+            autoComplete={Platform.OS === "android" ? "sms-otp" : "one-time-code"}
+            autoFocus={visible}
+            editable={!isSubmitting}
+            inputMode="numeric"
+            keyboardType="number-pad"
+            maxLength={OTP_LENGTH}
+            onChangeText={(value) => onOtpChange(normalizeOtp(value))}
+            onSubmitEditing={() => {
+              if (confirmCodeReady) {
+                onConfirm();
+              }
+            }}
+            placeholder=""
+            placeholderTextColor="#80858E"
+            returnKeyType="done"
+            selectionColor="#2F88F3"
+            style={[
+              styles.codeInput,
+              otpCode.length ? styles.codeInputActive : null,
+              Platform.OS === "web" ? ({ outlineStyle: "none" } as any) : null,
+            ]}
+            textContentType="oneTimeCode"
+            value={otpCode}
+          />
+          <Text style={styles.codeHelp}>
+            It may take a minute to receive your code.
+          </Text>
 
-          <View className="gap-2 px-[18px] pt-6">
-            <Text className="text-[11px] font-bold leading-[13px] text-[#4A4F58]">
-              One-Time Code
-            </Text>
-            <TextInput
-              ref={inputRef}
-              autoComplete={Platform.OS === "android" ? "sms-otp" : "one-time-code"}
-              autoFocus={visible}
-              inputMode="numeric"
-              keyboardType="number-pad"
-              maxLength={OTP_LENGTH}
-              onChangeText={(value) => onOtpChange(normalizeOtp(value))}
-              onSubmitEditing={() => {
-                if (confirmCodeReady) {
-                  onConfirm();
-                }
-              }}
-              placeholder=""
-              placeholderTextColor="#80858E"
-              returnKeyType="done"
-              selectionColor="#2F88F3"
-              style={[
-                {
-                  minHeight: 46,
-                  borderRadius: 8,
-                  borderWidth: 1,
-                  borderColor: otpCode.length ? "#2F88F3" : "#D1D5DB",
-                  paddingHorizontal: 16,
-                  backgroundColor: "#FFFFFF",
-                  color: "#111111",
-                  fontSize: 20,
-                  fontWeight: "500",
-                  letterSpacing: 4,
-                },
-              ]}
-              textContentType="oneTimeCode"
-              value={otpCode}
-            />
-            <Text className="text-[11px] font-normal leading-[13px] text-[#80858E]">
-              It may take a minute to receive your code.
-            </Text>
-          </View>
-
-          <View className="mt-auto">
-            <View className="px-2 pb-6 pt-2 h-[68px]">
-              <Pressable
-                accessibilityRole="button"
-                disabled={!confirmCodeReady}
-                onPress={onConfirm}
-                className={cx(
-                  "h-[44px] items-center justify-center rounded-[4px]",
-                  confirmCodeReady ? "bg-[#0863D9]" : "bg-[#B8D8F6]"
-                )}
+          <Pressable
+            accessibilityRole="button"
+            disabled={!confirmCodeReady || isSubmitting}
+            onPress={onConfirm}
+            style={[
+              styles.confirmButton,
+              confirmCodeReady || isSubmitting
+                ? styles.confirmButtonReady
+                : null,
+            ]}
+          >
+            {isSubmitting ? (
+              <ButtonLoadingSpinner size={32} />
+            ) : (
+              <Text
+                style={[
+                  styles.confirmButtonText,
+                  confirmCodeReady ? styles.confirmButtonTextReady : null,
+                ]}
               >
-                <Text className="text-[14px] font-black text-white uppercase">
-                  Confirm Code
-                </Text>
-              </Pressable>
-            </View>
-          </View>
+                Confirm Code
+              </Text>
+            )}
+          </Pressable>
         </View>
-      )}
+      </View>
     </BottomDrawer>
   );
 }
+
+function formatAuthPhoneNumber(phoneNumber?: string) {
+  const lastFourDigits = phoneNumber?.match(/\d{4}$/)?.[0];
+
+  if (lastFourDigits) {
+    return `*******${lastFourDigits}`;
+  }
+
+  return phoneNumber?.trim() || DEFAULT_AUTH_PHONE_NUMBER;
+}
+
+function ButtonLoadingSpinner({ size }: { size: number }) {
+  const rotateAnim = React.useRef(new Animated.Value(0)).current;
+
+  React.useEffect(() => {
+    const animation = Animated.loop(
+      Animated.timing(rotateAnim, {
+        duration: 760,
+        easing: Easing.linear,
+        toValue: 1,
+        useNativeDriver: true,
+      }),
+    );
+
+    animation.start();
+    return () => animation.stop();
+  }, [rotateAnim]);
+
+  const spin = rotateAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: ["0deg", "360deg"],
+  });
+
+  return (
+    <Animated.View
+      style={{
+        height: size,
+        transform: [{ rotate: spin }],
+        width: size,
+      }}
+    >
+      <Svg height={size} viewBox="0 0 32 32" width={size}>
+        <Circle
+          cx={16}
+          cy={16}
+          fill="none"
+          r={12}
+          stroke="rgba(255,255,255,0.32)"
+          strokeWidth={3}
+        />
+        <Circle
+          cx={16}
+          cy={16}
+          fill="none"
+          r={12}
+          stroke="#C7DBFF"
+          strokeDasharray="45 76"
+          strokeLinecap="round"
+          strokeWidth={3}
+          transform="rotate(-90 16 16)"
+        />
+      </Svg>
+    </Animated.View>
+  );
+}
+
+const styles = StyleSheet.create({
+  authBody: {
+    alignItems: "center",
+    backgroundColor: "#292929",
+    flex: 1,
+    justifyContent: "center",
+    paddingBottom: 28,
+    paddingHorizontal: 14,
+    paddingTop: 70,
+    width: "100%",
+  },
+  authCard: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 3,
+    paddingBottom: 34,
+    paddingHorizontal: 32,
+    paddingTop: 36,
+    width: "100%",
+  },
+  cancelText: {
+    color: "rgba(255, 255, 255, 0.82)",
+    fontFamily: fonts.medium,
+    fontSize: 18,
+    lineHeight: 24,
+  },
+  cardCopy: {
+    color: "#2D2D2D",
+    fontFamily: fonts.medium,
+    fontSize: 16,
+    lineHeight: 23,
+    marginTop: 24,
+  },
+  cardTitle: {
+    color: "#111111",
+    fontFamily: fonts.extraBold,
+    fontSize: 27,
+    letterSpacing: -0.2,
+    lineHeight: 34,
+    maxWidth: 300,
+  },
+  codeHelp: {
+    color: "#333333",
+    fontFamily: fonts.medium,
+    fontSize: 15,
+    lineHeight: 21,
+    marginTop: 23,
+  },
+  codeInput: {
+    backgroundColor: "#FFFFFF",
+    borderColor: "#BDBDBD",
+    borderRadius: 0,
+    borderWidth: 1.5,
+    color: "#111111",
+    fontFamily: fonts.medium,
+    fontSize: 20,
+    height: 58,
+    letterSpacing: 4,
+    marginTop: 11,
+    paddingHorizontal: 14,
+  },
+  codeInputActive: {
+    borderColor: "#7B7B7B",
+  },
+  codeLabel: {
+    color: "#222222",
+    fontFamily: fonts.semiBold,
+    fontSize: 15,
+    lineHeight: 20,
+    marginTop: 25,
+  },
+  confirmButton: {
+    alignItems: "center",
+    backgroundColor: "#E6E7E7",
+    borderRadius: 4,
+    height: 59,
+    justifyContent: "center",
+    marginTop: 44,
+  },
+  confirmButtonReady: {
+    backgroundColor: "#0863D9",
+  },
+  confirmButtonText: {
+    color: "#969B9F",
+    fontFamily: fonts.semiBold,
+    fontSize: 17,
+    lineHeight: 22,
+  },
+  confirmButtonTextReady: {
+    color: "#FFFFFF",
+  },
+  header: {
+    alignItems: "center",
+    backgroundColor: "#086ADD",
+    flexDirection: "row",
+    height: 76,
+    paddingHorizontal: 25,
+    width: "100%",
+  },
+  headerAction: {
+    width: 76,
+  },
+  headerSpacer: {
+    width: 76,
+  },
+  headerTitle: {
+    color: "#FFFFFF",
+    flex: 1,
+    fontFamily: fonts.bold,
+    fontSize: 18,
+    lineHeight: 24,
+    textAlign: "center",
+  },
+});

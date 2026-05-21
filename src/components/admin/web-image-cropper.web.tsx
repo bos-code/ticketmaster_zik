@@ -51,6 +51,14 @@ const DEFAULT_MAX_FILE_SIZE_BYTES = 12 * 1024 * 1024;
 const DEFAULT_OUTPUT_MIME_TYPE = 'image/jpeg';
 const DEFAULT_OUTPUT_QUALITY = 0.9;
 
+const ASPECT_RATIOS = [
+  { label: '16:9 Banner', value: 16 / 9 },
+  { label: '4:3 Photo', value: 4 / 3 },
+  { label: '1:1 Square', value: 1 },
+  { label: '3:4 Portrait', value: 3 / 4 },
+  { label: '2:3 Flyer', value: 2 / 3 },
+];
+
 export const WebImageCropper = forwardRef<WebImageCropperHandle, WebImageCropperProps>(
   function WebImageCropper(
     {
@@ -76,6 +84,15 @@ export const WebImageCropper = forwardRef<WebImageCropperHandle, WebImageCropper
     const [isProcessing, setIsProcessing] = useState(false);
     const [zoom, setZoom] = useState(1);
 
+    // Dynamic crop aspect ratio selection
+    const [selectedAspect, setSelectedAspect] = useState<number | undefined>(aspect);
+
+    // Step-based preview navigation
+    const [step, setStep] = useState<'crop' | 'preview'>('crop');
+    const [previewUri, setPreviewUri] = useState<string | null>(null);
+    const [previewDimensions, setPreviewDimensions] = useState<{ width: number; height: number } | null>(null);
+    const [croppedData, setCroppedData] = useState<{ blob: Blob; fileName: string } | null>(null);
+
     const revokeObjectUrl = useCallback(() => {
       if (objectUrlRef.current) {
         URL.revokeObjectURL(objectUrlRef.current);
@@ -87,13 +104,20 @@ export const WebImageCropper = forwardRef<WebImageCropperHandle, WebImageCropper
       setCrop(DEFAULT_CROP);
       setCroppedAreaPixels(null);
       setZoom(1);
-    }, []);
+      setSelectedAspect(aspect);
+    }, [aspect]);
 
     const closeCropper = useCallback(() => {
       revokeObjectUrl();
+      if (previewUri) {
+        URL.revokeObjectURL(previewUri);
+        setPreviewUri(null);
+      }
       setCropSession(null);
       resetCropState();
-    }, [resetCropState, revokeObjectUrl]);
+      setStep('crop');
+      setCroppedData(null);
+    }, [resetCropState, revokeObjectUrl, previewUri]);
 
     useEffect(() => revokeObjectUrl, [revokeObjectUrl]);
 
@@ -178,8 +202,9 @@ export const WebImageCropper = forwardRef<WebImageCropperHandle, WebImageCropper
       setCroppedAreaPixels(areaPixels);
     }, []);
 
-    const handleApplyCrop = useCallback(async () => {
-      if (!cropSession || !croppedAreaPixels || isProcessing) {
+    // Step 1 -> Step 2 transition: prepare cropped preview image
+    const handleGoToPreview = useCallback(async (useOriginal = false) => {
+      if (!cropSession) {
         return;
       }
 
@@ -187,32 +212,96 @@ export const WebImageCropper = forwardRef<WebImageCropperHandle, WebImageCropper
         setIsProcessing(true);
         onProcessingChange?.(true);
 
-        const croppedBlob = await getCroppedImage(
-          cropSession.file ?? cropSession.sourceUri,
-          croppedAreaPixels,
-          {
+        let finalBlob: Blob;
+        let dimensions: { width: number; height: number };
+
+        if (useOriginal) {
+          const originalBlob =
+            cropSession.file ??
+            (await fetch(cropSession.sourceUri).then((r) => r.blob()));
+
+          finalBlob = await compressImage(originalBlob, {
+            initialQuality: outputQuality,
+            maxBytes: maxCompressedBytes,
             mimeType: outputMimeType,
-            outputHeight,
-            outputWidth,
-            quality: outputQuality,
-          },
-        );
-        const compressedBlob = await compressImage(croppedBlob, {
-          initialQuality: outputQuality,
-          maxBytes: maxCompressedBytes,
-          maxHeight: outputHeight,
-          maxWidth: outputWidth,
-          mimeType: outputMimeType,
-        });
+          });
+
+          const img = await loadLocalBrowserImage(cropSession.sourceUri);
+          dimensions = {
+            width: img.naturalWidth || img.width,
+            height: img.naturalHeight || img.height,
+          };
+        } else {
+          if (!croppedAreaPixels) {
+            return;
+          }
+          const currentAspect = selectedAspect ?? (16 / 9);
+          const calculatedHeight = Math.round(1400 / currentAspect);
+
+          finalBlob = await getCroppedImage(
+            cropSession.file ?? cropSession.sourceUri,
+            croppedAreaPixels,
+            {
+              mimeType: outputMimeType,
+              outputHeight: calculatedHeight,
+              outputWidth: 1400,
+              quality: outputQuality,
+            },
+          );
+          dimensions = { width: 1400, height: calculatedHeight };
+        }
+
+        const previewUrl = URL.createObjectURL(finalBlob);
+        setPreviewUri(previewUrl);
+        setPreviewDimensions(dimensions);
+        setCroppedData({ blob: finalBlob, fileName: cropSession.fileName });
+        setStep('preview');
+      } catch (error) {
+        console.warn('Image preview creation failed.', error);
+        onError?.(getImageProcessingErrorMessage(error));
+      } finally {
+        setIsProcessing(false);
+        onProcessingChange?.(false);
+      }
+    }, [
+      cropSession,
+      croppedAreaPixels,
+      maxCompressedBytes,
+      onError,
+      onProcessingChange,
+      outputMimeType,
+      outputQuality,
+      selectedAspect,
+    ]);
+
+    // Go back from Step 2 to Step 1
+    const handleBackToEdit = useCallback(() => {
+      if (previewUri) {
+        URL.revokeObjectURL(previewUri);
+        setPreviewUri(null);
+      }
+      setCroppedData(null);
+      setStep('crop');
+    }, [previewUri]);
+
+    // Apply & upload final image
+    const handleConfirmUpload = useCallback(async () => {
+      if (!croppedData || isProcessing) {
+        return;
+      }
+
+      try {
+        setIsProcessing(true);
+        onProcessingChange?.(true);
 
         await onCroppedImage({
-          blob: compressedBlob,
-          file: toImageFile(compressedBlob, cropSession.fileName),
-          fileName: cropSession.fileName,
+          blob: croppedData.blob,
+          file: toImageFile(croppedData.blob, croppedData.fileName),
+          fileName: croppedData.fileName,
         });
         closeCropper();
       } catch (error) {
-        console.warn('Image crop or upload failed.', error);
+        console.warn('Image upload failed.', error);
         onError?.(getImageProcessingErrorMessage(error));
       } finally {
         setIsProcessing(false);
@@ -220,17 +309,11 @@ export const WebImageCropper = forwardRef<WebImageCropperHandle, WebImageCropper
       }
     }, [
       closeCropper,
-      cropSession,
-      croppedAreaPixels,
+      croppedData,
       isProcessing,
-      maxCompressedBytes,
       onCroppedImage,
       onError,
       onProcessingChange,
-      outputHeight,
-      outputMimeType,
-      outputQuality,
-      outputWidth,
     ]);
 
     return (
@@ -247,8 +330,14 @@ export const WebImageCropper = forwardRef<WebImageCropperHandle, WebImageCropper
           <div aria-modal="true" role="dialog" style={styles.overlay}>
             <div style={styles.header}>
               <div>
-                <div style={styles.title}>Crop image</div>
-                <div style={styles.subtitle}>Drag and zoom inside the frame.</div>
+                <div style={styles.title}>
+                  {step === 'crop' ? 'Crop & Adjust' : 'Confirm Layout'}
+                </div>
+                <div style={styles.subtitle}>
+                  {step === 'crop'
+                    ? 'Choose an aspect ratio and scale your artwork.'
+                    : 'Verify how the image fits inside the ticket views.'}
+                </div>
               </div>
               <button
                 aria-label="Cancel crop"
@@ -257,69 +346,189 @@ export const WebImageCropper = forwardRef<WebImageCropperHandle, WebImageCropper
                 style={styles.iconButton}
                 type="button"
               >
-                x
+                ×
               </button>
             </div>
 
-            <div style={styles.cropperArea}>
-              <Cropper
-                aspect={aspect}
-                crop={crop}
-                cropShape={cropShape}
-                image={cropSession.sourceUri}
-                maxZoom={3}
-                minZoom={1}
-                objectFit="contain"
-                onCropChange={setCrop}
-                onCropComplete={handleCropComplete}
-                onZoomChange={setZoom}
-                showGrid={false}
-                zoom={zoom}
-              />
-            </div>
+            {step === 'crop' ? (
+              <>
+                <div style={styles.cropperArea}>
+                  <Cropper
+                    aspect={selectedAspect}
+                    crop={crop}
+                    cropShape={cropShape}
+                    image={cropSession.sourceUri}
+                    maxZoom={3}
+                    minZoom={1}
+                    objectFit="contain"
+                    onCropChange={setCrop}
+                    onCropComplete={handleCropComplete}
+                    onZoomChange={setZoom}
+                    showGrid={false}
+                    zoom={zoom}
+                  />
+                </div>
 
-            <div style={styles.controls}>
-              <div style={styles.zoomHeader}>
-                <label htmlFor="ticket-image-zoom" style={styles.zoomLabel}>
-                  Zoom
-                </label>
-                <span style={styles.zoomValue}>{Math.round(zoom * 100)}%</span>
-              </div>
-              <input
-                id="ticket-image-zoom"
-                max="3"
-                min="1"
-                onChange={(event) => setZoom(Number(event.currentTarget.value))}
-                step="0.01"
-                style={styles.slider}
-                type="range"
-                value={zoom}
-              />
+                <div style={styles.controls}>
+                  {/* Dynamic Aspect Ratio Tabs */}
+                  <div style={styles.aspectSelector}>
+                    <span style={styles.aspectLabel}>Crop Aspect Ratio</span>
+                    <div style={styles.aspectTabs}>
+                      {ASPECT_RATIOS.map((item) => {
+                        const isActive = selectedAspect === item.value;
+                        return (
+                          <button
+                            key={item.label}
+                            onClick={() => setSelectedAspect(item.value)}
+                            style={{
+                              ...styles.aspectTab,
+                              ...(isActive ? styles.aspectTabActive : null),
+                            }}
+                            type="button"
+                          >
+                            {item.label}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
 
-              <div style={styles.actions}>
-                <button
-                  disabled={isProcessing}
-                  onClick={closeCropper}
-                  style={styles.cancelButton}
-                  type="button"
-                >
-                  Cancel
-                </button>
-                <button
-                  disabled={isProcessing || !croppedAreaPixels}
-                  onClick={() => {
-                    void handleApplyCrop();
-                  }}
-                  style={{
-                    ...styles.doneButton,
-                    ...(isProcessing || !croppedAreaPixels ? styles.disabledButton : null),
-                  }}
-                  type="button"
-                >
-                  {isProcessing ? 'Applying...' : 'Apply Crop'}
-                </button>
-              </div>
-            </div>
+                  <div style={styles.zoomHeader}>
+                    <label htmlFor="ticket-image-zoom" style={styles.zoomLabel}>
+                      Zoom
+                    </label>
+                    <span style={styles.zoomValue}>{Math.round(zoom * 100)}%</span>
+                  </div>
+                  <input
+                    id="ticket-image-zoom"
+                    max="3"
+                    min="1"
+                    onChange={(event) => setZoom(Number(event.currentTarget.value))}
+                    step="0.01"
+                    style={styles.slider}
+                    type="range"
+                    value={zoom}
+                  />
+
+                  <div style={styles.actions}>
+                    <button
+                      disabled={isProcessing}
+                      onClick={closeCropper}
+                      style={styles.cancelButton}
+                      type="button"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      disabled={isProcessing}
+                      onClick={() => {
+                        void handleGoToPreview(true);
+                      }}
+                      style={styles.skipButton}
+                      type="button"
+                    >
+                      Use Original
+                    </button>
+                    <button
+                      disabled={isProcessing || !croppedAreaPixels}
+                      onClick={() => {
+                        void handleGoToPreview(false);
+                      }}
+                      style={{
+                        ...styles.doneButton,
+                        ...(isProcessing || !croppedAreaPixels ? styles.disabledButton : null),
+                      }}
+                      type="button"
+                    >
+                      {isProcessing ? 'Processing...' : 'Preview in UI'}
+                    </button>
+                  </div>
+                </div>
+              </>
+            ) : (
+              <>
+                {/* Step 2: Verification Previews & Dimensions Check */}
+                <div style={styles.previewContainer}>
+                  <div style={styles.previewInfo}>
+                    <div style={styles.dimensionsBadge}>
+                      {previewDimensions
+                        ? `${previewDimensions.width} × ${previewDimensions.height} px`
+                        : ''}
+                    </div>
+                    <div style={styles.previewSubtitle}>
+                      Cut views simulating rendering scale settings (Contain Mode):
+                    </div>
+                  </div>
+
+                  <div style={styles.mockupGrid}>
+                    {/* Ticket Card List Item Preview */}
+                    <div style={styles.mockupCard}>
+                      <div style={styles.mockupLabel}>Ticket Card Preview</div>
+                      <div style={styles.ticketCardFrame}>
+                        <div style={styles.ticketCardBlueHeader} />
+                        <div style={styles.ticketCardImageContainer}>
+                          <img
+                            alt="Ticket Card Preview"
+                            src={previewUri || ''}
+                            style={styles.ticketCardImage}
+                          />
+                        </div>
+                        <div style={styles.ticketCardFooter}>
+                          <div style={styles.ticketCardText1}>Taylor Swift</div>
+                          <div style={styles.ticketCardText2}>May 20 • Wembley Stadium</div>
+                          <div style={styles.ticketCardButton}>View Ticket</div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Summary Hero Header Preview */}
+                    <div style={styles.mockupHero}>
+                      <div style={styles.mockupLabel}>Summary Hero Preview</div>
+                      <div style={styles.heroFrame}>
+                        <img
+                          alt="Hero Header Preview"
+                          src={previewUri || ''}
+                          style={styles.heroImageStyle}
+                        />
+                        <div style={styles.heroOverlay} />
+                        <div style={styles.heroHeaderBar}>
+                          <span style={styles.heroBackArrow}>←</span>
+                          <span style={styles.heroInfoButton}>ⓘ</span>
+                        </div>
+                        <div style={styles.heroContent}>
+                          <div style={styles.heroDate}>WED, MAY 20 • 7:00 PM</div>
+                          <div style={styles.heroTitle}>Taylor Swift | The Eras Tour</div>
+                          <div style={styles.heroVenue}>Wembley Stadium • London</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div style={styles.controls}>
+                  <div style={styles.actions}>
+                    <button
+                      disabled={isProcessing}
+                      onClick={handleBackToEdit}
+                      style={styles.cancelButton}
+                      type="button"
+                    >
+                      Back to Edit
+                    </button>
+                    <button
+                      disabled={isProcessing}
+                      onClick={() => {
+                        void handleConfirmUpload();
+                      }}
+                      style={styles.doneButton}
+                      type="button"
+                    >
+                      {isProcessing ? 'Uploading...' : 'Confirm & Upload'}
+                    </button>
+                  </div>
+                </div>
+              </>
+            )}
           </div>
         ) : null}
       </>
@@ -356,11 +565,58 @@ function getImageProcessingErrorMessage(error: unknown) {
   return 'We could not crop this image. If it is a remote URL, try uploading it from your device.';
 }
 
+function loadLocalBrowserImage(sourceUri: string) {
+  return new Promise<HTMLImageElement>((resolve, reject) => {
+    const image = new window.Image();
+    image.onload = () => resolve(image);
+    image.onerror = () => reject(new Error('Image could not be loaded.'));
+    image.crossOrigin = 'anonymous';
+    image.src = sourceUri;
+  });
+}
+
 const styles = {
   actions: {
     display: 'flex',
     gap: 10,
     width: '100%',
+  },
+  aspectLabel: {
+    color: 'rgba(255,255,255,0.72)',
+    fontSize: 10,
+    fontWeight: 800,
+    letterSpacing: 1.2,
+    marginBottom: 6,
+    textTransform: 'uppercase',
+  },
+  aspectSelector: {
+    display: 'flex',
+    flexDirection: 'column',
+    width: '100%',
+  },
+  aspectTab: {
+    backgroundColor: 'rgba(255,255,255,0.06)',
+    border: '1px solid rgba(255,255,255,0.14)',
+    borderRadius: 6,
+    color: 'rgba(255,255,255,0.72)',
+    cursor: 'pointer',
+    flexShrink: 0,
+    fontSize: 11,
+    fontWeight: 700,
+    outline: 'none',
+    padding: '8px 14px',
+    transition: 'all 0.18s ease',
+  },
+  aspectTabActive: {
+    backgroundColor: '#005BD3',
+    borderColor: '#005BD3',
+    color: '#FFFFFF',
+  },
+  aspectTabs: {
+    display: 'flex',
+    gap: 8,
+    overflowX: 'auto',
+    paddingBottom: 6,
   },
   cancelButton: {
     alignItems: 'center',
@@ -400,6 +656,15 @@ const styles = {
     position: 'relative',
     touchAction: 'none',
   },
+  dimensionsBadge: {
+    backgroundColor: '#005BD3',
+    borderRadius: 20,
+    color: '#FFFFFF',
+    fontSize: 13,
+    fontWeight: 800,
+    letterSpacing: 0.5,
+    padding: '6px 14px',
+  },
   disabledButton: {
     cursor: 'default',
     opacity: 0.62,
@@ -433,6 +698,77 @@ const styles = {
     width: '100%',
     zIndex: 2,
   },
+  heroBackArrow: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  heroContent: {
+    bottom: 0,
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 2,
+    left: 0,
+    padding: '12px',
+    position: 'absolute',
+    right: 0,
+  },
+  heroDate: {
+    color: '#005BD3',
+    fontSize: 8,
+    fontWeight: 900,
+    letterSpacing: 0.8,
+  },
+  heroFrame: {
+    backgroundColor: '#050505',
+    borderRadius: 12,
+    boxShadow: '0 8px 24px rgba(0,0,0,0.5)',
+    height: '150px',
+    overflow: 'hidden',
+    position: 'relative',
+    width: '100%',
+  },
+  heroHeaderBar: {
+    alignItems: 'center',
+    display: 'flex',
+    justifyContent: 'space-between',
+    left: 0,
+    padding: '10px 12px',
+    position: 'absolute',
+    right: 0,
+    top: 0,
+  },
+  heroImageStyle: {
+    height: '100%',
+    objectFit: 'contain',
+    width: '100%',
+  },
+  heroInfoButton: {
+    alignItems: 'center',
+    backgroundColor: 'rgba(255,255,255,0.15)',
+    borderRadius: '11px',
+    color: '#FFFFFF',
+    display: 'flex',
+    fontSize: 14,
+    height: '22px',
+    justifyContent: 'center',
+    width: '22px',
+  },
+  heroOverlay: {
+    background: 'linear-gradient(to bottom, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.85) 100%)',
+    inset: 0,
+    position: 'absolute',
+  },
+  heroTitle: {
+    color: '#FFFFFF',
+    fontSize: 13,
+    fontWeight: 900,
+  },
+  heroVenue: {
+    color: 'rgba(255,255,255,0.62)',
+    fontSize: 9,
+    fontWeight: 500,
+  },
   iconButton: {
     alignItems: 'center',
     backgroundColor: 'rgba(255,255,255,0.1)',
@@ -447,6 +783,37 @@ const styles = {
     lineHeight: 1,
     width: 40,
   },
+  mockupCard: {
+    alignItems: 'center',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 8,
+    maxWidth: 240,
+    width: '100%',
+  },
+  mockupGrid: {
+    alignItems: 'center',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 20,
+    paddingBottom: 20,
+    width: '100%',
+  },
+  mockupHero: {
+    alignItems: 'center',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 8,
+    maxWidth: 380,
+    width: '100%',
+  },
+  mockupLabel: {
+    color: 'rgba(255,255,255,0.48)',
+    fontSize: 10,
+    fontWeight: 800,
+    letterSpacing: 1.2,
+    textTransform: 'uppercase',
+  },
   overlay: {
     backgroundColor: '#050505',
     color: '#FFFFFF',
@@ -458,6 +825,43 @@ const styles = {
     width: '100vw',
     zIndex: 100000,
   },
+  previewContainer: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 16,
+    flex: 1,
+    padding: '0 16px',
+    overflowY: 'auto',
+  },
+  previewInfo: {
+    alignItems: 'center',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 6,
+    marginTop: 8,
+  },
+  previewSubtitle: {
+    color: 'rgba(255,255,255,0.6)',
+    fontSize: 12,
+    lineHeight: '16px',
+    textAlign: 'center',
+  },
+  skipButton: {
+    alignItems: 'center',
+    backgroundColor: 'transparent',
+    border: '1px solid rgba(255,255,255,0.28)',
+    borderRadius: 8,
+    color: '#FFFFFF',
+    cursor: 'pointer',
+    display: 'flex',
+    flex: 1,
+    fontSize: 12,
+    fontWeight: 800,
+    justifyContent: 'center',
+    letterSpacing: 0.8,
+    minHeight: 48,
+    textTransform: 'uppercase',
+  },
   slider: {
     accentColor: '#005BD3',
     width: '100%',
@@ -468,6 +872,66 @@ const styles = {
     fontWeight: 600,
     lineHeight: '17px',
     marginTop: 2,
+  },
+  ticketCardBlueHeader: {
+    backgroundColor: '#005BD3',
+    height: '8px',
+    width: '100%',
+  },
+  ticketCardButton: {
+    backgroundColor: '#005BD3',
+    borderRadius: 4,
+    color: '#FFFFFF',
+    fontSize: 9,
+    fontWeight: 800,
+    letterSpacing: 0.5,
+    marginTop: 6,
+    padding: '6px 0',
+    textAlign: 'center',
+    textTransform: 'uppercase',
+  },
+  ticketCardFooter: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 4,
+    padding: '10px 12px 12px',
+  },
+  ticketCardFrame: {
+    backgroundColor: '#1C1C1E',
+    border: '1px solid rgba(255,255,255,0.08)',
+    borderRadius: 12,
+    boxShadow: '0 8px 24px rgba(0,0,0,0.5)',
+    display: 'flex',
+    flexDirection: 'column',
+    height: '270px',
+    overflow: 'hidden',
+    width: '180px',
+  },
+  ticketCardImage: {
+    height: '100%',
+    objectFit: 'contain',
+    width: '100%',
+  },
+  ticketCardImageContainer: {
+    alignItems: 'center',
+    backgroundColor: '#000000',
+    display: 'flex',
+    flex: 1,
+    justifyContent: 'center',
+    overflow: 'hidden',
+    position: 'relative',
+  },
+  ticketCardText1: {
+    color: '#FFFFFF',
+    fontSize: 11,
+    fontWeight: 800,
+    letterSpacing: 0.5,
+    textTransform: 'uppercase',
+  },
+  ticketCardText2: {
+    color: 'rgba(255,255,255,0.5)',
+    fontSize: 9,
+    fontWeight: 600,
   },
   title: {
     color: '#FFFFFF',
