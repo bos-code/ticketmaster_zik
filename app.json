@@ -1,20 +1,20 @@
 {
   "expo": {
-    "name": "ticketmaster_zik",
-    "slug": "zik",
+    "name": "ticketmaster_rey",
+    "slug": "rey",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./public/icon.png",
-    "scheme": "ticketmasterzik",
+    "scheme": "ticketmasterrey",
     "userInterfaceStyle": "light",
     "ios": {
-      "bundleIdentifier": "com.johnderadev.ticketmasterzik",
+      "bundleIdentifier": "com.johnderadev.ticketmasterrey",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       }
     },
     "android": {
-      "package": "com.johnderadev.ticketmasterzik",
+      "package": "com.johnderadev.ticketmasterrey",
       "adaptiveIcon": {
         "backgroundColor": "#000000",
         "foregroundImage": "./public/icon.png"
@@ -57,19 +57,19 @@
       [
         "expo-location",
         {
-          "locationWhenInUsePermission": "Allow ticketmaster_zik to access your location so you can preview routes to venues."
+          "locationWhenInUsePermission": "Allow ticketmaster_rey to access your location so you can preview routes to venues."
         }
       ],
       [
         "expo-image-picker",
         {
-          "photosPermission": "Allow ticketmaster_zik to access your photos so admins can upload event artwork."
+          "photosPermission": "Allow ticketmaster_rey to access your photos so admins can upload event artwork."
         }
       ],
       [
         "expo-contacts",
         {
-          "contactsPermission": "Allow ticketmaster_zik to access your contacts to transfer tickets."
+          "contactsPermission": "Allow ticketmaster_rey to access your contacts to transfer tickets."
         }
       ],
       "expo-notifications",

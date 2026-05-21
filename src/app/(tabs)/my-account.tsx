@@ -1,6 +1,5 @@
 import { useRouter } from "expo-router";
 import { ScreenWrapper } from "@/components/ui/screen-wrapper";
-import { onAuthStateChanged, type User } from "firebase/auth";
 import enCountryData from "i18n-iso-countries/langs/en.json";
 import * as countries from "i18n-iso-countries";
 import React, { useEffect, useMemo, useRef, useState } from "react";
@@ -25,11 +24,6 @@ import {
   getLocationPermissionStatus,
   resolveHomeLocation,
 } from "@/lib/device-permissions";
-import {
-  subscribeToAdminAccess,
-  subscribeToPendingAdminRequests,
-} from "@/lib/admin-access";
-import { firebaseAuth } from "@/lib/firebase";
 import { useAppStore } from "@/store/use-app-store";
 
 
@@ -245,53 +239,11 @@ export default function MyAccountScreen() {
   const scrollRef = useRef<ScrollView | null>(null);
   const scrollOffsetYRef = useRef(WELCOME_PANEL_LOCK_HEIGHT);
   const [receiveNotifs, setReceiveNotifs] = useState(false);
-  const [adminUser, setAdminUser] = useState<User | null>(firebaseAuth.currentUser);
-  const [isValidatedAdmin, setIsValidatedAdmin] = useState(false);
-  const [pendingAdminRequestCount, setPendingAdminRequestCount] = useState(0);
   const [isRefreshingLocation, setIsRefreshingLocation] = useState(false);
   const homeLocationLabel = useAppStore((state) => state.homeLocationLabel);
   const locationEnabled = useAppStore((state) => state.locationEnabled);
   const setHomeLocationLabel = useAppStore((state) => state.setHomeLocationLabel);
   const setLocationEnabled = useAppStore((state) => state.setLocationEnabled);
-
-  useEffect(() => onAuthStateChanged(firebaseAuth, setAdminUser), []);
-
-  useEffect(() => {
-    if (!adminUser) {
-      setIsValidatedAdmin(false);
-      setPendingAdminRequestCount(0);
-      return undefined;
-    }
-
-    return subscribeToAdminAccess(
-      adminUser,
-      (state) => {
-        const nextIsValidatedAdmin = state.isAdmin && adminUser.emailVerified;
-
-        setIsValidatedAdmin(nextIsValidatedAdmin);
-
-        if (!nextIsValidatedAdmin) {
-          setPendingAdminRequestCount(0);
-        }
-      },
-      () => {
-        setIsValidatedAdmin(false);
-        setPendingAdminRequestCount(0);
-      },
-    );
-  }, [adminUser]);
-
-  useEffect(() => {
-    if (!isValidatedAdmin) {
-      setPendingAdminRequestCount(0);
-      return undefined;
-    }
-
-    return subscribeToPendingAdminRequests(
-      (requests) => setPendingAdminRequestCount(requests.length),
-      () => setPendingAdminRequestCount(0),
-    );
-  }, [isValidatedAdmin]);
 
   useEffect(() => {
     let isActive = true;
@@ -377,12 +329,7 @@ export default function MyAccountScreen() {
   }
 
   function handleNotificationsPress() {
-    if (isValidatedAdmin && pendingAdminRequestCount > 0) {
-      router.push("/settings/security");
-      return;
-    }
-
-    Alert.alert("Notifications", "No admin requests need your review right now.");
+    Alert.alert("Notifications", "No notifications need your review right now.");
   }
 
   const handleSnap = (offsetY: number) => {
@@ -463,15 +410,9 @@ export default function MyAccountScreen() {
         <SectionHeader label="Notifications" />
         <View className="bg-white">
           <ChevronRow
-            badgeCount={isValidatedAdmin ? pendingAdminRequestCount : 0}
             icon="envelope-outline"
             label="My Notifications"
             onPress={handleNotificationsPress}
-            value={
-              isValidatedAdmin && pendingAdminRequestCount > 0
-                ? "Admin access"
-                : undefined
-            }
           />
           <ToggleRow
             icon="bell-outline"
@@ -522,15 +463,10 @@ export default function MyAccountScreen() {
             onPress={() => router.push("/admin")}
           />
           <ChevronRow
-            badgeCount={isValidatedAdmin ? pendingAdminRequestCount : 0}
             icon="shield-checkmark-outline"
-            label="Security"
-            onPress={() => router.push("/settings/security")}
-            value={
-              isValidatedAdmin && pendingAdminRequestCount > 0
-                ? "Admin requests"
-                : undefined
-            }
+            label="Admin Lock"
+            onPress={() => router.push("/admin")}
+            value="Pass key"
           />
           <ChevronRow icon="card-outline" label="Saved Payment Methods" />
           <ChevronRow

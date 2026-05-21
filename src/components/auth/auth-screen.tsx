@@ -33,7 +33,7 @@ export function AuthScreen({ children, eyebrow, footer, subtitle, title }: AuthS
             <View style={styles.brandMark}>
               <Text style={styles.brandText}>T</Text>
             </View>
-            <Text style={styles.brandName}>Ticketmaster Zik</Text>
+            <Text style={styles.brandName}>Ticketmaster Rey</Text>
           </View>
 
           <View style={styles.header}>

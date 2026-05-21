@@ -1,12 +1,5 @@
-import React from 'react';
-
-import { AdminSecurityScreen } from '@/components/admin/admin-security-screen';
-import { ProtectedAdminRoute } from '@/components/admin/protected-admin-route';
+import { Redirect } from 'expo-router';
 
 export default function SecuritySettingsRoute() {
-  return (
-    <ProtectedAdminRoute>
-      <AdminSecurityScreen />
-    </ProtectedAdminRoute>
-  );
+  return <Redirect href="/admin" />;
 }

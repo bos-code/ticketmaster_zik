@@ -6,9 +6,8 @@ service firebase.storage {
       return request.auth != null;
     }
 
-    function hasVerifiedPhone() {
-      return request.auth.token.phone_number is string &&
-        request.auth.token.phone_number.size() > 0;
+    function hasVerifiedEmail() {
+      return request.auth.token.email_verified == true;
     }
 
     function adminDocPath(uid) {
@@ -25,7 +24,7 @@ service firebase.storage {
     }
 
     function isAdmin() {
-      return isSignedIn() && hasVerifiedPhone() &&
+      return isSignedIn() && hasVerifiedEmail() &&
         (firestore.exists(adminDocPath(request.auth.uid)) ||
           hasApprovedAdminRequest(request.auth.uid));
     }

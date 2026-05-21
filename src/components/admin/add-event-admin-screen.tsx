@@ -937,7 +937,7 @@ async function uploadTicketArtworkImage(image: WebCroppedImage) {
   return uploadImage(image.file, {
     cloudName,
     fileName: image.fileName,
-    folder: 'ticketmaster-zik/tickets',
+    folder: 'ticketmaster-rey/tickets',
     publicId: buildTicketArtworkPublicId(image.fileName),
     uploadPreset,
   });

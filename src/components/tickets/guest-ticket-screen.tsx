@@ -40,7 +40,7 @@ export function GuestTicketScreen() {
 
         <View style={styles.content}>
           <View style={styles.brandWrap}>
-            <Text style={styles.brandWordmark}>zik</Text>
+            <Text style={styles.brandWordmark}>rey</Text>
             <Text style={styles.brandTagline}>Events. Tickets. Moments.</Text>
           </View>
 

@@ -18,6 +18,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import Head from 'expo-router/head';
 import { StatusBar } from 'expo-status-bar';
+import { lockAdminSession } from '@/lib/admin-pass-key';
 import {
   formatTicketDate,
   type TicketRecord,
@@ -126,6 +127,8 @@ export function AdminTicketManagementScreen() {
   }
 
   function handleExitAdmin() {
+    lockAdminSession();
+
     if (router.canGoBack()) {
       router.back();
       return;

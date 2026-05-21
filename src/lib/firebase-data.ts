@@ -251,7 +251,7 @@ async function uploadTicketImageToCloudinary(ticketId: string, imageValue: strin
   const imageUrl = await uploadImage(imageBlob, {
     cloudName,
     fileName: `${buildStorageSafeId(ticketId)}.jpg`,
-    folder: 'ticketmaster-zik/tickets',
+    folder: 'ticketmaster-rey/tickets',
     publicId: `${buildStorageSafeId(ticketId)}-${Date.now()}`,
     uploadPreset,
   });
