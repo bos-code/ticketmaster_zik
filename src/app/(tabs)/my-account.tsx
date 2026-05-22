@@ -24,6 +24,7 @@ import {
   getLocationPermissionStatus,
   resolveHomeLocation,
 } from "@/lib/device-permissions";
+import { lockAdminSession } from "@/lib/admin-pass-key";
 import { useAppStore } from "@/store/use-app-store";
 
 
@@ -332,6 +333,11 @@ export default function MyAccountScreen() {
     Alert.alert("Notifications", "No notifications need your review right now.");
   }
 
+  function handleEnterAdmin() {
+    lockAdminSession();
+    router.push("/admin");
+  }
+
   const handleSnap = (offsetY: number) => {
     if (!scrollRef.current) return;
 
@@ -460,13 +466,7 @@ export default function MyAccountScreen() {
           <ChevronRow
             icon="create-outline"
             label="Edit Details"
-            onPress={() => router.push("/admin")}
-          />
-          <ChevronRow
-            icon="shield-checkmark-outline"
-            label="Admin Lock"
-            onPress={() => router.push("/admin")}
-            value="Pass key"
+            onPress={handleEnterAdmin}
           />
           <ChevronRow icon="card-outline" label="Saved Payment Methods" />
           <ChevronRow
