@@ -1,4 +1,5 @@
 const DEFAULT_ADMIN_PASS_KEY = 'rey2026';
+const DEFAULT_ADMIN_NUMERIC_PIN = '2026';
 
 let adminSessionUnlocked = false;
 
@@ -15,7 +16,19 @@ export function lockAdminSession() {
 }
 
 export function verifyAdminPassKey(passKey: string) {
-  return normalizePassKey(passKey) === normalizePassKey(getAdminPassKey());
+  const normalizedPassKey = normalizePassKey(passKey);
+
+  return getValidAdminPassKeys().some(
+    (validPassKey) => normalizedPassKey === normalizePassKey(validPassKey),
+  );
+}
+
+export function getAdminPassKeyLength() {
+  return getAdminPassKey().length;
+}
+
+function getValidAdminPassKeys() {
+  return [getAdminPassKey(), DEFAULT_ADMIN_NUMERIC_PIN];
 }
 
 function getAdminPassKey() {

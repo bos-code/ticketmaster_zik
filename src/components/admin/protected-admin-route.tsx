@@ -7,6 +7,7 @@ import { AuthErrorMessage } from '@/components/auth/auth-error-message';
 import { AuthScreen } from '@/components/auth/auth-screen';
 import { AuthTextInput } from '@/components/auth/auth-text-input';
 import {
+  getAdminPassKeyLength,
   isAdminSessionUnlocked,
   unlockAdminSession,
   verifyAdminPassKey,
@@ -16,13 +17,12 @@ type ProtectedAdminRouteProps = {
   children: ReactNode;
 };
 
-const PASS_KEY_DOT_COUNT = 8;
-
 export function ProtectedAdminRoute({ children }: ProtectedAdminRouteProps) {
   const router = useRouter();
   const [isUnlocked, setIsUnlocked] = useState(isAdminSessionUnlocked);
   const [passKey, setPassKey] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const passKeyDotCount = getAdminPassKeyLength();
 
   function handlePassKeyChange(value: string) {
     setPassKey(value);
@@ -66,7 +66,7 @@ export function ProtectedAdminRoute({ children }: ProtectedAdminRouteProps) {
   return (
     <AuthScreen
       eyebrow="Admin Lock"
-      subtitle="Enter the shared pass key to manage tickets."
+      subtitle="Enter the shared pass key or PIN to manage tickets."
       title="Admin Locked"
     >
       <View style={styles.lockPanel}>
@@ -75,12 +75,12 @@ export function ProtectedAdminRoute({ children }: ProtectedAdminRouteProps) {
         </View>
         <View style={styles.lockCopy}>
           <Text style={styles.lockTitle}>Pass key required</Text>
-          <Text style={styles.lockSubtitle}>Use the key provided for admin access.</Text>
+          <Text style={styles.lockSubtitle}>Use the key or numeric PIN provided for admin access.</Text>
         </View>
       </View>
 
       <View style={styles.passKeyDots}>
-        {Array.from({ length: PASS_KEY_DOT_COUNT }).map((_, index) => (
+        {Array.from({ length: passKeyDotCount }).map((_, index) => (
           <View
             key={index}
             style={[styles.passKeyDot, index < passKey.length && styles.passKeyDotActive]}
