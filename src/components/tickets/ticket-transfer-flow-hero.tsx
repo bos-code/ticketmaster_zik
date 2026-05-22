@@ -197,8 +197,11 @@ function CollapsedHeroLayer({
         source={heroImage}
       />
       <View style={[absoluteFill, { paddingTop: statusBarBleed }]}>
-        <View className='px-4'>
-          <View className='mt-3 flex-row items-center justify-between'>
+        <View
+          className='justify-center px-4'
+          style={{ height: HERO_COLLAPSED_HEIGHT - statusBarBleed }}
+        >
+          <View className='relative h-10 flex-row items-center justify-between'>
             <HeaderBackButton onBack={onBack} />
             <CollapsedHeroTitle
               style={collapsedTitleStyle}
@@ -244,7 +247,7 @@ function HeaderBackButton({ onBack }: { onBack: () => void }) {
 function CollapsedHeroTitle({ style, title, venue }: CollapsedHeroTitleProps) {
   return (
     <Animated.View
-      style={[style, { pointerEvents: 'none' }]}
+      style={[style, { bottom: 0, justifyContent: 'center', pointerEvents: 'none', top: 0 }]}
       className='absolute left-16 right-16 items-center'
     >
       <Text className='mb-1 text-center text-[13px] font-extrabold text-white'>
