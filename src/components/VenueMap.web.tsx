@@ -66,46 +66,26 @@ function buildVenueMapHtml({
     body { background: #F7F5EC; overflow: hidden; font-family: -apple-system, BlinkMacSystemFont, "Inter", system-ui, sans-serif; }
     .maplibregl-ctrl-logo, .maplibregl-ctrl-attrib { display: none !important; }
     .pin {
-      background: #007AFF;
+      background: #5C2D91;
       border: 3px solid #FFFFFF;
-      border-radius: 50% 50% 50% 0;
-      box-shadow: 0 8px 18px rgba(0,122,255,0.24);
-      height: 28px;
-      transform: rotate(-45deg);
-      width: 28px;
-    }
-    .pin::after {
-      background: #FFFFFF;
       border-radius: 50%;
-      content: "";
-      height: 8px;
-      left: 7px;
-      position: absolute;
-      top: 7px;
-      width: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+      height: 24px;
+      width: 24px;
     }
-    .label {
-      background: rgba(255,255,255,0.94);
-      border: 1px solid rgba(0,0,0,0.06);
-      border-radius: 16px;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.10);
-      left: 16px;
-      padding: 12px 14px;
-      position: absolute;
-      right: 16px;
-      top: 16px;
-      z-index: 2;
+    .maplibregl-ctrl-group {
+      border-radius: 8px !important;
+      overflow: hidden;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1) !important;
     }
-    .name { color: #1C1C1E; font-size: 16px; font-weight: 700; line-height: 20px; }
-    .address { color: #6C6C70; font-size: 13px; line-height: 17px; margin-top: 2px; }
+    .maplibregl-ctrl-top-right {
+      top: 16px !important;
+      right: 16px !important;
+    }
   </style>
 </head>
 <body>
   <div id="map"></div>
-  <div class="label">
-    <div class="name" id="name"></div>
-    <div class="address" id="address"></div>
-  </div>
   <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
   <script>
     const BOOT = ${boot};
@@ -119,12 +99,17 @@ function buildVenueMapHtml({
       style: 'https://tiles.openfreemap.org/styles/bright',
       zoom: 15.5
     });
-    document.getElementById('name').textContent = BOOT.name;
-    document.getElementById('address').textContent = BOOT.address;
+
+    map.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-right');
+    map.addControl(new maplibregl.GeolocateControl({
+      positionOptions: { enableHighAccuracy: true },
+      trackUserLocation: true
+    }), 'top-right');
+
     map.on('load', () => {
       const el = document.createElement('div');
       el.className = 'pin';
-      new maplibregl.Marker({ element: el, anchor: 'bottom' }).setLngLat(BOOT.center).addTo(map);
+      new maplibregl.Marker({ element: el, anchor: 'center' }).setLngLat(BOOT.center).addTo(map);
       (map.getStyle().layers || []).forEach((layer) => {
         const id = layer.id.toLowerCase();
         const sourceLayer = (layer['source-layer'] || '').toLowerCase();
