@@ -138,12 +138,20 @@ export function getMapEdgePadding() {
 }
 
 export function canRenderEmbeddedMap() {
-  if (Platform.OS !== 'android') {
+  // Web (including Android PWA) always uses MapLibre/OpenFreeMap — no API key required.
+  if (Platform.OS === 'web') {
     return true;
   }
 
+  // iOS native: uses WebView with MapLibre — no key needed.
+  if (Platform.OS === 'ios') {
+    return true;
+  }
+
+  // Android native: requires Google Maps API key for react-native-maps PROVIDER_GOOGLE.
   return Boolean(process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY);
 }
+
 
 export function buildStaticMapPreviewUrl(
   longitude?: number | null,

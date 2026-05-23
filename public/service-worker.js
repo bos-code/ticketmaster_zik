@@ -1,4 +1,4 @@
-const CACHE_NAME = "ticketmaster-rey-v9";
+const CACHE_NAME = "ticketmaster-rey-v10";
 const APP_SHELL_ASSETS = [
   "/",
   "/index.html",
@@ -7,6 +7,17 @@ const APP_SHELL_ASSETS = [
   "/icon-192.png",
   "/icon-512.png",
   "/apple-touch-icon.png",
+];
+
+// These external CDN origins must never be intercepted by the SW.
+// Caching opaque CDN responses on Android fills quota and causes silent failures.
+const CDN_PASS_THROUGH_ORIGINS = [
+  "unpkg.com",
+  "openfreemap.org",
+  "tiles.openfreemap.org",
+  "fonts.openmaptiles.org",
+  "maps.googleapis.com",
+  "maps.geoapify.com",
 ];
 
 self.addEventListener("install", (event) => {
@@ -36,6 +47,12 @@ self.addEventListener("fetch", (event) => {
   }
 
   const url = new URL(request.url);
+
+  // Let CDN requests pass through — never cache map tiles/assets as opaque responses.
+  if (CDN_PASS_THROUGH_ORIGINS.some((origin) => url.hostname.endsWith(origin))) {
+    return;
+  }
+
   if (url.origin !== self.location.origin) {
     return;
   }

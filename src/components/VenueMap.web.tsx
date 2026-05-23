@@ -30,6 +30,7 @@ export default function VenueMap({
     <View style={styles.root}>
       {React.createElement("iframe", {
         referrerPolicy: "no-referrer-when-downgrade",
+        sandbox: "allow-scripts allow-same-origin allow-popups allow-forms",
         srcDoc: html,
         style: iframeStyle,
         title: `${venueName} map`,
@@ -181,7 +182,6 @@ function buildVenueMapHtml({
     map.on('load', () => {
       const el = document.createElement('div');
       el.className = 'pin';
-      new maplibregl.Marker({ element: el, anchor: 'center' }).setLngLat(BOOT.center).addTo(map);
       new maplibregl.Marker({ element: el, anchor: 'center' }).setLngLat(BOOT.center).addTo(map);
       (map.getStyle().layers || []).forEach((layer) => {
         const id = layer.id.toLowerCase();
