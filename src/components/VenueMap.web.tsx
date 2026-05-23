@@ -69,7 +69,7 @@ function buildVenueMapHtml({
     .maplibregl-ctrl-logo, .maplibregl-ctrl-attrib { display: none !important; }
     
     .pin {
-      background: #6B4FBB;
+      background: #5C2D91;
       border: 3px solid #FFFFFF;
       border-radius: 50%;
       box-shadow: 0px 2px 8px rgba(0,0,0,0.2);
@@ -181,6 +181,7 @@ function buildVenueMapHtml({
     map.on('load', () => {
       const el = document.createElement('div');
       el.className = 'pin';
+      new maplibregl.Marker({ element: el, anchor: 'center' }).setLngLat(BOOT.center).addTo(map);
       new maplibregl.Marker({ element: el, anchor: 'center' }).setLngLat(BOOT.center).addTo(map);
       (map.getStyle().layers || []).forEach((layer) => {
         const id = layer.id.toLowerCase();
