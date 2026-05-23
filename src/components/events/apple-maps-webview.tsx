@@ -179,7 +179,7 @@ function buildAppleMapsHtml({
       align-items: center;
       background: #F2F2F7;
       border-radius: 16px;
-      color: #007AFF;
+      color: #5B2D8E;
       display: flex;
       height: 32px;
       justify-content: center;
@@ -213,7 +213,7 @@ function buildAppleMapsHtml({
       width: 44px;
     }
     .glass-button svg { height: 22px; width: 22px; }
-    .tracking svg { fill: #007AFF; stroke: #007AFF; }
+    .tracking svg { fill: #5B2D8E; stroke: #5B2D8E; }
     #compass {
       opacity: 0;
       pointer-events: none;
@@ -241,18 +241,18 @@ function buildAppleMapsHtml({
     .poi-marker.active { transform: scale(1.2); }
     .user-marker {
       animation: userPulse 1300ms cubic-bezier(0.34, 1.56, 0.64, 1) 1;
-      background: #007AFF;
+      background: #5B2D8E;
       border: 3px solid #FFFFFF;
       border-radius: 50%;
-      box-shadow: 0 2px 6px rgba(0,122,255,0.4);
+      box-shadow: 0 2px 6px rgba(91,45,142,0.4);
       height: 20px;
       width: 20px;
     }
     .pin {
-      background: #007AFF;
+      background: #5B2D8E;
       border: 3px solid #FFFFFF;
       border-radius: 50% 50% 50% 0;
-      box-shadow: 0 8px 18px rgba(0,122,255,0.24);
+      box-shadow: 0 8px 18px rgba(91,45,142,0.24);
       height: 28px;
       transform: rotate(-45deg);
       width: 28px;
@@ -302,7 +302,7 @@ function buildAppleMapsHtml({
       background: #F2F2F7;
       border: 0;
       border-radius: 14px;
-      color: #007AFF;
+      color: #5B2D8E;
       display: flex;
       flex-direction: column;
       font: 600 11px/14px -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", system-ui, sans-serif;
@@ -313,7 +313,7 @@ function buildAppleMapsHtml({
     }
     .action svg { height: 20px; width: 20px; }
     #confirmButton {
-      background: #007AFF;
+      background: #5B2D8E;
       border: 0;
       border-radius: 14px;
       color: #FFFFFF;
@@ -321,7 +321,7 @@ function buildAppleMapsHtml({
       height: 50px;
       width: 100%;
     }
-    #confirmButton:disabled { background: #A8C8F8; color: rgba(255,255,255,0.76); }
+    #confirmButton:disabled { background: rgba(91,45,142,0.42); color: rgba(255,255,255,0.76); }
     .status { color: #7A7D82; font-size: 12px; margin-top: 10px; text-align: center; }
     @keyframes userPulse { 0% { transform: scale(0.72); } 70% { transform: scale(1.14); } 100% { transform: scale(1); } }
     @keyframes pinDrop { 0% { transform: rotate(-45deg) scale(0); } 72% { transform: rotate(-45deg) scale(1.1); } 100% { transform: rotate(-45deg) scale(1); } }
@@ -341,7 +341,7 @@ function buildAppleMapsHtml({
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M12 3 3.8 7.4 12 11.8l8.2-4.4L12 3Z"/><path d="m3.8 12.2 8.2 4.4 8.2-4.4"/><path d="m3.8 16.8 8.2 4.4 8.2-4.4"/></svg>
     </button>
     <button class="glass-button" id="locationButton" aria-label="Current location">
-      <svg viewBox="0 0 24 24" fill="none" stroke="#007AFF" stroke-width="2"><path d="M12 3.7 19.7 20 12 16.5 4.3 20 12 3.7Z"/></svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="#5B2D8E" stroke-width="2"><path d="M12 3.7 19.7 20 12 16.5 4.3 20 12 3.7Z"/></svg>
     </button>
   </div>
   <button class="glass-button" id="compass" aria-label="Compass">
@@ -586,9 +586,9 @@ function buildAppleMapsHtml({
         if (source) source.setData(data);
         else {
           map.addSource('routes', { type: 'geojson', data });
-          map.addLayer({ id: 'route-alt', type: 'line', source: 'routes', filter: ['!', ['get', 'selected']], paint: { 'line-color': '#A8C8F8', 'line-width': 4 }, layout: { 'line-cap': 'round', 'line-join': 'round' } });
+          map.addLayer({ id: 'route-alt', type: 'line', source: 'routes', filter: ['!', ['get', 'selected']], paint: { 'line-color': 'rgba(91,45,142,0.38)', 'line-width': 4 }, layout: { 'line-cap': 'round', 'line-join': 'round' } });
           map.addLayer({ id: 'route-main-shadow', type: 'line', source: 'routes', filter: ['get', 'selected'], paint: { 'line-color': 'rgba(0,0,0,0.12)', 'line-width': 9, 'line-blur': 3 }, layout: { 'line-cap': 'round', 'line-join': 'round' } });
-          map.addLayer({ id: 'route-main', type: 'line', source: 'routes', filter: ['get', 'selected'], paint: { 'line-color': '#007AFF', 'line-width': 6, 'line-dasharray': [1, 0] }, layout: { 'line-cap': 'round', 'line-join': 'round' } });
+          map.addLayer({ id: 'route-main', type: 'line', source: 'routes', filter: ['get', 'selected'], paint: { 'line-color': '#5B2D8E', 'line-width': 6, 'line-dasharray': [1, 0] }, layout: { 'line-cap': 'round', 'line-join': 'round' } });
           map.on('click', 'route-alt', (event) => {
             const index = features.findIndex((feature) => feature === event.features[0]);
             features.forEach((feature, featureIndex) => feature.properties.selected = featureIndex === index);

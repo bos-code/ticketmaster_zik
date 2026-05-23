@@ -591,7 +591,7 @@ const styles = StyleSheet.create({
     padding: ticketSpacing.lg,
   },
   noMapHeroTitle: {
-    color: '#FFFFFF',
+    color: premiumMapPalette.text,
     fontSize: 22,
     fontWeight: '900',
     lineHeight: 28,
@@ -740,7 +740,7 @@ const styles = StyleSheet.create({
     lineHeight: 15,
   },
   metricValue: {
-    color: '#FFFFFF',
+    color: premiumMapPalette.text,
     fontSize: 15,
     fontWeight: '900',
     lineHeight: 19,
@@ -770,7 +770,7 @@ const styles = StyleSheet.create({
     padding: ticketSpacing.sm,
   },
   helperTitle: {
-    color: '#FFFFFF',
+    color: premiumMapPalette.text,
     fontSize: 14,
     fontWeight: '800',
     lineHeight: 18,
@@ -836,7 +836,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: ticketSpacing.md,
   },
   secondaryButtonText: {
-    color: '#FFFFFF',
+    color: premiumMapPalette.text,
     fontSize: 13,
     fontWeight: '800',
     lineHeight: 17,
@@ -845,7 +845,7 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-start',
   },
   inlineActionText: {
-    color: '#8BC0FF',
+    color: '#5B2D8E',
     fontSize: 12,
     fontWeight: '800',
     lineHeight: 16,
@@ -881,14 +881,14 @@ const styles = StyleSheet.create({
     padding: ticketSpacing.lg,
   },
   notFoundEyebrow: {
-    color: '#8BC0FF',
+    color: '#5B2D8E',
     fontSize: 12,
     fontWeight: '800',
     lineHeight: 16,
     textTransform: 'uppercase',
   },
   notFoundTitle: {
-    color: '#FFFFFF',
+    color: premiumMapPalette.text,
     fontSize: 24,
     fontWeight: '900',
     lineHeight: 30,

@@ -103,12 +103,12 @@ export const premiumMapStyle: MapStyleElement[] = [
 ];
 
 export const premiumMapPalette = {
-  routeStroke: '#5EA1FF',
-  routeStrokeMuted: 'rgba(94, 161, 255, 0.26)',
-  userMarkerFill: '#8BC0FF',
-  venueMarkerFill: '#1277FF',
-  venueMarkerGlow: 'rgba(18, 119, 255, 0.28)',
-  venueMarkerShadow: 'rgba(4, 11, 24, 0.32)',
+  routeStroke: '#5B2D8E',
+  routeStrokeMuted: 'rgba(91, 45, 142, 0.26)',
+  userMarkerFill: '#5B2D8E',
+  venueMarkerFill: '#5B2D8E',
+  venueMarkerGlow: 'rgba(91, 45, 142, 0.28)',
+  venueMarkerShadow: 'rgba(10, 4, 24, 0.32)',
   cardSurface: '#F8FAFC',
   cardSurfaceElevated: '#FFFFFF',
   cardBorder: 'rgba(15, 23, 42, 0.10)',

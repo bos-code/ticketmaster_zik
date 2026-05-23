@@ -26,9 +26,9 @@ const DC = {
   white: '#FFFFFF',
   greyText: '#A1A1AA',
   searchBg: '#FFFFFF',
-  purpleBtn: '#9C6AD3',
-  blueBtn: '#004CD7',
-  filterBorder: '#555555',
+  purpleBtn: '#8B5CF6',
+  blueBtn: '#005BD3',
+  filterBorder: 'rgba(255,255,255,0.52)',
 };
 
 export function DiscoverTabScreen() {
@@ -131,7 +131,7 @@ export function DiscoverTabScreen() {
              <Text style={styles.nearText}>Near </Text>
              <Pressable style={styles.nearAction}>
                <Text style={styles.nearLink}>Los Angeles, CA</Text>
-               <Ionicons name="chevron-down" size={18} color="#0066FF" />
+               <Ionicons name="chevron-down" size={18} color="#005BD3" />
              </Pressable>
           </View>
 
@@ -242,7 +242,7 @@ const styles = StyleSheet.create({
     borderRightColor: DC.white,
   },
   newPill: {
-    backgroundColor: '#8B5CF6', // Purple color matching the design
+    backgroundColor: DC.purpleBtn,
     borderRadius: 4,
     paddingHorizontal: 6,
     paddingVertical: 2,
@@ -297,7 +297,7 @@ const styles = StyleSheet.create({
   locDateValue: {
     color: DC.white,
     fontSize: 15,
-    fontWeight: '500',
+    fontWeight: '600',
   },
   iconRight: {
     marginLeft: 'auto',
@@ -339,7 +339,7 @@ const styles = StyleSheet.create({
   },
   filterChip: {
     borderWidth: 1,
-    borderColor: DC.white,
+    borderColor: DC.filterBorder,
     borderRadius: 3,
     paddingHorizontal: 16,
     paddingVertical: 10,
@@ -388,12 +388,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     borderBottomWidth: 1,
-    borderBottomColor: '#0066FF',
+    borderBottomColor: '#005BD3',
     paddingBottom: 2,
     marginLeft: 2,
   },
   nearLink: {
-    color: '#0066FF',
+    color: '#005BD3',
     fontSize: 15,
     fontWeight: '700',
   },
@@ -416,7 +416,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: 12,
     left: 12,
-    backgroundColor: '#9534FF',
+    backgroundColor: '#8B5CF6',
     paddingHorizontal: 8,
     paddingVertical: 5,
     borderRadius: 2,
@@ -445,7 +445,7 @@ const styles = StyleSheet.create({
     marginTop: -22,
     width: 44,
     height: 44,
-    backgroundColor: '#005CEE',
+    backgroundColor: '#005BD3',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -467,7 +467,7 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
   presaleLocation: {
-    color: '#555555',
+    color: '#666666',
     fontSize: 14,
     fontWeight: '500',
   },
@@ -482,7 +482,7 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: '#005CEE',
+    backgroundColor: '#005BD3',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -502,7 +502,7 @@ const styles = StyleSheet.create({
     marginBottom: 2,
   },
   sponsorDate: {
-    color: '#333333',
+    color: '#555555',
     fontSize: 12,
     fontWeight: '600',
   },
