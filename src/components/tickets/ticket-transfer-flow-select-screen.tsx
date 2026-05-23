@@ -26,25 +26,43 @@ export function TicketTransferSelectScreen({
   ticketCount: string;
   visible?: boolean;
 }) {
+  const cleanCount = ticketCount.replace(/^x/, '');
+  const countText = `${cleanCount} ticket${cleanCount === '1' ? '' : 's'}`;
+  
+  const renderFormattedSeatSummary = (summary: string) => {
+    const sectionMatch = summary.match(/(?:Sec|Section)\s+([^\s,]+)/i);
+    const rowMatch = summary.match(/Row\s+([^\s,]+)/i);
+
+    if (sectionMatch && rowMatch) {
+      return (
+        <Text className='text-[15.5px] font-normal leading-[20px] text-[#111111]'>
+          Section <Text className="font-bold">{sectionMatch[1]}</Text>, Row <Text className="font-bold">{rowMatch[1]}</Text>
+        </Text>
+      );
+    }
+    return <Text className='text-[15.5px] font-semibold leading-[20px] text-[#111111]'>{summary}</Text>;
+  };
+
   return (
     <BottomDrawer minHeight='62%' onClose={onBack} visible={visible}>
-      <View className='border-b border-[#F0F0F0] py-[13.5px]'>
-        <Text className='text-center text-[10.2px] font-medium leading-[13px] text-[#70757E]'>
-          SELECT TICKETS TRANSFER TICKET
+      <View className='py-[10px]'>
+        <Text className='text-center text-[10.5px] font-bold tracking-[0.6px] leading-[14px] text-[#111111] uppercase'>
+          SELECT TICKETS TO TRANSFER
         </Text>
       </View>
 
-      <View className='border-b border-[#F0F0F0] px-[13.5px] pb-[13.5px] pt-[20.5px]'>
+      <View className='px-[22px] pb-[20px] pt-[15px]'>
         <View className='flex-row items-center justify-between'>
-          <Text className='text-[11px] font-medium leading-[13px] text-[#444B55]'>
-            {seatSummary}
-          </Text>
-          <Text className='text-[10.2px] font-normal leading-[13px] text-[#70757E]'>
-            {ticketCount.replace(/^x/, '')}
-          </Text>
+          {renderFormattedSeatSummary(seatSummary)}
+          <View className='flex-row items-center gap-[6px]'>
+            <Ionicons name='receipt-outline' size={18} color='#70757E' />
+            <Text className='text-[13.5px] font-normal leading-[17px] text-[#70757E]'>
+              {countText}
+            </Text>
+          </View>
         </View>
 
-        <View className='mt-[17px] flex-row gap-[12px]'>
+        <View className='mt-[18px] flex-row gap-[12px]'>
           {seats.map((seat) => {
             const selected = selectedSeatIds.includes(seat.id);
 
@@ -56,20 +74,26 @@ export function TicketTransferSelectScreen({
                 <Pressable
                   accessibilityRole='button'
                   onPress={() => onToggleSeat(seat.id)}
-                  className='h-[66px] w-[61px] overflow-hidden rounded-[7px] border border-[#D7DCE4] bg-white shadow-[0_1px_1.5px] shadow-black/60'
+                  style={({ pressed }) => [
+                    {
+                      transform: [{ scale: pressed ? 0.95 : 1 }],
+                      opacity: pressed ? 0.85 : 1,
+                    }
+                  ]}
+                  className="h-[82px] w-[76px] overflow-hidden rounded-[10px] border border-[#D7DCE4] bg-white shadow-[0_1.5px_3px_rgba(0,0,0,0.08)]"
                 >
-                  <View className='items-center justify-center bg-[#1977F3] py-[7px]'>
-                    <Text className='text-[9.5px] font-semibold leading-[12px] text-white'>
+                  <View className="items-center justify-center bg-[#1977F3] py-[7.5px]">
+                    <Text className="text-[9.5px] font-bold tracking-[0.5px] uppercase text-white">
                       {`SEAT ${seat.seat}`}
                     </Text>
                   </View>
-                  <View className='flex-1 items-center justify-center bg-[#fcf2fc]'>
+                  <View className='flex-1 items-center justify-center bg-white'>
                     {selected ? (
                       <View className='h-[20px] w-[20px] items-center justify-center rounded-full bg-[#1977F3]'>
-                        <Ionicons name='checkmark' size={13} color='#FFFFFF' />
+                        <Ionicons name='checkmark' size={12} color='#FFFFFF' />
                       </View>
                     ) : (
-                      <View className='h-[20px] w-[20px] rounded-full border border-[#DBE0E6] bg-white' />
+                      <View className='h-[20px] w-[20px] rounded-full border border-[#CCCCCC] bg-white' />
                     )}
                   </View>
                 </Pressable>
@@ -81,8 +105,8 @@ export function TicketTransferSelectScreen({
 
       <View className='flex-1 bg-white' />
 
-      <View className='flex-row items-center justify-between bg-[#F9F9F9] px-[13.5px] pb-[34px] pt-[17px]'>
-        <Text className='text-[10.2px] font-normal leading-[12px] text-[#5D6773]'>
+      <View className='flex-row items-center justify-between border-t border-[#F0F0F0] bg-white px-[22px] pb-[34px] pt-[20px]'>
+        <Text className='text-[13.5px] font-medium leading-[17px] text-[#5D6773]'>
           {`${selectedSeatIds.length} Selected`}
         </Text>
 
@@ -90,20 +114,20 @@ export function TicketTransferSelectScreen({
           accessibilityRole='button'
           disabled={!selectedSeatIds.length}
           onPress={onContinue}
-          className='flex-row items-center gap-[1.7px]'
+          className='flex-row items-center gap-[2.5px]'
         >
           <Text
             className={cx(
-              'text-[12px] font-bold leading-[15px]',
-              selectedSeatIds.length ? 'text-[#2A84C6]' : 'text-[#A9C9E6]',
+              'text-[13px] font-bold leading-[16px] tracking-[0.5px]',
+              selectedSeatIds.length ? 'text-[#0A6AE4]' : 'text-[#A9C9E6]',
             )}
           >
             TRANSFER TO
           </Text>
           <Ionicons
-            color={selectedSeatIds.length ? '#2A84C6' : '#A9C9E6'}
+            color={selectedSeatIds.length ? '#0A6AE4' : '#A9C9E6'}
             name='chevron-forward'
-            size={14}
+            size={15}
           />
         </Pressable>
       </View>

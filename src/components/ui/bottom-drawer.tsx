@@ -26,7 +26,7 @@ export function BottomDrawer({
       <View className="flex-1 justify-end" style={{ backgroundColor: backdropColor }}>
         <Pressable className="absolute inset-0" onPress={onClose} />
         <View
-          className={className || "bg-white"}
+          className={className || "bg-white rounded-t-[20px] overflow-hidden"}
           style={[
             { minHeight },
             {
@@ -38,6 +38,10 @@ export function BottomDrawer({
             },
           ]}
         >
+          {/* Drag Handle Indicator */}
+          <View className="items-center pt-[12px] pb-[6px]">
+            <View className="h-[4.5px] w-[38px] rounded-full bg-[#CCCCCC]" />
+          </View>
           {children}
         </View>
       </View>

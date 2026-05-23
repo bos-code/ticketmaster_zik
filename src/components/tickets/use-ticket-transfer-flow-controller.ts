@@ -47,8 +47,7 @@ export function useTicketTransferFlowController({
     isLoadingTickets,
     summaryViewModel,
     ticketOrder,
-  } =
-    useTicketOrder(orderId);
+  } = useTicketOrder(orderId);
   const { width } = useWindowDimensions();
   const heroCollapseDistance = getTicketSummaryHeroCollapseDistance(width);
   const frameWidth = Math.min(width, 430);
@@ -78,8 +77,7 @@ export function useTicketTransferFlowController({
   const [selectedSeatIds, setSelectedSeatIds] = useState<string[]>([]);
   const [otpCode, setOtpCode] = useState("");
   const [viewerIndex, setViewerIndex] = useState(initialViewerIndex);
-  const [recipientForm, setRecipientForm] =
-    useState<RecipientFormState>(emptyRecipientForm);
+  const [recipientForm, setRecipientForm] = useState<RecipientFormState>(emptyRecipientForm);
   const [formErrors, setFormErrors] = useState<Partial<RecipientFormState>>({});
   const [isListLoading, setIsListLoading] = useState(false);
 
@@ -323,6 +321,27 @@ export function useTicketTransferFlowController({
     updateRecipientForm("destination", "");
   };
 
+  function startTransferProcessing() {
+    setTransferModal("loading");
+
+    if (loadingTimerRef.current) {
+      clearTimeout(loadingTimerRef.current);
+    }
+
+    loadingTimerRef.current = setTimeout(() => {
+      const isSuccess = Math.random() > 0.1;
+
+      if (isSuccess) {
+        setViewerIndex(0);
+        setSelectedSeatIds([]);
+        setScreen("list");
+        setTransferModal("success");
+      } else {
+        setTransferModal("error");
+      }
+    }, 1500);
+  }
+
   const handleRequestTransfer = () => {
     const errors = validateRecipientForm(recipientForm);
 
@@ -333,7 +352,7 @@ export function useTicketTransferFlowController({
 
     setOtpCode("");
     setFormErrors({});
-    setTransferModal("auth");
+    startTransferProcessing();
   };
 
   const handleConfirmCode = () => {
@@ -341,7 +360,7 @@ export function useTicketTransferFlowController({
       return;
     }
 
-    setTransferModal("loading");
+    setTransferModal("authLoading");
     if (loadingTimerRef.current) {
       clearTimeout(loadingTimerRef.current);
     }
@@ -361,23 +380,12 @@ export function useTicketTransferFlowController({
       return;
     }
 
-    loadingTimerRef.current = setTimeout(() => {
-      const isSuccess = Math.random() > 0.1;
-
-      if (isSuccess) {
-        setViewerIndex(0);
-        setSelectedSeatIds([]);
-        setScreen("list");
-        setTransferModal("success");
-      } else {
-        setTransferModal("error");
-      }
-    }, 1500);
+    startTransferProcessing();
   };
 
   const handleRetryTransfer = () => {
-    setTransferModal("auth");
     setOtpCode("");
+    startTransferProcessing();
   };
 
   return {

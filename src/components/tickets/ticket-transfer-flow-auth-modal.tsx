@@ -39,6 +39,19 @@ export function TicketTransferAuthModal({
 }) {
   const inputRef = React.useRef<TextInput | null>(null);
   const phoneNumber = formatAuthPhoneNumber(authPhoneNumber);
+  const [localLoading, setLocalLoading] = React.useState(true);
+
+  React.useEffect(() => {
+    if (visible) {
+      setLocalLoading(true);
+      const timer = setTimeout(() => {
+        setLocalLoading(false);
+      }, 400);
+      return () => clearTimeout(timer);
+    } else {
+      setLocalLoading(true);
+    }
+  }, [visible]);
 
   return (
     <BottomDrawer
@@ -63,72 +76,76 @@ export function TicketTransferAuthModal({
       </View>
 
       <View style={styles.authBody}>
-        <View style={styles.authCard}>
-          <Text style={styles.cardTitle}>
-            Authenticate Your Account
-          </Text>
-          <Text style={styles.cardCopy}>
-            A one-time code has been sent to {phoneNumber}. Please enter your code below to continue.
-          </Text>
+        {localLoading ? (
+          <ButtonLoadingSpinner size={48} />
+        ) : (
+          <View style={styles.authCard}>
+            <Text style={styles.cardTitle}>
+              Authenticate Your Account
+            </Text>
+            <Text style={styles.cardCopy}>
+              A one-time code has been sent to {phoneNumber}. Please enter your code below to continue.
+            </Text>
 
-          <Text style={styles.codeLabel}>
-            One-Time Code
-          </Text>
-          <TextInput
-            ref={inputRef}
-            autoComplete={Platform.OS === "android" ? "sms-otp" : "one-time-code"}
-            autoFocus={visible}
-            editable={!isSubmitting}
-            inputMode="numeric"
-            keyboardType="number-pad"
-            maxLength={OTP_LENGTH}
-            onChangeText={(value) => onOtpChange(normalizeOtp(value))}
-            onSubmitEditing={() => {
-              if (confirmCodeReady) {
-                onConfirm();
-              }
-            }}
-            placeholder=""
-            placeholderTextColor="#80858E"
-            returnKeyType="done"
-            selectionColor="#2F88F3"
-            style={[
-              styles.codeInput,
-              otpCode.length ? styles.codeInputActive : null,
-              Platform.OS === "web" ? ({ outlineStyle: "none" } as any) : null,
-            ]}
-            textContentType="oneTimeCode"
-            value={otpCode}
-          />
-          <Text style={styles.codeHelp}>
-            It may take a minute to receive your code.
-          </Text>
+            <Text style={styles.codeLabel}>
+              One-Time Code
+            </Text>
+            <TextInput
+              ref={inputRef}
+              autoComplete={Platform.OS === "android" ? "sms-otp" : "one-time-code"}
+              autoFocus={visible && !localLoading}
+              editable={!isSubmitting}
+              inputMode="numeric"
+              keyboardType="number-pad"
+              maxLength={OTP_LENGTH}
+              onChangeText={(value) => onOtpChange(normalizeOtp(value))}
+              onSubmitEditing={() => {
+                if (confirmCodeReady) {
+                  onConfirm();
+                }
+              }}
+              placeholder=""
+              placeholderTextColor="#80858E"
+              returnKeyType="done"
+              selectionColor="#2F88F3"
+              style={[
+                styles.codeInput,
+                otpCode.length ? styles.codeInputActive : null,
+                Platform.OS === "web" ? ({ outlineStyle: "none" } as any) : null,
+              ]}
+              textContentType="oneTimeCode"
+              value={otpCode}
+            />
+            <Text style={styles.codeHelp}>
+              It may take a minute to receive your code.
+            </Text>
 
-          <Pressable
-            accessibilityRole="button"
-            disabled={!confirmCodeReady || isSubmitting}
-            onPress={onConfirm}
-            style={[
-              styles.confirmButton,
-              confirmCodeReady || isSubmitting
-                ? styles.confirmButtonReady
-                : null,
-            ]}
-          >
-            {isSubmitting ? (
-              <ButtonLoadingSpinner size={32} />
-            ) : (
-              <Text
-                style={[
-                  styles.confirmButtonText,
-                  confirmCodeReady ? styles.confirmButtonTextReady : null,
-                ]}
-              >
-                Confirm Code
-              </Text>
-            )}
-          </Pressable>
-        </View>
+            <Pressable
+              accessibilityRole="button"
+              disabled={!confirmCodeReady || isSubmitting}
+              onPress={onConfirm}
+              style={[
+                styles.confirmButton,
+                confirmCodeReady || isSubmitting
+                  ? styles.confirmButtonReady
+                  : null,
+              ]}
+            >
+              {isSubmitting ? (
+                <ButtonLoadingSpinner size={32} />
+              ) : (
+                <Text
+                  style={[
+                    styles.confirmButtonText,
+                    confirmCodeReady ? styles.confirmButtonTextReady : null,
+                  ]}
+                >
+                  Confirm Code
+                </Text>
+              )}
+            </Pressable>
+          </View>
+        )}
       </View>
     </BottomDrawer>
   );

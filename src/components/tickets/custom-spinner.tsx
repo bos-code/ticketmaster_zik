@@ -10,17 +10,13 @@ type CustomSpinnerProps = {
 
 const SPOKE_OPACITIES = [
   1,
-  0.92,
-  0.84,
-  0.76,
+  0.85,
   0.68,
-  0.58,
-  0.48,
+  0.52,
   0.38,
-  0.3,
-  0.22,
+  0.26,
   0.15,
-  0.09,
+  0.07,
 ];
 
 export function CustomSpinner({ size = 44, color = '#111111', style }: CustomSpinnerProps) {
@@ -30,7 +26,7 @@ export function CustomSpinner({ size = 44, color = '#111111', style }: CustomSpi
     const animation = Animated.loop(
       Animated.timing(rotateAnim, {
         toValue: 1,
-        duration: 1000,
+        duration: 2000,
         easing: Easing.linear,
         useNativeDriver: true,
       })
@@ -54,7 +50,7 @@ export function CustomSpinner({ size = 44, color = '#111111', style }: CustomSpi
             key={index}
             opacity={opacity}
             rx={2}
-            transform={`rotate(${index * 30} 24 24)`}
+            transform={`rotate(${index * 45} 24 24)`}
             width={4}
             x={22}
             y={4}

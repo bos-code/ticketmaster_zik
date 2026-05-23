@@ -11,6 +11,7 @@ export type PanelTab = "tickets" | "extras";
 export type TransferModal =
   | "none"
   | "auth"
+  | "authLoading"
   | "loading"
   | "success"
   | "error"

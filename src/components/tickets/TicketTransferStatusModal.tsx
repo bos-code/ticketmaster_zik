@@ -1,5 +1,5 @@
-import React from "react";
-import { ActivityIndicator, Modal, Pressable, Text, View } from "react-native";
+import React, { useEffect, useRef } from "react";
+import { Animated, Easing, Modal, Pressable, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 
@@ -18,23 +18,43 @@ export function TicketTransferStatusModal({
 }) {
   const isVisible = status === "loading" || status === "success" || status === "error";
 
+  // Custom slow spinner — 2400ms per revolution
+  const spinAnim = useRef(new Animated.Value(0)).current;
+  useEffect(() => {
+    const loop = Animated.loop(
+      Animated.timing(spinAnim, {
+        toValue: 1,
+        duration: 2400,
+        easing: Easing.linear,
+        useNativeDriver: true,
+      })
+    );
+    loop.start();
+    return () => loop.stop();
+  }, [spinAnim]);
+
+  const rotate = spinAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: ["0deg", "360deg"],
+  });
+
   return (
     <Modal animationType="fade" transparent={false} visible={isVisible}>
       <View className="flex-1 items-center bg-white">
         <SafeAreaView
           edges={["top"]}
-          style={{ width: "100%", backgroundColor: status === "error" ? "#D93025" : "#0863D9" }}
+          style={{ width: "100%", backgroundColor: status === "error" ? "#D93025" : "#0A6AE4" }}
         >
           <View
             className="min-h-[46px] w-full flex-row items-center px-[14px]"
             style={{ maxWidth: frameWidth }}
           >
             <View style={{ minWidth: 42 }} />
-            <Text className="flex-1 text-center text-[15px] font-bold leading-[18px] text-white">
+            <Text className="flex-1 text-center text-[15.5px] font-bold leading-[18px] text-white">
               {status === "loading" ? "Transferring" : status === "success" ? "Success" : "Error"}
             </Text>
             {status === "error" || status === "success" ? (
-               <Pressable onPress={onClose} style={{ minWidth: 42 }}>
+               <Pressable onPress={onClose} style={{ minWidth: 42, alignItems: "flex-end" }}>
                   <Ionicons name="close" size={24} color="white" />
                </Pressable>
             ) : (
@@ -49,7 +69,17 @@ export function TicketTransferStatusModal({
         >
           {status === "loading" && (
             <>
-              <ActivityIndicator color="#0863D9" size="large" />
+              <Animated.View
+                style={{
+                  width: 56,
+                  height: 56,
+                  borderRadius: 28,
+                  borderWidth: 4,
+                  borderColor: "#BFDBFE",
+                  borderTopColor: "#0A6AE4",
+                  transform: [{ rotate }],
+                }}
+              />
               <Text className="mt-4 text-[16px] font-medium text-gray-600">
                 Processing your transfer...
               </Text>
@@ -58,21 +88,70 @@ export function TicketTransferStatusModal({
 
           {status === "success" && (
             <>
-              <View className="h-20 w-20 items-center justify-center rounded-full bg-green-100">
-                <Ionicons name="checkmark-circle" size={60} color="#34A853" />
+              {/* Outer glow ring */}
+              <View
+                style={{
+                  width: 96,
+                  height: 96,
+                  borderRadius: 48,
+                  backgroundColor: "#E2F6EA",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                {/* Inner filled green circle with checkmark */}
+                <View
+                  style={{
+                    width: 68,
+                    height: 68,
+                    borderRadius: 34,
+                    backgroundColor: "#2EC470",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  <Ionicons name="checkmark" size={38} color="white" />
+                </View>
               </View>
-              <Text className="mt-6 text-[20px] font-bold text-gray-900 text-center">
+
+              <Text
+                style={{
+                  marginTop: 28,
+                  fontSize: 22,
+                  fontWeight: "800",
+                  color: "#111111",
+                  textAlign: "center",
+                }}
+              >
                 Tickets Transferred!
               </Text>
-              <Text className="mt-2 text-[14px] text-gray-500 text-center">
+              <Text
+                style={{
+                  marginTop: 10,
+                  fontSize: 14,
+                  color: "#5D6773",
+                  textAlign: "center",
+                  lineHeight: 20,
+                }}
+              >
                 Your tickets have been sent to the recipient.
               </Text>
-              
+
               <Pressable
                 onPress={onClose}
-                className="mt-10 h-[48px] w-full items-center justify-center bg-black rounded-lg"
+                style={{
+                  marginTop: 36,
+                  height: 50,
+                  width: "100%",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  backgroundColor: "#000000",
+                  borderRadius: 8,
+                }}
               >
-                <Text className="text-white font-bold text-[16px]">Done</Text>
+                <Text style={{ color: "white", fontWeight: "700", fontSize: 16 }}>
+                  Done
+                </Text>
               </Pressable>
             </>
           )}
