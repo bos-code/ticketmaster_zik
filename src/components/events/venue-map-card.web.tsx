@@ -43,7 +43,7 @@ export function VenueMapCard({
       return;
     }
 
-    ensureAppleMarkerStyles();
+    ensureMapStyles();
 
     const map = new maplibregl.Map({
       attributionControl: false,
@@ -60,9 +60,10 @@ export function VenueMapCard({
 
     map.on('load', () => {
       applyAppleMapsPaint(map);
-      markerRef.current = createVenueMarker(venueName)
+      markerRef.current = createVenueMarker()
         .setLngLat(mapCenter)
         .addTo(map);
+      addCustomControls(map, mapContainerRef.current!);
     });
 
     return () => {
@@ -120,88 +121,169 @@ export function VenueMapCard({
   );
 }
 
-function createVenueMarker(venueName: string) {
-  const markerWrap = document.createElement('div');
-  markerWrap.className = 'apple-venue-marker';
-
-  const markerLabel = document.createElement('div');
-  markerLabel.className = 'apple-venue-label';
-  markerLabel.textContent = venueName;
-
-  const markerElement = document.createElement('div');
-  markerElement.className = 'apple-venue-pin';
-
-  const info = document.createElement('div');
-  info.className = 'apple-venue-pin-info';
-  info.textContent = 'i';
-  markerElement.appendChild(info);
-
-  markerWrap.appendChild(markerElement);
-  markerWrap.appendChild(markerLabel);
+function createVenueMarker() {
+  const wrap = document.createElement('div');
+  wrap.style.width = '32px';
+  wrap.style.height = '32px';
+  
+  const inner = document.createElement('div');
+  inner.className = 'purple-pulse-marker';
+  wrap.appendChild(inner);
 
   return new maplibregl.Marker({
-    anchor: 'bottom',
-    element: markerWrap,
-    offset: [0, 2],
+    anchor: 'center',
+    element: wrap,
   });
 }
 
-function ensureAppleMarkerStyles() {
-  if (document.getElementById('apple-marker-styles')) {
+function ensureMapStyles() {
+  if (document.getElementById('custom-map-styles')) {
     return;
   }
 
   const style = document.createElement('style');
-  style.id = 'apple-marker-styles';
+  style.id = 'custom-map-styles';
   style.textContent = `
-    .apple-venue-marker {
-      height: 42px;
-      pointer-events: none;
-      position: relative;
-      width: 120px;
-    }
-    .apple-venue-pin {
-      animation: applePinDrop 300ms cubic-bezier(0.34, 1.56, 0.64, 1);
-      background: linear-gradient(180deg, #FF5E57 0%, #F4211B 58%, #C70F0A 100%);
-      border: 2px solid #FFFFFF;
-      border-radius: 50% 50% 50% 0;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.28), inset 0 1px 1px rgba(255,255,255,0.48);
+    .purple-pulse-marker {
+      background: #6B4FBB;
+      border: 3px solid #FFFFFF;
+      border-radius: 50%;
+      box-shadow: 0px 2px 8px rgba(0,0,0,0.2);
       height: 32px;
-      left: 44px;
+      width: 32px;
+      animation: markerPulse 2s ease-in-out infinite;
       position: absolute;
       top: 0;
-      transform: rotate(-45deg);
-      width: 32px;
+      left: 0;
     }
-    .apple-venue-pin-info {
-      align-items: center;
-      color: #FFFFFF;
-      display: flex;
-      font: 700 17px/17px -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
-      height: 100%;
-      justify-content: center;
-      transform: rotate(45deg) translateY(-1px);
-      width: 100%;
+    @keyframes markerPulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.1); }
     }
-    .apple-venue-label {
-      color: #2D2928;
-      font: 700 12px/15px -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
-      left: 50%;
-      max-width: 190px;
+    .map-controls-overlay {
       position: absolute;
-      text-align: center;
-      text-shadow: 0 1px 1px #FFFFFF, 1px 0 1px #FFFFFF, -1px 0 1px #FFFFFF, 0 -1px 1px #FFFFFF, 0 0 2px #FFFFFF;
-      top: 35px;
-      transform: translateX(-50%);
-      white-space: nowrap;
+      top: 16px;
+      right: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      z-index: 20;
     }
-    @keyframes applePinDrop {
-      0% { transform: rotate(-45deg) scale(0); }
-      72% { transform: rotate(-45deg) scale(1.1); }
-      100% { transform: rotate(-45deg) scale(1); }
+    .map-control-group {
+      background: #FFFFFF;
+      border-radius: 8px;
+      box-shadow: 0px 2px 8px rgba(0,0,0,0.1);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .map-btn {
+      width: 44px;
+      height: 44px;
+      background: transparent;
+      border: none;
+      font-size: 24px;
+      font-weight: 500;
+      color: #1A1A1A;
+      cursor: pointer;
+      transition: background 200ms ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .map-btn:hover {
+      background: #F5F5F5;
+    }
+    .map-btn:active {
+      background: #EEEEEE;
+    }
+    .map-divider {
+      height: 1px;
+      background: #E5E5E5;
+      width: 100%;
     }
   `;
   document.head.appendChild(style);
+}
+
+function addCustomControls(map: MapLibreMap, container: HTMLElement) {
+  if (container.querySelector('.map-controls-overlay')) return;
+
+  const overlay = document.createElement('div');
+  overlay.className = 'map-controls-overlay';
+
+  // Zoom group (+/-)
+  const zoomGroup = document.createElement('div');
+  zoomGroup.className = 'map-control-group';
+
+  const btnIn = document.createElement('button');
+  btnIn.className = 'map-btn';
+  btnIn.setAttribute('aria-label', 'Zoom in');
+  btnIn.textContent = '+';
+  btnIn.addEventListener('click', () => map.zoomIn());
+
+  const divider = document.createElement('div');
+  divider.className = 'map-divider';
+
+  const btnOut = document.createElement('button');
+  btnOut.className = 'map-btn';
+  btnOut.setAttribute('aria-label', 'Zoom out');
+  btnOut.textContent = '\u2212';
+  btnOut.addEventListener('click', () => map.zoomOut());
+
+  zoomGroup.appendChild(btnIn);
+  zoomGroup.appendChild(divider);
+  zoomGroup.appendChild(btnOut);
+
+  // Fullscreen group
+  const fsGroup = document.createElement('div');
+  fsGroup.className = 'map-control-group';
+
+  const btnFs = document.createElement('button');
+  btnFs.className = 'map-btn';
+  btnFs.setAttribute('aria-label', 'View fullscreen');
+
+  const svgNS = 'http://www.w3.org/2000/svg';
+  const svg = document.createElementNS(svgNS, 'svg');
+  svg.setAttribute('width', '22');
+  svg.setAttribute('height', '22');
+  svg.setAttribute('viewBox', '0 0 24 24');
+  svg.setAttribute('fill', 'none');
+  svg.setAttribute('stroke', '#1A1A1A');
+  svg.setAttribute('stroke-width', '2.5');
+  svg.setAttribute('stroke-linecap', 'round');
+  svg.setAttribute('stroke-linejoin', 'round');
+
+  const paths = [
+    'M5 9V5h4', 'M19 9V5h-4',
+    'M5 15v4h4', 'M19 15v4h-4',
+  ];
+  paths.forEach((d) => {
+    const path = document.createElementNS(svgNS, 'path');
+    path.setAttribute('d', d);
+    svg.appendChild(path);
+  });
+  const circle = document.createElementNS(svgNS, 'circle');
+  circle.setAttribute('cx', '12');
+  circle.setAttribute('cy', '12');
+  circle.setAttribute('r', '3');
+  svg.appendChild(circle);
+
+  btnFs.appendChild(svg);
+  btnFs.addEventListener('click', () => {
+    if (!document.fullscreenElement) {
+      container.requestFullscreen().catch(() => {});
+    } else {
+      document.exitFullscreen();
+    }
+  });
+
+  fsGroup.appendChild(btnFs);
+
+  overlay.appendChild(zoomGroup);
+  overlay.appendChild(fsGroup);
+  container.appendChild(overlay);
 }
 
 function applyAppleMapsPaint(map: MapLibreMap) {

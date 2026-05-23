@@ -33,6 +33,7 @@ export default function VenueMap({
         srcDoc: html,
         style: iframeStyle,
         title: `${venueName} map`,
+        allowFullScreen: true,
       })}
     </View>
   );
@@ -62,49 +63,92 @@ function buildVenueMapHtml({
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" rel="stylesheet" />
   <style>
-    html, body, #map { height: 100%; margin: 0; width: 100%; }
+    html, body { height: 100%; margin: 0; width: 100%; }
     body { background: #F7F5EC; overflow: hidden; font-family: -apple-system, BlinkMacSystemFont, "Inter", system-ui, sans-serif; }
+    #map { height: 100%; width: 100%; }
     .maplibregl-ctrl-logo, .maplibregl-ctrl-attrib { display: none !important; }
+    
     .pin {
-      background: #007AFF;
+      background: #6B4FBB;
       border: 3px solid #FFFFFF;
-      border-radius: 50% 50% 50% 0;
-      box-shadow: 0 8px 18px rgba(0,122,255,0.24);
-      height: 28px;
-      transform: rotate(-45deg);
-      width: 28px;
-    }
-    .pin::after {
-      background: #FFFFFF;
       border-radius: 50%;
-      content: "";
-      height: 8px;
-      left: 7px;
-      position: absolute;
-      top: 7px;
-      width: 8px;
+      box-shadow: 0px 2px 8px rgba(0,0,0,0.2);
+      height: 32px;
+      width: 32px;
+      animation: markerPulse 2s ease-in-out infinite;
+      transform: translate(-50%, -50%) translateZ(0);
+      will-change: transform;
     }
-    .label {
-      background: rgba(255,255,255,0.94);
-      border: 1px solid rgba(0,0,0,0.06);
-      border-radius: 16px;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.10);
-      left: 16px;
-      padding: 12px 14px;
+
+    @keyframes markerPulse {
+      0%, 100% { transform: translate(-50%, -50%) scale(1) translateZ(0); }
+      50% { transform: translate(-50%, -50%) scale(1.1) translateZ(0); }
+    }
+
+    .map-controls {
       position: absolute;
-      right: 16px;
       top: 16px;
-      z-index: 2;
+      right: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      z-index: 20;
     }
-    .name { color: #1C1C1E; font-size: 16px; font-weight: 700; line-height: 20px; }
-    .address { color: #6C6C70; font-size: 13px; line-height: 17px; margin-top: 2px; }
+    .map-control-group {
+      background: #FFFFFF;
+      border-radius: 8px;
+      box-shadow: 0px 2px 8px rgba(0,0,0,0.1);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .map-btn {
+      width: 44px;
+      height: 44px;
+      background: transparent;
+      border: none;
+      font-size: 24px;
+      font-weight: 500;
+      color: #1A1A1A;
+      cursor: pointer;
+      transition: background 200ms ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .map-btn:hover {
+      background: #F5F5F5;
+    }
+    .map-btn:active {
+      background: #EEEEEE;
+    }
+    .map-divider {
+      height: 1px;
+      background: #E5E5E5;
+      width: 100%;
+    }
   </style>
 </head>
 <body>
   <div id="map"></div>
-  <div class="label">
-    <div class="name" id="name"></div>
-    <div class="address" id="address"></div>
+  <div class="map-controls">
+    <div class="map-control-group">
+      <button class="map-btn" onclick="map.zoomIn()" aria-label="Zoom in">+</button>
+      <div class="map-divider"></div>
+      <button class="map-btn" onclick="map.zoomOut()" aria-label="Zoom out">−</button>
+    </div>
+    <div class="map-control-group">
+      <button class="map-btn" onclick="toggleFullscreen()" aria-label="View fullscreen">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1A1A1A" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M5 9V5h4"></path>
+          <path d="M19 9V5h-4"></path>
+          <path d="M5 15v4h4"></path>
+          <path d="M19 15v4h-4"></path>
+          <circle cx="12" cy="12" r="3"></circle>
+        </svg>
+      </button>
+    </div>
   </div>
   <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
   <script>
@@ -119,12 +163,25 @@ function buildVenueMapHtml({
       style: 'https://tiles.openfreemap.org/styles/bright',
       zoom: 15.5
     });
-    document.getElementById('name').textContent = BOOT.name;
-    document.getElementById('address').textContent = BOOT.address;
+
+    window.map = map;
+
+    window.toggleFullscreen = function() {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(err => {
+          console.log('Error attempting to enable fullscreen: ' + err.message);
+        });
+      } else {
+        if (document.exitFullscreen) {
+          document.exitFullscreen();
+        }
+      }
+    };
+
     map.on('load', () => {
       const el = document.createElement('div');
       el.className = 'pin';
-      new maplibregl.Marker({ element: el, anchor: 'bottom' }).setLngLat(BOOT.center).addTo(map);
+      new maplibregl.Marker({ element: el, anchor: 'center' }).setLngLat(BOOT.center).addTo(map);
       (map.getStyle().layers || []).forEach((layer) => {
         const id = layer.id.toLowerCase();
         const sourceLayer = (layer['source-layer'] || '').toLowerCase();
@@ -151,7 +208,16 @@ function buildVenueMapHtml({
 const styles = StyleSheet.create({
   root: {
     backgroundColor: "#F7F5EC",
-    flex: 1,
+    height: 240,
+    marginHorizontal: -24,
+    marginBottom: 16,
+    borderRadius: 16,
+    overflow: "hidden",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 2,
   },
 });
 
