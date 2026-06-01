@@ -1,7 +1,10 @@
 import { useRouter } from 'expo-router';
-import maplibregl, { type Map as MapLibreMap } from 'maplibre-gl';
+import maplibregl, {
+  type Map as MapLibreMap,
+  type Marker as MapLibreMarker,
+} from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
-import React, { useEffect, useMemo, useRef } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import {
@@ -15,7 +18,7 @@ const FALLBACK_MAP_CENTER = {
   longitude: 3.43009885,
 };
 
-export function VenueMapCard({
+export const VenueMapCard = React.memo(function VenueMapCard({
   eventId,
   latitude,
   longitude,
@@ -24,9 +27,6 @@ export function VenueMapCard({
   venueName,
 }: VenueMapData & { mapHeight?: number }) {
   const router = useRouter();
-  const mapContainerRef = useRef<HTMLDivElement | null>(null);
-  const mapRef = useRef<MapLibreMap | null>(null);
-  const markerRef = useRef<maplibregl.Marker | null>(null);
   const venueCoordinate = toCoordinate(latitude, longitude);
   const initialCoordinate = venueCoordinate ?? FALLBACK_MAP_CENTER;
   const mapCenter = useMemo(
@@ -37,42 +37,171 @@ export function VenueMapCard({
       ],
     [initialCoordinate.latitude, initialCoordinate.longitude],
   );
+  const mapContainerRef = useRef<HTMLDivElement | null>(null);
+  const mapRef = useRef<MapLibreMap | null>(null);
+  const markerRef = useRef<MapLibreMarker | null>(null);
+  const mapCenterRef = useRef<[number, number]>(mapCenter);
+  const didApplyInitialCenterRef = useRef(false);
+  const [mapInstanceVersion, setMapInstanceVersion] = useState(0);
 
   useEffect(() => {
-    if (!mapContainerRef.current || mapRef.current) {
+    mapCenterRef.current = mapCenter;
+  }, [mapCenter]);
+
+  useEffect(() => {
+    const container = mapContainerRef.current;
+
+    if (!container || mapRef.current || typeof window === 'undefined') {
       return;
     }
 
+    let isMounted = true;
+    let observer: IntersectionObserver | null = null;
+
     ensureMapStyles();
 
-    const map = new maplibregl.Map({
-      attributionControl: false,
-      bearing: 0,
-      center: mapCenter,
-      container: mapContainerRef.current,
-      maxPitch: 45,
-      pitch: 0,
-      style: 'https://tiles.openfreemap.org/styles/bright',
-      zoom: 14.65,
-    });
+    const mountMap = () => {
+      if (!isMounted || mapRef.current) {
+        return;
+      }
 
-    mapRef.current = map;
+      if (!isMounted || mapRef.current || !container.isConnected) {
+        return;
+      }
 
-    map.on('load', () => {
-      applyAppleMapsPaint(map);
-      markerRef.current = createVenueMarker()
-        .setLngLat(mapCenter)
-        .addTo(map);
-      addCustomControls(map, mapContainerRef.current!);
-    });
+      const initialMapCenter = mapCenterRef.current;
+      const map = new maplibregl.Map({
+        attributionControl: false,
+        bearing: 0,
+        center: initialMapCenter,
+        container,
+        maxPitch: 45,
+        pitch: 0,
+        style: 'https://tiles.openfreemap.org/styles/bright',
+        zoom: 14.65,
+      });
+
+      mapRef.current = map;
+      setMapInstanceVersion((version) => version + 1);
+
+      map.on('load', () => {
+        if (!isMounted || !mapContainerRef.current) {
+          return;
+        }
+
+        applyAppleMapsPaint(map);
+        markerRef.current = createVenueMarker()
+          .setLngLat(mapCenterRef.current)
+          .addTo(map);
+        addCustomControls(map, mapContainerRef.current);
+      });
+    };
+
+    if ('IntersectionObserver' in window) {
+      observer = new IntersectionObserver(
+        (entries) => {
+          if (entries.some((entry) => entry.isIntersecting)) {
+            observer?.disconnect();
+            observer = null;
+            mountMap();
+          }
+        },
+        { rootMargin: '800px 0px' },
+      );
+      observer.observe(container);
+    } else {
+      mountMap();
+    }
 
     return () => {
+      isMounted = false;
+      observer?.disconnect();
+
       markerRef.current?.remove();
-      map.remove();
+      mapRef.current?.remove();
       mapRef.current = null;
       markerRef.current = null;
     };
-  }, [mapCenter, venueName]);
+  }, []);
+
+  useEffect(() => {
+    const map = mapRef.current;
+
+    if (!map) {
+      return;
+    }
+
+    if (!didApplyInitialCenterRef.current) {
+      didApplyInitialCenterRef.current = true;
+      return;
+    }
+
+    markerRef.current?.setLngLat(mapCenter);
+    map.easeTo({
+      bearing: 0,
+      center: mapCenter,
+      duration: 450,
+      pitch: 0,
+      zoom: 14.65,
+    });
+  }, [mapCenter, mapInstanceVersion]);
+
+  useEffect(() => {
+    const map = mapRef.current;
+
+    if (!map) {
+      return;
+    }
+
+    let recenterTimer: ReturnType<typeof setTimeout> | null = null;
+
+    const clearRecenterTimer = () => {
+      if (recenterTimer) {
+        clearTimeout(recenterTimer);
+        recenterTimer = null;
+      }
+    };
+
+    const scheduleRecenter = () => {
+      clearRecenterTimer();
+      recenterTimer = setTimeout(() => {
+        const nextCenter = mapCenterRef.current;
+
+        if (!nextCenter || !mapRef.current) {
+          return;
+        }
+
+        mapRef.current.easeTo({
+          bearing: 0,
+          center: nextCenter,
+          duration: 450,
+          pitch: 0,
+          zoom: 14.65,
+        });
+      }, 2500);
+    };
+
+    map.on('dragstart', clearRecenterTimer);
+    map.on('zoomstart', clearRecenterTimer);
+    map.on('rotatestart', clearRecenterTimer);
+    map.on('pitchstart', clearRecenterTimer);
+    map.on('dragend', scheduleRecenter);
+    map.on('zoomend', scheduleRecenter);
+    map.on('rotateend', scheduleRecenter);
+    map.on('pitchend', scheduleRecenter);
+
+    return () => {
+      clearRecenterTimer();
+      map.off('dragstart', clearRecenterTimer);
+      map.off('zoomstart', clearRecenterTimer);
+      map.off('rotatestart', clearRecenterTimer);
+      map.off('pitchstart', clearRecenterTimer);
+      map.off('dragend', scheduleRecenter);
+      map.off('zoomend', scheduleRecenter);
+      map.off('rotateend', scheduleRecenter);
+      map.off('pitchend', scheduleRecenter);
+    };
+  }, [mapInstanceVersion]);
 
   function handleOpenDirections() {
     if (eventId) {
@@ -119,7 +248,7 @@ export function VenueMapCard({
       </Pressable>
     </View>
   );
-}
+});
 
 function createVenueMarker() {
   const wrap = document.createElement('div');

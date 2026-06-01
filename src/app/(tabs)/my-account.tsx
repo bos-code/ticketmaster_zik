@@ -496,7 +496,12 @@ export default function MyAccountScreen() {
 
         <SectionHeader label="Help & Guidance" />
         <View className="bg-white">
-          <ChevronRow icon="help-circle-outline" label="Help Center" isLast />
+          <ChevronRow
+            icon="help-circle-outline"
+            label="Help Center"
+            onPress={() => router.push("/account/help-center")}
+            isLast
+          />
         </View>
 
         <View className="h-8" />

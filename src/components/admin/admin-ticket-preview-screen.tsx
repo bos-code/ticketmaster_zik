@@ -172,6 +172,7 @@ export function AdminTicketPreviewScreen() {
         status: editedTicket.status,
         perks: editedTicket.perks,
         transferRules: editedTicket.transferRules,
+        transferSenderName: editedTicket.transferSenderName,
         image: editedTicket.image,
         backgroundColor: editedTicket.backgroundColor,
         seatLabel: editedTicket.seatLabel,

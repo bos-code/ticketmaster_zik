@@ -74,6 +74,7 @@ const fieldLabels: Record<FieldKey, string> = {
   status: 'Status',
   perks: 'Perks',
   transferRules: 'Transfer Rules',
+  transferSenderName: 'Transfer Sender Name',
   image: 'Image URL',
   backgroundColor: 'Accent Color',
   seatLabel: 'Seat Label',
@@ -114,6 +115,7 @@ const EMPTY_CREATE_FORM: FormState = {
   status: 'upcoming',
   perks: '',
   transferRules: '',
+  transferSenderName: 'zik',
   image: '',
   backgroundColor: '#B79E6A',
   seatLabel: '',
@@ -568,6 +570,13 @@ export function AddEventAdminScreen() {
             />
             <TicketTextField error={errors.perks} label="Perks" multiline onChangeText={(value) => updateField('perks', value)} value={form.perks} />
             <TicketTextField error={errors.transferRules} label="Transfer Rules" multiline onChangeText={(value) => updateField('transferRules', value)} value={form.transferRules} />
+            <TicketTextField
+              error={errors.transferSenderName}
+              label="Transfer Sender Name"
+              onChangeText={(value) => updateField('transferSenderName', value)}
+              placeholder={'Name shown before "sent you ticket(s)"'}
+              value={form.transferSenderName}
+            />
             <TicketTextField error={errors.backgroundColor} label="Accent Color" onChangeText={(value) => updateField('backgroundColor', value)} value={form.backgroundColor} />
             <TicketTextField error={errors.authPhoneNumber} label="Auth Phone Number" onChangeText={(value) => updateField('authPhoneNumber', value)} placeholder="e.g. ******2970" value={form.authPhoneNumber} />
           </FormSection>

@@ -71,6 +71,10 @@ function RootStack() {
         name="settings/app"
         options={{ animation: "slide_from_right" }}
       />
+      <Stack.Screen
+        name="account/help-center"
+        options={{ animation: "slide_from_right" }}
+      />
     </Stack>
   );
 }

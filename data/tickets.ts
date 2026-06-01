@@ -27,6 +27,7 @@ export type TicketRecord = {
   status: TicketStatus;
   perks: string;
   transferRules: string;
+  transferSenderName: string;
   image: string;
   backgroundColor: string;
   seatLabel: string;
@@ -70,6 +71,7 @@ export const mockTickets: TicketRecord[] = [
     status: 'upcoming',
     perks: 'Priority entry, Starboy lounge access, complimentary drinks, VIP wristband',
     transferRules: 'Transferable once before 24 hours to showtime. Valid ID required at entry.',
+    transferSenderName: 'zik',
     backgroundColor: '#B79E6A',
     seatLabel: 'Artist presale',
     ticketNote: 'Gold circle seating',
@@ -93,6 +95,7 @@ export const mockTickets: TicketRecord[] = [
     status: 'past',
     perks: 'Lounge access, premium bar, priority exit',
     transferRules: 'This ticket is no longer transferable because the event has passed.',
+    transferSenderName: 'zik',
     backgroundColor: '#8B5CF6',
     seatLabel: 'Fan verified',
     ticketNote: 'Platinum lounge access',

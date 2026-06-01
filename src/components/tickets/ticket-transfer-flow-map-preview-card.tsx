@@ -5,7 +5,7 @@ import Animated, { FadeInUp } from "react-native-reanimated";
 import { useTicketFlowData } from "@/components/tickets/useTicketFlowData";
 import { VenueMapCard } from "@/components/events/venue-map-card";
 
-export function MapPreviewCard() {
+export const MapPreviewCard = React.memo(function MapPreviewCard() {
   const { event } = useTicketFlowData();
 
   return (
@@ -20,7 +20,7 @@ export function MapPreviewCard() {
       />
     </Animated.View>
   );
-}
+});
 
 const styles = StyleSheet.create({
   card: {

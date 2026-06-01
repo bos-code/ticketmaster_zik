@@ -44,6 +44,7 @@ function normalizeTicketRecord(ticket: TicketRecord): TicketRecord {
     isHidden: ticket.isHidden ?? false,
     venueAddress: ticket.venueAddress ?? buildTicketVenueAddress(ticket),
     venuePlaceId: ticket.venuePlaceId ?? '',
+    transferSenderName: ticket.transferSenderName?.trim() || 'zik',
   };
 }
 
