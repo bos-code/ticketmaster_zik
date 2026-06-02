@@ -5,6 +5,7 @@ import {
   runTransaction,
   setDoc,
 } from 'firebase/firestore';
+import { DEFAULT_TRANSFER_SENDER_NAME } from '@/constants/admin-settings';
 import { mockTickets, type TicketRecord } from '../../data/tickets';
 import {
   eventCatalog,
@@ -19,10 +20,15 @@ const EVENTS_COLLECTION = 'events';
 const RESERVATIONS_COLLECTION = 'reservations';
 const SEED_STATE_COLLECTION = 'app_meta';
 const SEED_STATE_DOCUMENT = 'seed_state';
+const ADMIN_SETTINGS_DOCUMENT = 'admin_settings';
 const TICKETS_COLLECTION = 'tickets';
 const SEED_VERSION = 1;
 
 let seedPromise: Promise<void> | null = null;
+
+export type AdminSettings = {
+  transferSenderName: string;
+};
 
 export function subscribeToTickets(onValue: (tickets: TicketRecord[]) => void) {
   return onSnapshot(collection(firestore, TICKETS_COLLECTION), (snapshot) => {
@@ -36,6 +42,17 @@ export function subscribeToTickets(onValue: (tickets: TicketRecord[]) => void) {
   });
 }
 
+export function subscribeToAdminSettings(
+  onValue: (settings: AdminSettings) => void,
+) {
+  return onSnapshot(
+    doc(firestore, SEED_STATE_COLLECTION, ADMIN_SETTINGS_DOCUMENT),
+    (snapshot) => {
+      onValue(normalizeAdminSettings(snapshot.data()));
+    },
+  );
+}
+
 function normalizeTicketRecord(ticket: TicketRecord): TicketRecord {
   return {
     ...ticket,
@@ -44,7 +61,8 @@ function normalizeTicketRecord(ticket: TicketRecord): TicketRecord {
     isHidden: ticket.isHidden ?? false,
     venueAddress: ticket.venueAddress ?? buildTicketVenueAddress(ticket),
     venuePlaceId: ticket.venuePlaceId ?? '',
-    transferSenderName: ticket.transferSenderName?.trim() || 'zik',
+    transferSenderName:
+      ticket.transferSenderName?.trim() || DEFAULT_TRANSFER_SENDER_NAME,
   };
 }
 
@@ -83,6 +101,17 @@ export async function updateTicketDocument(
 
 export async function deleteTicketDocument(ticketId: string) {
   await deleteTicketDocumentWithRest(ticketId);
+}
+
+export async function updateAdminSettings(settings: Partial<AdminSettings>) {
+  await setDoc(
+    doc(firestore, SEED_STATE_COLLECTION, ADMIN_SETTINGS_DOCUMENT),
+    {
+      ...settings,
+      updatedAt: new Date().toISOString(),
+    },
+    { merge: true },
+  );
 }
 
 export async function persistTicketImage(ticketId: string, imageValue: string) {
@@ -130,11 +159,22 @@ async function runSeedTransaction() {
       SEED_STATE_DOCUMENT,
     );
     const seedStateSnapshot = await transaction.get(seedStateRef);
+    const adminSettingsRef = doc(
+      firestore,
+      SEED_STATE_COLLECTION,
+      ADMIN_SETTINGS_DOCUMENT,
+    );
+    const adminSettingsSnapshot = await transaction.get(adminSettingsRef);
+    const shouldSeedAdminSettings = !adminSettingsSnapshot.exists();
     const currentSeedVersion = seedStateSnapshot.data()?.version as
       | number
       | undefined;
 
     if ((currentSeedVersion ?? 0) >= SEED_VERSION) {
+      if (shouldSeedAdminSettings) {
+        transaction.set(adminSettingsRef, getDefaultAdminSettingsDocument());
+      }
+
       return;
     }
 
@@ -195,11 +235,36 @@ async function runSeedTransaction() {
       }
     });
 
+    if (shouldSeedAdminSettings) {
+      transaction.set(adminSettingsRef, getDefaultAdminSettingsDocument());
+    }
+
     transaction.set(seedStateRef, {
       seededAt: new Date().toISOString(),
       version: SEED_VERSION,
     });
   });
+}
+
+function normalizeAdminSettings(settings: unknown): AdminSettings {
+  const transferSenderName =
+    settings &&
+    typeof settings === 'object' &&
+    'transferSenderName' in settings &&
+    typeof settings.transferSenderName === 'string'
+      ? settings.transferSenderName.trim()
+      : '';
+
+  return {
+    transferSenderName: transferSenderName || DEFAULT_TRANSFER_SENDER_NAME,
+  };
+}
+
+function getDefaultAdminSettingsDocument() {
+  return {
+    transferSenderName: DEFAULT_TRANSFER_SENDER_NAME,
+    updatedAt: new Date().toISOString(),
+  };
 }
 
 function compareAscending(left: string, right: string) {

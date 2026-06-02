@@ -12,13 +12,17 @@ import {
   ScrollView,
   StyleSheet,
   Text,
+  TextInput,
   View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import Head from 'expo-router/head';
 import { StatusBar } from 'expo-status-bar';
+import { DEFAULT_TRANSFER_SENDER_NAME } from '@/constants/admin-settings';
+import { updateAdminSettings } from '@/lib/firebase-data';
 import { lockAdminSession } from '@/lib/admin-pass-key';
+import { useAppStore } from '@/store/use-app-store';
 import {
   formatTicketDate,
   type TicketRecord,
@@ -26,7 +30,17 @@ import {
   useTicketStore,
 } from '@/store/ticketStore';
 
+type AdminTab = 'tickets' | 'transfer-name';
 type TicketFilter = 'All' | 'Upcoming' | TicketType | 'Past' | 'Hidden';
+
+const adminTabs: {
+  icon: React.ComponentProps<typeof Ionicons>['name'];
+  key: AdminTab;
+  label: string;
+}[] = [
+  { icon: 'ticket-outline', key: 'tickets', label: 'Tickets' },
+  { icon: 'mail-outline', key: 'transfer-name', label: 'Transfer Name' },
+];
 
 const filters: TicketFilter[] = ['All', 'Upcoming', 'VIP', 'Standard', 'General', 'Past', 'Hidden'];
 
@@ -37,9 +51,17 @@ export function AdminTicketManagementScreen() {
   const tickets = useTicketStore((state) => state.tickets);
   const removeEvent = useTicketStore((state) => state.removeEvent);
   const updateEvent = useTicketStore((state) => state.updateEvent);
+  const transferSenderName = useAppStore((state) => state.transferSenderName);
+  const setTransferSenderName = useAppStore(
+    (state) => state.setTransferSenderName,
+  );
+  const [activeAdminTab, setActiveAdminTab] = useState<AdminTab>('tickets');
   const [activeFilter, setActiveFilter] = useState<TicketFilter>('All');
   const [deleteTarget, setDeleteTarget] = useState<TicketRecord | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isSavingTransferName, setIsSavingTransferName] = useState(false);
+  const [transferSenderDraft, setTransferSenderDraft] =
+    useState(transferSenderName);
   const [visibilityUpdatingId, setVisibilityUpdatingId] = useState<string | null>(null);
   const [toast, setToast] = useState<string | null>(null);
 
@@ -52,6 +74,10 @@ export function AdminTicketManagementScreen() {
       showToast('Ticket updated');
     }
   }, [params.toast]);
+
+  useEffect(() => {
+    setTransferSenderDraft(transferSenderName);
+  }, [transferSenderName]);
 
   const visibleTickets = useMemo(
     () =>
@@ -79,6 +105,11 @@ export function AdminTicketManagementScreen() {
 
   const upcomingTickets = visibleTickets.filter((ticket) => ticket.status === 'upcoming');
   const pastTickets = visibleTickets.filter((ticket) => ticket.status === 'past');
+  const normalizedTransferSenderName =
+    transferSenderName.trim() || DEFAULT_TRANSFER_SENDER_NAME;
+  const normalizedTransferSenderDraft = transferSenderDraft.trim();
+  const isTransferSenderDirty =
+    normalizedTransferSenderDraft !== normalizedTransferSenderName;
 
   function showToast(message: string) {
     setToast(message);
@@ -126,6 +157,33 @@ export function AdminTicketManagementScreen() {
     }
   }
 
+  async function handleSaveTransferSenderName() {
+    if (isSavingTransferName) {
+      return;
+    }
+
+    const nextName = normalizedTransferSenderDraft;
+
+    if (!nextName) {
+      Alert.alert('Transfer name required', 'Enter the sender name shown in transfer emails.');
+      return;
+    }
+
+    try {
+      setIsSavingTransferName(true);
+      await updateAdminSettings({ transferSenderName: nextName });
+      setTransferSenderName(nextName);
+      showToast('Transfer name updated');
+    } catch {
+      Alert.alert(
+        'Save failed',
+        'We could not update the transfer name in Firebase right now. Please try again.',
+      );
+    } finally {
+      setIsSavingTransferName(false);
+    }
+  }
+
   function handleExitAdmin() {
     lockAdminSession();
 
@@ -159,93 +217,135 @@ export function AdminTicketManagementScreen() {
           </View>
         </View>
 
-      <View style={styles.filterWrap}>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-          <View style={styles.filterRow}>
-            {filters.map((filter) => {
-              const active = activeFilter === filter;
+      <View style={styles.adminTabsWrap}>
+        <View style={styles.adminTabsRow}>
+          {adminTabs.map((tab) => {
+            const active = activeAdminTab === tab.key;
 
-              return (
-                <Pressable
-                  key={filter}
-                  onPress={() => setActiveFilter(filter)}
-                  style={[styles.filterChip, active && styles.filterChipActive]}
-                >
-                  <Text style={[styles.filterText, active && styles.filterTextActive]}>
-                    {filter}
-                  </Text>
-                </Pressable>
-              );
-            })}
-          </View>
-        </ScrollView>
+            return (
+              <Pressable
+                key={tab.key}
+                onPress={() => setActiveAdminTab(tab.key)}
+                style={[styles.adminTabButton, active && styles.adminTabButtonActive]}
+              >
+                <Ionicons
+                  color={active ? '#005BD3' : '#6B7280'}
+                  name={tab.icon}
+                  size={16}
+                />
+                <Text style={[styles.adminTabText, active && styles.adminTabTextActive]}>
+                  {tab.label}
+                </Text>
+              </Pressable>
+            );
+          })}
+        </View>
       </View>
 
-      <ScrollView
-        contentContainerStyle={[styles.content, { paddingBottom: 112 + insets.bottom }]}
-        showsVerticalScrollIndicator={false}
-      >
-        {visibleTickets.length ? (
-          <>
-            <TicketSection
-              onDelete={setDeleteTarget}
-              onEdit={(ticket) =>
-                router.push({
-                  pathname: '/add-event',
-                  params: { mode: 'edit', ticketId: ticket.id },
-                })
-              }
-              onPreview={(ticket) =>
-                router.push({
-                  pathname: '/admin/preview',
-                  params: { ticketId: ticket.id },
-                })
-              }
-              onToggleHidden={(ticket) => {
-                void handleToggleHidden(ticket);
-              }}
-              tickets={upcomingTickets}
-              visibilityUpdatingId={visibilityUpdatingId}
-              title="Upcoming"
-            />
-            <TicketSection
-              onDelete={setDeleteTarget}
-              onEdit={(ticket) =>
-                router.push({
-                  pathname: '/add-event',
-                  params: { mode: 'edit', ticketId: ticket.id },
-                })
-              }
-              onPreview={(ticket) =>
-                router.push({
-                  pathname: '/admin/preview',
-                  params: { ticketId: ticket.id },
-                })
-              }
-              onToggleHidden={(ticket) => {
-                void handleToggleHidden(ticket);
-              }}
-              tickets={pastTickets}
-              visibilityUpdatingId={visibilityUpdatingId}
-              title="Past"
-            />
-          </>
-        ) : (
-          <View style={styles.emptyState}>
-            <Ionicons color="#B79E6A" name="ticket-outline" size={34} />
-            <Text style={styles.emptyTitle}>No tickets match this filter</Text>
-            <Text style={styles.emptyBody}>Try another ticket type or create a new Wizkid ticket.</Text>
-          </View>
-        )}
-      </ScrollView>
+      {activeAdminTab === 'tickets' ? (
+        <>
+          <View style={styles.filterWrap}>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+              <View style={styles.filterRow}>
+                {filters.map((filter) => {
+                  const active = activeFilter === filter;
 
-      <Pressable
-        onPress={() => router.push({ pathname: '/add-event', params: { mode: 'create' } })}
-        style={[styles.fab, { bottom: Math.max(insets.bottom, 18) + 12 }]}
-      >
-        <Ionicons color="#FFFFFF" name="add" size={20} />
-        <Text style={styles.fabText}>New Ticket</Text>
-      </Pressable>
+                  return (
+                    <Pressable
+                      key={filter}
+                      onPress={() => setActiveFilter(filter)}
+                      style={[styles.filterChip, active && styles.filterChipActive]}
+                    >
+                      <Text style={[styles.filterText, active && styles.filterTextActive]}>
+                        {filter}
+                      </Text>
+                    </Pressable>
+                  );
+                })}
+              </View>
+            </ScrollView>
+          </View>
+
+          <ScrollView
+            contentContainerStyle={[styles.content, { paddingBottom: 112 + insets.bottom }]}
+            showsVerticalScrollIndicator={false}
+          >
+            {visibleTickets.length ? (
+              <>
+                <TicketSection
+                  onDelete={setDeleteTarget}
+                  onEdit={(ticket) =>
+                    router.push({
+                      pathname: '/add-event',
+                      params: { mode: 'edit', ticketId: ticket.id },
+                    })
+                  }
+                  onPreview={(ticket) =>
+                    router.push({
+                      pathname: '/admin/preview',
+                      params: { ticketId: ticket.id },
+                    })
+                  }
+                  onToggleHidden={(ticket) => {
+                    void handleToggleHidden(ticket);
+                  }}
+                  tickets={upcomingTickets}
+                  visibilityUpdatingId={visibilityUpdatingId}
+                  title="Upcoming"
+                />
+                <TicketSection
+                  onDelete={setDeleteTarget}
+                  onEdit={(ticket) =>
+                    router.push({
+                      pathname: '/add-event',
+                      params: { mode: 'edit', ticketId: ticket.id },
+                    })
+                  }
+                  onPreview={(ticket) =>
+                    router.push({
+                      pathname: '/admin/preview',
+                      params: { ticketId: ticket.id },
+                    })
+                  }
+                  onToggleHidden={(ticket) => {
+                    void handleToggleHidden(ticket);
+                  }}
+                  tickets={pastTickets}
+                  visibilityUpdatingId={visibilityUpdatingId}
+                  title="Past"
+                />
+              </>
+            ) : (
+              <View style={styles.emptyState}>
+                <Ionicons color="#B79E6A" name="ticket-outline" size={34} />
+                <Text style={styles.emptyTitle}>No tickets match this filter</Text>
+                <Text style={styles.emptyBody}>Try another ticket type or create a new Wizkid ticket.</Text>
+              </View>
+            )}
+          </ScrollView>
+
+          <Pressable
+            onPress={() => router.push({ pathname: '/add-event', params: { mode: 'create' } })}
+            style={[styles.fab, { bottom: Math.max(insets.bottom, 18) + 12 }]}
+          >
+            <Ionicons color="#FFFFFF" name="add" size={20} />
+            <Text style={styles.fabText}>New Ticket</Text>
+          </Pressable>
+        </>
+      ) : (
+        <TransferNameSettings
+          bottomInset={insets.bottom}
+          currentName={normalizedTransferSenderName}
+          draftName={transferSenderDraft}
+          isDirty={isTransferSenderDirty}
+          isSaving={isSavingTransferName}
+          onChangeDraft={setTransferSenderDraft}
+          onReset={() => setTransferSenderDraft(normalizedTransferSenderName)}
+          onSave={() => {
+            void handleSaveTransferSenderName();
+          }}
+        />
+      )}
 
       <DeleteSheet
         onCancel={() => setDeleteTarget(null)}
@@ -305,6 +405,107 @@ function TicketSection({
         />
       ))}
     </View>
+  );
+}
+
+function TransferNameSettings({
+  bottomInset,
+  currentName,
+  draftName,
+  isDirty,
+  isSaving,
+  onChangeDraft,
+  onReset,
+  onSave,
+}: {
+  bottomInset: number;
+  currentName: string;
+  draftName: string;
+  isDirty: boolean;
+  isSaving: boolean;
+  onChangeDraft: (value: string) => void;
+  onReset: () => void;
+  onSave: () => void;
+}) {
+  const previewName = draftName.trim() || currentName;
+  const canSave = isDirty && Boolean(draftName.trim()) && !isSaving;
+
+  return (
+    <ScrollView
+      contentContainerStyle={[
+        styles.settingsContent,
+        { paddingBottom: 36 + bottomInset },
+      ]}
+      keyboardShouldPersistTaps="handled"
+      showsVerticalScrollIndicator={false}
+    >
+      <View style={styles.settingsCard}>
+        <View style={styles.settingsHeader}>
+          <View style={styles.settingsIcon}>
+            <Ionicons color="#005BD3" name="mail-outline" size={20} />
+          </View>
+          <View style={styles.settingsHeaderCopy}>
+            <Text style={styles.settingsEyebrow}>TRANSFER EMAIL</Text>
+            <Text style={styles.settingsTitle}>Sender Name</Text>
+            <Text style={styles.settingsBody}>
+              This name appears in the Help Center transfer email preview.
+            </Text>
+          </View>
+        </View>
+
+        <View style={styles.nameField}>
+          <Text style={styles.nameLabel}>Name</Text>
+          <TextInput
+            accessibilityLabel="Transfer sender name"
+            autoCapitalize="words"
+            editable={!isSaving}
+            onChangeText={onChangeDraft}
+            placeholder={DEFAULT_TRANSFER_SENDER_NAME}
+            placeholderTextColor="#9CA3AF"
+            returnKeyType="done"
+            style={styles.nameInput}
+            value={draftName}
+          />
+        </View>
+
+        <View style={styles.senderPreviewBlock}>
+          <Text style={styles.senderPreviewLabel}>Email Preview</Text>
+          <Text style={styles.senderPreviewSubject}>
+            {previewName} sent you ticket(s) for
+          </Text>
+          <Text style={styles.senderPreviewHeadline}>
+            Your Ticket Transfer From {previewName} Is Ready To Be Accepted!
+          </Text>
+        </View>
+
+        <View style={styles.settingsActions}>
+          <Pressable
+            disabled={!isDirty || isSaving}
+            onPress={onReset}
+            style={[
+              styles.resetNameButton,
+              (!isDirty || isSaving) && styles.nameButtonDisabled,
+            ]}
+          >
+            <Text style={styles.resetNameButtonText}>Reset</Text>
+          </Pressable>
+          <Pressable
+            disabled={!canSave}
+            onPress={onSave}
+            style={[styles.saveNameButton, !canSave && styles.nameButtonDisabled]}
+          >
+            {isSaving ? (
+              <ActivityIndicator color="#FFFFFF" size="small" />
+            ) : (
+              <>
+                <Ionicons color="#FFFFFF" name="save-outline" size={16} />
+                <Text style={styles.saveNameButtonText}>Save Name</Text>
+              </>
+            )}
+          </Pressable>
+        </View>
+      </View>
+    </ScrollView>
   );
 }
 
@@ -491,6 +692,41 @@ const styles = StyleSheet.create({
   },
   countNumber: { color: '#111827', fontSize: 20, fontWeight: '900', lineHeight: 23 },
   countLabel: { color: '#6B7280', fontSize: 10, fontWeight: '700', letterSpacing: 1, textTransform: 'uppercase' },
+  adminTabsWrap: {
+    borderBottomColor: '#E5E7EB',
+    borderBottomWidth: 1,
+    paddingBottom: 12,
+    paddingHorizontal: 16,
+  },
+  adminTabsRow: {
+    backgroundColor: '#E5E7EB',
+    borderRadius: 10,
+    flexDirection: 'row',
+    gap: 3,
+    padding: 3,
+  },
+  adminTabButton: {
+    alignItems: 'center',
+    borderRadius: 8,
+    flex: 1,
+    flexDirection: 'row',
+    gap: 6,
+    justifyContent: 'center',
+    minHeight: 40,
+    paddingHorizontal: 8,
+  },
+  adminTabButtonActive: {
+    backgroundColor: '#FFFFFF',
+  },
+  adminTabText: {
+    color: '#6B7280',
+    fontSize: 12,
+    fontWeight: '800',
+    lineHeight: 16,
+  },
+  adminTabTextActive: {
+    color: '#005BD3',
+  },
   filterWrap: { borderBottomColor: '#E5E7EB', borderBottomWidth: 1, paddingBottom: 12 },
   filterRow: { flexDirection: 'row', gap: 8, paddingHorizontal: 16 },
   filterChip: {
@@ -505,6 +741,144 @@ const styles = StyleSheet.create({
   filterText: { color: '#374151', fontSize: 12, fontWeight: '700' },
   filterTextActive: { color: '#FFFFFF' },
   content: { gap: 24, paddingHorizontal: 16, paddingTop: 20 },
+  settingsContent: {
+    paddingHorizontal: 16,
+    paddingTop: 20,
+  },
+  settingsCard: {
+    backgroundColor: '#FFFFFF',
+    borderColor: '#E5E7EB',
+    borderRadius: 10,
+    borderWidth: 1,
+    gap: 16,
+    padding: 16,
+  },
+  settingsHeader: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  settingsIcon: {
+    alignItems: 'center',
+    backgroundColor: '#EFF6FF',
+    borderRadius: 20,
+    height: 40,
+    justifyContent: 'center',
+    width: 40,
+  },
+  settingsHeaderCopy: {
+    flex: 1,
+  },
+  settingsEyebrow: {
+    color: '#005BD3',
+    fontSize: 10,
+    fontWeight: '900',
+    letterSpacing: 1.7,
+    lineHeight: 13,
+  },
+  settingsTitle: {
+    color: '#111827',
+    fontSize: 20,
+    fontWeight: '900',
+    lineHeight: 25,
+    marginTop: 2,
+  },
+  settingsBody: {
+    color: '#6B7280',
+    fontSize: 13,
+    fontWeight: '500',
+    lineHeight: 18,
+    marginTop: 5,
+  },
+  nameField: {
+    gap: 6,
+  },
+  nameLabel: {
+    color: '#6B7280',
+    fontSize: 10,
+    fontWeight: '800',
+    letterSpacing: 1.2,
+    lineHeight: 13,
+    textTransform: 'uppercase',
+  },
+  nameInput: {
+    backgroundColor: '#F9FAFB',
+    borderColor: '#D1D5DB',
+    borderRadius: 8,
+    borderWidth: 1,
+    color: '#111827',
+    fontSize: 16,
+    fontWeight: '700',
+    minHeight: 50,
+    paddingHorizontal: 14,
+  },
+  senderPreviewBlock: {
+    backgroundColor: '#F9FAFB',
+    borderColor: '#E5E7EB',
+    borderRadius: 8,
+    borderWidth: 1,
+    gap: 6,
+    padding: 14,
+  },
+  senderPreviewLabel: {
+    color: '#9CA3AF',
+    fontSize: 10,
+    fontWeight: '900',
+    letterSpacing: 1.4,
+    lineHeight: 13,
+    textTransform: 'uppercase',
+  },
+  senderPreviewSubject: {
+    color: '#111827',
+    fontSize: 17,
+    fontWeight: '900',
+    lineHeight: 22,
+  },
+  senderPreviewHeadline: {
+    color: '#4B5563',
+    fontSize: 13,
+    fontWeight: '600',
+    lineHeight: 18,
+  },
+  settingsActions: {
+    flexDirection: 'row',
+    gap: 10,
+  },
+  resetNameButton: {
+    alignItems: 'center',
+    borderColor: '#E5E7EB',
+    borderRadius: 8,
+    borderWidth: 1,
+    flex: 1,
+    justifyContent: 'center',
+    minHeight: 48,
+  },
+  resetNameButtonText: {
+    color: '#374151',
+    fontSize: 12,
+    fontWeight: '800',
+    letterSpacing: 0.8,
+    textTransform: 'uppercase',
+  },
+  saveNameButton: {
+    alignItems: 'center',
+    backgroundColor: '#005BD3',
+    borderRadius: 8,
+    flex: 1.4,
+    flexDirection: 'row',
+    gap: 7,
+    justifyContent: 'center',
+    minHeight: 48,
+  },
+  saveNameButtonText: {
+    color: '#FFFFFF',
+    fontSize: 12,
+    fontWeight: '900',
+    letterSpacing: 0.8,
+    textTransform: 'uppercase',
+  },
+  nameButtonDisabled: {
+    opacity: 0.45,
+  },
   section: { gap: 10 },
   sectionHeader: { alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between' },
   sectionTitle: { color: '#374151', fontSize: 11, fontWeight: '900', letterSpacing: 1.3, textTransform: 'uppercase' },

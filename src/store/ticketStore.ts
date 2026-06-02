@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 
+import { DEFAULT_TRANSFER_SENDER_NAME } from '@/constants/admin-settings';
 import {
   type TicketRecord,
   type TicketStatus,
@@ -62,7 +63,7 @@ export const DEFAULT_WIZKID_TICKET: TicketInput = {
   perks: 'Priority entry, Starboy lounge access, complimentary drinks',
   transferRules:
     'Transferable once before 24 hours to showtime. Valid ID required at entry.',
-  transferSenderName: 'zik',
+  transferSenderName: DEFAULT_TRANSFER_SENDER_NAME,
   image:
     'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&w=1200&q=85',
   backgroundColor: '#B79E6A',

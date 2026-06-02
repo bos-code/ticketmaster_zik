@@ -2,11 +2,13 @@ import { useEffect } from 'react';
 
 import {
   ensureFirebaseSeedData,
+  subscribeToAdminSettings,
   subscribeToEvents,
   subscribeToReservations,
   subscribeToTickets,
 } from '@/lib/firebase-data';
 import { useEventStore } from '@/store/use-event-store';
+import { useAppStore } from '@/store/use-app-store';
 import { useTicketStore } from '@/store/ticketStore';
 
 export function useFirebaseDataSync() {
@@ -16,6 +18,13 @@ export function useFirebaseDataSync() {
 
     void (async () => {
       try {
+        unsubscribeHandlers.push(
+          subscribeToAdminSettings((settings) => {
+            useAppStore
+              .getState()
+              .setTransferSenderName(settings.transferSenderName);
+          }),
+        );
         unsubscribeHandlers.push(
           subscribeToTickets((tickets) => {
             useTicketStore.getState().replaceTickets(tickets);

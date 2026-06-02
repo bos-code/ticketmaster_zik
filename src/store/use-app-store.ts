@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 
+import { DEFAULT_TRANSFER_SENDER_NAME } from '@/constants/admin-settings';
 import { DEFAULT_HOME_LOCATION } from '@/lib/device-permissions';
 
 export type ThemePreference = 'system' | 'light' | 'dark';
@@ -12,6 +13,7 @@ type AppStore = {
   locationEnabled: boolean;
   notificationsEnabled: boolean;
   homeLocationLabel: string;
+  transferSenderName: string;
   finishStartup: () => void;
   resetStartup: () => void;
   setThemePreference: (value: ThemePreference) => void;
@@ -19,6 +21,7 @@ type AppStore = {
   setLocationEnabled: (value: boolean) => void;
   setNotificationsEnabled: (value: boolean) => void;
   setHomeLocationLabel: (value: string) => void;
+  setTransferSenderName: (value: string) => void;
 };
 
 export const useAppStore = create<AppStore>((set) => ({
@@ -28,6 +31,7 @@ export const useAppStore = create<AppStore>((set) => ({
   locationEnabled: true,
   notificationsEnabled: false,
   homeLocationLabel: DEFAULT_HOME_LOCATION,
+  transferSenderName: DEFAULT_TRANSFER_SENDER_NAME,
   finishStartup: () => set({ hasFinishedStartup: true }),
   resetStartup: () => set({ hasFinishedStartup: false }),
   setThemePreference: (value) => set({ themePreference: value }),
@@ -35,4 +39,6 @@ export const useAppStore = create<AppStore>((set) => ({
   setLocationEnabled: (value) => set({ locationEnabled: value }),
   setNotificationsEnabled: (value) => set({ notificationsEnabled: value }),
   setHomeLocationLabel: (value) => set({ homeLocationLabel: value }),
+  setTransferSenderName: (value) =>
+    set({ transferSenderName: value.trim() || DEFAULT_TRANSFER_SENDER_NAME }),
 }));

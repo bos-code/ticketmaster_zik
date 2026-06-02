@@ -1,3 +1,4 @@
+import { MaterialIcons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import Head from "expo-router/head";
 import { StatusBar } from "expo-status-bar";
@@ -13,7 +14,8 @@ import {
 } from "react-native";
 
 import { ScreenWrapper } from "@/components/ui/screen-wrapper";
-import { useTicketStore } from "@/store/ticketStore";
+import { DEFAULT_TRANSFER_SENDER_NAME } from "@/constants/admin-settings";
+import { useAppStore } from "@/store/use-app-store";
 
 const emailFont = Platform.select({
   ios: "SF Pro Display",
@@ -30,13 +32,10 @@ export default function HelpCenterScreen() {
   const mockupWidth = Math.min(width, 738);
   const scale = mockupWidth / 738;
   const styles = createStyles(scale, mockupWidth);
-  const senderName = useTicketStore((state) => {
-    const ticket =
-      state.tickets.find((item) => item.status === "upcoming" && !item.isHidden) ??
-      state.tickets.find((item) => !item.isHidden);
-
-    return ticket?.transferSenderName?.trim() || "zik";
-  });
+  const senderName = useAppStore(
+    (state) =>
+      state.transferSenderName.trim() || DEFAULT_TRANSFER_SENDER_NAME,
+  );
 
   return (
     <ScreenWrapper backgroundColor="#FFFFFF" style={styles.screen}>
@@ -96,9 +95,14 @@ export default function HelpCenterScreen() {
 
           <View style={styles.progressWrap}>
             <View style={styles.progressLine} />
-            <Step active label="Received" styles={styles} symbol="⇩" />
-            <Step label="Accepted" styles={styles} symbol="✓" />
-            <Step label="Complete" styles={styles} symbol="⚑" />
+            <Step
+              active
+              iconName="move-to-inbox"
+              label="Received"
+              styles={styles}
+            />
+            <Step iconName="check" label="Accepted" styles={styles} />
+            <Step iconName="outlined-flag" label="Complete" styles={styles} />
           </View>
 
           <View style={styles.emailCard}>
@@ -165,21 +169,23 @@ export default function HelpCenterScreen() {
 
 function Step({
   active = false,
+  iconName,
   label,
   styles,
-  symbol,
 }: {
   active?: boolean;
+  iconName: React.ComponentProps<typeof MaterialIcons>["name"];
   label: string;
   styles: ReturnType<typeof createStyles>;
-  symbol: string;
 }) {
   return (
     <View style={styles.step}>
       <View style={[styles.stepCircle, active && styles.stepCircleActive]}>
-        <Text style={[styles.stepSymbol, active && styles.stepSymbolActive]}>
-          {symbol}
-        </Text>
+        <MaterialIcons
+          color={active ? "#FFFFFF" : inactiveStepGrey}
+          name={iconName}
+          size={active ? styles.stepIconSizeActive : styles.stepIconSize}
+        />
       </View>
       <Text style={[styles.stepLabel, active && styles.stepLabelActive]}>
         {label}
@@ -202,11 +208,16 @@ function ChevronDown({ styles }: { styles: ReturnType<typeof createStyles> }) {
 
 const blue = "#0AA4D8";
 const navBlue = "#0A84FF";
+const progressBlue = "#0097D4";
+const inactiveStepGrey = "#9AA4AD";
 
 function createStyles(scale: number, mockupWidth: number) {
   const s = (value: number) => value * scale;
 
-  return StyleSheet.create({
+  return {
+    stepIconSize: s(29),
+    stepIconSizeActive: s(31),
+    ...StyleSheet.create({
   screen: {
     paddingTop: 0,
   },
@@ -346,7 +357,7 @@ function createStyles(scale: number, mockupWidth: number) {
   },
   progressLine: {
     backgroundColor: "#BBC4CA",
-    height: s(4),
+    height: Math.max(StyleSheet.hairlineWidth, s(2)),
     left: s(34),
     position: "absolute",
     right: s(34),
@@ -359,8 +370,8 @@ function createStyles(scale: number, mockupWidth: number) {
   },
   stepCircle: {
     alignItems: "center",
-    backgroundColor: "#FFFFFF",
-    borderColor: "#8C969D",
+    backgroundColor: "transparent",
+    borderColor: inactiveStepGrey,
     borderRadius: s(25),
     borderStyle: "dashed",
     borderWidth: s(2),
@@ -369,19 +380,10 @@ function createStyles(scale: number, mockupWidth: number) {
     width: s(50),
   },
   stepCircleActive: {
-    backgroundColor: blue,
-    borderColor: blue,
+    backgroundColor: progressBlue,
+    borderColor: progressBlue,
     borderStyle: "solid",
-  },
-  stepSymbol: {
-    color: "#8C969D",
-    fontSize: s(30),
-    lineHeight: s(32),
-  },
-  stepSymbolActive: {
-    color: "#FFFFFF",
-    fontSize: s(32),
-    fontWeight: "700",
+    borderWidth: 0,
   },
   stepLabel: {
     color: "#7D858D",
@@ -390,7 +392,7 @@ function createStyles(scale: number, mockupWidth: number) {
     marginTop: s(8),
   },
   stepLabelActive: {
-    color: blue,
+    color: progressBlue,
   },
   emailCard: {
     borderColor: "#D9DEE2",
@@ -480,5 +482,6 @@ function createStyles(scale: number, mockupWidth: number) {
   footerStrong: {
     fontWeight: "800",
   },
-  });
+    }),
+  };
 }

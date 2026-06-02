@@ -22,6 +22,7 @@ import {
   type WebCroppedImage,
   type WebImageCropperHandle,
 } from '@/components/admin/web-image-cropper';
+import { DEFAULT_TRANSFER_SENDER_NAME } from '@/constants/admin-settings';
 import Head from 'expo-router/head';
 import { StatusBar } from 'expo-status-bar';
 import {
@@ -37,6 +38,7 @@ import {
   type TicketType,
   useTicketStore,
 } from '@/store/ticketStore';
+import { useAppStore } from '@/store/use-app-store';
 
 type TicketFormInput = Omit<
   TicketInput,
@@ -115,7 +117,7 @@ const EMPTY_CREATE_FORM: FormState = {
   status: 'upcoming',
   perks: '',
   transferRules: '',
-  transferSenderName: 'zik',
+  transferSenderName: DEFAULT_TRANSFER_SENDER_NAME,
   image: '',
   backgroundColor: '#B79E6A',
   seatLabel: '',
@@ -130,13 +132,17 @@ export function AddEventAdminScreen() {
   const params = useLocalSearchParams<{ mode?: string; ticketId?: string }>();
   const mode = params.mode === 'edit' ? 'edit' : 'create';
   const ticketId = typeof params.ticketId === 'string' ? params.ticketId : undefined;
+  const transferSenderName = useAppStore((state) => state.transferSenderName);
+  const createFormTransferSenderNameRef = useRef(transferSenderName);
   const addEvent = useTicketStore((state) => state.addEvent);
   const updateEvent = useTicketStore((state) => state.updateEvent);
   const selectedTicket = useTicketStore((state) =>
     ticketId ? state.tickets.find((ticket) => ticket.id === ticketId) : undefined,
   );
   const [form, setForm] = useState<FormState>(() =>
-    selectedTicket ? toFormState(selectedTicket) : EMPTY_CREATE_FORM,
+    selectedTicket
+      ? toFormState(selectedTicket)
+      : createEmptyCreateForm(createFormTransferSenderNameRef.current),
   );
   const [errors, setErrors] = useState<Partial<Record<FieldKey, string>>>({});
   const [isPickingImage, setIsPickingImage] = useState(false);
@@ -158,7 +164,7 @@ export function AddEventAdminScreen() {
     }
 
     if (mode === 'create') {
-      setForm(EMPTY_CREATE_FORM);
+      setForm(createEmptyCreateForm(createFormTransferSenderNameRef.current));
       setErrors({});
     }
   }, [mode, selectedTicket]);
@@ -570,13 +576,6 @@ export function AddEventAdminScreen() {
             />
             <TicketTextField error={errors.perks} label="Perks" multiline onChangeText={(value) => updateField('perks', value)} value={form.perks} />
             <TicketTextField error={errors.transferRules} label="Transfer Rules" multiline onChangeText={(value) => updateField('transferRules', value)} value={form.transferRules} />
-            <TicketTextField
-              error={errors.transferSenderName}
-              label="Transfer Sender Name"
-              onChangeText={(value) => updateField('transferSenderName', value)}
-              placeholder={'Name shown before "sent you ticket(s)"'}
-              value={form.transferSenderName}
-            />
             <TicketTextField error={errors.backgroundColor} label="Accent Color" onChangeText={(value) => updateField('backgroundColor', value)} value={form.backgroundColor} />
             <TicketTextField error={errors.authPhoneNumber} label="Auth Phone Number" onChangeText={(value) => updateField('authPhoneNumber', value)} placeholder="e.g. ******2970" value={form.authPhoneNumber} />
           </FormSection>
@@ -753,6 +752,14 @@ function validateForm(form: FormState) {
   return errors;
 }
 
+function createEmptyCreateForm(transferSenderName: string): FormState {
+  return {
+    ...EMPTY_CREATE_FORM,
+    transferSenderName:
+      transferSenderName.trim() || DEFAULT_TRANSFER_SENDER_NAME,
+  };
+}
+
 function toFormState(ticket: TicketInput): FormState {
   const { isHidden: _isHidden, ...formState } = ticket;
 
@@ -760,6 +767,8 @@ function toFormState(ticket: TicketInput): FormState {
     ...EMPTY_CREATE_FORM,
     ...formState,
     authPhoneNumber: formState.authPhoneNumber ?? EMPTY_CREATE_FORM.authPhoneNumber,
+    transferSenderName:
+      formState.transferSenderName?.trim() || DEFAULT_TRANSFER_SENDER_NAME,
     latitude: formatCoordinateField(formState.latitude),
     longitude: formatCoordinateField(formState.longitude),
     venueAddress: formState.venueAddress ?? buildFormVenueAddress(formState),
