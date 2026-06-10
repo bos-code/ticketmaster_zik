@@ -370,7 +370,7 @@ function createStyles(scale: number, mockupWidth: number) {
   },
   stepCircle: {
     alignItems: "center",
-    backgroundColor: "transparent",
+    backgroundColor: "#FFFFFF",
     borderColor: inactiveStepGrey,
     borderRadius: s(25),
     borderStyle: "dashed",
