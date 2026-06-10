@@ -209,14 +209,14 @@ function ChevronDown({ styles }: { styles: ReturnType<typeof createStyles> }) {
 const blue = "#0AA4D8";
 const navBlue = "#0A84FF";
 const progressBlue = "#0097D4";
-const inactiveStepGrey = "#9AA4AD";
+const inactiveStepGrey = "#727B84";
 
 function createStyles(scale: number, mockupWidth: number) {
   const s = (value: number) => value * scale;
 
   return {
-    stepIconSize: s(29),
-    stepIconSizeActive: s(31),
+    stepIconSize: s(31),
+    stepIconSizeActive: s(33),
     ...StyleSheet.create({
   screen: {
     paddingTop: 0,
@@ -350,7 +350,7 @@ function createStyles(scale: number, mockupWidth: number) {
   },
   progressWrap: {
     flexDirection: "row",
-    height: s(84),
+    height: s(90),
     justifyContent: "space-between",
     marginBottom: s(41),
     position: "relative",
@@ -358,26 +358,26 @@ function createStyles(scale: number, mockupWidth: number) {
   progressLine: {
     backgroundColor: "#BBC4CA",
     height: Math.max(StyleSheet.hairlineWidth, s(2)),
-    left: s(34),
+    left: s(65),
     position: "absolute",
-    right: s(34),
-    top: s(24),
+    right: s(65),
+    top: s(27),
   },
   step: {
     alignItems: "center",
-    width: s(68),
+    width: s(74),
     zIndex: 1,
   },
   stepCircle: {
     alignItems: "center",
     backgroundColor: "#FFFFFF",
     borderColor: inactiveStepGrey,
-    borderRadius: s(25),
+    borderRadius: s(28),
     borderStyle: "dashed",
     borderWidth: s(2),
-    height: s(50),
+    height: s(56),
     justifyContent: "center",
-    width: s(50),
+    width: s(56),
   },
   stepCircleActive: {
     backgroundColor: progressBlue,
@@ -386,9 +386,9 @@ function createStyles(scale: number, mockupWidth: number) {
     borderWidth: 0,
   },
   stepLabel: {
-    color: "#7D858D",
-    fontSize: s(16),
-    lineHeight: s(20),
+    color: "#747D86",
+    fontSize: s(17),
+    lineHeight: s(22),
     marginTop: s(8),
   },
   stepLabelActive: {
