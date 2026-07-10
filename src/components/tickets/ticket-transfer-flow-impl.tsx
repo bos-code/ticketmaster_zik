@@ -1,5 +1,5 @@
 import React from 'react';
-import { useWindowDimensions, View } from 'react-native';
+import { View } from 'react-native';
 import { CustomSpinner } from '@/components/tickets/custom-spinner';
 
 import { ChooseRecipientTypeScreen } from '@/components/tickets/ChooseRecipientTypeScreen';
@@ -12,7 +12,6 @@ import {
   TicketsLoadingShadow,
   TicketsUnavailable,
 } from '@/components/tickets/ticket-transfer-flow-components';
-import { getTicketSummaryHeroExpandedHeight } from '@/components/tickets/ticketFlowConstants';
 import { TicketFlowContext } from '@/components/tickets/TicketFlowContext';
 import { TicketTransferStatusModal } from '@/components/tickets/TicketTransferStatusModal';
 import { TicketTransferUnavailableModal } from '@/components/tickets/TicketTransferUnavailableModal';
@@ -39,10 +38,8 @@ export function TicketTransferFlow({
     initialTicketIndex,
     orderId,
   });
-  const { width } = useWindowDimensions();
   const transferLoadingSpinnerTop =
-    getTicketSummaryHeroExpandedHeight(width) +
-    TRANSFER_LOADING_SPINNER_TOP_OFFSET;
+    flow.heroExpandedHeight + TRANSFER_LOADING_SPINNER_TOP_OFFSET;
 
   if (!flow.ticketFlowData) {
     if (flow.isLoadingTickets) {
@@ -89,8 +86,10 @@ export function TicketTransferFlow({
             <SelectTicketsScreen
               activePanel={flow.activePanel}
               handleListScroll={flow.handleListScroll}
+              heroExpandedHeight={flow.heroExpandedHeight}
               isHeroCollapsed={flow.isHeroCollapsed}
               onBack={flow.handleBackToTabs}
+              onHeroExpandedHeightChange={flow.handleHeroExpandedHeightChange}
               onOpenTicket={flow.openTicketDetailsRoute}
               onOpenViewer={flow.handleOpenViewer}
               onPanelChange={flow.setActivePanel}

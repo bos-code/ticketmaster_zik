@@ -16,7 +16,8 @@ import {
 } from "@/components/tickets/ticket-transfer-flow-form";
 import {
   EMPTY_SEATS,
-  getTicketSummaryHeroCollapseDistance,
+  getTicketSummaryHeroExpandedHeight,
+  HERO_COLLAPSED_HEIGHT,
 } from "@/components/tickets/ticketFlowConstants";
 import type {
   DeliveryMode,
@@ -49,7 +50,7 @@ export function useTicketTransferFlowController({
     ticketOrder,
   } = useTicketOrder(orderId);
   const { width } = useWindowDimensions();
-  const heroCollapseDistance = getTicketSummaryHeroCollapseDistance(width);
+  const defaultHeroExpandedHeight = getTicketSummaryHeroExpandedHeight(width);
   const frameWidth = Math.min(width, 430);
   const carouselCardWidth = Math.round(frameWidth * CAROUSEL_CARD_WIDTH_RATIO);
   const carouselSnapInterval = carouselCardWidth + CAROUSEL_GAP;
@@ -80,6 +81,9 @@ export function useTicketTransferFlowController({
   const [recipientForm, setRecipientForm] = useState<RecipientFormState>(emptyRecipientForm);
   const [formErrors, setFormErrors] = useState<Partial<RecipientFormState>>({});
   const [isListLoading, setIsListLoading] = useState(false);
+  const [measuredHeroExpandedHeight, setMeasuredHeroExpandedHeight] = useState(
+    defaultHeroExpandedHeight,
+  );
 
   const scrollY = useSharedValue(0);
   const heroCollapsedValue = useSharedValue(0);
@@ -103,12 +107,36 @@ export function useTicketTransferFlowController({
     recipientForm.destination.trim().length > 0;
   const confirmCodeReady = otpCode.length === 6;
   const isViewerScreen = screen === "viewer";
+  const heroExpandedHeight = Math.max(
+    defaultHeroExpandedHeight,
+    measuredHeroExpandedHeight,
+  );
+  const heroCollapseDistance = Math.max(
+    1,
+    heroExpandedHeight - HERO_COLLAPSED_HEIGHT,
+  );
 
   const handleHeroCollapseChange = useCallback((collapsed: boolean) => {
     setIsHeroCollapsed((current) =>
       current === collapsed ? current : collapsed,
     );
   }, []);
+
+  const handleHeroExpandedHeightChange = useCallback(
+    (nextHeight: number) => {
+      setMeasuredHeroExpandedHeight((currentHeight) => {
+        const normalizedHeight = Math.max(
+          defaultHeroExpandedHeight,
+          Math.ceil(nextHeight),
+        );
+
+        return Math.abs(currentHeight - normalizedHeight) < 1
+          ? currentHeight
+          : normalizedHeight;
+      });
+    },
+    [defaultHeroExpandedHeight],
+  );
 
   const handleListScroll = useAnimatedScrollHandler({
     onScroll: (event) => {
@@ -123,6 +151,10 @@ export function useTicketTransferFlowController({
       }
     },
   });
+
+  useEffect(() => {
+    setMeasuredHeroExpandedHeight(defaultHeroExpandedHeight);
+  }, [defaultHeroExpandedHeight]);
 
   useEffect(() => {
     return () => {
@@ -400,6 +432,7 @@ export function useTicketTransferFlowController({
     handleBackToTabs,
     handleCancelAuth,
     handleConfirmCode,
+    handleHeroExpandedHeightChange,
     handleListScroll,
     handleOpenRecipientForm,
     handleOpenViewer,
@@ -409,6 +442,7 @@ export function useTicketTransferFlowController({
     handleToggleDeliveryMode,
     handleTransferStart,
     handleViewerBack,
+    heroExpandedHeight,
     isHeroCollapsed,
     isListLoading,
     isLoadingTickets,

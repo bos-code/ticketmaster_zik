@@ -1,12 +1,13 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
   Pressable,
   StyleSheet,
   Text,
+  useWindowDimensions,
   View,
 } from "react-native";
 import Animated, {
@@ -21,6 +22,7 @@ import {
   EditableProvider,
   type EditableContextValue,
 } from "@/components/tickets/EditableContext";
+import { getTicketSummaryHeroExpandedHeight } from "@/components/tickets/ticketFlowConstants";
 import { TicketFlowContext } from "@/components/tickets/TicketFlowContext";
 import { TicketTransferListScreen } from "@/components/tickets/ticket-transfer-flow-list-screen";
 import type {
@@ -38,6 +40,7 @@ import {
 export function AdminTicketPreviewScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const { width } = useWindowDimensions();
   const params = useLocalSearchParams<{ ticketId?: string }>();
   const ticketId =
     typeof params.ticketId === "string" ? params.ticketId : undefined;
@@ -52,6 +55,14 @@ export function AdminTicketPreviewScreen() {
   );
   const [isSaving, setIsSaving] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
+  const defaultHeroExpandedHeight = getTicketSummaryHeroExpandedHeight(width);
+  const [measuredHeroExpandedHeight, setMeasuredHeroExpandedHeight] = useState(
+    defaultHeroExpandedHeight,
+  );
+  const heroExpandedHeight = Math.max(
+    defaultHeroExpandedHeight,
+    measuredHeroExpandedHeight,
+  );
 
   // List screen state
   const [activePanel, setActivePanel] = useState<PanelTab>("tickets");
@@ -62,6 +73,26 @@ export function AdminTicketPreviewScreen() {
       scrollY.value = event.contentOffset.y;
     },
   });
+
+  useEffect(() => {
+    setMeasuredHeroExpandedHeight(defaultHeroExpandedHeight);
+  }, [defaultHeroExpandedHeight]);
+
+  const handleHeroExpandedHeightChange = useCallback(
+    (nextHeight: number) => {
+      setMeasuredHeroExpandedHeight((currentHeight) => {
+        const normalizedHeight = Math.max(
+          defaultHeroExpandedHeight,
+          Math.ceil(nextHeight),
+        );
+
+        return Math.abs(currentHeight - normalizedHeight) < 1
+          ? currentHeight
+          : normalizedHeight;
+      });
+    },
+    [defaultHeroExpandedHeight],
+  );
 
   const isDirty = useMemo(() => {
     if (!originalTicket || !editedTicket) return false;
@@ -249,8 +280,10 @@ export function AdminTicketPreviewScreen() {
           <TicketTransferListScreen
             activePanel={activePanel}
             handleListScroll={handleListScroll}
+            heroExpandedHeight={heroExpandedHeight}
             isHeroCollapsed={false}
             onBack={handleCancel}
+            onHeroExpandedHeightChange={handleHeroExpandedHeightChange}
             onOpenTicket={() => {}}
             onOpenViewer={() => {}}
             onPanelChange={setActivePanel}

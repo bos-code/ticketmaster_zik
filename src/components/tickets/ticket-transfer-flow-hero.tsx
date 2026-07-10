@@ -2,6 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import React from 'react';
 import {
+  type LayoutChangeEvent,
   Pressable,
   Text,
   useWindowDimensions,
@@ -23,8 +24,6 @@ import {
 import {
   absoluteFill,
   getSummaryPhoneHeroBottomSpace,
-  getTicketSummaryHeroCollapseDistance,
-  getTicketSummaryHeroExpandedHeight,
   getTicketSummaryHeroImageHeight,
   HERO_COLLAPSED_HEIGHT,
 } from '@/components/tickets/ticketFlowConstants';
@@ -38,6 +37,7 @@ type CollapsedHeroTitleProps = {
 
 type ExpandedHeroCardProps = {
   dateTime: string;
+  onLayout: (event: LayoutChangeEvent) => void;
   onOpenViewer: () => void;
   bottomSpace: number;
   ticketCount: number;
@@ -48,11 +48,15 @@ type ExpandedHeroCardProps = {
 export function CollapsibleEventHero({
   isHeroCollapsed,
   onBack,
+  onExpandedHeightChange,
   onOpenViewer,
   scrollY,
+  expandedHeight,
 }: {
+  expandedHeight: number;
   isHeroCollapsed: boolean;
   onBack: () => void;
+  onExpandedHeightChange: (height: number) => void;
   onOpenViewer: () => void;
   scrollY: SharedValue<number>;
 }) {
@@ -63,8 +67,21 @@ export function CollapsibleEventHero({
   const heroImageBaseHeight = getTicketSummaryHeroImageHeight(width);
   const heroImageHeight = heroImageBaseHeight + statusBarBleed;
   const heroBottomSpace = getSummaryPhoneHeroBottomSpace(width);
-  const expandedHeroHeight = getTicketSummaryHeroExpandedHeight(width);
-  const heroCollapseDistance = getTicketSummaryHeroCollapseDistance(width);
+  const heroCollapseDistance = Math.max(
+    1,
+    expandedHeight - HERO_COLLAPSED_HEIGHT,
+  );
+
+  const handleExpandedCardLayout = React.useCallback(
+    (event: LayoutChangeEvent) => {
+      const nextHeight = Math.ceil(
+        heroImageBaseHeight + event.nativeEvent.layout.height,
+      );
+
+      onExpandedHeightChange(nextHeight);
+    },
+    [heroImageBaseHeight, onExpandedHeightChange],
+  );
 
   const expandedLayerStyle = useAnimatedStyle(() => ({
     opacity: interpolate(
@@ -108,7 +125,7 @@ export function CollapsibleEventHero({
     <Animated.View
       pointerEvents='box-none'
       className='absolute inset-x-0 top-0 z-20'
-      style={{ height: expandedHeroHeight }}
+      style={{ height: expandedHeight }}
     >
       <CollapsedHeroLayer
         collapsedTitleStyle={collapsedTitleStyle}
@@ -125,7 +142,7 @@ export function CollapsibleEventHero({
       <Animated.View
         pointerEvents={isHeroCollapsed ? 'none' : 'box-none'}
         className='absolute inset-x-0 top-0 overflow-hidden'
-        style={[{ height: expandedHeroHeight }, expandedLayerStyle]}
+        style={[{ height: expandedHeight }, expandedLayerStyle]}
       >
         <EdgeToEdgeHeroMedia
           contentFit="cover"
@@ -152,6 +169,7 @@ export function CollapsibleEventHero({
             <ExpandedHeroCard
               bottomSpace={heroBottomSpace}
               dateTime={event.dateTime}
+              onLayout={handleExpandedCardLayout}
               onOpenViewer={onOpenViewer}
               ticketCount={order.ticketCount}
               title={event.title}
@@ -250,7 +268,10 @@ function CollapsedHeroTitle({ style, title, venue }: CollapsedHeroTitleProps) {
       style={[style, { bottom: 0, justifyContent: 'center', pointerEvents: 'none', top: 0 }]}
       className='absolute left-16 right-16 items-center'
     >
-      <Text className='mb-1 text-center text-[13px] font-extrabold text-white'>
+      <Text
+        numberOfLines={1}
+        className='mb-1 text-center text-[13px] font-extrabold text-white'
+      >
         {title}
       </Text>
       <Text
@@ -266,15 +287,19 @@ function CollapsedHeroTitle({ style, title, venue }: CollapsedHeroTitleProps) {
 function ExpandedHeroCard({
   bottomSpace,
   dateTime,
+  onLayout,
   onOpenViewer,
   ticketCount,
   title,
   venue,
 }: ExpandedHeroCardProps) {
   return (
-    <View className="ticket-summary-hero-card relative summary-phone:-top-[.8px] -top-[10px]  ">
+    <View
+      className="ticket-summary-hero-card relative summary-phone:-top-[.8px] -top-[10px]  "
+      onLayout={onLayout}
+    >
       <View className="absolute left-0 summary-phone:-top-[19.3px] -top-4 z-10 self-start">
-        <View className="  justify-center bg-[#232126] px-4 py-2">
+        <View className="ticket-summary-hero-date justify-center bg-[#232126] px-4 py-2">
           <Text className="ticket-summary-hero-date-text text-xs font-extrabold uppercase leading-[13px]  tracking-[1px] text-[rgba(255,255,255,0.92)]">
             {dateTime}
           </Text>

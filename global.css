@@ -179,7 +179,6 @@ screen and (max-width: 400px) {
 screen and (max-width: 340px) {
   .ticket-summary-hero-card {
     padding-top: 8px !important;
-    transform: translateY(6px);
   }
 
   .ticket-summary-hero-date {
@@ -217,7 +216,6 @@ screen and (max-width: 340px) {
 @media screen and (max-height: 560px) {
   .ticket-summary-hero-card {
     padding-top: 6px !important;
-    transform: translateY(10px);
   }
 
   .ticket-summary-hero-date {
