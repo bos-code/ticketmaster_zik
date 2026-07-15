@@ -39,7 +39,7 @@ export function BottomDock({
 
           <BottomDockAction
             iconClassName=""
-            iconColor="#2B72D7"
+            iconColor="#6D6D6D"
             iconName="sync-outline"
             label="Sell"
             labelColor="#2b2b2b"
@@ -92,10 +92,10 @@ function BottomDockAction({
 const styles = StyleSheet.create({
   action: {
     alignItems: "center",
-    height: 61,
+    height: 62,
     justifyContent: "center",
     paddingTop: 4,
-    width: 82,
+    width: 88,
   },
   actionsRow: {
     alignItems: "center",
@@ -112,7 +112,7 @@ const styles = StyleSheet.create({
     boxShadow: "0px 6px 14px rgba(0, 0, 0, 0.24)",
     elevation: 11,
     height: 62,
-    width: 165,
+    width: 177,
   },
   dockDisabled: {
     opacity: 0.6,
@@ -128,8 +128,8 @@ const styles = StyleSheet.create({
   },
   label: {
     fontFamily: fonts.regular,
-    fontSize: 10.5,
-    lineHeight: 14,
+    fontSize: 11,
+    lineHeight: 15,
     marginTop: 1,
   },
 });

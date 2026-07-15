@@ -154,8 +154,8 @@ export function CollapsibleEventHero({
           <View className='px-4'>
             <View className='mt-3 flex-row items-center justify-between'>
               <HeaderBackButton onBack={onBack} />
-              <View className='rounded-full bg-black/40 p-3'>
-                <Text className='text-[13px] font-medium leading-4 text-white'>
+              <View className='h-10 w-[60px] items-center justify-center rounded-full bg-black/50'>
+                <Text className='text-[14px] font-semibold leading-4 text-white'>
                   Help
                 </Text>
               </View>
@@ -236,8 +236,8 @@ function CollapsedHeroLayer({
                 <Ionicons color='#FFFFFF' name='barcode-outline' size={26} />
               </Pressable>
             ) : (
-              <View className='rounded-full bg-black/40 p-3'>
-                <Text className='text-[13px] font-medium leading-4 text-white'>
+              <View className='h-10 w-[60px] items-center justify-center rounded-full bg-black/50'>
+                <Text className='text-[14px] font-semibold leading-4 text-white'>
                   Help
                 </Text>
               </View>
@@ -255,9 +255,9 @@ function HeaderBackButton({ onBack }: { onBack: () => void }) {
       accessibilityRole='button'
       hitSlop={8}
       onPress={onBack}
-      className='h-10 w-10 items-center justify-center rounded-full bg-[rgba(0,0,0,0.40)]'
+      className='h-11 w-11 items-center justify-center rounded-full bg-[rgba(0,0,0,0.50)]'
     >
-      <Ionicons color='#FFFFFF' name='arrow-back' size={24} />
+      <Ionicons color='#FFFFFF' name='arrow-back' size={28} />
     </Pressable>
   );
 }
@@ -295,7 +295,7 @@ function ExpandedHeroCard({
 }: ExpandedHeroCardProps) {
   return (
     <View
-      className="ticket-summary-hero-card relative summary-phone:-top-[.8px] -top-[10px]  "
+      className="ticket-summary-hero-card relative summary-phone:-top-[.8px] -top-[10px]"
       onLayout={onLayout}
     >
       <View className="absolute left-0 summary-phone:-top-[19.3px] -top-4 z-10 self-start">
@@ -306,7 +306,7 @@ function ExpandedHeroCard({
         </View>
      
       </View>
-      <View className="  bg-[#232126] px-4 pt-2 ">
+      <View className="bg-[#232126] px-4 pt-2">
         <Text className="ticket-summary-hero-title pt-1 text-lg font-bold leading-6 text-white">
           {title}
         </Text>

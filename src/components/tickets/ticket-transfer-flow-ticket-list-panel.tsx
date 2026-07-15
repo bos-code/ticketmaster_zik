@@ -139,9 +139,9 @@ const styles = StyleSheet.create({
     backgroundColor: "#FFFFFF",
   },
   orderHeader: {
-    paddingHorizontal: 22,
-    paddingBottom: 10,
-    paddingTop: 20,
+    paddingHorizontal: 14,
+    paddingBottom: 11,
+    paddingTop: 18,
   },
   orderHeaderRow: {
     alignItems: "flex-start",
@@ -155,7 +155,7 @@ const styles = StyleSheet.create({
   orderId: {
     color: "#171717",
     fontFamily: fonts.extraBold,
-    fontSize: 14,
+    fontSize: 15,
     letterSpacing: -0.4,
     lineHeight: 23,
   },
@@ -175,21 +175,22 @@ const styles = StyleSheet.create({
   },
   ticketList: {
     paddingBottom: -2,
-    paddingHorizontal: 22,
+    paddingHorizontal: 14,
     paddingTop: 6,
   },
   ticketCard: {
-    backgroundColor: "#f0eeef",
-    marginBottom: 14,
-    borderRadius: 5,
-
+    backgroundColor: "#F4F4F4",
+    borderColor: "#D5D5D5",
+    borderWidth: StyleSheet.hairlineWidth,
+    marginBottom: 11,
     overflow: "hidden",
   },
   ticketCardHeader: {
-    borderBottomColor: "#FFFDFD",
-    borderBottomWidth: 3,
-    paddingHorizontal: 18,
-    paddingVertical: 8,
+    backgroundColor: "#E9E9E9",
+    borderBottomColor: "#FFFFFF",
+    borderBottomWidth: 4,
+    paddingHorizontal: 14,
+    paddingVertical: 7,
   },
   ticketNote: {
     color: "#191919",
@@ -201,8 +202,8 @@ const styles = StyleSheet.create({
   ticketMetaRow: {
     flexDirection: "row",
     paddingBottom: 15,
-    paddingHorizontal: 18,
-    paddingTop: 16,
+    paddingHorizontal: 14,
+    paddingTop: 15,
   },
   metaCell: {
     flex: 1,
