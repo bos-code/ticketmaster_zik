@@ -1,4 +1,3 @@
-import { Ionicons } from "@expo/vector-icons";
 import React from "react";
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from "react-native";
 import Animated, { FadeInDown } from "react-native-reanimated";
@@ -9,6 +8,7 @@ import { EditableText } from "@/components/tickets/EditableText";
 import type { Seat } from "@/components/tickets/ticketFlowTypes";
 import { useTicketFlowData } from "@/components/tickets/useTicketFlowData";
 import { fonts } from "../../../theme/fonts";
+import { TicketMenuIcon } from "@/components/tickets/ticket-transfer-flow-icons";
 
 export function TicketListPanel({
   isListLoading,
@@ -34,7 +34,7 @@ export function TicketListPanel({
               hitSlop={8}
               style={styles.menuButton}
             >
-              <Ionicons color="#242424" name="ellipsis-vertical" size={20} />
+              <TicketMenuIcon color="#171717" size={22} />
             </Pressable>
           </View>
         </View>
@@ -48,6 +48,9 @@ export function TicketListPanel({
               seat={seat}
             />
           ))}
+        </View>
+        <View style={styles.moreOptionsHeader}>
+          <Text style={styles.moreOptionsText}>MORE OPTIONS</Text>
         </View>
         <MapPreviewCard />
         <PromoCard />
@@ -227,6 +230,20 @@ const styles = StyleSheet.create({
     fontSize: 14,
     lineHeight: 21,
     marginTop: 9,
+  },
+  moreOptionsHeader: {
+    borderTopColor: "#EEEEEE",
+    borderTopWidth: StyleSheet.hairlineWidth,
+    marginHorizontal: 14,
+    marginTop: 24,
+    paddingTop: 31,
+  },
+  moreOptionsText: {
+    color: "#171717",
+    fontFamily: fonts.extraBold,
+    fontSize: 14,
+    letterSpacing: 1.3,
+    lineHeight: 18,
   },
   textCenter: {
     textAlign: "center",

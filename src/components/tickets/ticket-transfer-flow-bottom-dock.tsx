@@ -1,9 +1,12 @@
-import { Ionicons } from "@expo/vector-icons";
 import React from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import Animated, { FadeInUp } from "react-native-reanimated";
 
 import { fonts } from "../../../theme/fonts";
+import {
+  TicketResaleIcon,
+  TicketTransferIcon,
+} from "@/components/tickets/ticket-transfer-flow-icons";
 
 export function BottomDock({
   disabled,
@@ -27,9 +30,8 @@ export function BottomDock({
         <View style={styles.actionsRow}>
           <BottomDockAction
             disabled={disabled}
-            iconClassName="rotate-45"
             iconColor={disabled ? "#D1D5DB" : "#2B72D7"}
-            iconName="arrow-up-outline"
+            icon="transfer"
             label="Transfer"
             labelColor={disabled ? "#D1D5DB" : "#2b2b2b"}
             onPress={onTransfer}
@@ -38,9 +40,8 @@ export function BottomDock({
           <View style={styles.divider} />
 
           <BottomDockAction
-            iconClassName=""
             iconColor="#6D6D6D"
-            iconName="sync-outline"
+            icon="sell"
             label="Sell"
             labelColor="#2b2b2b"
           />
@@ -52,17 +53,15 @@ export function BottomDock({
 
 function BottomDockAction({
   disabled,
-  iconClassName,
   iconColor,
-  iconName,
+  icon,
   label,
   labelColor,
   onPress,
 }: {
   disabled?: boolean;
-  iconClassName: string;
   iconColor: string;
-  iconName: React.ComponentProps<typeof Ionicons>["name"];
+  icon: "sell" | "transfer";
   label: string;
   labelColor: string;
   onPress?: () => void;
@@ -74,12 +73,11 @@ function BottomDockAction({
       disabled={disabled}
       onPress={onPress}
     >
-      <Ionicons
-        className={iconClassName}
-        color={iconColor}
-        name={iconName}
-        size={22}
-      />
+      {icon === "transfer" ? (
+        <TicketTransferIcon color={iconColor} size={23} />
+      ) : (
+        <TicketResaleIcon color={iconColor} size={23} />
+      )}
       <Text
         style={[styles.label, { color: labelColor }]}
       >
@@ -127,7 +125,7 @@ const styles = StyleSheet.create({
     zIndex: 30,
   },
   label: {
-    fontFamily: fonts.regular,
+    fontFamily: fonts.medium,
     fontSize: 11,
     lineHeight: 15,
     marginTop: 1,

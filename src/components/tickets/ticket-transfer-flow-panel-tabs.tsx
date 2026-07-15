@@ -3,6 +3,7 @@ import { Pressable, Text, View } from "react-native";
 
 import { cx } from "@/components/tickets/cx";
 import type { PanelTab } from "@/components/tickets/ticketFlowTypes";
+import { fonts } from "../../../theme/fonts";
 
 export function PanelTabs({
   activePanel,
@@ -52,6 +53,7 @@ function PanelTabButton({
           "text-[15px] leading-[18px]",
           active ? "font-bold text-[#111111]" : "font-medium text-[#757575]",
         )}
+        style={{ fontFamily: active ? fonts.bold : fonts.medium }}
       >
         {label}
       </Text>

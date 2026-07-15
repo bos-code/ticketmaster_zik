@@ -1,5 +1,3 @@
-import { Ionicons } from '@expo/vector-icons';
-import { Image } from 'expo-image';
 import React from 'react';
 import {
   type LayoutChangeEvent,
@@ -28,6 +26,13 @@ import {
   HERO_COLLAPSED_HEIGHT,
 } from '@/components/tickets/ticketFlowConstants';
 import { useTicketFlowData } from '@/components/tickets/useTicketFlowData';
+import { fonts } from '../../../theme/fonts';
+import {
+  CompactTicketIcon,
+  TicketFlowBackIcon,
+  TicketScanIcon,
+  TicketStackIcon,
+} from '@/components/tickets/ticket-transfer-flow-icons';
 
 type CollapsedHeroTitleProps = {
   style: StyleProp<ViewStyle>;
@@ -155,7 +160,7 @@ export function CollapsibleEventHero({
             <View className='mt-3 flex-row items-center justify-between'>
               <HeaderBackButton onBack={onBack} />
               <View className='h-10 w-[60px] items-center justify-center rounded-full bg-black/50'>
-                <Text className='text-[14px] font-semibold leading-4 text-white'>
+                <Text className='text-[14px] font-semibold leading-4 text-white' style={{ fontFamily: fonts.semiBold }}>
                   Help
                 </Text>
               </View>
@@ -233,11 +238,11 @@ function CollapsedHeroLayer({
                 onPress={onOpenViewer}
                 className='h-7 w-11 items-center justify-center rounded-[14px] bg-[#0B55F5]'
               >
-                <Ionicons color='#FFFFFF' name='barcode-outline' size={26} />
+                <CompactTicketIcon color='#FFFFFF' size={26} />
               </Pressable>
             ) : (
               <View className='h-10 w-[60px] items-center justify-center rounded-full bg-black/50'>
-                <Text className='text-[14px] font-semibold leading-4 text-white'>
+                <Text className='text-[14px] font-semibold leading-4 text-white' style={{ fontFamily: fonts.semiBold }}>
                   Help
                 </Text>
               </View>
@@ -257,7 +262,7 @@ function HeaderBackButton({ onBack }: { onBack: () => void }) {
       onPress={onBack}
       className='h-11 w-11 items-center justify-center rounded-full bg-[rgba(0,0,0,0.50)]'
     >
-      <Ionicons color='#FFFFFF' name='arrow-back' size={28} />
+      <TicketFlowBackIcon color='#FFFFFF' size={28} />
     </Pressable>
   );
 }
@@ -271,12 +276,14 @@ function CollapsedHeroTitle({ style, title, venue }: CollapsedHeroTitleProps) {
       <Text
         numberOfLines={1}
         className='mb-1 text-center text-[13px] font-extrabold text-white'
+        style={{ fontFamily: fonts.extraBold }}
       >
         {title}
       </Text>
       <Text
         numberOfLines={1}
         className='text-center text-[11px] font-normal leading-[13px] text-[rgba(255,255,255,0.84)]'
+        style={{ fontFamily: fonts.regular }}
       >
         {venue}
       </Text>
@@ -300,14 +307,14 @@ function ExpandedHeroCard({
     >
       <View className="absolute left-0 summary-phone:-top-[19.3px] -top-4 z-10 self-start">
         <View className="ticket-summary-hero-date justify-center bg-[#232126] px-4 py-2">
-          <Text className="ticket-summary-hero-date-text text-xs font-extrabold uppercase leading-[13px]  tracking-[1px] text-[rgba(255,255,255,0.92)]">
+          <Text className="ticket-summary-hero-date-text text-xs font-extrabold uppercase leading-[13px]  tracking-[1px] text-[rgba(255,255,255,0.92)]" style={{ fontFamily: fonts.extraBold }}>
             {dateTime}
           </Text>
         </View>
      
       </View>
       <View className="bg-[#232126] px-4 pt-2">
-        <Text className="ticket-summary-hero-title pt-1 text-lg font-bold leading-6 text-white">
+        <Text className="ticket-summary-hero-title pt-1 text-lg font-bold leading-6 text-white" style={{ fontFamily: fonts.bold }}>
           {title}
         </Text>
 
@@ -315,17 +322,14 @@ function ExpandedHeroCard({
           <Text
             numberOfLines={1}
             className="ticket-summary-hero-venue mr-3 flex-1 text-[13px] font-normal leading-[17px] text-[rgba(255,255,255,0.76)]"
+            style={{ fontFamily: fonts.regular }}
           >
             {venue}
           </Text>
 
           <View className="shrink-0 flex-row items-center gap-[5px]">
-            <Image
-              contentFit="contain"
-              source={require("../../../assets/ticketx3.png")}
-              style={{ height: 15, width: 15 }}
-            />
-            <Text className="text-[17px] font-bold leading-[19px] text-[#F2F4F7]">
+            <TicketStackIcon color="#F2F4F7" size={17} />
+            <Text className="text-[17px] font-bold leading-[19px] text-[#F2F4F7]" style={{ fontFamily: fonts.bold }}>
               {`x${ticketCount}`}
             </Text>
           </View>
@@ -338,8 +342,8 @@ function ExpandedHeroCard({
         className="ticket-summary-view-button min-h-[42px] flex-row items-center justify-center gap-[6px] bg-[#0444f3]"
         style={bottomSpace ? { marginBottom: bottomSpace } : undefined}
       >
-        <Ionicons color="#CFE0FF" name="barcode-outline" size={14} />
-        <Text className="ticket-summary-view-button-text text-[13px] font-bold leading-[16px] text-[#F5F9FF]">
+        <TicketScanIcon color="#CFE0FF" size={16} />
+        <Text className="ticket-summary-view-button-text text-[13px] font-bold leading-[16px] text-[#F5F9FF]" style={{ fontFamily: fonts.bold }}>
           View Tickets
         </Text>
       </Pressable>

@@ -4,7 +4,7 @@
 @import "nativewind/theme";
 
 @theme {
-  --breakpoint-summary-phone: 430px;
+  --breakpoint-summary-phone: 480px;
 }
 
 @custom-variant summary-430x932 (@media screen and (width: 430px) and (height: 932px));
@@ -128,8 +128,7 @@ screen and (display-mode: fullscreen) {
   }
 }
 
-@media screen and (max-height: 700px),
-screen and (max-width: 400px) {
+@media screen and (max-height: 700px) {
   .ticket-summary-hero-card {
     padding-top: 10px !important;
   }
