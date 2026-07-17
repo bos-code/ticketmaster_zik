@@ -151,6 +151,7 @@ export function AddEventAdminScreen({ platform = 'original' }: { platform?: 'ori
   const [isPickingImage, setIsPickingImage] = useState(false);
   const [isResolvingVenue, setIsResolvingVenue] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [isTicketmasterLookupOpen, setIsTicketmasterLookupOpen] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
   const [ticketmasterMetadata, setTicketmasterMetadata] = useState<Pick<TicketInput, 'ticketmasterEventId' | 'ticketmasterVenueId' | 'ticketmasterEventUrl'>>({});
   const screenTitle = platform === 'v2' ? 'Admin' : mode === 'edit' ? 'Edit Ticket' : 'Create New Ticket';
@@ -176,6 +177,9 @@ export function AddEventAdminScreen({ platform = 'original' }: { platform?: 'ori
   const previewTitle = useMemo(
     () => `${form.ticketType || 'Ticket'} / ${form.status || 'upcoming'}`,
     [form.status, form.ticketType],
+  );
+  const hasPreviewContent = Boolean(
+    form.image.trim() || form.eventName.trim() || form.artistName.trim() || form.venue.trim(),
   );
   const hasResolvedVenueLocation = hasFormCoordinates(form);
 
@@ -396,27 +400,7 @@ export function AddEventAdminScreen({ platform = 'original' }: { platform?: 'ori
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
-          <View style={styles.modeBanner}>
-            <View style={styles.modeIcon}>
-              <Ionicons
-                color="#B79E6A"
-                name={mode === 'edit' ? 'create-outline' : 'add-circle-outline'}
-                size={20}
-              />
-            </View>
-            <View style={styles.modeCopy}>
-              <Text style={styles.modeTitle}>
-                {mode === 'edit' ? 'Editing existing ticket' : 'Create a brand-new ticket'}
-              </Text>
-              <Text style={styles.modeText}>
-                {mode === 'edit'
-                  ? 'Saving will update this ticket immediately in Admin and My Tickets.'
-                  : 'Fill in the required fields, upload artwork or paste an image URL, then tap Create New Ticket.'}
-              </Text>
-            </View>
-          </View>
-
-          <View style={styles.previewCard}>
+          {hasPreviewContent ? <View style={styles.previewCard}>
             {form.image.trim() ? (
               <Image contentFit="cover" source={{ uri: form.image }} style={styles.previewImage} />
             ) : (
@@ -433,7 +417,7 @@ export function AddEventAdminScreen({ platform = 'original' }: { platform?: 'ori
                 {form.artistName || 'Artist'} at {form.venue || 'Venue'}
               </Text>
             </View>
-          </View>
+          </View> : null}
 
           <FormSection title="Event">
             <TicketTextField error={errors.eventName} label="Event Name" onChangeText={(value) => updateField('eventName', value)} value={form.eventName} />
@@ -477,9 +461,28 @@ export function AddEventAdminScreen({ platform = 'original' }: { platform?: 'ori
             />
             {platform === 'v2' ? (
               <View style={styles.ticketmasterBlock}>
-                <Text style={styles.imageLookupHelp}>Upload a file, or use Ticketmaster lookup — we fill a poster URL you can submit as-is.</Text>
-                <Text style={styles.imageOverrideHelp}>Uploading a file replaces the Ticketmaster poster for this submission.</Text>
-                <TicketmasterLookupPanel onSelectEvent={applyTicketmasterEvent} onSelectVenue={applyTicketmasterVenue} />
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityState={{ expanded: isTicketmasterLookupOpen }}
+                  onPress={() => setIsTicketmasterLookupOpen((current) => !current)}
+                  style={styles.lookupToggle}
+                >
+                  <View style={styles.lookupToggleIcon}>
+                    <Ionicons color="#005BD3" name="search-outline" size={17} />
+                  </View>
+                  <View style={styles.lookupToggleCopy}>
+                    <Text style={styles.lookupToggleTitle}>Auto-fill from Ticketmaster</Text>
+                    <Text style={styles.lookupToggleText}>Search for an event or venue</Text>
+                  </View>
+                  <Ionicons
+                    color="#6B7280"
+                    name={isTicketmasterLookupOpen ? 'chevron-up' : 'chevron-down'}
+                    size={18}
+                  />
+                </Pressable>
+                {isTicketmasterLookupOpen ? (
+                  <TicketmasterLookupPanel onSelectEvent={applyTicketmasterEvent} onSelectVenue={applyTicketmasterVenue} />
+                ) : null}
               </View>
             ) : null}
           </FormSection>
@@ -1072,34 +1075,7 @@ const styles = StyleSheet.create({
     maxWidth: 250,
     textAlign: 'center',
   },
-  content: { gap: 20, paddingHorizontal: 16, paddingTop: 12 },
-  modeBanner: {
-    alignItems: 'center',
-    backgroundColor: '#EFF6FF',
-    borderColor: '#BFDBFE',
-    borderRadius: 8,
-    borderWidth: 1,
-    flexDirection: 'row',
-    gap: 12,
-    padding: 14,
-  },
-  modeIcon: {
-    alignItems: 'center',
-    backgroundColor: '#DBEAFE',
-    borderRadius: 18,
-    height: 36,
-    justifyContent: 'center',
-    width: 36,
-  },
-  modeCopy: { flex: 1 },
-  modeTitle: { color: '#1E40AF', fontSize: 13, fontWeight: '800', lineHeight: 18 },
-  modeText: {
-    color: '#3B82F6',
-    fontSize: 12,
-    fontWeight: '500',
-    lineHeight: 17,
-    marginTop: 3,
-  },
+  content: { gap: 16, paddingHorizontal: 16, paddingTop: 8 },
   previewCard: { backgroundColor: '#FFFFFF', borderColor: '#E5E7EB', borderRadius: 10, borderWidth: 1, overflow: 'hidden' },
   previewImage: { aspectRatio: 16 / 9, backgroundColor: '#F3F4F6', width: '100%' },
   previewPlaceholder: {
@@ -1336,8 +1312,29 @@ const styles = StyleSheet.create({
   },
   toastText: { color: '#FFFFFF', fontSize: 13, fontWeight: '700' },
   ticketmasterBlock: { gap: 10 },
-  imageLookupHelp: { color: '#6B7280', fontSize: 13, fontWeight: '500', lineHeight: 18 },
-  imageOverrideHelp: { color: '#6B7280', fontSize: 12, fontWeight: '500', lineHeight: 17 },
+  lookupToggle: {
+    alignItems: 'center',
+    backgroundColor: '#F8FAFC',
+    borderColor: '#E2E8F0',
+    borderRadius: 8,
+    borderWidth: 1,
+    flexDirection: 'row',
+    gap: 10,
+    minHeight: 56,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+  },
+  lookupToggleIcon: {
+    alignItems: 'center',
+    backgroundColor: '#EFF6FF',
+    borderRadius: 8,
+    height: 36,
+    justifyContent: 'center',
+    width: 36,
+  },
+  lookupToggleCopy: { flex: 1 },
+  lookupToggleTitle: { color: '#1F2937', fontSize: 13, fontWeight: '800', lineHeight: 18 },
+  lookupToggleText: { color: '#6B7280', fontSize: 11, fontWeight: '500', lineHeight: 15 },
   notFound: { alignItems: 'center', flex: 1, gap: 16, justifyContent: 'center', padding: 24 },
   notFoundTitle: { color: '#111827', fontSize: 20, fontWeight: '800' },
 });
