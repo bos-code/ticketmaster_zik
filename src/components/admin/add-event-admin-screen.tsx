@@ -151,10 +151,13 @@ export function AddEventAdminScreen({ platform = 'original' }: { platform?: 'ori
   const [isPickingImage, setIsPickingImage] = useState(false);
   const [isResolvingVenue, setIsResolvingVenue] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  const [isTicketmasterLookupOpen, setIsTicketmasterLookupOpen] = useState(false);
+  const [hasStartedV2Form, setHasStartedV2Form] = useState(mode === 'edit');
+  const [isTicketmasterImageLocked, setIsTicketmasterImageLocked] = useState(
+    Boolean(selectedTicket?.ticketmasterEventId),
+  );
   const [toast, setToast] = useState<string | null>(null);
   const [ticketmasterMetadata, setTicketmasterMetadata] = useState<Pick<TicketInput, 'ticketmasterEventId' | 'ticketmasterVenueId' | 'ticketmasterEventUrl'>>({});
-  const screenTitle = platform === 'v2' ? 'Admin' : mode === 'edit' ? 'Edit Ticket' : 'Create New Ticket';
+  const screenTitle = mode === 'edit' ? 'Edit Ticket' : platform === 'v2' ? 'Create Ticket' : 'Create New Ticket';
   const screenSubtitle =
     mode === 'edit'
       ? 'Update any ticket detail and save it everywhere.'
@@ -165,14 +168,17 @@ export function AddEventAdminScreen({ platform = 'original' }: { platform?: 'ori
     if (mode === 'edit' && selectedTicket) {
       setForm(toFormState(selectedTicket));
       setErrors({});
+      setIsTicketmasterImageLocked(Boolean(selectedTicket.ticketmasterEventId));
       return;
     }
 
     if (mode === 'create') {
       setForm(createEmptyCreateForm(createFormTransferSenderNameRef.current));
       setErrors({});
+      setHasStartedV2Form(platform !== 'v2');
+      setIsTicketmasterImageLocked(false);
     }
-  }, [mode, selectedTicket]);
+  }, [mode, platform, selectedTicket]);
 
   const previewTitle = useMemo(
     () => `${form.ticketType || 'Ticket'} / ${form.status || 'upcoming'}`,
@@ -182,6 +188,8 @@ export function AddEventAdminScreen({ platform = 'original' }: { platform?: 'ori
     form.image.trim() || form.eventName.trim() || form.artistName.trim() || form.venue.trim(),
   );
   const hasResolvedVenueLocation = hasFormCoordinates(form);
+  const showV2Starter = platform === 'v2' && mode === 'create';
+  const isFormVisible = !showV2Starter || hasStartedV2Form;
 
   function handleLeaveAdminForm() {
     if (router.canGoBack()) {
@@ -189,10 +197,14 @@ export function AddEventAdminScreen({ platform = 'original' }: { platform?: 'ori
       return;
     }
 
-    router.replace(platform === 'v2' ? '/admin-legacy' as Href : '/admin');
+    router.replace(platform === 'v2' ? '/admin' as Href : '/admin-legacy');
   }
 
   function updateField(key: FieldKey, value: string) {
+    if (key === 'image' && isTicketmasterImageLocked) {
+      return;
+    }
+
     setForm((current) => {
       const next = { ...current, [key]: value };
 
@@ -294,6 +306,7 @@ export function AddEventAdminScreen({ platform = 'original' }: { platform?: 'ori
   function applyTicketmasterVenue(venue: TicketmasterVenue) {
     setForm((current) => ({ ...current, venue: venue.name || current.venue, venueAddress: venue.address || current.venueAddress, city: venue.city || current.city, state: venue.state || current.state, country: venue.country || current.country, latitude: venue.latitude == null ? current.latitude : String(venue.latitude), longitude: venue.longitude == null ? current.longitude : String(venue.longitude), venuePlaceId: venue.id || current.venuePlaceId }));
     setTicketmasterMetadata((current) => ({ ...current, ticketmasterVenueId: venue.id }));
+    setHasStartedV2Form(true);
     showToast('Venue details imported');
   }
 
@@ -315,7 +328,17 @@ export function AddEventAdminScreen({ platform = 'original' }: { platform?: 'ori
       ...(event.venue ? { venue: event.venue.name || current.venue, venueAddress: event.venue.address || current.venueAddress, city: event.venue.city || current.city, state: event.venue.state || current.state, country: event.venue.country || current.country, latitude: event.venue.latitude == null ? current.latitude : String(event.venue.latitude), longitude: event.venue.longitude == null ? current.longitude : String(event.venue.longitude), venuePlaceId: event.venue.id || current.venuePlaceId } : {}),
     }));
     setTicketmasterMetadata({ ticketmasterEventId: event.id, ticketmasterEventUrl: event.url, ticketmasterVenueId: event.venue?.id });
+    setHasStartedV2Form(true);
+    setIsTicketmasterImageLocked(true);
     showToast('Event imported — review before saving');
+  }
+
+  function handleCreateCustom() {
+    setForm(createEmptyCreateForm(createFormTransferSenderNameRef.current));
+    setTicketmasterMetadata({});
+    setErrors({});
+    setHasStartedV2Form(true);
+    setIsTicketmasterImageLocked(false);
   }
 
   function showToast(message: string) {
@@ -324,7 +347,7 @@ export function AddEventAdminScreen({ platform = 'original' }: { platform?: 'ori
   }
 
   function handlePickImage() {
-    if (isPickingImage) {
+    if (isPickingImage || isTicketmasterImageLocked) {
       return;
     }
 
@@ -337,10 +360,18 @@ export function AddEventAdminScreen({ platform = 'original' }: { platform?: 'ori
   }
 
   function openImageCropper(sourceUri = form.image.trim()) {
+    if (isTicketmasterImageLocked) {
+      return;
+    }
+
     imageCropperRef.current?.openSource(sourceUri);
   }
 
   async function handleCroppedImage(image: WebCroppedImage) {
+    if (isTicketmasterImageLocked) {
+      return;
+    }
+
     try {
       const imageUrl = await uploadTicketArtworkImage(image);
 
@@ -400,6 +431,34 @@ export function AddEventAdminScreen({ platform = 'original' }: { platform?: 'ori
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
+          {showV2Starter ? (
+            <View style={styles.v2Starter}>
+              <View style={styles.v2StarterHeader}>
+                <View style={styles.v2StarterCopy}>
+                  <Text style={styles.v2StarterEyebrow}>START WITH AN EVENT</Text>
+                  <Text style={styles.v2StarterTitle}>Find an event</Text>
+                  <Text style={styles.v2StarterText}>
+                    Search Ticketmaster to fill the available event details automatically.
+                  </Text>
+                </View>
+                <Pressable
+                  accessibilityRole="button"
+                  onPress={handleCreateCustom}
+                  style={styles.customEventButton}
+                >
+                  <Ionicons color="#005BD3" name="create-outline" size={18} />
+                  <Text style={styles.customEventButtonText}>Create custom</Text>
+                </Pressable>
+              </View>
+              <TicketmasterLookupPanel
+                onSelectEvent={applyTicketmasterEvent}
+                onSelectVenue={applyTicketmasterVenue}
+              />
+            </View>
+          ) : null}
+
+          {isFormVisible ? (
+            <>
           {hasPreviewContent ? <View style={styles.previewCard}>
             {form.image.trim() ? (
               <Image contentFit="cover" source={{ uri: form.image }} style={styles.previewImage} />
@@ -425,66 +484,54 @@ export function AddEventAdminScreen({ platform = 'original' }: { platform?: 'ori
               <TicketTextField error={errors.artistName} label="Artist Name" onChangeText={(value) => updateField('artistName', value)} value={form.artistName} />
               <TicketTextField error={errors.albumName} label="Album Name" onChangeText={(value) => updateField('albumName', value)} value={form.albumName} />
             </View>
-            <View style={styles.imageUploadRow}>
-              <Pressable
-                disabled={isPickingImage}
-                onPress={handlePickImage}
-                style={[styles.uploadButton, isPickingImage && styles.uploadButtonDisabled]}
-              >
-                {isPickingImage ? (
-                  <ActivityIndicator color="#FFFFFF" size="small" />
-                ) : (
-                  <Ionicons color="#FFFFFF" name="cloud-upload-outline" size={16} />
-                )}
-                <Text style={styles.uploadButtonText}>
-                  {form.image ? 'Replace Image' : 'Upload Image'}
-                </Text>
-              </Pressable>
-              {form.image ? (
-                <Pressable onPress={() => updateField('image', '')} style={styles.clearImageButton}>
-                  <Ionicons color="rgba(255,255,255,0.72)" name="close" size={16} />
-                </Pressable>
-              ) : null}
-            </View>
-            {Platform.OS === 'web' && form.image ? (
-              <Pressable onPress={() => openImageCropper()} style={styles.imageDressButton}>
-                <Ionicons color="#005BD3" name="crop-outline" size={16} />
-                <Text style={styles.imageDressButtonText}>Crop Image</Text>
-              </Pressable>
-            ) : null}
-            <TicketTextField
-              error={errors.image}
-              label="Image URL"
-              onChangeText={(value) => updateField('image', value)}
-              placeholder="Upload an image or paste a URL"
-              value={form.image}
-            />
-            {platform === 'v2' ? (
-              <View style={styles.ticketmasterBlock}>
-                <Pressable
-                  accessibilityRole="button"
-                  accessibilityState={{ expanded: isTicketmasterLookupOpen }}
-                  onPress={() => setIsTicketmasterLookupOpen((current) => !current)}
-                  style={styles.lookupToggle}
-                >
-                  <View style={styles.lookupToggleIcon}>
-                    <Ionicons color="#005BD3" name="search-outline" size={17} />
-                  </View>
-                  <View style={styles.lookupToggleCopy}>
-                    <Text style={styles.lookupToggleTitle}>Auto-fill from Ticketmaster</Text>
-                    <Text style={styles.lookupToggleText}>Search for an event or venue</Text>
-                  </View>
-                  <Ionicons
-                    color="#6B7280"
-                    name={isTicketmasterLookupOpen ? 'chevron-up' : 'chevron-down'}
-                    size={18}
-                  />
-                </Pressable>
-                {isTicketmasterLookupOpen ? (
-                  <TicketmasterLookupPanel onSelectEvent={applyTicketmasterEvent} onSelectVenue={applyTicketmasterVenue} />
-                ) : null}
+            {isTicketmasterImageLocked ? (
+              <View style={styles.ticketmasterImageNotice}>
+                <Ionicons color="#005BD3" name="lock-closed-outline" size={18} />
+                <View style={styles.ticketmasterImageNoticeCopy}>
+                  <Text style={styles.ticketmasterImageNoticeTitle}>Ticketmaster artwork</Text>
+                  <Text style={styles.ticketmasterImageNoticeText}>
+                    This image is used exactly as provided and cannot be replaced, removed, or cropped.
+                  </Text>
+                </View>
               </View>
-            ) : null}
+            ) : (
+              <>
+                <View style={styles.imageUploadRow}>
+                  <Pressable
+                    disabled={isPickingImage}
+                    onPress={handlePickImage}
+                    style={[styles.uploadButton, isPickingImage && styles.uploadButtonDisabled]}
+                  >
+                    {isPickingImage ? (
+                      <ActivityIndicator color="#FFFFFF" size="small" />
+                    ) : (
+                      <Ionicons color="#FFFFFF" name="cloud-upload-outline" size={16} />
+                    )}
+                    <Text style={styles.uploadButtonText}>
+                      {form.image ? 'Replace Image' : 'Upload Image'}
+                    </Text>
+                  </Pressable>
+                  {form.image ? (
+                    <Pressable onPress={() => updateField('image', '')} style={styles.clearImageButton}>
+                      <Ionicons color="#6B7280" name="close" size={16} />
+                    </Pressable>
+                  ) : null}
+                </View>
+                {Platform.OS === 'web' && form.image ? (
+                  <Pressable onPress={() => openImageCropper()} style={styles.imageDressButton}>
+                    <Ionicons color="#005BD3" name="crop-outline" size={16} />
+                    <Text style={styles.imageDressButtonText}>Crop Image</Text>
+                  </Pressable>
+                ) : null}
+                <TicketTextField
+                  error={errors.image}
+                  label="Image URL"
+                  onChangeText={(value) => updateField('image', value)}
+                  placeholder="Upload an image or paste a URL"
+                  value={form.image}
+                />
+              </>
+            )}
           </FormSection>
 
           <FormSection title="Venue">
@@ -620,10 +667,12 @@ export function AddEventAdminScreen({ platform = 'original' }: { platform?: 'ori
             <TicketTextField error={errors.backgroundColor} label="Accent Color" onChangeText={(value) => updateField('backgroundColor', value)} value={form.backgroundColor} />
             <TicketTextField error={errors.authPhoneNumber} label="Auth Phone Number" onChangeText={(value) => updateField('authPhoneNumber', value)} placeholder="e.g. ******2970" value={form.authPhoneNumber} />
           </FormSection>
+            </>
+          ) : null}
         </ScrollView>
       </KeyboardAvoidingView>
 
-      <View style={[styles.footer, { paddingBottom: Math.max(insets.bottom, 12) }]}>
+      {isFormVisible ? <View style={[styles.footer, { paddingBottom: Math.max(insets.bottom, 12) }]}>
         <Pressable
           disabled={isSaving}
           onPress={handleLeaveAdminForm}
@@ -656,7 +705,7 @@ export function AddEventAdminScreen({ platform = 'original' }: { platform?: 'ori
             </>
           )}
         </Pressable>
-      </View>
+      </View> : null}
 
       <WebImageCropper
         aspect={16 / 9}
@@ -1076,6 +1125,44 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   content: { gap: 16, paddingHorizontal: 16, paddingTop: 8 },
+  v2Starter: {
+    backgroundColor: '#FFFFFF',
+    borderColor: '#D8E5F5',
+    borderRadius: 14,
+    borderWidth: 1,
+    gap: 16,
+    padding: 16,
+  },
+  v2StarterHeader: {
+    alignItems: 'flex-start',
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
+    justifyContent: 'space-between',
+  },
+  v2StarterCopy: { flex: 1, minWidth: 220 },
+  v2StarterEyebrow: {
+    color: '#005BD3',
+    fontSize: 10,
+    fontWeight: '900',
+    letterSpacing: 1.8,
+    lineHeight: 14,
+  },
+  v2StarterTitle: { color: '#111827', fontSize: 24, fontWeight: '800', lineHeight: 30, marginTop: 3 },
+  v2StarterText: { color: '#5F6670', fontSize: 14, lineHeight: 20, marginTop: 5 },
+  customEventButton: {
+    alignItems: 'center',
+    backgroundColor: '#EFF6FF',
+    borderColor: '#BFDBFE',
+    borderRadius: 9,
+    borderWidth: 1,
+    flexDirection: 'row',
+    gap: 7,
+    justifyContent: 'center',
+    minHeight: 46,
+    paddingHorizontal: 14,
+  },
+  customEventButtonText: { color: '#005BD3', fontSize: 14, fontWeight: '800' },
   previewCard: { backgroundColor: '#FFFFFF', borderColor: '#E5E7EB', borderRadius: 10, borderWidth: 1, overflow: 'hidden' },
   previewImage: { aspectRatio: 16 / 9, backgroundColor: '#F3F4F6', width: '100%' },
   previewPlaceholder: {
@@ -1139,6 +1226,19 @@ const styles = StyleSheet.create({
   inputError: { borderColor: '#EF4444' },
   errorText: { color: '#EF4444', fontSize: 11, fontWeight: '600', lineHeight: 15 },
   imageUploadRow: { alignItems: 'center', flexDirection: 'row', gap: 10 },
+  ticketmasterImageNotice: {
+    alignItems: 'flex-start',
+    backgroundColor: '#EFF6FF',
+    borderColor: '#BFDBFE',
+    borderRadius: 9,
+    borderWidth: 1,
+    flexDirection: 'row',
+    gap: 10,
+    padding: 12,
+  },
+  ticketmasterImageNoticeCopy: { flex: 1 },
+  ticketmasterImageNoticeTitle: { color: '#1E3A5F', fontSize: 13, fontWeight: '800', lineHeight: 18 },
+  ticketmasterImageNoticeText: { color: '#4B6480', fontSize: 12, lineHeight: 17, marginTop: 2 },
   uploadButton: {
     alignItems: 'center',
     backgroundColor: '#005BD3',
@@ -1311,30 +1411,6 @@ const styles = StyleSheet.create({
     position: 'absolute',
   },
   toastText: { color: '#FFFFFF', fontSize: 13, fontWeight: '700' },
-  ticketmasterBlock: { gap: 10 },
-  lookupToggle: {
-    alignItems: 'center',
-    backgroundColor: '#F8FAFC',
-    borderColor: '#E2E8F0',
-    borderRadius: 8,
-    borderWidth: 1,
-    flexDirection: 'row',
-    gap: 10,
-    minHeight: 56,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-  },
-  lookupToggleIcon: {
-    alignItems: 'center',
-    backgroundColor: '#EFF6FF',
-    borderRadius: 8,
-    height: 36,
-    justifyContent: 'center',
-    width: 36,
-  },
-  lookupToggleCopy: { flex: 1 },
-  lookupToggleTitle: { color: '#1F2937', fontSize: 13, fontWeight: '800', lineHeight: 18 },
-  lookupToggleText: { color: '#6B7280', fontSize: 11, fontWeight: '500', lineHeight: 15 },
   notFound: { alignItems: 'center', flex: 1, gap: 16, justifyContent: 'center', padding: 24 },
   notFoundTitle: { color: '#111827', fontSize: 20, fontWeight: '800' },
 });

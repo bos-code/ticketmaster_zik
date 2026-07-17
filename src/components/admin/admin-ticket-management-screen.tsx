@@ -44,7 +44,7 @@ const adminTabs: {
 
 const filters: TicketFilter[] = ['All', 'Upcoming', 'VIP', 'Standard', 'General', 'Past', 'Hidden'];
 
-export function AdminTicketManagementScreen() {
+export function AdminTicketManagementScreen({ platform = 'legacy' }: { platform?: 'legacy' | 'v2' }) {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const params = useLocalSearchParams<{ toast?: string }>();
@@ -207,9 +207,11 @@ export function AdminTicketManagementScreen() {
             <Ionicons color="#374151" name="chevron-back" size={20} />
           </Pressable>
           <View style={styles.headerCopy}>
-            <Text style={styles.eyebrow}>STARBOY ADMIN</Text>
+            <Text style={styles.eyebrow}>{platform === 'v2' ? 'ADMIN TICKETS' : 'STARBOY ADMIN'}</Text>
             <Text style={styles.title}>Ticket Management</Text>
-            <Text style={styles.subtitle}>Wizkid: Made in Lagos Live mock database</Text>
+            <Text style={styles.subtitle}>
+              {platform === 'v2' ? 'Preview, create, and manage every ticket.' : 'Wizkid: Made in Lagos Live mock database'}
+            </Text>
           </View>
           <View style={styles.countBadge}>
             <Text style={styles.countNumber}>{tickets.length}</Text>
@@ -218,11 +220,13 @@ export function AdminTicketManagementScreen() {
         </View>
 
       <View style={styles.adminTabsWrap}>
-        <Pressable onPress={() => router.push('/admin' as Href)} style={styles.adminV2Link}>
-          <Ionicons color="#005BD3" name="sparkles-outline" size={16} />
-          <Text style={styles.adminV2LinkText}>Open Admin</Text>
-          <Ionicons color="#005BD3" name="chevron-forward" size={16} />
-        </Pressable>
+        {platform === 'legacy' ? (
+          <Pressable onPress={() => router.push('/admin' as Href)} style={styles.adminV2Link}>
+            <Ionicons color="#005BD3" name="sparkles-outline" size={16} />
+            <Text style={styles.adminV2LinkText}>Open Admin</Text>
+            <Ionicons color="#005BD3" name="chevron-forward" size={16} />
+          </Pressable>
+        ) : null}
         <View style={styles.adminTabsRow}>
           {adminTabs.map((tab) => {
             const active = activeAdminTab === tab.key;
@@ -281,7 +285,7 @@ export function AdminTicketManagementScreen() {
                   onDelete={setDeleteTarget}
                   onEdit={(ticket) =>
                     router.push({
-                      pathname: '/add-event',
+                      pathname: platform === 'v2' ? '/admin-v2' : '/add-event',
                       params: { mode: 'edit', ticketId: ticket.id },
                     })
                   }
@@ -302,7 +306,7 @@ export function AdminTicketManagementScreen() {
                   onDelete={setDeleteTarget}
                   onEdit={(ticket) =>
                     router.push({
-                      pathname: '/add-event',
+                      pathname: platform === 'v2' ? '/admin-v2' : '/add-event',
                       params: { mode: 'edit', ticketId: ticket.id },
                     })
                   }
@@ -330,7 +334,7 @@ export function AdminTicketManagementScreen() {
           </ScrollView>
 
           <Pressable
-            onPress={() => router.push({ pathname: '/add-event', params: { mode: 'create' } })}
+            onPress={() => router.push({ pathname: platform === 'v2' ? '/admin-v2' : '/add-event', params: { mode: 'create' } })}
             style={[styles.fab, { bottom: Math.max(insets.bottom, 18) + 12 }]}
           >
             <Ionicons color="#FFFFFF" name="add" size={20} />
