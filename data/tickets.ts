@@ -33,6 +33,9 @@ export type TicketRecord = {
   seatLabel: string;
   ticketNote: string;
   authPhoneNumber?: string;
+  ticketmasterEventId?: string;
+  ticketmasterVenueId?: string;
+  ticketmasterEventUrl?: string;
   isHidden: boolean;
   createdAt: string;
   updatedAt: string;

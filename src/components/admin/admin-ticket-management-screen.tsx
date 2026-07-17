@@ -2,7 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { ScreenWrapper } from '@/components/ui/screen-wrapper';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter, type Href } from 'expo-router';
 import React, { useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
@@ -218,6 +218,11 @@ export function AdminTicketManagementScreen() {
         </View>
 
       <View style={styles.adminTabsWrap}>
+        <Pressable onPress={() => router.push('/admin' as Href)} style={styles.adminV2Link}>
+          <Ionicons color="#005BD3" name="sparkles-outline" size={16} />
+          <Text style={styles.adminV2LinkText}>Open Admin</Text>
+          <Ionicons color="#005BD3" name="chevron-forward" size={16} />
+        </Pressable>
         <View style={styles.adminTabsRow}>
           {adminTabs.map((tab) => {
             const active = activeAdminTab === tab.key;
@@ -698,6 +703,20 @@ const styles = StyleSheet.create({
     paddingBottom: 12,
     paddingHorizontal: 16,
   },
+  adminV2Link: {
+    alignItems: 'center',
+    backgroundColor: '#EFF6FF',
+    borderColor: '#BFDBFE',
+    borderRadius: 8,
+    borderWidth: 1,
+    flexDirection: 'row',
+    gap: 8,
+    justifyContent: 'center',
+    marginBottom: 10,
+    minHeight: 42,
+    paddingHorizontal: 12,
+  },
+  adminV2LinkText: { color: '#005BD3', flex: 1, fontSize: 12, fontWeight: '800', textAlign: 'center' },
   adminTabsRow: {
     backgroundColor: '#E5E7EB',
     borderRadius: 10,

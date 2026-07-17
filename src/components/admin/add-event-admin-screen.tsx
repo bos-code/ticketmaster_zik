@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter, type Href } from 'expo-router';
 import React, { useRef, useEffect, useMemo, useState } from 'react';
 import {
   Alert,
@@ -39,10 +39,12 @@ import {
   useTicketStore,
 } from '@/store/ticketStore';
 import { useAppStore } from '@/store/use-app-store';
+import { TicketmasterLookupPanel } from '@/components/admin-v2/ticketmaster-lookup-panel';
+import type { TicketmasterEvent, TicketmasterVenue } from '@/types/ticketmaster';
 
 type TicketFormInput = Omit<
   TicketInput,
-  'isHidden' | 'latitude' | 'longitude' | 'venueAddress' | 'venuePlaceId'
+  'isHidden' | 'latitude' | 'longitude' | 'venueAddress' | 'venuePlaceId' | 'ticketmasterEventId' | 'ticketmasterVenueId' | 'ticketmasterEventUrl'
 > & {
   latitude: string;
   longitude: string;
@@ -125,7 +127,7 @@ const EMPTY_CREATE_FORM: FormState = {
   authPhoneNumber: '******2970',
 };
 
-export function AddEventAdminScreen() {
+export function AddEventAdminScreen({ platform = 'original' }: { platform?: 'original' | 'v2' }) {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const imageCropperRef = useRef<WebImageCropperHandle | null>(null);
@@ -136,6 +138,7 @@ export function AddEventAdminScreen() {
   const createFormTransferSenderNameRef = useRef(transferSenderName);
   const addEvent = useTicketStore((state) => state.addEvent);
   const updateEvent = useTicketStore((state) => state.updateEvent);
+  const allTickets = useTicketStore((state) => state.tickets);
   const selectedTicket = useTicketStore((state) =>
     ticketId ? state.tickets.find((ticket) => ticket.id === ticketId) : undefined,
   );
@@ -149,7 +152,8 @@ export function AddEventAdminScreen() {
   const [isResolvingVenue, setIsResolvingVenue] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
-  const screenTitle = mode === 'edit' ? 'Edit Ticket' : 'Create New Ticket';
+  const [ticketmasterMetadata, setTicketmasterMetadata] = useState<Pick<TicketInput, 'ticketmasterEventId' | 'ticketmasterVenueId' | 'ticketmasterEventUrl'>>({});
+  const screenTitle = platform === 'v2' ? 'Admin' : mode === 'edit' ? 'Edit Ticket' : 'Create New Ticket';
   const screenSubtitle =
     mode === 'edit'
       ? 'Update any ticket detail and save it everywhere.'
@@ -181,7 +185,7 @@ export function AddEventAdminScreen() {
       return;
     }
 
-    router.replace('/admin');
+    router.replace(platform === 'v2' ? '/admin-legacy' as Href : '/admin');
   }
 
   function updateField(key: FieldKey, value: string) {
@@ -240,9 +244,9 @@ export function AddEventAdminScreen() {
         return;
       }
 
-      await addEvent(payload);
+      await addEvent({ ...payload, ...ticketmasterMetadata });
       showToast('Ticket created');
-      router.replace({ pathname: '/admin', params: { toast: 'created' } });
+      router.replace((platform === 'v2' ? '/admin' : { pathname: '/admin-legacy', params: { toast: 'created' } }) as Href);
     } catch (error) {
       console.warn('Ticket save failed.', error);
       if (isVenueLookupError(error)) {
@@ -281,6 +285,33 @@ export function AddEventAdminScreen() {
     } finally {
       setIsResolvingVenue(false);
     }
+  }
+
+  function applyTicketmasterVenue(venue: TicketmasterVenue) {
+    setForm((current) => ({ ...current, venue: venue.name || current.venue, venueAddress: venue.address || current.venueAddress, city: venue.city || current.city, state: venue.state || current.state, country: venue.country || current.country, latitude: venue.latitude == null ? current.latitude : String(venue.latitude), longitude: venue.longitude == null ? current.longitude : String(venue.longitude), venuePlaceId: venue.id || current.venuePlaceId }));
+    setTicketmasterMetadata((current) => ({ ...current, ticketmasterVenueId: venue.id }));
+    showToast('Venue details imported');
+  }
+
+  function applyTicketmasterEvent(event: TicketmasterEvent) {
+    if (allTickets.some((ticket) => ticket.ticketmasterEventId === event.id)) {
+      Alert.alert('Possible duplicate', 'This Ticketmaster event was imported before. You can still review and submit a separate ticket.');
+    }
+    setForm((current) => ({
+      ...current,
+      eventName: event.name || current.eventName,
+      artistName: event.artistName || current.artistName,
+      albumName: event.genre || event.category || current.albumName,
+      date: event.date || current.date,
+      time: event.time ? formatTicketmasterTime(event.time) : current.time,
+      image: event.imageUrl || current.image,
+      perks: event.description || current.perks,
+      ticketNote: [event.category, event.genre, event.subgenre].filter(Boolean).join(' · ') || current.ticketNote,
+      transferRules: formatTicketmasterSales(event.salesStart, event.salesEnd) || current.transferRules,
+      ...(event.venue ? { venue: event.venue.name || current.venue, venueAddress: event.venue.address || current.venueAddress, city: event.venue.city || current.city, state: event.venue.state || current.state, country: event.venue.country || current.country, latitude: event.venue.latitude == null ? current.latitude : String(event.venue.latitude), longitude: event.venue.longitude == null ? current.longitude : String(event.venue.longitude), venuePlaceId: event.venue.id || current.venuePlaceId } : {}),
+    }));
+    setTicketmasterMetadata({ ticketmasterEventId: event.id, ticketmasterEventUrl: event.url, ticketmasterVenueId: event.venue?.id });
+    showToast('Event imported — review before saving');
   }
 
   function showToast(message: string) {
@@ -444,6 +475,13 @@ export function AddEventAdminScreen() {
               placeholder="Upload an image or paste a URL"
               value={form.image}
             />
+            {platform === 'v2' ? (
+              <View style={styles.ticketmasterBlock}>
+                <Text style={styles.imageLookupHelp}>Upload a file, or use Ticketmaster lookup — we fill a poster URL you can submit as-is.</Text>
+                <Text style={styles.imageOverrideHelp}>Uploading a file replaces the Ticketmaster poster for this submission.</Text>
+                <TicketmasterLookupPanel onSelectEvent={applyTicketmasterEvent} onSelectVenue={applyTicketmasterVenue} />
+              </View>
+            ) : null}
           </FormSection>
 
           <FormSection title="Venue">
@@ -711,6 +749,19 @@ function SegmentedOptions<T extends string>({
       </View>
     </View>
   );
+}
+
+function formatTicketmasterTime(value: string) {
+  const [hourValue, minuteValue = '00'] = value.split(':');
+  const hour = Number(hourValue);
+  if (!Number.isFinite(hour)) return value;
+  const suffix = hour >= 12 ? 'PM' : 'AM';
+  return `${hour % 12 || 12}:${minuteValue.slice(0, 2)} ${suffix}`;
+}
+
+function formatTicketmasterSales(start: string, end: string) {
+  if (!start && !end) return '';
+  return `Ticketmaster sales${start ? ` open ${start}` : ''}${end ? ` through ${end}` : ''}.`;
 }
 
 function validateForm(form: FormState) {
@@ -1284,6 +1335,9 @@ const styles = StyleSheet.create({
     position: 'absolute',
   },
   toastText: { color: '#FFFFFF', fontSize: 13, fontWeight: '700' },
+  ticketmasterBlock: { gap: 10 },
+  imageLookupHelp: { color: '#6B7280', fontSize: 13, fontWeight: '500', lineHeight: 18 },
+  imageOverrideHelp: { color: '#6B7280', fontSize: 12, fontWeight: '500', lineHeight: 17 },
   notFound: { alignItems: 'center', flex: 1, gap: 16, justifyContent: 'center', padding: 24 },
   notFoundTitle: { color: '#111827', fontSize: 20, fontWeight: '800' },
 });
