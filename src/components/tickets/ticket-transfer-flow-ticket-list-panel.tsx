@@ -1,6 +1,5 @@
 import React from "react";
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from "react-native";
-import Animated, { FadeInDown } from "react-native-reanimated";
 
 import { MapPreviewCard } from "@/components/tickets/ticket-transfer-flow-map-preview-card";
 import { PromoCard } from "@/components/tickets/ticket-transfer-flow-promo-card";
@@ -30,19 +29,19 @@ export function TicketListPanel({
             </View>
 
             <Pressable
+              accessibilityLabel="More ticket options"
               accessibilityRole="button"
               hitSlop={8}
               style={styles.menuButton}
             >
-              <TicketMenuIcon color="#171717" size={22} />
+              <TicketMenuIcon color="#171717" size={20} />
             </Pressable>
           </View>
         </View>
 
         <View style={styles.ticketList}>
-          {seats.map((seat, index) => (
+          {seats.map((seat) => (
             <TicketSeatCard
-              index={index}
               key={seat.id}
               onPress={() => !isListLoading && onOpenTicket(Math.max(0, seat.ticketIndex - 1))}
               seat={seat}
@@ -65,11 +64,9 @@ export function TicketListPanel({
 }
 
 function TicketSeatCard({
-  index,
   onPress,
   seat,
 }: {
-  index: number;
   onPress: () => void;
   seat: Seat;
 }) {
@@ -77,13 +74,11 @@ function TicketSeatCard({
 
   return (
     <Pressable
+      accessibilityLabel={`Section ${seat.section}, row ${seat.row}, seat ${seat.seat}`}
       accessibilityRole="button"
       onPress={onPress}
     >
-      <Animated.View
-        entering={FadeInDown.duration(220).delay(40 + index * 60)}
-        style={styles.ticketCard}
-      >
+      <View style={styles.ticketCard}>
         <View style={styles.ticketCardHeader}>
           <EditableText field="seatLabel" value={seatLabel} style={styles.ticketNote} />
         </View>
@@ -93,7 +88,7 @@ function TicketSeatCard({
           <TicketMetaCell align="center" label="ROW" value={seat.row} />
           <TicketMetaCell align="right" label="SEAT" value={seat.seat} />
         </View>
-      </Animated.View>
+      </View>
     </Pressable>
   );
 }
@@ -142,7 +137,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#FFFFFF",
   },
   orderHeader: {
-    paddingHorizontal: 14,
+    paddingHorizontal: 16,
     paddingBottom: 11,
     paddingTop: 18,
   },
@@ -152,44 +147,44 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
   },
   orderTextGroup: {
-    gap: 4,
+    gap: 2,
     paddingTop: 2,
   },
   orderId: {
     color: "#171717",
     fontFamily: fonts.extraBold,
-    fontSize: 15,
-    letterSpacing: -0.4,
-    lineHeight: 23,
+    fontSize: 19,
+    letterSpacing: -0.55,
+    lineHeight: 25,
   },
   ticketCount: {
     color: "#6E6E72",
     fontFamily: fonts.medium,
-    fontSize: 15,
-    lineHeight: 20,
+    fontSize: 12,
+    lineHeight: 17,
   },
   menuButton: {
     alignItems: "center",
-    height: 32,
+    height: 44,
     justifyContent: "center",
-    marginRight: -6,
-    marginTop: -2,
-    width: 32,
+    marginRight: -10,
+    marginTop: -6,
+    width: 44,
   },
   ticketList: {
     paddingBottom: -2,
-    paddingHorizontal: 14,
+    paddingHorizontal: 16,
     paddingTop: 6,
   },
   ticketCard: {
     backgroundColor: "#F4F4F4",
-    borderColor: "#D5D5D5",
-    borderWidth: StyleSheet.hairlineWidth,
-    marginBottom: 11,
+    borderColor: "#CDCDCD",
+    borderWidth: 1,
+    marginBottom: 12,
     overflow: "hidden",
   },
   ticketCardHeader: {
-    backgroundColor: "#E9E9E9",
+    backgroundColor: "#E7E7E7",
     borderBottomColor: "#FFFFFF",
     borderBottomWidth: 4,
     paddingHorizontal: 14,
@@ -197,7 +192,7 @@ const styles = StyleSheet.create({
   },
   ticketNote: {
     color: "#191919",
-    fontFamily: fonts.semiBold,
+    fontFamily: fonts.bold,
     fontSize: 14,
     letterSpacing: -0.2,
     lineHeight: 21,
@@ -218,7 +213,7 @@ const styles = StyleSheet.create({
     alignItems: "flex-end",
   },
   metaLabel: {
-    color: "#8D8D93",
+    color: "#747478",
     fontFamily: fonts.bold,
     fontSize: 11,
     letterSpacing: 1.35,
@@ -227,14 +222,14 @@ const styles = StyleSheet.create({
   metaValue: {
     color: "#111111",
     fontFamily: fonts.extraBold,
-    fontSize: 14,
-    lineHeight: 21,
+    fontSize: 16,
+    lineHeight: 22,
     marginTop: 9,
   },
   moreOptionsHeader: {
     borderTopColor: "#EEEEEE",
     borderTopWidth: StyleSheet.hairlineWidth,
-    marginHorizontal: 14,
+    marginHorizontal: 16,
     marginTop: 24,
     paddingTop: 31,
   },

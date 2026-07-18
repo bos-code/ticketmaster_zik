@@ -13,7 +13,7 @@ export function PanelTabs({
   onChange: (value: PanelTab) => void;
 }) {
   return (
-    <View className="border-b border-[#E3E3E3] bg-white px-[14px]">
+    <View className="border-b border-[#E3E3E3] bg-white px-4">
       <View className="flex-row">
         <PanelTabButton
           active={activePanel === "tickets"}
@@ -42,9 +42,10 @@ function PanelTabButton({
   return (
     <Pressable
       accessibilityRole="button"
+      accessibilityState={{ selected: active }}
       onPress={onPress}
       className={cx(
-        "flex-1 items-center justify-center border-b-[3px] pb-[15px] pt-[16px]",
+        "flex-1 items-center justify-center border-b-2 pb-[15px] pt-[16px]",
         active ? "border-[#111111]" : "border-transparent",
       )}
     >
