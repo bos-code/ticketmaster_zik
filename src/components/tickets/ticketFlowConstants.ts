@@ -31,8 +31,8 @@ export const HERO_COLLAPSED_HEIGHT = 128;
 export const HERO_COLLAPSE_DISTANCE =
   HERO_EXPANDED_HEIGHT - HERO_COLLAPSED_HEIGHT;
 export const SUMMARY_PHONE_MAX_WIDTH = 480;
-export const SUMMARY_PHONE_HERO_IMAGE_EXTRA_HEIGHT = 20;
-export const SUMMARY_PHONE_HERO_BOTTOM_SPACE = 18;
+export const SUMMARY_PHONE_HERO_IMAGE_EXTRA_HEIGHT = 4;
+export const SUMMARY_PHONE_HERO_BOTTOM_SPACE = 10;
 
 export function getSummaryPhoneHeroBottomSpace(width: number) {
   return Math.round(width) <= SUMMARY_PHONE_MAX_WIDTH

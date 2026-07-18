@@ -29,6 +29,7 @@ export function BottomDock({
       >
         <View style={styles.actionsRow}>
           <BottomDockAction
+            accessibilityLabel="Transfer tickets"
             disabled={disabled}
             iconColor={disabled ? "#D1D5DB" : "#2B72D7"}
             icon="transfer"
@@ -40,6 +41,7 @@ export function BottomDock({
           <View style={styles.divider} />
 
           <BottomDockAction
+            accessibilityLabel="Sell tickets"
             iconColor="#6D6D6D"
             icon="sell"
             label="Sell"
@@ -52,6 +54,7 @@ export function BottomDock({
 }
 
 function BottomDockAction({
+  accessibilityLabel,
   disabled,
   iconColor,
   icon,
@@ -59,6 +62,7 @@ function BottomDockAction({
   labelColor,
   onPress,
 }: {
+  accessibilityLabel: string;
   disabled?: boolean;
   iconColor: string;
   icon: "sell" | "transfer";
@@ -68,15 +72,16 @@ function BottomDockAction({
 }) {
   return (
     <Pressable
+      accessibilityLabel={accessibilityLabel}
       accessibilityRole="button"
       style={styles.action}
       disabled={disabled}
       onPress={onPress}
     >
       {icon === "transfer" ? (
-        <TicketTransferIcon color={iconColor} size={23} />
+        <TicketTransferIcon color={iconColor} size={27} />
       ) : (
-        <TicketResaleIcon color={iconColor} size={23} />
+        <TicketResaleIcon color={iconColor} size={27} />
       )}
       <Text
         style={[styles.label, { color: labelColor }]}
@@ -90,34 +95,34 @@ function BottomDockAction({
 const styles = StyleSheet.create({
   action: {
     alignItems: "center",
-    height: 62,
+    height: 76,
     justifyContent: "center",
-    paddingTop: 4,
-    width: 88,
+    paddingTop: 5,
+    width: 94,
   },
   actionsRow: {
     alignItems: "center",
     flexDirection: "row",
-    height: 62,
+    height: 76,
   },
   divider: {
     backgroundColor: "#E5E5E5",
-    height: 38,
+    height: 48,
     width: StyleSheet.hairlineWidth,
   },
   dock: {
-    borderRadius: 31,
-    boxShadow: "0px 6px 14px rgba(0, 0, 0, 0.24)",
+    borderRadius: 38,
+    boxShadow: "0px 8px 20px rgba(0, 0, 0, 0.20)",
     elevation: 11,
-    height: 62,
-    width: 177,
+    height: 76,
+    width: 189,
   },
   dockDisabled: {
     opacity: 0.6,
   },
   dockPosition: {
     alignItems: "center",
-    bottom: 53,
+    bottom: 64,
     left: 0,
     pointerEvents: "box-none",
     position: "absolute",
@@ -126,8 +131,8 @@ const styles = StyleSheet.create({
   },
   label: {
     fontFamily: fonts.medium,
-    fontSize: 11,
-    lineHeight: 15,
-    marginTop: 1,
+    fontSize: 12,
+    lineHeight: 16,
+    marginTop: 2,
   },
 });

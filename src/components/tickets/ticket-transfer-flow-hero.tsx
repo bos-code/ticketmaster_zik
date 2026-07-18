@@ -233,6 +233,7 @@ function CollapsedHeroLayer({
             />
             {isHeroCollapsed ? (
               <Pressable
+                accessibilityLabel='Open tickets'
                 accessibilityRole='button'
                 hitSlop={8}
                 onPress={onOpenViewer}
@@ -257,12 +258,13 @@ function CollapsedHeroLayer({
 function HeaderBackButton({ onBack }: { onBack: () => void }) {
   return (
     <Pressable
+      accessibilityLabel='Go back'
       accessibilityRole='button'
       hitSlop={8}
       onPress={onBack}
       className='h-11 w-11 items-center justify-center rounded-full bg-[rgba(0,0,0,0.50)]'
     >
-      <TicketFlowBackIcon color='#FFFFFF' size={28} />
+      <TicketFlowBackIcon color='#FFFFFF' size={26} />
     </Pressable>
   );
 }
@@ -306,29 +308,29 @@ function ExpandedHeroCard({
       onLayout={onLayout}
     >
       <View className="absolute left-0 summary-phone:-top-[19.3px] -top-4 z-10 self-start">
-        <View className="ticket-summary-hero-date justify-center bg-[#232126] px-4 py-2">
-          <Text className="ticket-summary-hero-date-text text-xs font-extrabold uppercase leading-[13px]  tracking-[1px] text-[rgba(255,255,255,0.92)]" style={{ fontFamily: fonts.extraBold }}>
+        <View className="ticket-summary-hero-date min-h-[33px] justify-center bg-[#232126] px-4 py-2">
+          <Text className="ticket-summary-hero-date-text text-[12px] font-extrabold uppercase leading-[14px] tracking-[1.05px] text-[rgba(255,255,255,0.94)]" style={{ fontFamily: fonts.extraBold }}>
             {dateTime}
           </Text>
         </View>
      
       </View>
       <View className="bg-[#232126] px-4 pt-2">
-        <Text className="ticket-summary-hero-title pt-1 text-lg font-bold leading-6 text-white" style={{ fontFamily: fonts.bold }}>
+        <Text className="ticket-summary-hero-title pt-1 text-[19px] font-extrabold leading-[24px] text-white" style={{ fontFamily: fonts.extraBold }}>
           {title}
         </Text>
 
         <View className="mt-2 flex-row items-center justify-between pb-2">
           <Text
             numberOfLines={1}
-            className="ticket-summary-hero-venue mr-3 flex-1 text-[13px] font-normal leading-[17px] text-[rgba(255,255,255,0.76)]"
+            className="ticket-summary-hero-venue mr-3 flex-1 text-[14px] font-normal leading-[18px] text-[rgba(255,255,255,0.82)]"
             style={{ fontFamily: fonts.regular }}
           >
             {venue}
           </Text>
 
           <View className="shrink-0 flex-row items-center gap-[5px]">
-            <TicketStackIcon color="#F2F4F7" size={17} />
+            <TicketStackIcon color="#F2F4F7" size={20} />
             <Text className="text-[17px] font-bold leading-[19px] text-[#F2F4F7]" style={{ fontFamily: fonts.bold }}>
               {`x${ticketCount}`}
             </Text>
@@ -337,13 +339,14 @@ function ExpandedHeroCard({
       </View>
 
       <Pressable
+        accessibilityLabel="View tickets"
         accessibilityRole="button"
         onPress={onOpenViewer}
-        className="ticket-summary-view-button min-h-[42px] flex-row items-center justify-center gap-[6px] bg-[#0444f3]"
+        className="ticket-summary-view-button min-h-[44px] flex-row items-center justify-center gap-[7px] bg-[#0561E8]"
         style={bottomSpace ? { marginBottom: bottomSpace } : undefined}
       >
-        <TicketScanIcon color="#CFE0FF" size={16} />
-        <Text className="ticket-summary-view-button-text text-[13px] font-bold leading-[16px] text-[#F5F9FF]" style={{ fontFamily: fonts.bold }}>
+        <TicketScanIcon color="#FFFFFF" size={19} />
+        <Text className="ticket-summary-view-button-text text-[14px] font-bold leading-[17px] text-white" style={{ fontFamily: fonts.bold }}>
           View Tickets
         </Text>
       </Pressable>
