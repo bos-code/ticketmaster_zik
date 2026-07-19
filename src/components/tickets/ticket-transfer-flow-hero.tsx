@@ -277,7 +277,7 @@ function CollapsedHeroTitle({ style, title, venue }: CollapsedHeroTitleProps) {
     >
       <Text
         numberOfLines={1}
-        className='mb-1 text-center text-[13px] font-extrabold text-white'
+        className='mb-1 text-center text-[13px] font-extrabold uppercase text-white'
         style={{ fontFamily: fonts.extraBold }}
       >
         {title}
@@ -316,7 +316,7 @@ function ExpandedHeroCard({
      
       </View>
       <View className="bg-[#232126] px-4 pt-2">
-        <Text className="ticket-summary-hero-title pt-1 text-[19px] font-extrabold leading-[24px] text-white" style={{ fontFamily: fonts.extraBold }}>
+        <Text className="ticket-summary-hero-title pt-1 text-[19px] font-extrabold uppercase leading-[24px] text-white" style={{ fontFamily: fonts.extraBold }}>
           {title}
         </Text>
 

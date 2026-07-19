@@ -24,7 +24,7 @@ export function TicketListPanel({
         <View style={styles.orderHeader}>
           <View style={styles.orderHeaderRow}>
             <View style={styles.orderTextGroup}>
-              <Text style={styles.orderId}>{`Order ${order.orderNumber}`}</Text>
+              <Text style={styles.orderId}>{`Order #${order.orderNumber}`}</Text>
               <Text style={styles.ticketCount}>{order.ticketCountLabel}</Text>
             </View>
 
@@ -196,6 +196,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     letterSpacing: -0.2,
     lineHeight: 21,
+    textTransform: "uppercase",
   },
   ticketMetaRow: {
     flexDirection: "row",
