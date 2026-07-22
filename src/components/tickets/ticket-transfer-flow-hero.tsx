@@ -343,7 +343,7 @@ function ExpandedHeroCard({
   viewButtonHeight,
 }: ExpandedHeroCardProps & { viewButtonHeight: number }) {
   const { width } = useWindowDimensions();
-  const dateHeight = scaleTicketReferenceMetric(width, 37, 20, 22);
+  const dateHeight = scaleTicketReferenceMetric(width, 37, 19, 22);
   const dateFontSize = scaleTicketReferenceMetric(width, 16, 8, 10);
   const datePaddingHorizontal = scaleTicketReferenceMetric(width, 17, 9, 10);
   const titleFontSize = scaleTicketReferenceMetric(width, 31, 16, 18);
