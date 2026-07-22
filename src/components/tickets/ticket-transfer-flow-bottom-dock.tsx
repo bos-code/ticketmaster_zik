@@ -3,6 +3,11 @@ import { Pressable, StyleSheet, Text, useWindowDimensions, View } from "react-na
 import Animated, { FadeInUp } from "react-native-reanimated";
 
 import { useImmersiveSafeAreaInsets } from "@/components/immersive/edge-to-edge-hero";
+import {
+  getTicketDockHeight,
+  getTicketDockWidth,
+  scaleTicketReferenceMetric,
+} from "@/components/tickets/ticketFlowConstants";
 import { fonts } from "../../../theme/fonts";
 import {
   TicketResaleIcon,
@@ -18,9 +23,10 @@ export function BottomDock({
 }) {
   const insets = useImmersiveSafeAreaInsets();
   const { width } = useWindowDimensions();
-  const dockHeight = Math.round(Math.min(56, Math.max(48, width * 0.128)));
-  const dockWidth = Math.round(Math.min(194, Math.max(169, width * 0.452)));
-  const dockBottom = Math.max(12, insets.bottom - 2);
+  const dockHeight = getTicketDockHeight(width);
+  const dockWidth = getTicketDockWidth(width);
+  const dockBottom = insets.bottom;
+  const labelFontSize = scaleTicketReferenceMetric(width, 20, 10, 12);
 
   return (
     <Animated.View
@@ -47,6 +53,7 @@ export function BottomDock({
             icon="transfer"
             label="Transfer"
             labelColor={disabled ? "#D1D5DB" : "#2b2b2b"}
+            labelFontSize={labelFontSize}
             onPress={onTransfer}
           />
 
@@ -58,6 +65,7 @@ export function BottomDock({
             icon="sell"
             label="Sell"
             labelColor="#2b2b2b"
+            labelFontSize={labelFontSize}
           />
         </View>
       </View>
@@ -72,6 +80,7 @@ function BottomDockAction({
   icon,
   label,
   labelColor,
+  labelFontSize,
   onPress,
 }: {
   accessibilityLabel: string;
@@ -80,6 +89,7 @@ function BottomDockAction({
   icon: "sell" | "transfer";
   label: string;
   labelColor: string;
+  labelFontSize: number;
   onPress?: () => void;
 }) {
   return (
@@ -96,7 +106,7 @@ function BottomDockAction({
         <TicketResaleIcon color={iconColor} size={24} />
       )}
       <Text
-        style={[styles.label, { color: labelColor }]}
+        style={[styles.label, { color: labelColor, fontSize: labelFontSize }]}
       >
         {label}
       </Text>
@@ -139,7 +149,6 @@ const styles = StyleSheet.create({
   },
   label: {
     fontFamily: fonts.medium,
-    fontSize: 11,
     lineHeight: 14,
     marginTop: 1,
   },

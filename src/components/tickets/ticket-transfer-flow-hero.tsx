@@ -23,7 +23,10 @@ import {
 import {
   absoluteFill,
   getSummaryPhoneHeroBottomSpace,
+  getTicketFlowHorizontalGutter,
   getTicketSummaryHeroImageHeight,
+  getTicketSummaryViewButtonHeight,
+  scaleTicketReferenceMetric,
   HERO_COLLAPSED_HEIGHT,
 } from '@/components/tickets/ticketFlowConstants';
 import { useTicketFlowData } from '@/components/tickets/useTicketFlowData';
@@ -47,6 +50,7 @@ type ExpandedHeroCardProps = {
   onLayout: (event: LayoutChangeEvent) => void;
   onOpenViewer: () => void;
   bottomSpace: number;
+  horizontalGutter: number;
   ticketCount: number;
   title: string;
   venue: string;
@@ -74,6 +78,9 @@ export function CollapsibleEventHero({
   const heroImageBaseHeight = getTicketSummaryHeroImageHeight(width);
   const heroImageHeight = heroImageBaseHeight + statusBarBleed;
   const heroBottomSpace = getSummaryPhoneHeroBottomSpace(width);
+  const horizontalGutter = getTicketFlowHorizontalGutter(width);
+  const viewButtonHeight = getTicketSummaryViewButtonHeight(width);
+  const headerTopMargin = scaleTicketReferenceMetric(width, 15, 8, 9);
   const heroCollapseDistance = Math.max(
     1,
     expandedHeight - HERO_COLLAPSED_HEIGHT,
@@ -82,12 +89,12 @@ export function CollapsibleEventHero({
   const handleExpandedCardLayout = React.useCallback(
     (event: LayoutChangeEvent) => {
       const nextHeight = Math.ceil(
-        heroImageBaseHeight + event.nativeEvent.layout.height,
+        heroImageHeight + event.nativeEvent.layout.height,
       );
 
       onExpandedHeightChange(nextHeight);
     },
-    [heroImageBaseHeight, onExpandedHeightChange],
+    [heroImageHeight, onExpandedHeightChange],
   );
 
   const expandedLayerStyle = useAnimatedStyle(() => ({
@@ -140,6 +147,7 @@ export function CollapsibleEventHero({
         eventVenue={event.venue}
         heroImage={event.heroImage}
         heroImageHeight={heroImageHeight}
+        horizontalGutter={horizontalGutter}
         isHeroCollapsed={isHeroCollapsed}
         onBack={onBack}
         onOpenViewer={onOpenViewer}
@@ -158,29 +166,30 @@ export function CollapsibleEventHero({
         />
 
         <View style={[absoluteFill, { paddingTop: statusBarBleed }]}>
-          <View className='px-[14px]'>
-            <View className='mt-3 flex-row items-center justify-between'>
+          <View style={{ paddingHorizontal: horizontalGutter }}>
+            <View
+              className='flex-row items-center justify-between'
+              style={{ marginTop: headerTopMargin }}
+            >
               <HeaderBackButton onBack={onBack} />
-              <View className='h-10 w-[60px] items-center justify-center rounded-full bg-black/50'>
-                <Text className='text-[14px] font-semibold leading-4 text-white' style={{ fontFamily: fonts.semiBold }}>
-                  Help
-                </Text>
-              </View>
+              <HeaderHelpButton />
             </View>
           </View>
 
           <View
-            className='absolute inset-x-0 px-[14px]'
-            style={{ top: heroImageBaseHeight }}
+            className='absolute inset-x-0'
+            style={{ paddingHorizontal: horizontalGutter, top: heroImageHeight }}
           >
             <ExpandedHeroCard
               bottomSpace={heroBottomSpace}
               dateTime={event.dateTime}
+              horizontalGutter={horizontalGutter}
               onLayout={handleExpandedCardLayout}
               onOpenViewer={onOpenViewer}
               ticketCount={order.ticketCount}
               title={event.title}
               venue={event.venue}
+              viewButtonHeight={viewButtonHeight}
             />
           </View>
         </View>
@@ -195,6 +204,7 @@ function CollapsedHeroLayer({
   eventVenue,
   heroImage,
   heroImageHeight,
+  horizontalGutter,
   isHeroCollapsed,
   onBack,
   onOpenViewer,
@@ -205,6 +215,7 @@ function CollapsedHeroLayer({
   eventVenue: string;
   heroImage: React.ComponentProps<typeof EdgeToEdgeHeroMedia>['source'];
   heroImageHeight: number;
+  horizontalGutter: number;
   isHeroCollapsed: boolean;
   onBack: () => void;
   onOpenViewer: () => void;
@@ -223,8 +234,11 @@ function CollapsedHeroLayer({
       />
       <View style={[absoluteFill, { paddingTop: statusBarBleed }]}>
         <View
-          className='justify-center px-[14px]'
-          style={{ height: HERO_COLLAPSED_HEIGHT - statusBarBleed }}
+          className='justify-center'
+          style={{
+            height: HERO_COLLAPSED_HEIGHT - statusBarBleed,
+            paddingHorizontal: horizontalGutter,
+          }}
         >
           <View className='relative h-10 flex-row items-center justify-between'>
             <HeaderBackButton onBack={onBack} />
@@ -244,11 +258,7 @@ function CollapsedHeroLayer({
                 <CompactTicketIcon color='#FFFFFF' size={26} />
               </Pressable>
             ) : (
-              <View className='h-10 w-[60px] items-center justify-center rounded-full bg-black/50'>
-                <Text className='text-[14px] font-semibold leading-4 text-white' style={{ fontFamily: fonts.semiBold }}>
-                  Help
-                </Text>
-              </View>
+              <HeaderHelpButton />
             )}
           </View>
         </View>
@@ -258,16 +268,42 @@ function CollapsedHeroLayer({
 }
 
 function HeaderBackButton({ onBack }: { onBack: () => void }) {
+  const { width } = useWindowDimensions();
+  const diameter = scaleTicketReferenceMetric(width, 52, 26, 31);
+  const iconSize = Math.round(diameter * 0.55);
+
   return (
     <Pressable
       accessibilityLabel='Go back'
       accessibilityRole='button'
       hitSlop={8}
       onPress={onBack}
-      className='h-11 w-11 items-center justify-center rounded-full bg-[rgba(0,0,0,0.50)]'
+      className='items-center justify-center rounded-full bg-[rgba(0,0,0,0.50)]'
+      style={{ height: diameter, width: diameter }}
     >
-      <TicketFlowBackIcon color='#FFFFFF' size={26} />
+      <TicketFlowBackIcon color='#FFFFFF' size={iconSize} />
     </Pressable>
+  );
+}
+
+function HeaderHelpButton() {
+  const { width } = useWindowDimensions();
+  const buttonWidth = scaleTicketReferenceMetric(width, 116, 58, 68);
+  const buttonHeight = scaleTicketReferenceMetric(width, 47, 24, 28);
+  const fontSize = scaleTicketReferenceMetric(width, 19, 10, 11);
+
+  return (
+    <View
+      className='items-center justify-center rounded-full bg-black/50'
+      style={{ height: buttonHeight, width: buttonWidth }}
+    >
+      <Text
+        className='font-semibold text-white'
+        style={{ fontFamily: fonts.semiBold, fontSize }}
+      >
+        Help
+      </Text>
+    </View>
   );
 }
 
@@ -298,35 +334,59 @@ function CollapsedHeroTitle({ style, title, venue }: CollapsedHeroTitleProps) {
 function ExpandedHeroCard({
   bottomSpace,
   dateTime,
+  horizontalGutter,
   onLayout,
   onOpenViewer,
   ticketCount,
   title,
   venue,
-}: ExpandedHeroCardProps) {
+  viewButtonHeight,
+}: ExpandedHeroCardProps & { viewButtonHeight: number }) {
+  const { width } = useWindowDimensions();
+  const dateHeight = scaleTicketReferenceMetric(width, 37, 20, 22);
+  const dateFontSize = scaleTicketReferenceMetric(width, 16, 10, 11);
+  const datePaddingHorizontal = scaleTicketReferenceMetric(width, 17, 9, 10);
+  const titleFontSize = scaleTicketReferenceMetric(width, 31, 16, 18);
+  const detailPanelHeight = scaleTicketReferenceMetric(width, 176, 88, 103);
+  const venueFontSize = scaleTicketReferenceMetric(width, 20, 11, 12);
+  const countFontSize = scaleTicketReferenceMetric(width, 24, 13, 14);
+  const viewFontSize = scaleTicketReferenceMetric(width, 21, 11, 13);
+
   return (
     <View
       className="ticket-summary-hero-card relative summary-phone:-top-[.8px] -top-[10px]"
       onLayout={onLayout}
     >
       <View className="absolute left-0 summary-phone:-top-[19.3px] -top-4 z-10 self-start">
-        <View className="ticket-summary-hero-date min-h-[33px] justify-center bg-[#232126] px-4 py-2">
-          <Text className="ticket-summary-hero-date-text text-[12px] font-extrabold uppercase leading-[14px] tracking-[1.05px] text-[rgba(255,255,255,0.94)]" style={{ fontFamily: fonts.extraBold }}>
+        <View
+          className="ticket-summary-hero-date justify-center bg-[#232126]"
+          style={{ height: dateHeight, paddingHorizontal: datePaddingHorizontal }}
+        >
+          <Text
+            className="ticket-summary-hero-date-text font-extrabold uppercase tracking-[1.05px] text-[rgba(255,255,255,0.94)]"
+            style={{ fontFamily: fonts.extraBold, fontSize: dateFontSize, lineHeight: dateFontSize + 2 }}
+          >
             {dateTime}
           </Text>
         </View>
      
       </View>
-      <View className="bg-[#232126] px-[14px] pt-2">
-        <Text className="ticket-summary-hero-title pt-1 text-[19px] font-extrabold uppercase leading-[24px] text-white" style={{ fontFamily: fonts.extraBold }}>
+      <View
+        className="bg-[#232126] pt-2"
+        style={{ height: detailPanelHeight, paddingHorizontal: horizontalGutter }}
+      >
+        <Text
+          className="ticket-summary-hero-title pt-1 font-extrabold uppercase text-white"
+          style={{ fontFamily: fonts.extraBold, fontSize: titleFontSize, lineHeight: titleFontSize + 5 }}
+        >
           {title}
         </Text>
 
         <View className="mt-2 flex-row items-center justify-between pb-2">
           <Text
             numberOfLines={1}
-            className="ticket-summary-hero-venue mr-3 flex-1 text-[14px] font-normal leading-[18px] text-[rgba(255,255,255,0.82)]"
-            style={{ fontFamily: fonts.regular }}
+            className="ticket-summary-hero-venue mr-3 flex-1 font-normal text-[rgba(255,255,255,0.82)]"
+            style={{ fontFamily: fonts.regular, fontSize: venueFontSize, lineHeight: venueFontSize + 4 }}
           >
             {venue}
           </Text>
@@ -336,9 +396,12 @@ function ExpandedHeroCard({
               accessibilityIgnoresInvertColors
               contentFit="contain"
               source={TICKET_STACK_IMAGE}
-              style={{ height: 26, width: 26 }}
+              style={{ height: 28, width: 28 }}
             />
-            <Text className="text-[17px] font-bold leading-[19px] text-[#F2F4F7]" style={{ fontFamily: fonts.bold }}>
+            <Text
+              className="font-bold text-[#F2F4F7]"
+              style={{ fontFamily: fonts.bold, fontSize: countFontSize, lineHeight: countFontSize + 2 }}
+            >
               {`x${ticketCount}`}
             </Text>
           </View>
@@ -349,16 +412,19 @@ function ExpandedHeroCard({
         accessibilityLabel="View tickets"
         accessibilityRole="button"
         onPress={onOpenViewer}
-        className="ticket-summary-view-button min-h-[44px] flex-row items-center justify-center gap-[7px] bg-[#0561E8]"
-        style={bottomSpace ? { marginBottom: bottomSpace } : undefined}
+        className="ticket-summary-view-button flex-row items-center justify-center gap-[7px] bg-[#0561E8]"
+        style={{ height: viewButtonHeight, marginBottom: bottomSpace }}
       >
         <Image
           accessibilityIgnoresInvertColors
           contentFit="contain"
           source={VIEW_TICKETS_IMAGE}
-          style={{ height: 24, width: 24 }}
+          style={{ height: 32, width: 32 }}
         />
-        <Text className="ticket-summary-view-button-text text-[14px] font-bold leading-[17px] text-white" style={{ fontFamily: fonts.bold }}>
+        <Text
+          className="ticket-summary-view-button-text font-bold text-white"
+          style={{ fontFamily: fonts.bold, fontSize: viewFontSize, lineHeight: viewFontSize + 3 }}
+        >
           View Tickets
         </Text>
       </Pressable>
