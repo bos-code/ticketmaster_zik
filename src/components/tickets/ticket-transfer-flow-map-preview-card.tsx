@@ -31,7 +31,7 @@ export const MapPreviewCard = React.memo(function MapPreviewCard() {
 const styles = StyleSheet.create({
   card: {
     marginBottom: 20,
-    marginTop: 18,
+    marginTop: 12,
     overflow: "hidden",
   },
 });
