@@ -89,12 +89,12 @@ export function CollapsibleEventHero({
   const handleExpandedCardLayout = React.useCallback(
     (event: LayoutChangeEvent) => {
       const nextHeight = Math.ceil(
-        heroImageBaseHeight + event.nativeEvent.layout.height,
+        heroImageHeight + event.nativeEvent.layout.height,
       );
 
       onExpandedHeightChange(nextHeight);
     },
-    [heroImageBaseHeight, onExpandedHeightChange],
+    [heroImageHeight, onExpandedHeightChange],
   );
 
   const expandedLayerStyle = useAnimatedStyle(() => ({
@@ -178,7 +178,7 @@ export function CollapsibleEventHero({
 
           <View
             className='absolute inset-x-0'
-            style={{ paddingHorizontal: horizontalGutter, top: heroImageBaseHeight }}
+            style={{ paddingHorizontal: horizontalGutter, top: heroImageHeight }}
           >
             <ExpandedHeroCard
               bottomSpace={heroBottomSpace}
