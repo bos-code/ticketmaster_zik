@@ -25,7 +25,7 @@ export function BottomDock({
   const { width } = useWindowDimensions();
   const dockHeight = getTicketDockHeight(width);
   const dockWidth = getTicketDockWidth(width);
-  const dockBottom = insets.bottom;
+  const dockBottom = Math.max(12, insets.bottom - 2);
   const labelFontSize = scaleTicketReferenceMetric(width, 20, 10, 12);
 
   return (
