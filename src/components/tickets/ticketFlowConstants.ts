@@ -23,7 +23,7 @@ export const EXTRA_CARDS: ExtraCard[] = [
   },
 ];
 
-export const HERO_IMAGE_HEIGHT = 170;
+export const HERO_IMAGE_HEIGHT = 156;
 export const HERO_DETAIL_PANEL_HEIGHT = 122;
 export const HERO_EXPANDED_HEIGHT =
   HERO_IMAGE_HEIGHT + HERO_DETAIL_PANEL_HEIGHT;
@@ -31,8 +31,8 @@ export const HERO_COLLAPSED_HEIGHT = 128;
 export const HERO_COLLAPSE_DISTANCE =
   HERO_EXPANDED_HEIGHT - HERO_COLLAPSED_HEIGHT;
 export const SUMMARY_PHONE_MAX_WIDTH = 480;
-export const SUMMARY_PHONE_HERO_IMAGE_EXTRA_HEIGHT = 4;
-export const SUMMARY_PHONE_HERO_BOTTOM_SPACE = 10;
+export const SUMMARY_PHONE_HERO_IMAGE_EXTRA_HEIGHT = 0;
+export const SUMMARY_PHONE_HERO_BOTTOM_SPACE = 0;
 
 export function getSummaryPhoneHeroBottomSpace(width: number) {
   return Math.round(width) <= SUMMARY_PHONE_MAX_WIDTH
