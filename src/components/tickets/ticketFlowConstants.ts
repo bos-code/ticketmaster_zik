@@ -27,7 +27,7 @@ export const REFERENCE_TICKET_SCREEN_WIDTH = 749;
 export const MIN_IPHONE_LAYOUT_WIDTH = 375;
 export const MAX_IPHONE_LAYOUT_WIDTH = 440;
 
-function scaleReferenceMetric(
+export function scaleTicketReferenceMetric(
   width: number,
   referencePixels: number,
   minimum: number,
@@ -58,39 +58,39 @@ export const HERO_COLLAPSE_DISTANCE =
   HERO_EXPANDED_HEIGHT - HERO_COLLAPSED_HEIGHT;
 
 export function getTicketFlowHorizontalGutter(width: number) {
-  return scaleReferenceMetric(width, 28, 14, 16);
+  return scaleTicketReferenceMetric(width, 28, 14, 16);
 }
 
 export function getTicketSummaryHeroImageHeight(width: number) {
-  return scaleReferenceMetric(width, 310, 155, 182);
+  return scaleTicketReferenceMetric(width, 310, 155, 182);
 }
 
 export function getTicketSummaryViewButtonHeight(width: number) {
-  return scaleReferenceMetric(width, 70, 35, 41);
+  return scaleTicketReferenceMetric(width, 70, 35, 41);
 }
 
 export function getTicketFlowPanelTabHeight(width: number) {
-  return scaleReferenceMetric(width, 90, 45, 53);
+  return scaleTicketReferenceMetric(width, 90, 45, 53);
 }
 
 export function getTicketFlowOrderHeaderHeight(width: number) {
-  return scaleReferenceMetric(width, 139, 70, 82);
+  return scaleTicketReferenceMetric(width, 139, 70, 82);
 }
 
 export function getTicketCardHeaderHeight(width: number) {
-  return scaleReferenceMetric(width, 59, 30, 35);
+  return scaleTicketReferenceMetric(width, 59, 30, 35);
 }
 
 export function getTicketCardBodyHeight(width: number) {
-  return scaleReferenceMetric(width, 117, 59, 69);
+  return scaleTicketReferenceMetric(width, 117, 59, 69);
 }
 
 export function getTicketDockWidth(width: number) {
-  return scaleReferenceMetric(width, 337, 169, 198);
+  return scaleTicketReferenceMetric(width, 337, 169, 198);
 }
 
 export function getTicketDockHeight(width: number) {
-  return scaleReferenceMetric(width, 94, 47, 55);
+  return scaleTicketReferenceMetric(width, 94, 47, 55);
 }
 
 export function getSummaryPhoneHeroBottomSpace(_width: number) {
