@@ -20,7 +20,7 @@ export function PanelTabs({
   const { width } = useWindowDimensions();
   const horizontalGutter = getTicketFlowHorizontalGutter(width);
   const tabHeight = getTicketFlowPanelTabHeight(width);
-  const tabFontSize = scaleTicketReferenceMetric(width, 22, 12, 13);
+  const tabFontSize = scaleTicketReferenceMetric(width, 22, 11, 13);
 
   return (
     <View
