@@ -50,7 +50,6 @@ type ExpandedHeroCardProps = {
   onLayout: (event: LayoutChangeEvent) => void;
   onOpenViewer: () => void;
   bottomSpace: number;
-  horizontalGutter: number;
   ticketCount: number;
   title: string;
   venue: string;
@@ -183,7 +182,6 @@ export function CollapsibleEventHero({
             <ExpandedHeroCard
               bottomSpace={heroBottomSpace}
               dateTime={event.dateTime}
-              horizontalGutter={horizontalGutter}
               onLayout={handleExpandedCardLayout}
               onOpenViewer={onOpenViewer}
               ticketCount={order.ticketCount}
@@ -270,7 +268,7 @@ function CollapsedHeroLayer({
 function HeaderBackButton({ onBack }: { onBack: () => void }) {
   const { width } = useWindowDimensions();
   const diameter = scaleTicketReferenceMetric(width, 52, 26, 31);
-  const iconSize = Math.round(diameter * 0.55);
+  const iconSize = diameter;
 
   return (
     <Pressable
@@ -334,7 +332,6 @@ function CollapsedHeroTitle({ style, title, venue }: CollapsedHeroTitleProps) {
 function ExpandedHeroCard({
   bottomSpace,
   dateTime,
-  horizontalGutter,
   onLayout,
   onOpenViewer,
   ticketCount,
@@ -348,10 +345,16 @@ function ExpandedHeroCard({
   const datePaddingHorizontal = scaleTicketReferenceMetric(width, 17, 9, 10);
   const titleFontSize = scaleTicketReferenceMetric(width, 31, 16, 18);
   const detailPanelHeight = scaleTicketReferenceMetric(width, 176, 88, 103);
+  const detailPanelHorizontalPadding = scaleTicketReferenceMetric(
+    width,
+    22,
+    11,
+    13,
+  );
   const venueFontSize = scaleTicketReferenceMetric(width, 20, 10, 12);
   const countFontSize = scaleTicketReferenceMetric(width, 24, 12, 14);
   const viewFontSize = scaleTicketReferenceMetric(width, 21, 11, 13);
-  const ticketStackIconSize = scaleTicketReferenceMetric(width, 48, 24, 28);
+  const ticketStackIconSize = scaleTicketReferenceMetric(width, 44, 22, 26);
   const viewTicketsIconSize = scaleTicketReferenceMetric(width, 46, 23, 27);
 
   return (
@@ -375,7 +378,10 @@ function ExpandedHeroCard({
       </View>
       <View
         className="bg-[#232126] pt-2"
-        style={{ height: detailPanelHeight, paddingHorizontal: horizontalGutter }}
+        style={{
+          height: detailPanelHeight,
+          paddingHorizontal: detailPanelHorizontalPadding,
+        }}
       >
         <Text
           className="ticket-summary-hero-title pt-1 font-extrabold uppercase text-white"
