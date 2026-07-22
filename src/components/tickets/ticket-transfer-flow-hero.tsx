@@ -336,7 +336,7 @@ function ExpandedHeroCard({
               accessibilityIgnoresInvertColors
               contentFit="contain"
               source={TICKET_STACK_IMAGE}
-              style={{ height: 20, width: 20 }}
+              style={{ height: 26, width: 26 }}
             />
             <Text className="text-[17px] font-bold leading-[19px] text-[#F2F4F7]" style={{ fontFamily: fonts.bold }}>
               {`x${ticketCount}`}
@@ -356,7 +356,7 @@ function ExpandedHeroCard({
           accessibilityIgnoresInvertColors
           contentFit="contain"
           source={VIEW_TICKETS_IMAGE}
-          style={{ height: 19, width: 19 }}
+          style={{ height: 24, width: 24 }}
         />
         <Text className="ticket-summary-view-button-text text-[14px] font-bold leading-[17px] text-white" style={{ fontFamily: fonts.bold }}>
           View Tickets
