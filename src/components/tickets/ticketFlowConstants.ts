@@ -23,39 +23,86 @@ export const EXTRA_CARDS: ExtraCard[] = [
   },
 ];
 
-export const HERO_IMAGE_HEIGHT = 156;
-export const HERO_DETAIL_PANEL_HEIGHT = 122;
+export const REFERENCE_TICKET_SCREEN_WIDTH = 749;
+export const MIN_IPHONE_LAYOUT_WIDTH = 375;
+export const MAX_IPHONE_LAYOUT_WIDTH = 440;
+
+function scaleReferenceMetric(
+  width: number,
+  referencePixels: number,
+  minimum: number,
+  maximum: number,
+) {
+  const iphoneWidth = Math.min(
+    MAX_IPHONE_LAYOUT_WIDTH,
+    Math.max(MIN_IPHONE_LAYOUT_WIDTH, Math.round(width)),
+  );
+
+  return Math.round(
+    Math.min(
+      maximum,
+      Math.max(
+        minimum,
+        (iphoneWidth * referencePixels) / REFERENCE_TICKET_SCREEN_WIDTH,
+      ),
+    ),
+  );
+}
+
+export const HERO_IMAGE_HEIGHT = 155;
+export const HERO_DETAIL_PANEL_HEIGHT = 123;
 export const HERO_EXPANDED_HEIGHT =
   HERO_IMAGE_HEIGHT + HERO_DETAIL_PANEL_HEIGHT;
 export const HERO_COLLAPSED_HEIGHT = 128;
 export const HERO_COLLAPSE_DISTANCE =
   HERO_EXPANDED_HEIGHT - HERO_COLLAPSED_HEIGHT;
-export const SUMMARY_PHONE_MAX_WIDTH = 480;
-export const SUMMARY_PHONE_HERO_IMAGE_EXTRA_HEIGHT = 0;
-export const SUMMARY_PHONE_HERO_BOTTOM_SPACE = 0;
 
-export function getSummaryPhoneHeroBottomSpace(width: number) {
-  return Math.round(width) <= SUMMARY_PHONE_MAX_WIDTH
-    ? SUMMARY_PHONE_HERO_BOTTOM_SPACE
-    : 0;
-}
-
-export function getSummaryPhoneHeroImageExtraHeight(width: number) {
-  return Math.round(width) <= SUMMARY_PHONE_MAX_WIDTH
-    ? SUMMARY_PHONE_HERO_IMAGE_EXTRA_HEIGHT
-    : 0;
+export function getTicketFlowHorizontalGutter(width: number) {
+  return scaleReferenceMetric(width, 28, 14, 16);
 }
 
 export function getTicketSummaryHeroImageHeight(width: number) {
-  return HERO_IMAGE_HEIGHT + getSummaryPhoneHeroImageExtraHeight(width);
+  return scaleReferenceMetric(width, 310, 155, 182);
+}
+
+export function getTicketSummaryViewButtonHeight(width: number) {
+  return scaleReferenceMetric(width, 70, 35, 41);
+}
+
+export function getTicketFlowPanelTabHeight(width: number) {
+  return scaleReferenceMetric(width, 90, 45, 53);
+}
+
+export function getTicketFlowOrderHeaderHeight(width: number) {
+  return scaleReferenceMetric(width, 139, 70, 82);
+}
+
+export function getTicketCardHeaderHeight(width: number) {
+  return scaleReferenceMetric(width, 59, 30, 35);
+}
+
+export function getTicketCardBodyHeight(width: number) {
+  return scaleReferenceMetric(width, 117, 59, 69);
+}
+
+export function getTicketDockWidth(width: number) {
+  return scaleReferenceMetric(width, 337, 169, 198);
+}
+
+export function getTicketDockHeight(width: number) {
+  return scaleReferenceMetric(width, 94, 47, 55);
+}
+
+export function getSummaryPhoneHeroBottomSpace(_width: number) {
+  return 0;
+}
+
+export function getSummaryPhoneHeroImageExtraHeight(_width: number) {
+  return 0;
 }
 
 export function getTicketSummaryHeroExpandedHeight(width: number) {
-  return (
-    getTicketSummaryHeroImageHeight(width) +
-    HERO_DETAIL_PANEL_HEIGHT +
-    getSummaryPhoneHeroBottomSpace(width)
-  );
+  return getTicketSummaryHeroImageHeight(width) + HERO_DETAIL_PANEL_HEIGHT;
 }
 
 export function getTicketSummaryHeroCollapseDistance(width: number) {
