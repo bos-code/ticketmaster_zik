@@ -1,7 +1,8 @@
 import React from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, StyleSheet, Text, useWindowDimensions, View } from "react-native";
 import Animated, { FadeInUp } from "react-native-reanimated";
 
+import { useImmersiveSafeAreaInsets } from "@/components/immersive/edge-to-edge-hero";
 import { fonts } from "../../../theme/fonts";
 import {
   TicketResaleIcon,
@@ -15,15 +16,26 @@ export function BottomDock({
   disabled?: boolean;
   onTransfer: () => void;
 }) {
+  const insets = useImmersiveSafeAreaInsets();
+  const { width } = useWindowDimensions();
+  const dockHeight = Math.round(Math.min(68, Math.max(62, width * 0.165)));
+  const dockWidth = Math.round(Math.min(194, Math.max(169, width * 0.452)));
+  const dockBottom = Math.max(20, insets.bottom);
+
   return (
     <Animated.View
       entering={FadeInUp.duration(320).delay(220)}
-      style={styles.dockPosition}
+      style={[styles.dockPosition, { bottom: dockBottom }]}
     >
       <View
         className="overflow-hidden border border-white bg-white"
         style={[
           styles.dock,
+          {
+            borderRadius: dockHeight / 2,
+            height: dockHeight,
+            width: dockWidth,
+          },
           disabled ? styles.dockDisabled : null,
         ]}
       >
@@ -38,7 +50,7 @@ export function BottomDock({
             onPress={onTransfer}
           />
 
-          <View style={styles.divider} />
+          <View style={[styles.divider, { height: Math.round(dockHeight * 0.63) }]} />
 
           <BottomDockAction
             accessibilityLabel="Sell tickets"
@@ -95,34 +107,30 @@ function BottomDockAction({
 const styles = StyleSheet.create({
   action: {
     alignItems: "center",
-    height: 76,
+    flex: 1,
+    height: "100%",
     justifyContent: "center",
-    paddingTop: 5,
-    width: 94,
+    paddingTop: 4,
   },
   actionsRow: {
     alignItems: "center",
     flexDirection: "row",
-    height: 76,
+    height: "100%",
+    width: "100%",
   },
   divider: {
     backgroundColor: "#E5E5E5",
-    height: 48,
     width: StyleSheet.hairlineWidth,
   },
   dock: {
-    borderRadius: 38,
     boxShadow: "0px 8px 20px rgba(0, 0, 0, 0.20)",
     elevation: 11,
-    height: 76,
-    width: 189,
   },
   dockDisabled: {
     opacity: 0.6,
   },
   dockPosition: {
     alignItems: "center",
-    bottom: 64,
     left: 0,
     pointerEvents: "box-none",
     position: "absolute",
