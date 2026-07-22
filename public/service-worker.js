@@ -1,4 +1,4 @@
-const CACHE_NAME = "ticketmaster-rey-v10";
+const CACHE_NAME = "ticketmaster-rey-v11";
 const APP_SHELL_ASSETS = [
   "/",
   "/index.html",

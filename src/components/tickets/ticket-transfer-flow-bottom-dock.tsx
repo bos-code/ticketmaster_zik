@@ -18,9 +18,9 @@ export function BottomDock({
 }) {
   const insets = useImmersiveSafeAreaInsets();
   const { width } = useWindowDimensions();
-  const dockHeight = Math.round(Math.min(68, Math.max(62, width * 0.165)));
+  const dockHeight = Math.round(Math.min(56, Math.max(48, width * 0.128)));
   const dockWidth = Math.round(Math.min(194, Math.max(169, width * 0.452)));
-  const dockBottom = Math.max(20, insets.bottom);
+  const dockBottom = Math.max(12, insets.bottom - 2);
 
   return (
     <Animated.View
@@ -91,9 +91,9 @@ function BottomDockAction({
       onPress={onPress}
     >
       {icon === "transfer" ? (
-        <TicketTransferIcon color={iconColor} size={27} />
+        <TicketTransferIcon color={iconColor} size={24} />
       ) : (
-        <TicketResaleIcon color={iconColor} size={27} />
+        <TicketResaleIcon color={iconColor} size={24} />
       )}
       <Text
         style={[styles.label, { color: labelColor }]}
@@ -139,8 +139,8 @@ const styles = StyleSheet.create({
   },
   label: {
     fontFamily: fonts.medium,
-    fontSize: 12,
-    lineHeight: 16,
-    marginTop: 2,
+    fontSize: 11,
+    lineHeight: 14,
+    marginTop: 1,
   },
 });

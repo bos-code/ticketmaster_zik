@@ -137,9 +137,9 @@ const styles = StyleSheet.create({
     backgroundColor: "#FFFFFF",
   },
   orderHeader: {
+    height: 72,
+    justifyContent: "center",
     paddingHorizontal: 14,
-    paddingBottom: 11,
-    paddingTop: 18,
   },
   orderHeaderRow: {
     alignItems: "flex-start",
@@ -153,15 +153,15 @@ const styles = StyleSheet.create({
   orderId: {
     color: "#171717",
     fontFamily: fonts.extraBold,
-    fontSize: 19,
-    letterSpacing: -0.55,
-    lineHeight: 25,
+    fontSize: 17,
+    letterSpacing: -0.45,
+    lineHeight: 23,
   },
   ticketCount: {
     color: "#6E6E72",
     fontFamily: fonts.medium,
-    fontSize: 12,
-    lineHeight: 17,
+    fontSize: 11,
+    lineHeight: 16,
   },
   menuButton: {
     alignItems: "center",
@@ -186,23 +186,24 @@ const styles = StyleSheet.create({
   ticketCardHeader: {
     backgroundColor: "#E7E7E7",
     borderBottomColor: "#FFFFFF",
-    borderBottomWidth: 4,
+    borderBottomWidth: 3,
+    height: 30,
+    justifyContent: "center",
     paddingHorizontal: 14,
-    paddingVertical: 7,
   },
   ticketNote: {
     color: "#191919",
     fontFamily: fonts.bold,
-    fontSize: 14,
-    letterSpacing: -0.2,
-    lineHeight: 21,
+    fontSize: 13,
+    letterSpacing: -0.15,
+    lineHeight: 18,
     textTransform: "uppercase",
   },
   ticketMetaRow: {
+    alignItems: "center",
     flexDirection: "row",
-    paddingBottom: 15,
+    height: 58,
     paddingHorizontal: 14,
-    paddingTop: 15,
   },
   metaCell: {
     flex: 1,
@@ -223,9 +224,9 @@ const styles = StyleSheet.create({
   metaValue: {
     color: "#111111",
     fontFamily: fonts.extraBold,
-    fontSize: 16,
-    lineHeight: 22,
-    marginTop: 9,
+    fontSize: 15,
+    lineHeight: 20,
+    marginTop: 7,
   },
   moreOptionsHeader: {
     borderTopColor: "#EEEEEE",
