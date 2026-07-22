@@ -1,4 +1,5 @@
 import React from 'react';
+import { Image } from 'expo-image';
 import {
   type LayoutChangeEvent,
   Pressable,
@@ -30,9 +31,10 @@ import { fonts } from '../../../theme/fonts';
 import {
   CompactTicketIcon,
   TicketFlowBackIcon,
-  TicketScanIcon,
-  TicketStackIcon,
 } from '@/components/tickets/ticket-transfer-flow-icons';
+
+const TICKET_STACK_IMAGE = require('../../../public/ticket-stack.png');
+const VIEW_TICKETS_IMAGE = require('../../../public/view-tickets.png');
 
 type CollapsedHeroTitleProps = {
   style: StyleProp<ViewStyle>;
@@ -156,7 +158,7 @@ export function CollapsibleEventHero({
         />
 
         <View style={[absoluteFill, { paddingTop: statusBarBleed }]}>
-          <View className='px-4'>
+          <View className='px-[14px]'>
             <View className='mt-3 flex-row items-center justify-between'>
               <HeaderBackButton onBack={onBack} />
               <View className='h-10 w-[60px] items-center justify-center rounded-full bg-black/50'>
@@ -168,7 +170,7 @@ export function CollapsibleEventHero({
           </View>
 
           <View
-            className='absolute inset-x-0 px-4'
+            className='absolute inset-x-0 px-[14px]'
             style={{ top: heroImageBaseHeight }}
           >
             <ExpandedHeroCard
@@ -221,7 +223,7 @@ function CollapsedHeroLayer({
       />
       <View style={[absoluteFill, { paddingTop: statusBarBleed }]}>
         <View
-          className='justify-center px-4'
+          className='justify-center px-[14px]'
           style={{ height: HERO_COLLAPSED_HEIGHT - statusBarBleed }}
         >
           <View className='relative h-10 flex-row items-center justify-between'>
@@ -315,7 +317,7 @@ function ExpandedHeroCard({
         </View>
      
       </View>
-      <View className="bg-[#232126] px-4 pt-2">
+      <View className="bg-[#232126] px-[14px] pt-2">
         <Text className="ticket-summary-hero-title pt-1 text-[19px] font-extrabold uppercase leading-[24px] text-white" style={{ fontFamily: fonts.extraBold }}>
           {title}
         </Text>
@@ -330,7 +332,12 @@ function ExpandedHeroCard({
           </Text>
 
           <View className="shrink-0 flex-row items-center gap-[5px]">
-            <TicketStackIcon color="#F2F4F7" size={20} />
+            <Image
+              accessibilityIgnoresInvertColors
+              contentFit="contain"
+              source={TICKET_STACK_IMAGE}
+              style={{ height: 20, width: 20 }}
+            />
             <Text className="text-[17px] font-bold leading-[19px] text-[#F2F4F7]" style={{ fontFamily: fonts.bold }}>
               {`x${ticketCount}`}
             </Text>
@@ -345,7 +352,12 @@ function ExpandedHeroCard({
         className="ticket-summary-view-button min-h-[44px] flex-row items-center justify-center gap-[7px] bg-[#0561E8]"
         style={bottomSpace ? { marginBottom: bottomSpace } : undefined}
       >
-        <TicketScanIcon color="#FFFFFF" size={19} />
+        <Image
+          accessibilityIgnoresInvertColors
+          contentFit="contain"
+          source={VIEW_TICKETS_IMAGE}
+          style={{ height: 19, width: 19 }}
+        />
         <Text className="ticket-summary-view-button-text text-[14px] font-bold leading-[17px] text-white" style={{ fontFamily: fonts.bold }}>
           View Tickets
         </Text>
