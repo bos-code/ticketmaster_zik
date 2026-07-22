@@ -344,13 +344,15 @@ function ExpandedHeroCard({
 }: ExpandedHeroCardProps & { viewButtonHeight: number }) {
   const { width } = useWindowDimensions();
   const dateHeight = scaleTicketReferenceMetric(width, 37, 20, 22);
-  const dateFontSize = scaleTicketReferenceMetric(width, 16, 10, 11);
+  const dateFontSize = scaleTicketReferenceMetric(width, 16, 8, 10);
   const datePaddingHorizontal = scaleTicketReferenceMetric(width, 17, 9, 10);
   const titleFontSize = scaleTicketReferenceMetric(width, 31, 16, 18);
   const detailPanelHeight = scaleTicketReferenceMetric(width, 176, 88, 103);
-  const venueFontSize = scaleTicketReferenceMetric(width, 20, 11, 12);
-  const countFontSize = scaleTicketReferenceMetric(width, 24, 13, 14);
+  const venueFontSize = scaleTicketReferenceMetric(width, 20, 10, 12);
+  const countFontSize = scaleTicketReferenceMetric(width, 24, 12, 14);
   const viewFontSize = scaleTicketReferenceMetric(width, 21, 11, 13);
+  const ticketStackIconSize = scaleTicketReferenceMetric(width, 48, 24, 28);
+  const viewTicketsIconSize = scaleTicketReferenceMetric(width, 46, 23, 27);
 
   return (
     <View
@@ -382,7 +384,7 @@ function ExpandedHeroCard({
           {title}
         </Text>
 
-        <View className="mt-2 flex-row items-center justify-between pb-2">
+        <View className="mt-auto flex-row items-center justify-between pb-2">
           <Text
             numberOfLines={1}
             className="ticket-summary-hero-venue mr-3 flex-1 font-normal text-[rgba(255,255,255,0.82)]"
@@ -396,7 +398,10 @@ function ExpandedHeroCard({
               accessibilityIgnoresInvertColors
               contentFit="contain"
               source={TICKET_STACK_IMAGE}
-              style={{ height: 28, width: 28 }}
+              style={{
+                height: ticketStackIconSize,
+                width: ticketStackIconSize,
+              }}
             />
             <Text
               className="font-bold text-[#F2F4F7]"
@@ -419,7 +424,10 @@ function ExpandedHeroCard({
           accessibilityIgnoresInvertColors
           contentFit="contain"
           source={VIEW_TICKETS_IMAGE}
-          style={{ height: 32, width: 32 }}
+          style={{
+            height: viewTicketsIconSize,
+            width: viewTicketsIconSize,
+          }}
         />
         <Text
           className="ticket-summary-view-button-text font-bold text-white"
