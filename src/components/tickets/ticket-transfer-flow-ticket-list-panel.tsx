@@ -137,7 +137,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#FFFFFF",
   },
   orderHeader: {
-    paddingHorizontal: 16,
+    paddingHorizontal: 14,
     paddingBottom: 11,
     paddingTop: 18,
   },
@@ -173,7 +173,7 @@ const styles = StyleSheet.create({
   },
   ticketList: {
     paddingBottom: -2,
-    paddingHorizontal: 16,
+    paddingHorizontal: 14,
     paddingTop: 6,
   },
   ticketCard: {
@@ -230,7 +230,7 @@ const styles = StyleSheet.create({
   moreOptionsHeader: {
     borderTopColor: "#EEEEEE",
     borderTopWidth: StyleSheet.hairlineWidth,
-    marginHorizontal: 16,
+    marginHorizontal: 14,
     marginTop: 24,
     paddingTop: 31,
   },
