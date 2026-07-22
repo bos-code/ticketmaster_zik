@@ -45,7 +45,7 @@ function PanelTabButton({
       accessibilityState={{ selected: active }}
       onPress={onPress}
       className={cx(
-        "flex-1 items-center justify-center border-b-2 pb-[14px] pt-[15px]",
+        "h-[46px] flex-1 items-center justify-center border-b-2",
         active ? "border-[#111111]" : "border-transparent",
       )}
     >
