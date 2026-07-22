@@ -28,7 +28,7 @@ export function TicketListPanel({
   const horizontalGutter = getTicketFlowHorizontalGutter(width);
   const orderHeaderHeight = getTicketFlowOrderHeaderHeight(width);
   const orderFontSize = scaleTicketReferenceMetric(width, 27, 14, 16);
-  const countFontSize = scaleTicketReferenceMetric(width, 18, 10, 11);
+  const countFontSize = scaleTicketReferenceMetric(width, 18, 9, 11);
 
   return (
     <View style={styles.panel}>
@@ -91,7 +91,7 @@ function TicketSeatCard({
   const { width } = useWindowDimensions();
   const headerHeight = getTicketCardHeaderHeight(width);
   const bodyHeight = getTicketCardBodyHeight(width);
-  const noteFontSize = scaleTicketReferenceMetric(width, 19, 11, 12);
+  const noteFontSize = scaleTicketReferenceMetric(width, 19, 10, 11);
 
   return (
     <Pressable
@@ -128,8 +128,8 @@ function TicketMetaCell({
   value: string;
 }) {
   const { width } = useWindowDimensions();
-  const labelFontSize = scaleTicketReferenceMetric(width, 16, 9, 10);
-  const valueFontSize = scaleTicketReferenceMetric(width, 22, 12, 13);
+  const labelFontSize = scaleTicketReferenceMetric(width, 16, 8, 10);
+  const valueFontSize = scaleTicketReferenceMetric(width, 22, 11, 13);
 
   return (
     <View
@@ -200,7 +200,7 @@ const styles = StyleSheet.create({
   },
   ticketList: {
     paddingBottom: -2,
-    paddingTop: 6,
+    paddingTop: 0,
   },
   ticketCard: {
     backgroundColor: "#F4F4F4",
