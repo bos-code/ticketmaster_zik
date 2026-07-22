@@ -29,6 +29,7 @@ export function TicketListPanel({
   const orderHeaderHeight = getTicketFlowOrderHeaderHeight(width);
   const orderFontSize = scaleTicketReferenceMetric(width, 27, 14, 16);
   const countFontSize = scaleTicketReferenceMetric(width, 18, 9, 11);
+  const moreOptionsFontSize = scaleTicketReferenceMetric(width, 24, 12, 14);
 
   return (
     <View style={styles.panel}>
@@ -66,7 +67,11 @@ export function TicketListPanel({
           ))}
         </View>
         <View style={[styles.moreOptionsHeader, { marginHorizontal: horizontalGutter }]}>
-          <Text style={styles.moreOptionsText}>MORE OPTIONS</Text>
+          <Text
+            style={[styles.moreOptionsText, { fontSize: moreOptionsFontSize }]}
+          >
+            MORE OPTIONS
+          </Text>
         </View>
         <MapPreviewCard />
         <PromoCard />
@@ -92,6 +97,18 @@ function TicketSeatCard({
   const headerHeight = getTicketCardHeaderHeight(width);
   const bodyHeight = getTicketCardBodyHeight(width);
   const cardGap = scaleTicketReferenceMetric(width, 20, 10, 12);
+  const headerHorizontalPadding = scaleTicketReferenceMetric(
+    width,
+    22,
+    11,
+    13,
+  );
+  const metaHorizontalPadding = scaleTicketReferenceMetric(
+    width,
+    30,
+    15,
+    18,
+  );
   const noteFontSize = scaleTicketReferenceMetric(width, 19, 10, 11);
 
   return (
@@ -101,7 +118,15 @@ function TicketSeatCard({
       onPress={onPress}
     >
       <View style={[styles.ticketCard, { marginBottom: cardGap }]}>
-        <View style={[styles.ticketCardHeader, { height: headerHeight }]}>
+        <View
+          style={[
+            styles.ticketCardHeader,
+            {
+              height: headerHeight,
+              paddingHorizontal: headerHorizontalPadding,
+            },
+          ]}
+        >
           <EditableText
             field="seatLabel"
             value={seatLabel}
@@ -109,7 +134,15 @@ function TicketSeatCard({
           />
         </View>
 
-        <View style={[styles.ticketMetaRow, { height: bodyHeight }]}>
+        <View
+          style={[
+            styles.ticketMetaRow,
+            {
+              height: bodyHeight,
+              paddingHorizontal: metaHorizontalPadding,
+            },
+          ]}
+        >
           <TicketMetaCell align="left" label="SECTION" value={seat.section} />
           <TicketMetaCell align="center" label="ROW" value={seat.row} />
           <TicketMetaCell align="right" label="SEAT" value={seat.seat} />
@@ -214,7 +247,6 @@ const styles = StyleSheet.create({
     borderBottomColor: "#FFFFFF",
     borderBottomWidth: 3,
     justifyContent: "center",
-    paddingHorizontal: 14,
   },
   ticketNote: {
     color: "#191919",
@@ -226,7 +258,6 @@ const styles = StyleSheet.create({
   ticketMetaRow: {
     alignItems: "center",
     flexDirection: "row",
-    paddingHorizontal: 14,
   },
   metaCell: {
     flex: 1,
@@ -258,7 +289,6 @@ const styles = StyleSheet.create({
   moreOptionsText: {
     color: "#171717",
     fontFamily: fonts.extraBold,
-    fontSize: 13,
     letterSpacing: 1.2,
     lineHeight: 18,
   },
