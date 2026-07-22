@@ -145,6 +145,7 @@ export function CollapsibleEventHero({
         eventVenue={event.venue}
         heroImage={event.heroImage}
         heroImageHeight={heroImageHeight}
+        horizontalGutter={horizontalGutter}
         isHeroCollapsed={isHeroCollapsed}
         onBack={onBack}
         onOpenViewer={onOpenViewer}
@@ -202,6 +203,7 @@ function CollapsedHeroLayer({
   eventVenue,
   heroImage,
   heroImageHeight,
+  horizontalGutter,
   isHeroCollapsed,
   onBack,
   onOpenViewer,
@@ -212,6 +214,7 @@ function CollapsedHeroLayer({
   eventVenue: string;
   heroImage: React.ComponentProps<typeof EdgeToEdgeHeroMedia>['source'];
   heroImageHeight: number;
+  horizontalGutter: number;
   isHeroCollapsed: boolean;
   onBack: () => void;
   onOpenViewer: () => void;
@@ -233,9 +236,7 @@ function CollapsedHeroLayer({
           className='justify-center'
           style={{
             height: HERO_COLLAPSED_HEIGHT - statusBarBleed,
-            paddingHorizontal: getTicketFlowHorizontalGutter(
-              Math.max(375, Math.min(440, heroImageHeight - statusBarBleed)),
-            ),
+            paddingHorizontal: horizontalGutter,
           }}
         >
           <View className='relative h-10 flex-row items-center justify-between'>
