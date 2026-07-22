@@ -91,6 +91,7 @@ function TicketSeatCard({
   const { width } = useWindowDimensions();
   const headerHeight = getTicketCardHeaderHeight(width);
   const bodyHeight = getTicketCardBodyHeight(width);
+  const cardGap = scaleTicketReferenceMetric(width, 20, 10, 12);
   const noteFontSize = scaleTicketReferenceMetric(width, 19, 10, 11);
 
   return (
@@ -99,7 +100,7 @@ function TicketSeatCard({
       accessibilityRole="button"
       onPress={onPress}
     >
-      <View style={styles.ticketCard}>
+      <View style={[styles.ticketCard, { marginBottom: cardGap }]}>
         <View style={[styles.ticketCardHeader, { height: headerHeight }]}>
           <EditableText
             field="seatLabel"
@@ -206,7 +207,6 @@ const styles = StyleSheet.create({
     backgroundColor: "#F4F4F4",
     borderColor: "#CDCDCD",
     borderWidth: 1,
-    marginBottom: 12,
     overflow: "hidden",
   },
   ticketCardHeader: {
@@ -252,7 +252,7 @@ const styles = StyleSheet.create({
   moreOptionsHeader: {
     borderTopColor: "#EEEEEE",
     borderTopWidth: StyleSheet.hairlineWidth,
-    marginTop: 24,
+    marginTop: 17,
     paddingTop: 31,
   },
   moreOptionsText: {
