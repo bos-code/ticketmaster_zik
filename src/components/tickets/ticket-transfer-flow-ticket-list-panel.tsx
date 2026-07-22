@@ -1,9 +1,16 @@
 import React from "react";
-import { ActivityIndicator, Pressable, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, Pressable, StyleSheet, Text, useWindowDimensions, View } from "react-native";
 
 import { MapPreviewCard } from "@/components/tickets/ticket-transfer-flow-map-preview-card";
 import { PromoCard } from "@/components/tickets/ticket-transfer-flow-promo-card";
 import { EditableText } from "@/components/tickets/EditableText";
+import {
+  getTicketCardBodyHeight,
+  getTicketCardHeaderHeight,
+  getTicketFlowHorizontalGutter,
+  getTicketFlowOrderHeaderHeight,
+  scaleTicketReferenceMetric,
+} from "@/components/tickets/ticketFlowConstants";
 import type { Seat } from "@/components/tickets/ticketFlowTypes";
 import { useTicketFlowData } from "@/components/tickets/useTicketFlowData";
 import { fonts } from "../../../theme/fonts";
@@ -17,15 +24,25 @@ export function TicketListPanel({
   onOpenTicket: (ticketIndex: number) => void;
 }) {
   const { order, seats } = useTicketFlowData();
+  const { width } = useWindowDimensions();
+  const horizontalGutter = getTicketFlowHorizontalGutter(width);
+  const orderHeaderHeight = getTicketFlowOrderHeaderHeight(width);
+  const orderFontSize = scaleTicketReferenceMetric(width, 27, 14, 16);
+  const countFontSize = scaleTicketReferenceMetric(width, 18, 10, 11);
 
   return (
     <View style={styles.panel}>
       <View style={{ opacity: isListLoading ? 0.25 : 1, flex: 1 }}>
-        <View style={styles.orderHeader}>
+        <View
+          style={[
+            styles.orderHeader,
+            { height: orderHeaderHeight, paddingHorizontal: horizontalGutter },
+          ]}
+        >
           <View style={styles.orderHeaderRow}>
             <View style={styles.orderTextGroup}>
-              <Text style={styles.orderId}>{`Order #${order.orderNumber}`}</Text>
-              <Text style={styles.ticketCount}>{order.ticketCountLabel}</Text>
+              <Text style={[styles.orderId, { fontSize: orderFontSize }]}>{`Order #${order.orderNumber}`}</Text>
+              <Text style={[styles.ticketCount, { fontSize: countFontSize }]}>{order.ticketCountLabel}</Text>
             </View>
 
             <Pressable
@@ -39,7 +56,7 @@ export function TicketListPanel({
           </View>
         </View>
 
-        <View style={styles.ticketList}>
+        <View style={[styles.ticketList, { paddingHorizontal: horizontalGutter }]}>
           {seats.map((seat) => (
             <TicketSeatCard
               key={seat.id}
@@ -48,7 +65,7 @@ export function TicketListPanel({
             />
           ))}
         </View>
-        <View style={styles.moreOptionsHeader}>
+        <View style={[styles.moreOptionsHeader, { marginHorizontal: horizontalGutter }]}>
           <Text style={styles.moreOptionsText}>MORE OPTIONS</Text>
         </View>
         <MapPreviewCard />
@@ -71,6 +88,10 @@ function TicketSeatCard({
   seat: Seat;
 }) {
   const seatLabel = seat.label?.trim() || seat.note?.trim() || "Standard";
+  const { width } = useWindowDimensions();
+  const headerHeight = getTicketCardHeaderHeight(width);
+  const bodyHeight = getTicketCardBodyHeight(width);
+  const noteFontSize = scaleTicketReferenceMetric(width, 19, 11, 12);
 
   return (
     <Pressable
@@ -79,11 +100,15 @@ function TicketSeatCard({
       onPress={onPress}
     >
       <View style={styles.ticketCard}>
-        <View style={styles.ticketCardHeader}>
-          <EditableText field="seatLabel" value={seatLabel} style={styles.ticketNote} />
+        <View style={[styles.ticketCardHeader, { height: headerHeight }]}>
+          <EditableText
+            field="seatLabel"
+            value={seatLabel}
+            style={[styles.ticketNote, { fontSize: noteFontSize }]}
+          />
         </View>
 
-        <View style={styles.ticketMetaRow}>
+        <View style={[styles.ticketMetaRow, { height: bodyHeight }]}>
           <TicketMetaCell align="left" label="SECTION" value={seat.section} />
           <TicketMetaCell align="center" label="ROW" value={seat.row} />
           <TicketMetaCell align="right" label="SEAT" value={seat.seat} />
@@ -102,6 +127,10 @@ function TicketMetaCell({
   label: string;
   value: string;
 }) {
+  const { width } = useWindowDimensions();
+  const labelFontSize = scaleTicketReferenceMetric(width, 16, 9, 10);
+  const valueFontSize = scaleTicketReferenceMetric(width, 22, 12, 13);
+
   return (
     <View
       style={[
@@ -113,6 +142,7 @@ function TicketMetaCell({
       <Text
         style={[
           styles.metaLabel,
+          { fontSize: labelFontSize },
           align === "center" && styles.textCenter,
           align === "right" && styles.textRight,
         ]}
@@ -122,6 +152,7 @@ function TicketMetaCell({
       <Text
         style={[
           styles.metaValue,
+          { fontSize: valueFontSize },
           align === "center" && styles.textCenter,
           align === "right" && styles.textRight,
         ]}
@@ -137,9 +168,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#FFFFFF",
   },
   orderHeader: {
-    height: 72,
     justifyContent: "center",
-    paddingHorizontal: 14,
   },
   orderHeaderRow: {
     alignItems: "flex-start",
@@ -153,14 +182,12 @@ const styles = StyleSheet.create({
   orderId: {
     color: "#171717",
     fontFamily: fonts.extraBold,
-    fontSize: 17,
     letterSpacing: -0.45,
     lineHeight: 23,
   },
   ticketCount: {
     color: "#6E6E72",
     fontFamily: fonts.medium,
-    fontSize: 11,
     lineHeight: 16,
   },
   menuButton: {
@@ -173,7 +200,6 @@ const styles = StyleSheet.create({
   },
   ticketList: {
     paddingBottom: -2,
-    paddingHorizontal: 14,
     paddingTop: 6,
   },
   ticketCard: {
@@ -187,14 +213,12 @@ const styles = StyleSheet.create({
     backgroundColor: "#E7E7E7",
     borderBottomColor: "#FFFFFF",
     borderBottomWidth: 3,
-    height: 30,
     justifyContent: "center",
     paddingHorizontal: 14,
   },
   ticketNote: {
     color: "#191919",
     fontFamily: fonts.bold,
-    fontSize: 13,
     letterSpacing: -0.15,
     lineHeight: 18,
     textTransform: "uppercase",
@@ -202,7 +226,6 @@ const styles = StyleSheet.create({
   ticketMetaRow: {
     alignItems: "center",
     flexDirection: "row",
-    height: 58,
     paddingHorizontal: 14,
   },
   metaCell: {
@@ -217,29 +240,26 @@ const styles = StyleSheet.create({
   metaLabel: {
     color: "#747478",
     fontFamily: fonts.bold,
-    fontSize: 11,
     letterSpacing: 1.35,
     lineHeight: 13,
   },
   metaValue: {
     color: "#111111",
-    fontFamily: fonts.extraBold,
-    fontSize: 15,
+    fontFamily: fonts.semiBold,
     lineHeight: 20,
     marginTop: 7,
   },
   moreOptionsHeader: {
     borderTopColor: "#EEEEEE",
     borderTopWidth: StyleSheet.hairlineWidth,
-    marginHorizontal: 14,
     marginTop: 24,
     paddingTop: 31,
   },
   moreOptionsText: {
     color: "#171717",
     fontFamily: fonts.extraBold,
-    fontSize: 14,
-    letterSpacing: 1.3,
+    fontSize: 13,
+    letterSpacing: 1.2,
     lineHeight: 18,
   },
   textCenter: {
