@@ -347,6 +347,7 @@ function ExpandedHeroCard({
   const dateFontSize = scaleTicketReferenceMetric(width, 16, 10, 11);
   const datePaddingHorizontal = scaleTicketReferenceMetric(width, 17, 9, 10);
   const titleFontSize = scaleTicketReferenceMetric(width, 31, 16, 18);
+  const detailPanelHeight = scaleTicketReferenceMetric(width, 176, 88, 103);
   const venueFontSize = scaleTicketReferenceMetric(width, 20, 11, 12);
   const countFontSize = scaleTicketReferenceMetric(width, 24, 13, 14);
   const viewFontSize = scaleTicketReferenceMetric(width, 21, 11, 13);
@@ -370,7 +371,10 @@ function ExpandedHeroCard({
         </View>
      
       </View>
-      <View className="bg-[#232126] pt-2" style={{ paddingHorizontal: horizontalGutter }}>
+      <View
+        className="bg-[#232126] pt-2"
+        style={{ height: detailPanelHeight, paddingHorizontal: horizontalGutter }}
+      >
         <Text
           className="ticket-summary-hero-title pt-1 font-extrabold uppercase text-white"
           style={{ fontFamily: fonts.extraBold, fontSize: titleFontSize, lineHeight: titleFontSize + 5 }}
