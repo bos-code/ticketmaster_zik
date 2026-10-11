@@ -311,7 +311,7 @@ syntax, module dependencies, and execution of the bundled persistence middleware
 
 ## 📌 Status
 
-🚧 In Development – Core features being implemented
+🚧 In Development – Core features being implemented (web build deployed via Vercel)
 
 ---
 
