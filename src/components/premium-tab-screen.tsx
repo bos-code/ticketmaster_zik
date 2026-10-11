@@ -1,6 +1,7 @@
+import { Text } from '@/components/ui/app-text';
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ticketColors, ticketRadii, ticketSpacing } from '@/constants/ticket-theme';

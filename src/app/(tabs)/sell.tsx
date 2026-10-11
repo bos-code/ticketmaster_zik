@@ -1,26 +1,19 @@
+import { Text } from '@/components/ui/app-text';
 import React, { useRef, useState, useCallback } from 'react';
 import { 
-  Platform, 
   ScrollView, 
   StyleSheet, 
-  Text, 
   TouchableOpacity, 
   View, 
   useWindowDimensions,
   NativeScrollEvent,
-  NativeSyntheticEvent
+  NativeSyntheticEvent,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { Circle, G, Path, Rect } from 'react-native-svg';
 
 import Head from 'expo-router/head';
 import { StatusBar } from 'expo-status-bar';
-
-const fontStack = Platform.select({
-  ios: 'SF Pro Display',
-  android: 'sans-serif',
-  web: 'SF Pro Display, -apple-system, sans-serif',
-});
 
 const C = {
   bg: '#000000',
@@ -320,7 +313,6 @@ const styles = StyleSheet.create({
     height: 180,
   },
   title: {
-    fontFamily: fontStack,
     color: C.white,
     fontSize: 18,
     fontWeight: '700',
@@ -330,7 +322,6 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
   },
   subtitle: {
-    fontFamily: fontStack,
     color: C.greyText,
     fontSize: 15,
     fontWeight: '400',
@@ -367,7 +358,6 @@ const styles = StyleSheet.create({
     marginBottom: 48,
   },
   learnMoreText: {
-    fontFamily: fontStack,
     color: C.white,
     fontSize: 14,
     fontWeight: '700',
@@ -385,7 +375,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   sellBtnText: {
-    fontFamily: fontStack,
     color: C.white,
     fontSize: 16,
     fontWeight: '700',
@@ -401,7 +390,6 @@ const styles = StyleSheet.create({
     paddingBottom: 8,
   },
   whiteSectionTitle: {
-    fontFamily: fontStack,
     fontSize: 22,
     fontWeight: '700',
     color: '#000',
@@ -419,7 +407,6 @@ const styles = StyleSheet.create({
     gap: 16,
   },
   listItemText: {
-    fontFamily: fontStack,
     color: '#111',
     fontSize: 16,
     fontWeight: '600',

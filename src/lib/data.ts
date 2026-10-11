@@ -28,7 +28,20 @@ export type EventRecord = Omit<FeaturedEventRecord, 'latitude' | 'longitude'> & 
   latitude?: number | null;
   longitude?: number | null;
   shortTitle?: string;
+  sample?: boolean;
+  discovery?: {
+    category?: DiscoveryCategory;
+    artist?: string;
+    image?: string | number;
+    genre?: string;
+    announcedAt?: string;
+    promoted?: boolean;
+    promotionText?: string;
+    presale?: { opensAt: string; sponsor?: string };
+  };
 };
+
+export type DiscoveryCategory = 'concerts' | 'sports' | 'arts' | 'family' | 'festivals';
 
 export type ReservationSeatRecord = {
   id: string;
@@ -65,6 +78,11 @@ const curatedEvents: EventRecord[] = seededFeaturedEvents.map((event) => ({
   discoverable: true,
   shortTitle: event.title,
   startsAt: startsAtByEventId[event.id] ?? new Date().toISOString(),
+  discovery: event.id === 'lakers-celtics'
+    ? { category: 'sports', genre: 'Basketball' }
+    : event.id === 'hamilton-broadway'
+      ? { category: 'arts', genre: 'Theatre' }
+      : { category: 'concerts', genre: 'Pop', artist: 'Taylor Swift' },
 }));
 
 const wizkidEvent: EventRecord = {

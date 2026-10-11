@@ -1,6 +1,7 @@
+import { Text } from '@/components/ui/app-text';
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
-import { Pressable, Text, View } from 'react-native';
+import { Pressable, View } from 'react-native';
 import Animated, { LinearTransition } from 'react-native-reanimated';
 
 import { cx } from '@/components/tickets/cx';
@@ -42,7 +43,7 @@ export function TicketTransferSelectScreen({
           </Text>
         </View>
 
-        <View className='mt-5 flex-row gap-[14px]'>
+        <View className='mt-5 flex-row flex-wrap gap-[14px]'>
           {seats.map((seat) => {
             const selected = selectedSeatIds.includes(seat.id);
 
@@ -54,7 +55,7 @@ export function TicketTransferSelectScreen({
                 <Pressable
                   accessibilityRole='button'
                   onPress={() => onToggleSeat(seat.id)}
-                  className='h-[78px] w-[72px] overflow-hidden rounded-[8px] border border-[#D7DCE4] bg-white shadow-[0_1px_1.5px] shadow-black/60'
+                  className='min-h-[88px] w-[80px] overflow-hidden rounded-[8px] border border-[#D7DCE4] bg-white shadow-[0_1px_1.5px] shadow-black/60'
                 >
                   <View className='py-2 items-center justify-center bg-[#1977F3]'>
                     <Text className='text-[11px] font-semibold leading-[14px] text-white'>
@@ -88,7 +89,7 @@ export function TicketTransferSelectScreen({
           accessibilityRole='button'
           disabled={!selectedSeatIds.length}
           onPress={onContinue}
-          className='flex-row items-center gap-[2px]'
+          className='min-h-[44px] flex-row items-center gap-[2px]'
         >
           <Text
             className={cx(

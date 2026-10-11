@@ -10,6 +10,8 @@ type ConfirmedPlace = {
 };
 
 type AppleMapsWebViewProps = {
+  appearance?: 'light' | 'dark';
+  preview?: boolean;
   latitude: number;
   longitude: number;
   shouldResolveInitialAddress?: boolean;
@@ -21,6 +23,8 @@ type AppleMapsWebViewProps = {
 const GOOGLE_PLACES_API_KEY = process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY ?? "";
 
 export function AppleMapsWebView({
+  appearance = 'light',
+  preview = false,
   latitude,
   longitude,
   onConfirmPlace,
@@ -32,6 +36,8 @@ export function AppleMapsWebView({
   const html = useMemo(
     () =>
       buildAppleMapsHtml({
+        appearance,
+        preview,
         apiKey: GOOGLE_PLACES_API_KEY,
         latitude,
         longitude,
@@ -39,7 +45,7 @@ export function AppleMapsWebView({
         venueAddress,
         venueName,
       }),
-    [latitude, longitude, shouldResolveInitialAddress, venueAddress, venueName],
+    [appearance, preview, latitude, longitude, shouldResolveInitialAddress, venueAddress, venueName],
   );
 
   function handleMessage(event: WebViewMessageEvent) {
@@ -74,6 +80,8 @@ export function AppleMapsWebView({
 }
 
 function buildAppleMapsHtml({
+  appearance,
+  preview,
   apiKey,
   latitude,
   longitude,
@@ -81,6 +89,8 @@ function buildAppleMapsHtml({
   venueAddress,
   venueName,
 }: {
+  appearance: 'light' | 'dark';
+  preview: boolean;
   apiKey: string;
   latitude: number;
   longitude: number;
@@ -89,6 +99,8 @@ function buildAppleMapsHtml({
   venueName: string;
 }) {
   const boot = JSON.stringify({
+    appearance,
+    preview,
     apiKey,
     center: [longitude, latitude],
     place: {
@@ -118,7 +130,8 @@ function buildAppleMapsHtml({
       overflow: hidden;
     }
     #map { position: absolute; inset: 0; }
-    .maplibregl-ctrl-logo, .maplibregl-ctrl-attrib { display: none !important; }
+    .maplibregl-ctrl-logo { display: none !important; }
+    .maplibregl-ctrl-attrib { display: ${preview ? 'block' : 'none'} !important; }
     .search-shell {
       left: 16px;
       position: absolute;
@@ -388,15 +401,30 @@ function buildAppleMapsHtml({
       ]
     };
 
+    if (BOOT.appearance === 'dark') {
+      const colors = { '#F7F5EC': '#28343B', '#AEE2F4': '#174C73', '#CFE8BF': '#17493C', '#E9E9E5': '#3A4850', '#D0CECA': '#65747C', '#D8D8D2': '#34434D', '#FFFFFF': '#68777F', '#7A7D82': '#C0CBCF', '#303236': '#FFFFFF' };
+      style.layers.forEach(layer => Object.keys(layer.paint).forEach(key => {
+        if (typeof layer.paint[key] === 'string') layer.paint[key] = colors[layer.paint[key]] || layer.paint[key];
+        if (key === 'text-halo-color') layer.paint[key] = '#28343B';
+      }));
+      document.body.style.background = '#28343B';
+    }
+    if (BOOT.preview) {
+      document.querySelectorAll('.search-shell, .control-stack, #compass, #sheet').forEach(el => el.style.display = 'none');
+      const venueTitle = document.createElement('div');
+      venueTitle.textContent = BOOT.place.name;
+      Object.assign(venueTitle.style, { position: 'absolute', top: '14px', left: '16px', right: '16px', zIndex: '2', color: '#FFFFFF', fontSize: '23px', fontWeight: '700', textShadow: '0 1px 3px #111111', pointerEvents: 'none' });
+      document.body.appendChild(venueTitle);
+    }
     const map = new maplibregl.Map({
       bearing: 0,
       center: BOOT.center,
       container: 'map',
       maxPitch: 45,
-      pitch: 24,
+      pitch: BOOT.preview ? 0 : 24,
       style,
       zoom: 15.4,
-      attributionControl: false
+      attributionControl: BOOT.preview ? { compact: true } : false
     });
 
     const sheet = document.getElementById('sheet');
@@ -610,11 +638,13 @@ function buildAppleMapsHtml({
     });
 
     map.on('load', () => {
-      setPin(BOOT.center[0], BOOT.center[1], true);
+      setPin(BOOT.center[0], BOOT.center[1], !BOOT.preview);
+      if (!BOOT.preview) {
       addPoi('Food', BOOT.center[0] + 0.0021, BOOT.center[1] + 0.0015, '#FF9500', '&#127869;');
       addPoi('Transit', BOOT.center[0] - 0.0018, BOOT.center[1] - 0.001, '#007AFF', '&#128652;');
       addPoi('Shopping', BOOT.center[0] + 0.0011, BOOT.center[1] - 0.0019, '#FF2D55', '&#128717;');
-      initGoogle();
+      }
+      if (!BOOT.preview) initGoogle();
     });
 
     function addPoi(name, lng, lat, color, icon) {
@@ -632,11 +662,13 @@ function buildAppleMapsHtml({
 
     let longPressTimer;
     map.on('mousedown', (event) => {
+      if (BOOT.preview) return;
       longPressTimer = setTimeout(() => reverseGeocode(event.lngLat.lng, event.lngLat.lat), 520);
     });
     map.on('mouseup', () => clearTimeout(longPressTimer));
     map.on('drag', () => clearTimeout(longPressTimer));
     map.on('touchstart', (event) => {
+      if (BOOT.preview) return;
       const ll = map.unproject(event.point);
       longPressTimer = setTimeout(() => reverseGeocode(ll.lng, ll.lat), 520);
     });

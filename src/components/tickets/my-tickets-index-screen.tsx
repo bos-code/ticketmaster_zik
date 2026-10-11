@@ -1,244 +1,75 @@
-import { type Href, useRouter } from "expo-router";
-import React, { useEffect, useMemo, useState } from "react";
-import { Image, Pressable, ScrollView, Text, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-
-import Head from "expo-router/head";
-import { StatusBar } from "expo-status-bar";
-import { APP_STATUS_BAR_BLACK } from "@/constants/theme";
-import { useTicketOrder } from "@/hooks/useTicketOrder";
-import type { TicketSummaryViewModel } from "@/types/ticket";
-
-type TicketIndexTab = "upcoming" | "past";
-const TICKET_INDEX_IMAGE_HEIGHT = 256;
-
-function buildTicketSummaryHref(orderId: string): Href {
-  return {
-    pathname: "/tickets",
-    params: { orderId },
-  } as unknown as Href;
-}
+import { useResponsiveLayout } from "@/hooks/use-responsive-layout";
+import { useImmersiveSafeAreaInsets } from "@/components/immersive/edge-to-edge-hero";
+import { useRouter } from 'expo-router';
+import Head from 'expo-router/head';
+import { StatusBar } from 'expo-status-bar';
+import React, { useState } from 'react';
+import { ActivityIndicator, Image, Pressable, RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
+import { Text } from '@/components/ui/app-text';
+import { TicketStackIcon } from '@/components/ticketmaster-tab-icon';
+import { fanColors as C } from '@/constants/fan-theme';
+import { useTicketOrder } from '@/hooks/useTicketOrder';
+import { fetchTickets } from '@/lib/firebase-data';
+import { useTicketStore } from '@/store/ticketStore';
+import { useAppStore } from '@/store/use-app-store';
+import type { TicketSummaryViewModel } from '@/types/ticket';
 
 export function MyTicketsIndexScreen() {
   const router = useRouter();
-  const { pastSummaryViewModels, upcomingSummaryViewModels } =
-    useTicketOrder();
-
-  const upcomingEvents = useMemo(
-    () => upcomingSummaryViewModels,
-    [upcomingSummaryViewModels],
-  );
-
-  const pastEvents = useMemo<TicketSummaryViewModel[]>(
-    () => pastSummaryViewModels,
-    [pastSummaryViewModels],
-  );
-
-  const [activeTab, setActiveTab] = useState<TicketIndexTab>(() =>
-    upcomingEvents.length > 0 || pastEvents.length === 0 ? "upcoming" : "past",
-  );
-
-  useEffect(() => {
-    if (
-      activeTab === "upcoming" &&
-      upcomingEvents.length === 0 &&
-      pastEvents.length > 0
-    ) {
-      setActiveTab("past");
-      return;
-    }
-
-    if (
-      activeTab === "past" &&
-      pastEvents.length === 0 &&
-      upcomingEvents.length > 0
-    ) {
-      setActiveTab("upcoming");
-    }
-  }, [activeTab, pastEvents.length, upcomingEvents.length]);
-
-  const visibleEvents = activeTab === "upcoming" ? upcomingEvents : pastEvents;
-  const emptyTitle =
-    activeTab === "upcoming"
-      ? "No upcoming events yet."
-      : "No past events yet.";
-  const emptyBody =
-    activeTab === "upcoming"
-      ? "Tickets created by admin for future events will show up here."
-      : "Tickets marked as past by admin will show up here.";
-
-  return (
-    <View className="flex-1" style={{ backgroundColor: "#FFFFFF" }}>
-      <Head>
-        <meta name="theme-color" content={APP_STATUS_BAR_BLACK} />
-        <meta name="color-scheme" content="dark" />
-      </Head>
-      <StatusBar backgroundColor={APP_STATUS_BAR_BLACK} style="light" />
-
-      <SafeAreaView
-        edges={["top", "left", "right"]}
-        style={{ backgroundColor: APP_STATUS_BAR_BLACK }}
-      >
-        <View
-          className="relative z-10 h-[128px] overflow-visible"
-          style={{ backgroundColor: APP_STATUS_BAR_BLACK }}
-        >
-          <View className="relative min-h-[52px] flex-row items-center justify-end px-5 pt-3">
-            <View className="w-12" />
-
-            <Text className="absolute left-0 right-0 top-[25px] text-center text-[19px] font-extrabold leading-[23px] text-white">
-              My Events
-            </Text>
-
-            <Pressable
-              accessibilityRole="button"
-              className="min-w-12 items-end justify-center py-2"
-              onPress={() => router.push("/settings")}
-            >
-              <Text className="text-[12px] font-bold leading-[15px] text-[rgba(255,255,255,0.92)]">
-                Help
-              </Text>
+  const layout = useResponsiveLayout();
+  const insets = useImmersiveSafeAreaInsets();
+  const { pastSummaryViewModels, upcomingSummaryViewModels } = useTicketOrder();
+  const [activeTab, setActiveTab] = useState<'upcoming' | 'past'>('upcoming');
+  const [refreshing, setRefreshing] = useState(false);
+  const [error, setError] = useState('');
+  const homeLocation = useAppStore((state) => state.homeLocationLabel);
+  const events = activeTab === 'upcoming' ? upcomingSummaryViewModels : pastSummaryViewModels;
+  async function refresh() {
+    if (refreshing) return;
+    setRefreshing(true); setError('');
+    let timeout: ReturnType<typeof setTimeout> | undefined;
+    try {
+      const tickets = await Promise.race([fetchTickets(), new Promise<never>((_, reject) => { timeout = setTimeout(() => reject(new Error('Unable to refresh tickets. Check your connection and try again.')), 12000); })]);
+      useTicketStore.getState().replaceTickets(tickets);
+    } catch (cause) { setError(cause instanceof Error ? cause.message : 'Unable to refresh tickets. Please try again.'); }
+    finally { clearTimeout(timeout); setRefreshing(false); }
+  }
+  return <View style={styles.root}>
+    <Head><meta name="theme-color" content={C.background} /><meta name="color-scheme" content="light" /></Head>
+    <StatusBar style="light" backgroundColor={C.background} />
+    <View style={[styles.header, { paddingTop: insets.top, paddingLeft: insets.left, paddingRight: insets.right }]}>
+      <View style={styles.titleRow}>
+        <View style={styles.titleGroup}>
+          <View style={[styles.titleAnchor, { maxWidth: Math.max(0, layout.width - 144) }]}>
+            <Text style={styles.title}>My Events</Text>
+            <Pressable accessibilityRole="button" accessibilityLabel="Change country and location" onPress={() => router.push('/account/location')} style={styles.flag}>
+              <Text style={{ fontSize: 18 }}>{homeLocation.endsWith('NG') ? '🇳🇬' : homeLocation.endsWith('UK') || homeLocation.endsWith('GB') ? '🇬🇧' : homeLocation.endsWith('US') ? '🇺🇸' : '🌐'}</Text>
             </Pressable>
           </View>
-
-          <View className="absolute inset-x-0 bottom-0 flex-row px-4">
-            <TicketFilterTab
-              active={activeTab === "upcoming"}
-              count={upcomingEvents.length}
-              label="Upcoming"
-              onPress={() => setActiveTab("upcoming")}
-            />
-
-            <TicketFilterTab
-              active={activeTab === "past"}
-              count={pastEvents.length}
-              label="Past"
-              onPress={() => setActiveTab("past")}
-            />
-          </View>
         </View>
-      </SafeAreaView>
-
-      <ScrollView
-        className="flex-1 bg-white"
-        contentContainerStyle={{ flexGrow: 1 }}
-        contentContainerClassName="gap-5 px-4 pb-10 pt-5"
-        showsVerticalScrollIndicator={true}
-        style={{ backgroundColor: "#FFFFFF" }}
-      >
-        {visibleEvents.length ? (
-          visibleEvents.map((ticket) => (
-            <TicketIndexCard
-              key={ticket.orderId}
-              onPress={() =>
-                router.push(buildTicketSummaryHref(ticket.orderId))
-              }
-              ticket={ticket}
-            />
-          ))
-        ) : (
-          <View className="mt-4 items-center gap-2 border border-[rgba(255,255,255,0.08)] bg-[#111111] px-6 py-8">
-            <Text className="text-center text-[18px] font-black leading-[22px] text-white">
-              {emptyTitle}
-            </Text>
-
-            <Text className="text-center text-[14px] font-semibold leading-5 text-[rgba(255,255,255,0.68)]">
-              {emptyBody}
-            </Text>
-          </View>
-        )}
-      </ScrollView>
+        <Pressable accessibilityRole="button" onPress={() => router.push('/account/help')} style={styles.help}><Text style={styles.helpLabel}>Help</Text></Pressable>
+      </View>
+      <View style={styles.tabs}>{(['upcoming', 'past'] as const).map((tab) => <Pressable key={tab} accessibilityRole="tab" accessibilityState={{ selected: activeTab === tab }} onPress={() => setActiveTab(tab)} style={[styles.tab, activeTab === tab && styles.activeTab]}><Text style={[styles.tabLabel, activeTab === tab && styles.activeTabLabel]}>{tab.toUpperCase()} ({tab === 'upcoming' ? upcomingSummaryViewModels.length : pastSummaryViewModels.length})</Text></Pressable>)}</View>
     </View>
-  );
+    <ScrollView onLayout={layout.onLayout} style={[styles.scroll, { marginLeft: insets.left, marginRight: insets.right }]} contentContainerStyle={[styles.content, { paddingHorizontal: layout.padding }, !events.length && styles.emptyContent]} showsVerticalScrollIndicator={false} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => void refresh()} tintColor={C.blue} />}>
+      {events.length ? <View style={styles.grid}>{events.map((ticket) => <TicketIndexCard key={ticket.orderId} width={layout.columnWidth} ticket={ticket} onPress={() => router.push({ pathname: '/tickets', params: { orderId: ticket.orderId } })} />)}</View> : <View style={styles.empty}>
+        <View style={styles.emptyIcon}><TicketStackIcon size={44} /></View>
+        <Text style={styles.emptyTitle}>{activeTab === 'upcoming' ? 'No upcoming events' : 'No past events'}</Text>
+        <Text style={styles.emptyBody}>{activeTab === 'upcoming' ? 'Tickets you buy will automatically\nappear here' : 'Your past events will appear here'}</Text>
+        <Pressable accessibilityRole="button" disabled={refreshing} onPress={() => void refresh()} style={styles.refresh}>{refreshing ? <ActivityIndicator color="#111111" /> : <Text style={styles.refreshLabel}>Refresh</Text>}</Pressable>
+      </View>}
+      {Boolean(error) && <Text accessibilityRole="alert" style={styles.error}>{error}</Text>}
+    </ScrollView>
+  </View>;
 }
-
-function TicketIndexCard({
-  onPress,
-  ticket,
-}: {
-  onPress: () => void;
-  ticket: TicketSummaryViewModel;
-}) {
-  return (
-    <Pressable
-      accessibilityRole="button"
-      className="w-full overflow-hidden"
-      onPress={onPress}
-    >
-      <View className="relative">
-        <Image
-          className="w-full bg-[#1A1A1A]"
-          resizeMode="cover"
-          source={ticket.heroImage}
-          style={{ height: TICKET_INDEX_IMAGE_HEIGHT }}
-        />
-
-        {/* <View className="absolute left-3 top-3 rounded-full bg-[#101010]/90 px-3 py-2">
-          <Text className="text-[10px] font-black uppercase tracking-[1px] text-white">
-            {ticket.ticketType}
-          </Text>
-        </View> */}
-        <View className="absolute bottom-0 left-0 bg-[#101010] p-3">
-          <Text className="text-base font-black uppercase leading-3 tracking-[0.6px] text-white">
-            {ticket.eventFullDateTimeLabel}
-          </Text>
-        </View>
-      </View>
-
-      <View className="bg-[#101010] px-[14px] pb-[18px] pt-1">
-        <Text className="text-2xl font-black uppercase leading-[30px] text-white">
-          {ticket.eventTitle}
-        </Text>
-
-        <View className="mt-[10px] h-[3px] w-52 bg-[#B79E6A]" />
-
-        {/* <Text className="mt-[13px] text-base font-bold leading-[19px] text-[rgba(255,255,255,0.9)]">
-          {ticket.artistName} / {ticket.albumName}
-        </Text> */}
-
-        <Text className="mt-1 text-base font-medium pt-3 leading-[19px] text-[rgba(255,255,255,0.76)]">
-          {ticket.eventVenue}
-        </Text>
-        {/* 
-        <Text className="mt-3 text-[13px] font-bold leading-[18px] text-[rgba(255,255,255,0.62)]">
-          Section {ticket.section} / Row {ticket.row} / {ticket.seatRange}
-        </Text> */}
-      </View>
-    </Pressable>
-  );
+function TicketIndexCard({ ticket, onPress, width }: { width: number; ticket: TicketSummaryViewModel; onPress: () => void }) {
+  return <Pressable accessibilityRole="button" accessibilityLabel={`View tickets for ${ticket.eventTitle}`} onPress={onPress} style={[styles.card, { width }]}>
+    <View><Image source={ticket.heroImage} resizeMode="cover" style={styles.cardImage} /><View style={styles.cardDate}><Text style={styles.cardDateLabel}>{ticket.eventFullDateTimeLabel.toUpperCase()}</Text></View></View>
+    <View style={styles.cardCopy}><Text style={styles.cardTitle}>{ticket.eventTitle.toUpperCase()}</Text><Text style={styles.cardVenue}>{ticket.eventVenue}</Text><View style={styles.cardCount}><TicketStackIcon size={16} /><Text style={styles.cardVenue}>x{ticket.ticketCount}</Text></View></View>
+  </Pressable>;
 }
-
-function TicketFilterTab({
-  active,
-  count,
-  label,
-  onPress,
-}: {
-  active: boolean;
-  count: number;
-  label: string;
-  onPress: () => void;
-}) {
-  return (
-    <Pressable
-      accessibilityRole="button"
-      hitSlop={{ bottom: 12, left: 12, right: 12, top: 12 }}
-      onPress={onPress}
-      className="h-11 flex-1 items-center justify-end pb-[10px]"
-    >
-      <Text
-        className={`text-center text-sm font-black uppercase leading-4 ${
-          active ? "text-white" : "text-[rgba(255,255,255,0.56)]"
-        }`}
-      >
-        {`${label.toUpperCase()}(${count})`}
-      </Text>
-
-      <View
-        className={`mt-[9px] -m-3 h-[2px] w-[120%] ${
-          active ? "bg-white" : "bg-transparent"
-        }`}
-      />
-    </Pressable>
-  );
-}
+const styles = StyleSheet.create({
+  root: { flex: 1, backgroundColor: 'white' }, header: { backgroundColor: C.background }, titleRow: { minHeight: 56, flexDirection: 'row', paddingHorizontal: 16, paddingVertical: 6, alignItems: 'center', marginTop: 3 }, titleGroup: { flex: 1, minWidth: 0, alignItems: 'center' }, titleAnchor: { flexDirection: 'row', alignItems: 'center', gap: 8 }, title: { flexShrink: 1, color: 'white', fontSize: 16, fontWeight: '600', textAlign: 'center' }, flag: { flexShrink: 0, height: 44, width: 44, borderWidth: 1, borderColor: '#707070', borderRadius: 20, alignItems: 'center', justifyContent: 'center' }, help: { position: 'absolute', right: 8, top: 0, bottom: 0, width: 52, minHeight: 44, alignItems: 'center', justifyContent: 'center' }, helpLabel: { color: 'white', fontSize: 15, fontWeight: '600', textAlign: 'center' }, tabs: { flexDirection: 'row' }, tab: { flex: 1, minHeight: 48, borderBottomWidth: 4, borderBottomColor: 'transparent', justifyContent: 'center', alignItems: 'center' }, activeTab: { borderBottomColor: 'white' }, tabLabel: { color: '#BDBDBD', fontSize: 14 }, activeTabLabel: { color: 'white', fontWeight: '700' },
+  scroll: { flex: 1, backgroundColor: 'white' }, content: { padding: 15, paddingTop: 20, paddingBottom: 25, gap: 16, flexGrow: 1 }, emptyContent: { justifyContent: 'center', paddingBottom: 45 }, empty: { maxWidth: 560, alignSelf: 'center', width: '100%', alignItems: 'center' }, emptyIcon: { width: 88, height: 88, borderRadius: 50, backgroundColor: C.background, alignItems: 'center', justifyContent: 'center', marginBottom: 35 }, emptyTitle: { color: '#111111', fontSize: 21, fontWeight: '700', textAlign: 'center' }, emptyBody: { color: '#111111', fontSize: 18, lineHeight: 23, textAlign: 'center', marginTop: 26 }, refresh: { width: '100%', minHeight: 45, borderColor: '#111111', borderWidth: 2, alignItems: 'center', justifyContent: 'center', marginTop: 28 }, refreshLabel: { color: '#111111', fontSize: 14, fontWeight: '600' }, error: { color: '#B42318', fontSize: 12, lineHeight: 18, textAlign: 'center', paddingHorizontal: 15 },
+  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 24 }, card: { backgroundColor: '#242424' }, cardImage: { width: '100%', aspectRatio: 1.8 }, cardDate: { position: 'absolute', bottom: 0, left: 0, paddingHorizontal: 12, paddingVertical: 7, backgroundColor: '#242424' }, cardDateLabel: { color: 'white', fontSize: 12, fontWeight: '600', letterSpacing: 0.6 }, cardCopy: { padding: 12, gap: 7 }, cardTitle: { color: 'white', fontSize: 18, fontWeight: '700' }, cardVenue: { color: 'white', fontSize: 15, lineHeight: 21 }, cardCount: { flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-end', gap: 5 },
+});

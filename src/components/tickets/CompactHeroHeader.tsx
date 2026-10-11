@@ -1,7 +1,8 @@
+import { Text } from '@/components/ui/app-text';
 import { Ionicons } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import React from "react";
-import { Pressable, Text, View } from "react-native";
+import { Pressable, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { absoluteFill } from "@/components/tickets/ticketFlowConstants";

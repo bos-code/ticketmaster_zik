@@ -3,6 +3,8 @@ import React from "react";
 import { AppleMapsWebView } from "@/components/events/apple-maps-webview";
 
 type VenueMapProps = {
+  appearance?: 'light' | 'dark';
+  preview?: boolean;
   latitude: number;
   longitude: number;
   shouldResolveInitialAddress?: boolean;
@@ -11,6 +13,8 @@ type VenueMapProps = {
 };
 
 export default function VenueMap({
+  appearance,
+  preview,
   latitude,
   longitude,
   shouldResolveInitialAddress,
@@ -19,6 +23,8 @@ export default function VenueMap({
 }: VenueMapProps) {
   return (
     <AppleMapsWebView
+      appearance={appearance}
+      preview={preview}
       latitude={latitude}
       longitude={longitude}
       shouldResolveInitialAddress={shouldResolveInitialAddress}

@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View } from 'react-native';
-import Animated from 'react-native-reanimated';
+import Animated, { useAnimatedStyle, useSharedValue } from 'react-native-reanimated';
 
+import { useImmersiveSafeAreaInsets } from '@/components/immersive/edge-to-edge-hero';
 import { BottomDock } from '@/components/tickets/ticket-transfer-flow-bottom-dock';
 import {
   CollapsibleEventHero,
@@ -9,11 +10,12 @@ import {
   PanelTabs,
   TicketListPanel,
 } from '@/components/tickets/ticket-transfer-flow-components';
-import { HERO_EXPANDED_HEIGHT } from '@/components/tickets/ticketFlowConstants';
+import { HERO_COLLAPSED_HEIGHT, HERO_EXPANDED_HEIGHT } from '@/components/tickets/ticketFlowConstants';
 import type { PanelTab } from '@/components/tickets/ticketFlowTypes';
 
 export function TicketTransferListScreen({
   activePanel,
+  heroCollapseDistance,
   handleListScroll,
   isHeroCollapsed,
   onBack,
@@ -24,6 +26,7 @@ export function TicketTransferListScreen({
   scrollY,
 }: {
   activePanel: PanelTab;
+  heroCollapseDistance?: React.ComponentProps<typeof CollapsibleEventHero>['scrollY'];
   handleListScroll: React.ComponentProps<
     typeof Animated.ScrollView
   >['onScroll'];
@@ -35,10 +38,21 @@ export function TicketTransferListScreen({
   onTransfer: () => void;
   scrollY: React.ComponentProps<typeof CollapsibleEventHero>['scrollY'];
 }) {
+  const insets = useImmersiveSafeAreaInsets();
+  const previewCollapseDistance = useSharedValue(HERO_EXPANDED_HEIGHT - HERO_COLLAPSED_HEIGHT);
+  const collapseDistance = heroCollapseDistance ?? previewCollapseDistance;
+  const [heroHeight, setHeroHeight] = useState(HERO_EXPANDED_HEIGHT);
+  const [tabsHeight, setTabsHeight] = useState(60);
+  const tabsStyle = useAnimatedStyle(() => ({
+    top: heroHeight - Math.min(Math.max(0, scrollY.value), collapseDistance.value),
+  }));
   return (
-    <View style={{ backgroundColor: '#FFFFFF', flex: 1 }}>
-      <View className='flex-1 overflow-hidden bg-white'>
+    <View style={{ backgroundColor: '#111111', flex: 1, paddingTop: insets.top, paddingLeft: insets.left, paddingRight: insets.right }}>
+      <View className='flex-1 overflow-hidden bg-[#111111]'>
         <CollapsibleEventHero
+          height={heroHeight}
+          onHeightChange={(height) => { setHeroHeight(height); collapseDistance.value = Math.max(1, height - HERO_COLLAPSED_HEIGHT); }}
+          collapseDistance={collapseDistance}
           isHeroCollapsed={isHeroCollapsed}
           onBack={onBack}
           onOpenViewer={onOpenViewer}
@@ -47,23 +61,23 @@ export function TicketTransferListScreen({
 
         <Animated.ScrollView
           contentContainerStyle={{
-            paddingBottom: 132,
-            paddingTop: HERO_EXPANDED_HEIGHT,
+            paddingBottom: Math.max(insets.bottom, 25) + 110,
+            paddingTop: heroHeight + tabsHeight,
           }}
           onScroll={handleListScroll}
           scrollEventThrottle={16}
           showsVerticalScrollIndicator={false}
-          stickyHeaderIndices={[0]}
         >
-          <PanelTabs activePanel={activePanel} onChange={onPanelChange} />
-
           {activePanel === 'tickets' ? (
-            <TicketListPanel onOpenTicket={onOpenTicket} />
+            <TicketListPanel onOpenTicket={onOpenTicket} onTransfer={onTransfer} />
           ) : (
             <ExtrasPanel />
           )}
         </Animated.ScrollView>
 
+        <Animated.View onLayout={(event) => setTabsHeight(event.nativeEvent.layout.height)} style={[{ position: 'absolute', left: 0, right: 0, zIndex: 21 }, tabsStyle]}>
+          <PanelTabs activePanel={activePanel} onChange={onPanelChange} />
+        </Animated.View>
         <BottomDock onTransfer={onTransfer} />
       </View>
     </View>

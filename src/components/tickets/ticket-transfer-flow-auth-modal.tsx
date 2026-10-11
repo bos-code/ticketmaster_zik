@@ -1,5 +1,7 @@
+import type { TextInput as NativeTextInput } from 'react-native';
+import { Text, TextInput } from '@/components/ui/app-text';
 import React from "react";
-import { Keyboard, Platform, Pressable, Text, TextInput, View } from "react-native";
+import { Keyboard, Platform, Pressable, View } from "react-native";
 
 import { Image } from "expo-image";
 
@@ -22,7 +24,7 @@ export function TicketTransferAuthModal({
   otpCode: string;
   visible: boolean;
 }) {
-  const inputRef = React.useRef<TextInput | null>(null);
+  const inputRef = React.useRef<NativeTextInput | null>(null);
 
   React.useEffect(() => {
     if (!visible) {
@@ -57,7 +59,7 @@ export function TicketTransferAuthModal({
         <View style={{ minWidth: 44 }} />
       </View>
 
-      <View className="flex-1 w-full bg-white">
+      <View className="grow shrink-0 w-full bg-white">
         {/* Hero Illustration Section */}
         <View className="bg-[#111111] py-12 items-center justify-center">
           <Image

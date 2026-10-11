@@ -1,5 +1,6 @@
+import { Text } from '@/components/ui/app-text';
 import React from 'react';
-import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, StyleSheet, View } from 'react-native';
 
 import { ticketColors } from '@/constants/ticket-theme';
 

@@ -20,6 +20,16 @@ config.resolver = {
   sourceExts: [...resolver.sourceExts, "svg"],
   unstable_enablePackageExports: true,
   resolveRequest: (context, moduleName, platform) => {
+    // Metro runs web modules as script factories. Zustand's ESM middleware
+    // contains import.meta, which fails to parse inside a development factory.
+    // Use its equivalent CommonJS entry for this dependency on web.
+    if (moduleName === "zustand/middleware" && platform === "web") {
+      return {
+        type: "sourceFile",
+        filePath: require.resolve("zustand/middleware"),
+      };
+    }
+
     if (moduleName === "i18n-iso-countries" && platform === "web") {
       return {
         type: "sourceFile",

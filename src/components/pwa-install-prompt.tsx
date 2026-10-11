@@ -1,5 +1,6 @@
+import { Text } from '@/components/ui/app-text';
 import { useEffect, useState } from "react";
-import { Platform, Pressable, Text, View } from "react-native";
+import { Platform, Pressable, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 type BeforeInstallPromptEvent = Event & {

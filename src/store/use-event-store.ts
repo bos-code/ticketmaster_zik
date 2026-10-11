@@ -13,6 +13,7 @@ import {
   type ReservationSeatRecord,
 } from '@/lib/data';
 import { type EventSeatOption, type EventSeatSection } from '@/lib/mock-events';
+import { withSampleCatalog } from '@/lib/sample-event-catalog';
 
 type ReserveTicketsInput = {
   eventId: string;
@@ -80,10 +81,10 @@ export const useEventStore = create<EventStore>((set, get) => ({
 
     return nextEvent;
   },
-  events: eventCatalog,
+  events: withSampleCatalog(eventCatalog),
   isSynced: false,
   replaceEvents: (events) => {
-    set({ events, isSynced: true });
+    set({ events: withSampleCatalog(events), isSynced: true });
   },
   replaceReservations: (reservations) => {
     set({ reservations, isSynced: true });
@@ -93,7 +94,7 @@ export const useEventStore = create<EventStore>((set, get) => ({
     const { events, reservations } = get();
     const event = events.find((record) => record.id === eventId);
 
-    if (!event) {
+    if (!event || event.sample) {
       return null;
     }
 

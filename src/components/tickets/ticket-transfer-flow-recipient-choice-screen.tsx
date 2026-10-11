@@ -1,7 +1,8 @@
+import { Text } from '@/components/ui/app-text';
 import { Ionicons } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import React from "react";
-import { Pressable, Text, View } from "react-native";
+import { Pressable, View } from "react-native";
 
 import { BackLink } from "@/components/tickets/BackLink";
 import { BottomDrawer } from "@/components/ui/bottom-drawer";
@@ -20,7 +21,7 @@ export function TicketTransferRecipientChoiceScreen({
 }) {
   return (
     <BottomDrawer minHeight="62%" onClose={onBack} visible={true}>
-      <View className="flex-1 items-center px-[24px] pt-4">
+      <View className="grow shrink-0 items-center px-[24px] pt-4">
         <Text className="mb-6 text-center text-sm font-semibold tracking-[0.5px] text-[#4F5966]">
           TRANSFER TO
         </Text>
@@ -76,9 +77,9 @@ function RecipientChoiceButton({
     <Pressable
       accessibilityRole="button"
       onPress={onPress}
-      className="mb-[12px] w-[90%] py-2 flex-row items-center justify-center gap-3 border border-[#86B7D5] bg-white active:bg-gray-50"
+      className="mb-[12px] w-[90%] min-h-[48px] py-2 flex-row items-center justify-center gap-3 border border-[#86B7D5] bg-white active:bg-gray-50"
     >
-      <Text className="text-[13px] font-semibold leading-[16px] text-[#026CDF]">
+      <Text className="text-[15px] font-semibold leading-[22px] text-[#026CDF]">
         {label}
       </Text>
       {iconSource ? (

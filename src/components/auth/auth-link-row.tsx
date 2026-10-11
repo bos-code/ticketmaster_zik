@@ -1,6 +1,7 @@
+import { Text } from '@/components/ui/app-text';
 import { Link, type Href } from 'expo-router';
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
 import { ticketColors } from '@/constants/ticket-theme';
 

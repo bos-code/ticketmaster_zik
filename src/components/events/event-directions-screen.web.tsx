@@ -1,6 +1,7 @@
+import { Text } from '@/components/ui/app-text';
 import { router } from 'expo-router';
 import React from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 
 import { ticketColors, ticketRadii, ticketSpacing } from '@/constants/ticket-theme';
 import { selectEventById, useEventStore } from '@/store/use-event-store';

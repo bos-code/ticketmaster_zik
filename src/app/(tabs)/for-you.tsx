@@ -1,116 +1,71 @@
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import { ScreenWrapper } from '@/components/ui/screen-wrapper';
-import Svg, { Circle, Path, Rect } from 'react-native-svg';
-
+import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 import Head from 'expo-router/head';
 import { StatusBar } from 'expo-status-bar';
+import React from 'react';
+import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { Text } from '@/components/ui/app-text';
+import { ScreenWrapper } from '@/components/ui/screen-wrapper';
+import { HeartIcon } from '@/components/heart-icon';
+import { ArtistRow } from '@/components/discovery/discovery-cards';
+import { FloatingPrompt } from '@/components/discovery/floating-prompt';
+import { useDiscoveryEvents } from '@/components/discovery/use-discovery-events';
+import { fanColors as C } from '@/constants/fan-theme';
+import { useFanStore } from '@/store/use-fan-store';
+import { useAppStore } from '@/store/use-app-store';
+import { useFanPermissions } from '@/hooks/use-fan-permissions';
+import { useResponsiveLayout } from '@/hooks/use-responsive-layout';
 
-export default function ForYouScreen() {
-  return (
-    <ScreenWrapper backgroundColor="#EAEBEE">
-      <Head>
-        <meta name="theme-color" content="#EAEBEE" />
-        <meta name="color-scheme" content="light" />
-      </Head>
-      <StatusBar backgroundColor="#EAEBEE" style="dark" />
-      <View style={styles.content}>
-        
-        {/* The White Circle Illustration */}
-        <View style={styles.circleContainer}>
-          <Svg width="180" height="180" viewBox="0 0 160 160">
-            {/* Action Marks */}
-            <Rect x="86" y="44" width="7" height="18" fill="#026CDF" transform="rotate(35 86 44)" rx="1.5" />
-            <Rect x="108" y="52" width="7" height="13" fill="#026CDF" transform="rotate(75 108 52)" rx="1.5" />
+export default function WatchlistScreen() {
+  const router = useRouter();
+  const layout = useResponsiveLayout();
+  const events = useDiscoveryEvents();
+  const activeTab = useFanStore((state) => state.watchlistTab);
+  const setTab = useFanStore((state) => state.setWatchlistTab);
+  const savedIds = useFanStore((state) => state.savedEventIds);
+  const favouriteIds = useFanStore((state) => state.favouriteArtistIds);
+  const toggleSaved = useFanStore((state) => state.toggleSavedEvent);
+  const notificationsEnabled = useAppStore((state) => state.notificationsEnabled);
+  const { busy, error, changePermission } = useFanPermissions();
+  const selectedIds = activeTab === 'events' ? savedIds : favouriteIds;
+  const selectedEvents = events.filter((event) => selectedIds.includes(event.id));
+  const missingIds = activeTab === 'events' ? selectedIds.filter((id) => !events.some((event) => event.id === id)) : [];
+  const isEmpty = !selectedEvents.length && !missingIds.length;
 
-            {/* Left black dash */}
-            <Rect x="20" y="65" width="22" height="7" fill="#000000" rx="1" />
-            
-            {/* Right blue dash */}
-            <Rect x="122" y="98" width="16" height="7" fill="#026CDF" rx="1" />
-
-            {/* --- BLUE PERSON --- */}
-            {/* Extrusion (Dark Navy) */}
-            <Circle cx="56" cy="67" r="16" fill="#09142E" />
-            <Path d="M41,87 L67,87 L75,121 L23,121 Z" fill="#09142E" strokeLinejoin="round" />
-            {/* Front (Blue) */}
-            <Circle cx="60" cy="65" r="16" fill="#026CDF" />
-            <Path d="M45,85 L71,85 L79,119 L27,119 Z" fill="#026CDF" strokeLinejoin="round" />
-
-            {/* --- BLACK PERSON --- */}
-            {/* Extrusion (Blue) */}
-            <Circle cx="94" cy="94" r="15" fill="#026CDF" />
-            <Path d="M80,111 L104,111 L112,143 L63,143 Z" fill="#026CDF" strokeLinejoin="round" />
-            {/* Front (Black) */}
-            <Circle cx="98" cy="92" r="15" fill="#000000" />
-            <Path d="M84,109 L108,109 L116,141 L67,141 Z" fill="#000000" strokeLinejoin="round" />
-
-          </Svg>
+  return <ScreenWrapper backgroundColor={C.background}>
+    <Head><meta name="theme-color" content={C.background} /><meta name="color-scheme" content="dark" /></Head>
+    <StatusBar style="light" backgroundColor={C.background} />
+    <View style={styles.header}><Text style={styles.title}>WATCHLIST</Text><Text style={styles.subtitle}>Keep track of what’s important</Text></View>
+    <View style={styles.segmented}>
+      <Pressable accessibilityRole="tab" accessibilityState={{ selected: activeTab === 'events' }} accessibilityLabel="Saved events" onPress={() => setTab('events')} style={[styles.segment, activeTab === 'events' && styles.segmentActive]}><Ionicons name={activeTab === 'events' ? 'bookmark' : 'bookmark-outline'} size={18} color={activeTab === 'events' ? '#111111' : 'white'} /><Text style={[styles.segmentText, activeTab === 'events' && styles.segmentTextActive]}>Events</Text></Pressable>
+      <Pressable accessibilityRole="tab" accessibilityState={{ selected: activeTab === 'favourites' }} onPress={() => setTab('favourites')} style={[styles.segment, activeTab === 'favourites' && styles.segmentActive]}><HeartIcon size={18} color={activeTab === 'favourites' ? '#111111' : 'white'} /><Text style={[styles.segmentText, activeTab === 'favourites' && styles.segmentTextActive]}>Favourites</Text></Pressable>
+    </View>
+    <ScrollView onLayout={layout.onLayout} showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 100, flexGrow: 1 }}>
+      {isEmpty ? <>
+        <View style={styles.empty}><Ionicons name={activeTab === 'events' ? 'bookmark-outline' : 'heart-outline'} size={34} color="white" /><View style={styles.rule} /><Text style={styles.emptyTitle}>{activeTab === 'events' ? 'No Events Added' : 'No Favourites Added'}</Text></View>
+        <View style={styles.benefits}>
+          <Benefit icon="calendar-outline" title={activeTab === 'events' ? 'Save Events' : 'Follow Your Favourites'} body={activeTab === 'events' ? 'Easily jump back into events that you have an interest in going to' : 'Tap the heart beside artists, teams and performers you love'} />
+          <Benefit icon="notifications-outline" title="Never Miss A Presale" body="Set alerts so you never miss out on those presale tickets" />
+          <Benefit icon="information-circle-outline" title="Stay Informed" body="Receive alerts and updates about key event information" />
+          {activeTab === 'favourites' && <Pressable accessibilityRole="button" onPress={() => router.navigate('/discover')} style={styles.browseButton}><Text style={styles.browseLabel}>Explore artists</Text><Ionicons name="arrow-forward" size={18} color={C.purple} /></Pressable>}
         </View>
-
-        {/* Text content */}
-        <Text style={styles.title}>FIND EVENTS FOR YOU</Text>
-        <Text style={styles.subtitle}>
-          Get a personalised experience based on the artists, teams{'\n'}and performers you love.
-        </Text>
-
-        {/* Button */}
-        <TouchableOpacity style={styles.button} activeOpacity={0.8}>
-          <Text style={styles.buttonText}>Sign In</Text>
-        </TouchableOpacity>
-      </View>
-    </ScreenWrapper>
-  );
+      </> : <View style={[styles.savedList, { paddingHorizontal: layout.padding }]}>
+        {selectedEvents.map((event) => <View key={event.id} style={{ gap: 6, width: layout.columnWidth }}><ArtistRow event={event} />{activeTab === 'events' && <Pressable accessibilityRole="button" accessibilityLabel={`Remove ${event.title} from saved events`} onPress={() => toggleSaved(event.id)} style={styles.removeButton}><Ionicons name="bookmark" size={14} color={C.purple} /><Text style={styles.removeLabel}>Saved · Remove</Text></Pressable>}</View>)}
+        {missingIds.map((id) => <View key={id} style={styles.unavailable}><Text style={styles.subtitle}>This event is no longer available.</Text><Pressable accessibilityRole="button" onPress={() => toggleSaved(id)} style={styles.removeButton}><Text style={styles.removeLabel}>Remove saved event</Text></Pressable></View>)}
+      </View>}
+      {Boolean(error) && <Text accessibilityRole="alert" style={styles.error}>{error}</Text>}
+    </ScrollView>
+    {!notificationsEnabled && <FloatingPrompt title="Enable Push Notifications" body="Keep up to date with events" icon="warning" color="#FFBD3B" busy={busy === 'notifications'} onPress={() => void changePermission('notifications', true)} />}
+  </ScreenWrapper>;
 }
-
+function Benefit({ icon, title, body }: { icon: React.ComponentProps<typeof Ionicons>['name']; title: string; body: string }) {
+  return <View style={styles.benefit}><Ionicons name={icon} size={21} color={C.purple} /><View style={{ flex: 1, gap: 3 }}><Text style={styles.benefitTitle}>{title}</Text><Text style={styles.benefitBody}>{body}</Text></View></View>;
+}
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#EAEBEE', // Light gray background matching image
-  },
-  content: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 30,
-    marginTop: -80, // shifted slightly up to visually center including tab bar
-  },
-  circleContainer: {
-    width: 240,
-    height: 240,
-    borderRadius: 120,
-    backgroundColor: '#FFFFFF',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 44,
-  },
-  title: {
-    fontSize: 19,
-    fontFamily: 'System',
-    fontWeight: '700',
-    color: '#111111',
-    letterSpacing: 0.3,
-    marginBottom: 16,
-  },
-  subtitle: {
-    fontSize: 14.5,
-    color: '#606060', // Gray tone
-    textAlign: 'center',
-    lineHeight: 22,
-    marginBottom: 44,
-  },
-  button: {
-    backgroundColor: '#026CDF', // Ticketmaster blue
-    width: '100%',
-    height: 52,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderRadius: 2,
-  },
-  buttonText: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: '700',
-    letterSpacing: 0.3,
-  },
+  header: { alignItems: 'center', paddingTop: 2 }, title: { color: 'white', fontSize: 18, fontWeight: '800', lineHeight: 22 }, subtitle: { color: C.muted, fontSize: 16, lineHeight: 23, marginTop: 2 },
+  segmented: { marginHorizontal: 15, marginTop: 24, flexDirection: 'row', borderColor: C.border, borderWidth: 1, borderRadius: 30, padding: 3, minHeight: 52 }, segment: { flex: 1, minHeight: 44, alignItems: 'center', justifyContent: 'center', flexDirection: 'row', gap: 7, borderRadius: 24 }, segmentActive: { backgroundColor: C.purple }, segmentText: { color: 'white', fontSize: 16 }, segmentTextActive: { color: '#111111', fontWeight: '700' },
+  empty: { alignItems: 'center', marginTop: 39 }, rule: { width: 73, height: 2, backgroundColor: C.purple, marginTop: 32, marginBottom: 19 }, emptyTitle: { color: C.muted, fontSize: 16, fontWeight: '700' },
+  benefits: { width: '100%', maxWidth: 720, alignSelf: 'center', paddingHorizontal: 24, marginTop: 34, gap: 18 }, benefit: { flexDirection: 'row', alignItems: 'flex-start', gap: 15 }, benefitTitle: { color: 'white', fontSize: 16, fontWeight: '700' }, benefitBody: { color: C.muted, fontSize: 14, lineHeight: 21 },
+  browseButton: { flexDirection: 'row', alignItems: 'center', gap: 8, minHeight: 44, marginLeft: 35 }, browseLabel: { color: C.purple, fontSize: 13, fontWeight: '600' }, savedList: { padding: 16, paddingTop: 28, gap: 24, flexDirection: 'row', flexWrap: 'wrap' },
+  removeButton: { alignSelf: 'flex-end', minHeight: 44, flexDirection: 'row', alignItems: 'center', gap: 4 }, removeLabel: { color: C.purple, fontSize: 14 }, unavailable: { paddingVertical: 12 }, error: { color: '#FFD6AA', padding: 15, fontSize: 16, lineHeight: 18 },
 });

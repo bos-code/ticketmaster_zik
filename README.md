@@ -232,7 +232,73 @@ It includes:
 
 ---
 
+## Typography
+
+The interface uses **Averta**, matching the font family and five weights in
+[Ticketmaster's public website](https://www.ticketmaster.com/) as checked on
+8 October 2026. Original web assets come from
+`https://uk.tmconst.com/rc-984d0766/fonts/averta-{regular,semibold,bold,extrabold,black}.woff`.
+
+Web fonts live in `public/fonts/`. The equivalent decompressed OpenType/TrueType
+files in `assets/fonts/` load through Expo for native screens. These preserve the
+original font tables and outlines. Weight 500 uses Regular, matching the nearest
+available face on Ticketmaster. UI text and inputs use `src/components/ui/app-text.tsx`
+to share the family and resolve NativeWind/inline weights on native platforms.
+Use that module for new UI text; icon fonts and intentional monospace text keep
+their own families. The wordmark remains an SVG.
+
+## AI-generated navigation artwork
+
+The four main tabs now use eight AI-generated PNG assets, with an active and
+inactive icon for each tab. Route selection switches visibility between loaded
+states. The My Tickets symbol uses the reference’s straight, tilted document
+cards, with a blue front/white rear in the active state and white outlines in the
+inactive state. Artwork size is balanced from measured visible bounds, while
+labels, touch targets and responsive navigation remain native UI components.
+
+Final assets are in `assets/tabicon/ai-v1/`. The exact built-in generation prompts,
+reference images and implementation notes are in
+[docs/design/ai-navigation-icons.md](docs/design/ai-navigation-icons.md); the asset
+manifest includes image dimensions and SHA-256 checksums. Generated pixels are
+preserved. Six icons use black canvases matching the tab bar to avoid damaged
+white outlines from transparent-background generation.
+
+## Reference screens and flow
+
+The four main tabs follow the supplied Ticketmaster mobile screenshots: Home,
+Watchlist, My Tickets, and Account. Account subpages support local profile edits,
+location selection, device permissions, and help. Saved events and favourites
+persist on the device. Security and payment management open Ticketmaster's
+account site; this app does not create a Ticketmaster login session. Resale
+remains unavailable, and the existing ticket viewer and transfer flow are retained.
+
+Home and Watchlist use discoverable app event records. Search, saved-event menus,
+favourites, ticket counts, seats and orders derive from app state. Sections with
+no records show empty states. The root fills the viewport; larger displays use
+columns and bounded cards, and the ticket viewer scrolls vertically on short
+screens. The account starts without a copied identity and offers local profile
+editing. Untouched old screenshot identity and saved reference fixtures are
+removed when preferences migrate; edited user profiles are preserved.
+
+Authentication and real ticket-transfer delivery are not integrated. The current
+transfer confirmation remains a prototype and must not be described as successful
+recipient delivery. Apple Wallet is shown as unavailable.
+
 ## 🧠 Developer Notes
+
+Local previews do not register the offline service worker. Development HTML
+unregisters old app workers and clears only `ticketmaster-zik-*` caches before
+reloading once, so Metro module IDs are not mixed across server restarts.
+The web resolver uses Zustand middleware's CommonJS entry because its ESM entry
+retains `import.meta` inside Metro development script factories.
+
+Check responsive geometry, profile migration and persistence with
+`node --test scripts/test-responsive-ui.cjs`.
+
+Check preview recovery with `node --test scripts/test-preview-recovery.cjs`.
+After `expo export --platform web --dev --no-minify --output-dir <directory>`,
+run `node scripts/check-web-development-bundle.cjs <directory>` to check script
+syntax, module dependencies, and execution of the bundled persistence middleware.
 
 * Avoid over-engineering early
 * Focus on QR validation reliability

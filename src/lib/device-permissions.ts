@@ -15,7 +15,7 @@ export type HomeLocationResult = PermissionResult & {
   label?: string;
 };
 
-export const DEFAULT_HOME_LOCATION = 'Igbesa, Ogun State, NG';
+export const DEFAULT_HOME_LOCATION = 'Choose your location';
 
 let notificationsModule: typeof NotificationsModule | null = null;
 
@@ -172,7 +172,7 @@ function formatHomeLocation(
   entry?: Location.LocationGeocodedAddress | null,
 ) {
   if (!entry) {
-    return DEFAULT_HOME_LOCATION;
+    return undefined;
   }
 
   const locality =
@@ -182,7 +182,7 @@ function formatHomeLocation(
   const parts = [locality, region, country].filter(Boolean);
 
   if (!parts.length) {
-    return DEFAULT_HOME_LOCATION;
+    return undefined;
   }
 
   return parts.join(', ');

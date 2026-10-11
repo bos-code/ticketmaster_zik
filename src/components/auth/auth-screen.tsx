@@ -1,10 +1,10 @@
+import { Text } from '@/components/ui/app-text';
 import React, { type ReactNode } from 'react';
 import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
   StyleSheet,
-  Text,
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';

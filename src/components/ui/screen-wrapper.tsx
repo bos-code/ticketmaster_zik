@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, ViewProps } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useImmersiveSafeAreaInsets } from '@/components/immersive/edge-to-edge-hero';
 
 interface ScreenWrapperProps extends ViewProps {
   children: React.ReactNode;
@@ -8,7 +8,7 @@ interface ScreenWrapperProps extends ViewProps {
 }
 
 export function ScreenWrapper({ children, backgroundColor = '#FFFFFF', style, ...props }: ScreenWrapperProps) {
-  const insets = useSafeAreaInsets();
+  const insets = useImmersiveSafeAreaInsets();
   
   return (
     <View 
@@ -16,7 +16,9 @@ export function ScreenWrapper({ children, backgroundColor = '#FFFFFF', style, ..
         { 
           flex: 1, 
           backgroundColor, 
-          paddingTop: Math.max(insets.top, 12) 
+          paddingTop: Math.max(insets.top, 12),
+          paddingLeft: insets.left,
+          paddingRight: insets.right,
         }, 
         style
       ]} 

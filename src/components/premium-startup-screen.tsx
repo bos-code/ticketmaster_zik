@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from "react";
-import { Animated, Easing, Platform, View } from "react-native";
+import { Animated, Easing, Platform, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Head from "expo-router/head";
 import { StatusBar } from "expo-status-bar";
@@ -21,20 +21,20 @@ export function PremiumStartupScreen({ onFinish }: PremiumStartupScreenProps) {
 
   useEffect(() => {
     // Animation Sequence
-    Animated.sequence([
+    const animation = Animated.sequence([
       // 1. Animate the 't' icon in
       Animated.parallel([
         Animated.timing(tOpacity, {
           toValue: 1,
           duration: 600,
           easing: Easing.out(Easing.cubic),
-          useNativeDriver: true,
+          useNativeDriver: Platform.OS !== "web",
         }),
         Animated.timing(tScale, {
           toValue: 1.1,
           duration: 1000,
           easing: Easing.out(Easing.cubic),
-          useNativeDriver: true,
+          useNativeDriver: Platform.OS !== "web",
         }),
       ]),
       
@@ -47,24 +47,25 @@ export function PremiumStartupScreen({ onFinish }: PremiumStartupScreenProps) {
           toValue: 0,
           duration: 400,
           easing: Easing.in(Easing.cubic),
-          useNativeDriver: true,
+          useNativeDriver: Platform.OS !== "web",
         }),
         Animated.timing(wordmarkOpacity, {
           toValue: 1,
           duration: 480,
           delay: 200,
           easing: Easing.out(Easing.cubic),
-          useNativeDriver: true,
+          useNativeDriver: Platform.OS !== "web",
         }),
         Animated.timing(wordmarkTranslateX, {
           toValue: 0,
           duration: 480,
           delay: 200,
           easing: Easing.out(Easing.cubic),
-          useNativeDriver: true,
+          useNativeDriver: Platform.OS !== "web",
         }),
       ]),
-    ]).start();
+    ]);
+    animation.start();
 
     const timeout = setTimeout(() => {
       onFinish?.();
@@ -72,11 +73,12 @@ export function PremiumStartupScreen({ onFinish }: PremiumStartupScreenProps) {
 
     return () => {
       clearTimeout(timeout);
+      animation.stop();
     };
   }, [onFinish, tOpacity, tScale, wordmarkOpacity, wordmarkTranslateX]);
 
   return (
-    <View pointerEvents="none" className="absolute inset-0 z-[1000]">
+    <View pointerEvents="none" style={[StyleSheet.absoluteFillObject, { zIndex: 1000, backgroundColor: STARTUP_BACKGROUND_COLOR }]}>
       <Head>
         <meta name="theme-color" content={STARTUP_STATUS_BAR_COLOR} />
         <meta name="color-scheme" content="dark" />
@@ -92,26 +94,29 @@ export function PremiumStartupScreen({ onFinish }: PremiumStartupScreenProps) {
       )}
 
       <View
-        className="flex-1 items-center justify-center px-4"
-        style={{ backgroundColor: STARTUP_BACKGROUND_COLOR }}
+        style={{ flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 16, backgroundColor: STARTUP_BACKGROUND_COLOR }}
       >
         {/* Standalone 't' Icon */}
         <Animated.View
           style={{
+            ...StyleSheet.absoluteFillObject,
+            alignItems: 'center',
+            justifyContent: 'center',
             opacity: tOpacity,
             transform: [{ scale: tScale }],
             position: 'absolute',
           }}
-          className="inset-0 items-center justify-center"
         >
           <TicketmasterTMark fill="white" size={190} />
         </Animated.View>
 
         {/* Full Wordmark */}
         <Animated.View
-          className="absolute inset-0 items-center justify-center"
           style={[
+            StyleSheet.absoluteFillObject,
             {
+              alignItems: 'center',
+              justifyContent: 'center',
               opacity: wordmarkOpacity,
               transform: [{ translateX: wordmarkTranslateX }],
             },

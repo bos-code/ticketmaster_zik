@@ -1,5 +1,6 @@
+import { Text } from '@/components/ui/app-text';
 import React, { type ReactNode } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
 import { ticketColors, ticketSpacing } from '@/constants/ticket-theme';
 

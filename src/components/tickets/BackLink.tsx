@@ -1,6 +1,7 @@
+import { Text } from '@/components/ui/app-text';
 import { Ionicons } from "@expo/vector-icons";
 import React from "react";
-import { Pressable, Text } from "react-native";
+import { Pressable } from "react-native";
 
 export function BackLink({ onPress }: { onPress: () => void }) {
   return (

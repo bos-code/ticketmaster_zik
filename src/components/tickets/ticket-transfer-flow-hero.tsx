@@ -1,304 +1,42 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
+import { useRouter } from 'expo-router';
 import React from 'react';
-import {
-  Pressable,
-  Text,
-  View,
-  type StyleProp,
-  type ViewStyle,
-} from 'react-native';
-import Animated, {
-  Extrapolation,
-  interpolate,
-  useAnimatedStyle,
-  type SharedValue,
-} from 'react-native-reanimated';
-
-import {
-  EdgeToEdgeHeroMedia,
-  useImmersiveSafeAreaInsets,
-} from '@/components/immersive/edge-to-edge-hero';
-import {
-  absoluteFill,
-  HERO_COLLAPSE_DISTANCE,
-  HERO_COLLAPSED_HEIGHT,
-  HERO_EXPANDED_HEIGHT,
-  HERO_IMAGE_HEIGHT,
-} from '@/components/tickets/ticketFlowConstants';
+import { Pressable, StyleSheet, View, useWindowDimensions } from 'react-native';
+import Animated, { Extrapolation, interpolate, useAnimatedStyle, type SharedValue } from 'react-native-reanimated';
+import { Text } from '@/components/ui/app-text';
+import { TicketStackIcon } from '@/components/ticketmaster-tab-icon';
+import { HERO_COLLAPSED_HEIGHT, HERO_EXPANDED_HEIGHT } from '@/components/tickets/ticketFlowConstants';
 import { useTicketFlowData } from '@/components/tickets/useTicketFlowData';
 
-type CollapsedHeroTitleProps = {
-  style: StyleProp<ViewStyle>;
-  title: string;
-  venue: string;
-};
-
-type ExpandedHeroCardProps = {
-  dateTime: string;
-  onOpenViewer: () => void;
-  ticketCount: number;
-  title: string;
-  venue: string;
-};
-
-export function CollapsibleEventHero({
-  isHeroCollapsed,
-  onBack,
-  onOpenViewer,
-  scrollY,
-}: {
-  isHeroCollapsed: boolean;
-  onBack: () => void;
-  onOpenViewer: () => void;
-  scrollY: SharedValue<number>;
-}) {
+export function CollapsibleEventHero({ isHeroCollapsed, onBack, onOpenViewer, scrollY, collapseDistance, onHeightChange, height = HERO_EXPANDED_HEIGHT }: { isHeroCollapsed: boolean; onBack: () => void; onOpenViewer: () => void; scrollY: SharedValue<number>; collapseDistance: SharedValue<number>; onHeightChange?: (height: number) => void; height?: number }) {
   const { event, order } = useTicketFlowData();
-  const insets = useImmersiveSafeAreaInsets();
-  const statusBarBleed = insets.top;
-  const heroImageHeight = HERO_IMAGE_HEIGHT + statusBarBleed;
-
-  const expandedLayerStyle = useAnimatedStyle(() => ({
-    opacity: interpolate(
-      scrollY.value,
-      [0, HERO_COLLAPSE_DISTANCE * 0.72],
-      [1, 0],
-      Extrapolation.CLAMP,
-    ),
-    transform: [
-      {
-        translateY: interpolate(
-          scrollY.value,
-          [0, HERO_COLLAPSE_DISTANCE],
-          [0, -HERO_COLLAPSE_DISTANCE * 0.42],
-          Extrapolation.CLAMP,
-        ),
-      },
-    ],
-  }));
-
-  const collapsedTitleStyle = useAnimatedStyle<ViewStyle>(() => ({
-    opacity: interpolate(
-      scrollY.value,
-      [HERO_COLLAPSE_DISTANCE * 0.28, HERO_COLLAPSE_DISTANCE * 0.8],
-      [0, 1],
-      Extrapolation.CLAMP,
-    ),
-    transform: [
-      {
-        translateY: interpolate(
-          scrollY.value,
-          [0, HERO_COLLAPSE_DISTANCE],
-          [12, 0],
-          Extrapolation.CLAMP,
-        ),
-      },
-    ],
-  }));
-
-  return (
-    <Animated.View
-      pointerEvents='box-none'
-      className='absolute inset-x-0 top-0 z-20'
-      style={{ height: HERO_EXPANDED_HEIGHT }}
-    >
-      <CollapsedHeroLayer
-        collapsedTitleStyle={collapsedTitleStyle}
-        eventTitle={event.title}
-        eventVenue={event.venue}
-        heroImage={event.heroImage}
-        heroImageHeight={heroImageHeight}
-        isHeroCollapsed={isHeroCollapsed}
-        onBack={onBack}
-        onOpenViewer={onOpenViewer}
-        statusBarBleed={statusBarBleed}
-      />
-
-      <Animated.View
-        pointerEvents={isHeroCollapsed ? 'none' : 'box-none'}
-        className='absolute inset-x-0 top-0 overflow-hidden'
-        style={[{ height: HERO_EXPANDED_HEIGHT }, expandedLayerStyle]}
-      >
-        <EdgeToEdgeHeroMedia
-          height={heroImageHeight}
-          source={event.heroImage}
-        />
-
-        <View style={[absoluteFill, { paddingTop: statusBarBleed }]}>
-          <View className='px-4'>
-            <View className='mt-3 flex-row items-center justify-between'>
-              <HeaderBackButton onBack={onBack} />
-              <View className='rounded-xl bg-black/10 p-3'>
-                <Text className='text-[13px] font-medium leading-4 text-white'>
-                  Help
-                </Text>
-              </View>
-            </View>
-          </View>
-
-          <View
-            className='absolute inset-x-0 px-4'
-            style={{ top: HERO_IMAGE_HEIGHT }}
-          >
-            <ExpandedHeroCard
-              dateTime={event.dateTime}
-              onOpenViewer={onOpenViewer}
-              ticketCount={order.ticketCount}
-              title={event.title}
-              venue={event.venue}
-            />
-          </View>
-        </View>
-      </Animated.View>
+  const router = useRouter();
+  const { width, height: windowHeight } = useWindowDimensions();
+  const imageHeight = Math.max(100, Math.min(360, width * 0.435, windowHeight * 0.4));
+  const expandedStyle = useAnimatedStyle(() => ({ opacity: interpolate(scrollY.value, [0, collapseDistance.value], [1, 0], Extrapolation.CLAMP), transform: [{ translateY: -Math.min(Math.max(0, scrollY.value), collapseDistance.value) }] }));
+  const collapsedStyle = useAnimatedStyle(() => ({ opacity: interpolate(scrollY.value, [collapseDistance.value * 0.3, collapseDistance.value * 0.8], [0, 1], Extrapolation.CLAMP) }));
+  return <View pointerEvents="box-none" style={[styles.hero, { height }]}>
+    <Animated.View pointerEvents={isHeroCollapsed ? 'box-none' : 'none'} style={[styles.collapsed, collapsedStyle]}>
+      <Image source={event.heroImage} contentFit="cover" style={StyleSheet.absoluteFillObject} />
+      <View pointerEvents="none" style={[StyleSheet.absoluteFillObject, { backgroundColor: 'rgba(0,0,0,0.48)' }]} />
+      <Pressable accessibilityRole="button" accessibilityLabel="Back to My Tickets" onPress={onBack} style={styles.back}><Ionicons name="arrow-back" color="white" size={23} /></Pressable>
+      <View style={styles.collapsedCopy}><Text numberOfLines={1} style={styles.collapsedTitle}>{event.title}</Text><Text numberOfLines={1} style={styles.collapsedVenue}>{event.venue}</Text></View>
+      <Pressable accessibilityRole="button" accessibilityLabel="View Tickets" onPress={onOpenViewer} style={styles.collapsedViewer}><Ionicons name="barcode-outline" color="white" size={24} /></Pressable>
     </Animated.View>
-  );
-}
-
-function CollapsedHeroLayer({
-  collapsedTitleStyle,
-  eventTitle,
-  eventVenue,
-  heroImage,
-  heroImageHeight,
-  isHeroCollapsed,
-  onBack,
-  onOpenViewer,
-  statusBarBleed,
-}: {
-  collapsedTitleStyle: StyleProp<ViewStyle>;
-  eventTitle: string;
-  eventVenue: string;
-  heroImage: React.ComponentProps<typeof EdgeToEdgeHeroMedia>['source'];
-  heroImageHeight: number;
-  isHeroCollapsed: boolean;
-  onBack: () => void;
-  onOpenViewer: () => void;
-  statusBarBleed: number;
-}) {
-  return (
-    <View
-      pointerEvents='box-none'
-      className='absolute inset-x-0 top-0 overflow-hidden'
-      style={{ height: HERO_COLLAPSED_HEIGHT }}
-    >
-      <EdgeToEdgeHeroMedia height={heroImageHeight} source={heroImage} />
-      <View style={[absoluteFill, { paddingTop: statusBarBleed }]}>
-        <View className='px-4'>
-          <View className='mt-3 flex-row items-center justify-between'>
-            <HeaderBackButton onBack={onBack} />
-            <CollapsedHeroTitle
-              style={collapsedTitleStyle}
-              title={eventTitle}
-              venue={eventVenue}
-            />
-            {isHeroCollapsed ? (
-              <Pressable
-                accessibilityRole='button'
-                hitSlop={8}
-                onPress={onOpenViewer}
-                className='h-7 w-11 items-center justify-center rounded-[14px] bg-[#0B55F5]'
-              >
-                <Ionicons color='#FFFFFF' name='barcode-outline' size={26} />
-              </Pressable>
-            ) : (
-              <View className='rounded-xl bg-black/10 p-3'>
-                <Text className='text-[13px] font-medium leading-4 text-white'>
-                  Help
-                </Text>
-              </View>
-            )}
-          </View>
-        </View>
+    <Animated.View pointerEvents={isHeroCollapsed ? 'none' : 'box-none'} style={[styles.expanded, { height }, expandedStyle]}>
+      <Image source={event.heroImage} contentFit="cover" style={[styles.image, { height: imageHeight }]} />
+      <View style={styles.heroActions}><Pressable accessibilityRole="button" accessibilityLabel="Back to My Tickets" onPress={onBack} style={styles.back}><Ionicons name="arrow-back" color="white" size={23} /></Pressable><Pressable accessibilityRole="button" onPress={() => router.push('/account/help')} style={styles.help}><Text style={styles.helpText}>Help</Text></Pressable></View>
+      <View style={[styles.eventCard, { top: imageHeight }]} onLayout={(event) => onHeightChange?.(imageHeight + event.nativeEvent.layout.height)}>
+        <View style={styles.date}><Text style={styles.dateText}>{event.dateTime.toUpperCase()}</Text></View>
+        <View style={styles.eventInfo}><Text numberOfLines={2} style={styles.title}>{event.title.toUpperCase()}</Text><View style={styles.venueRow}><Text numberOfLines={1} style={styles.venue}>{event.venue}</Text><TicketStackIcon size={19} color="#CCCCCC" /><Text style={styles.count}>x{order.ticketCount}</Text></View></View>
+        <Pressable accessibilityRole="button" onPress={onOpenViewer} style={styles.viewTickets}><Ionicons name="barcode-outline" size={20} color="white" /><Text style={styles.viewTicketsLabel}>View Tickets</Text></Pressable>
       </View>
-    </View>
-  );
-}
-
-function HeaderBackButton({ onBack }: { onBack: () => void }) {
-  return (
-    <Pressable
-      accessibilityRole='button'
-      hitSlop={8}
-      onPress={onBack}
-      className='h-10 w-10 items-center justify-center rounded-full bg-[rgba(0,0,0,0.40)]'
-    >
-      <Ionicons color='#FFFFFF' name='arrow-back' size={24} />
-    </Pressable>
-  );
-}
-
-function CollapsedHeroTitle({ style, title, venue }: CollapsedHeroTitleProps) {
-  return (
-    <Animated.View
-      style={[style, { pointerEvents: 'none' }]}
-      className='absolute left-16 right-16 items-center'
-    >
-      <Text className='mb-1 text-center text-[13px] font-extrabold text-white'>
-        {title}
-      </Text>
-      <Text
-        numberOfLines={1}
-        className='text-center text-[11px] font-normal leading-[13px] text-[rgba(255,255,255,0.84)]'
-      >
-        {venue}
-      </Text>
     </Animated.View>
-  );
+  </View>;
 }
-
-function ExpandedHeroCard({
-  dateTime,
-  onOpenViewer,
-  ticketCount,
-  title,
-  venue,
-}: ExpandedHeroCardProps) {
-  return (
-    <View className='ticket-summary-hero-card relative -top-8 pt-4'>
-      <View className='absolute left-0 -top-4 z-10 self-start'>
-        <View className='ticket-summary-hero-date justify-center bg-[#232126] px-4 py-2'>
-          <Text className='ticket-summary-hero-date-text text-xs font-extrabold uppercase leading-[13px] tracking-[1px] text-[rgba(255,255,255,0.92)]'>
-            {dateTime}
-          </Text>
-        </View>
-        <View className='absolute inset-x-0 -bottom-4 h-4 bg-[#232126]' />
-      </View>
-      <View className='bg-[#232126] px-4 pt-2'>
-        <Text className='ticket-summary-hero-title pt-1 text-lg font-bold leading-6 text-white'>
-          {title}
-        </Text>
-
-        <View className='mt-2 flex-row items-center justify-between pb-2'>
-          <Text
-            numberOfLines={1}
-            className='ticket-summary-hero-venue mr-3 flex-1 text-[13px] font-normal leading-[17px] text-[rgba(255,255,255,0.76)]'
-          >
-            {venue}
-          </Text>
-
-          <View className='shrink-0 flex-row items-center gap-[5px]'>
-            <Image
-              contentFit='contain'
-              source={require('../../../assets/ticketx3.png')}
-              style={{ height: 15, width: 15 }}
-            />
-            <Text className='text-[17px] font-bold leading-[19px] text-[#F2F4F7]'>
-              {`x${ticketCount}`}
-            </Text>
-          </View>
-        </View>
-      </View>
-
-      <Pressable
-        accessibilityRole='button'
-        onPress={onOpenViewer}
-        className='ticket-summary-view-button min-h-[42px] flex-row items-center justify-center gap-[6px] bg-[#0444f3]'
-      >
-        <Ionicons color='#CFE0FF' name='barcode-outline' size={14} />
-        <Text className='ticket-summary-view-button-text text-[13px] font-bold leading-[16px] text-[#F5F9FF]'>
-          View Tickets
-        </Text>
-      </Pressable>
-    </View>
-  );
-}
+const styles = StyleSheet.create({
+  hero: { position: 'absolute', top: 0, left: 0, right: 0, height: HERO_EXPANDED_HEIGHT, zIndex: 20 }, expanded: { position: 'absolute', top: 0, left: 0, right: 0, height: HERO_EXPANDED_HEIGHT }, image: { height: 170, width: '100%' }, heroActions: { position: 'absolute', top: 8, left: 15, right: 15, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }, back: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(0,0,0,0.45)' }, help: { borderRadius: 22, paddingHorizontal: 20, minHeight: 44, justifyContent: 'center', backgroundColor: 'rgba(0,0,0,0.45)' }, helpText: { color: 'white', fontSize: 16 },
+  eventCard: { position: 'absolute', top: 170, left: 15, right: 15 }, date: { alignSelf: 'flex-start', maxWidth: '100%', marginTop: -25, paddingVertical: 4, paddingHorizontal: 10, minHeight: 25, justifyContent: 'center', backgroundColor: '#242424', zIndex: 1 }, dateText: { color: 'white', fontSize: 12, letterSpacing: 1, fontWeight: '600' }, eventInfo: { backgroundColor: '#242424', paddingHorizontal: 12, paddingTop: 14, paddingBottom: 17 }, title: { color: 'white', fontSize: 20, lineHeight: 27, fontWeight: '700' }, venueRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 14 }, venue: { flex: 1, color: '#CCCCCC', fontSize: 16, lineHeight: 23 }, count: { color: 'white', fontSize: 16, fontWeight: '600' }, viewTickets: { minHeight: 50, backgroundColor: '#0452D5', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10 }, viewTicketsLabel: { color: 'white', fontSize: 16, fontWeight: '600' },
+  collapsed: { height: HERO_COLLAPSED_HEIGHT, overflow: 'hidden', backgroundColor: '#242424', flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 15 }, collapsedCopy: { flex: 1, minWidth: 0, gap: 5 }, collapsedTitle: { color: 'white', fontSize: 16, fontWeight: '700' }, collapsedVenue: { color: '#CCCCCC', fontSize: 14 }, collapsedViewer: { height: 44, width: 48, borderRadius: 22, backgroundColor: '#0452D5', alignItems: 'center', justifyContent: 'center' },
+});

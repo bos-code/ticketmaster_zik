@@ -1,3 +1,4 @@
+import { getViewerLayout } from "@/lib/fan-layout";
 import * as Contacts from "expo-contacts";
 import { type Href, router } from "expo-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -40,10 +41,9 @@ export function useTicketTransferFlowController({
   const { ticketOrder, summaryViewModel, getDetailsViewModel } =
     useTicketOrder(orderId);
   const { width } = useWindowDimensions();
-  const frameWidth = Math.min(width, 430);
-  const carouselCardWidth = Math.round(frameWidth * 0.84);
-  const carouselGap = 12;
-  const carouselSnapInterval = carouselCardWidth + carouselGap;
+  const frameWidth = width;
+  const { cardWidth: carouselCardWidth, snapInterval: carouselSnapInterval } = getViewerLayout(width);
+  const heroCollapseDistance = useSharedValue(HERO_COLLAPSE_DISTANCE);
   const initialViewerIndex = useMemo(
     () => getDetailsViewModel(initialTicketIndex).activeIndex,
     [getDetailsViewModel, initialTicketIndex],
@@ -100,7 +100,7 @@ export function useTicketTransferFlowController({
   const handleListScroll = useAnimatedScrollHandler({
     onScroll: (event) => {
       const nextY = event.contentOffset.y;
-      const nextCollapsed = nextY > HERO_COLLAPSE_DISTANCE * 0.58 ? 1 : 0;
+      const nextCollapsed = nextY > heroCollapseDistance.value * 0.8 ? 1 : 0;
 
       scrollY.value = nextY;
 
@@ -338,6 +338,7 @@ export function useTicketTransferFlowController({
     frameWidth,
     handleBackToTabs,
     handleConfirmCode,
+    heroCollapseDistance,
     handleListScroll,
     handleOpenRecipientForm,
     handleOpenViewer,

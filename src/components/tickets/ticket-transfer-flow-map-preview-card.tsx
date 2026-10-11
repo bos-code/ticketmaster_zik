@@ -11,6 +11,7 @@ export function MapPreviewCard() {
   return (
     <Animated.View entering={FadeInUp.duration(240)} style={styles.card}>
       <VenueMapCard
+        appearance="dark"
         eventId={event.directionsEventId}
         latitude={event.latitude}
         longitude={event.longitude}
@@ -24,9 +25,9 @@ export function MapPreviewCard() {
 
 const styles = StyleSheet.create({
   card: {
-    marginHorizontal: 22,
+    marginHorizontal: 15,
     marginBottom: 20,
-    marginTop: 18,
+    marginTop: 14,
     overflow: "hidden",
   },
 });

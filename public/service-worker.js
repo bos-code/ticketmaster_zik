@@ -1,4 +1,5 @@
-const CACHE_NAME = "ticketmaster-zik-v9";
+const CACHE_NAME = "ticketmaster-zik-v10";
+const IS_LOCAL_PREVIEW = ["localhost", "127.0.0.1", "[::1]"].includes(self.location.hostname);
 const APP_SHELL_ASSETS = [
   "/",
   "/index.html",
@@ -10,7 +11,7 @@ const APP_SHELL_ASSETS = [
 ];
 
 self.addEventListener("install", (event) => {
-  event.waitUntil(
+  if (!IS_LOCAL_PREVIEW) event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => cache.addAll(APP_SHELL_ASSETS)),
   );
   self.skipWaiting();
@@ -21,7 +22,7 @@ self.addEventListener("activate", (event) => {
     caches.keys().then((keys) =>
       Promise.all(
         keys
-          .filter((key) => key !== CACHE_NAME)
+          .filter((key) => key.startsWith("ticketmaster-zik-") && (IS_LOCAL_PREVIEW || key !== CACHE_NAME))
           .map((key) => caches.delete(key)),
       ).then(() => self.clients.claim()),
     ),
@@ -31,12 +32,17 @@ self.addEventListener("activate", (event) => {
 self.addEventListener("fetch", (event) => {
   const { request } = event;
 
-  if (request.method !== "GET") {
+  // Metro module IDs and HMR updates must always come from the same server graph.
+  // Never intercept local development traffic, even for an old registration.
+  if (IS_LOCAL_PREVIEW || request.method !== "GET") {
     return;
   }
 
   const url = new URL(request.url);
   if (url.origin !== self.location.origin) {
+    return;
+  }
+  if (url.pathname.endsWith(".bundle") || url.pathname.includes("hot-update") || url.pathname === "/symbolicate") {
     return;
   }
 

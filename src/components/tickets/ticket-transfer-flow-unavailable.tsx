@@ -1,6 +1,7 @@
+import { Text } from '@/components/ui/app-text';
 import { router } from "expo-router";
 import React from "react";
-import { Pressable, Text, View } from "react-native";
+import { Pressable, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export function TicketsUnavailable() {

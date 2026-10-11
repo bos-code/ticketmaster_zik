@@ -4,6 +4,7 @@
  */
 
 import { Platform } from 'react-native';
+import { fonts } from '../../theme/fonts';
 
 const lightColors = {
   text: '#000000',
@@ -23,7 +24,7 @@ export type ThemeColor = keyof typeof Colors.light & keyof typeof Colors.dark;
 export const Fonts = Platform.select({
   ios: {
     /** iOS `UIFontDescriptorSystemDesignDefault` */
-    sans: 'system-ui',
+    sans: fonts.regular,
     /** iOS `UIFontDescriptorSystemDesignSerif` */
     serif: 'ui-serif',
     /** iOS `UIFontDescriptorSystemDesignRounded` */
@@ -32,15 +33,15 @@ export const Fonts = Platform.select({
     mono: 'ui-monospace',
   },
   default: {
-    sans: 'normal',
+    sans: fonts.regular,
     serif: 'serif',
     rounded: 'normal',
     mono: 'monospace',
   },
   web: {
-    sans: 'SpaceGrotesk-Bold',
+    sans: 'Averta',
     serif: 'serif',
-    rounded: 'system-ui',
+    rounded: fonts.regular,
     mono: 'JetBrainsMono-Regular',
   },
 });

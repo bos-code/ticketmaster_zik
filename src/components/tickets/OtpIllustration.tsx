@@ -1,6 +1,7 @@
+import { Text } from '@/components/ui/app-text';
 import { Ionicons } from "@expo/vector-icons";
 import React from "react";
-import { Text, View } from "react-native";
+import { View } from "react-native";
 
 import { cx } from "@/components/tickets/cx";
 

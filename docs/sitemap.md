@@ -9,14 +9,14 @@ Note: names in parentheses such as `(tabs)` are Expo Router route groups, not li
 ```text
 /
 -> /(tabs)
--> default visible tab: /my-tickets
+-> default visible tab: /discover
 
 /(tabs)
-- /discover
-- /for-you
-- /my-tickets
-- /sell
-- /my-account
+- /discover         (Home)
+- /for-you          (Watchlist: Events / Favourites)
+- /my-tickets       (My Tickets: Upcoming / Past)
+- /my-account       (Account)
+- /sell             (hidden from tab bar)
 - /add-event        (hidden from tab bar)
 - `index`           (hidden tab screen / internal helper route)
 
@@ -34,6 +34,9 @@ Note: names in parentheses such as `(tabs)` are Expo Router route groups, not li
 /events/[id]
 /event-directions/[id]
 
+/account/[section]  (profile, location, inbox, security, payments, help, policies)
+/browse/[id]        (legacy links redirect to app events or Home)
+
 /settings
 /settings/app
 
@@ -45,7 +48,16 @@ Note: names in parentheses such as `(tabs)` are Expo Router route groups, not li
 ```text
 /
 -> /(tabs)
--> /my-tickets
+-> /discover (Home)
+
+/discover
+-> search / event menu / favourite artist
+-> /for-you (saved Events / Favourites)
+-> /events/[id] (app event reservations)
+
+/my-account
+-> /account/[section]
+-> Favourites opens /for-you with its Favourites tab selected
 
 /my-tickets
 -> tap ticket card
@@ -58,11 +70,13 @@ Note: names in parentheses such as `(tabs)` are Expo Router route groups, not li
 
 The ticket flow is designed so that:
 
-- the app opens into the tab navigator and the default visible tab is `My Tickets`
+- the app opens into the tab navigator and the default visible tab is `Home`
 - tapping a ticket card on `My Tickets` opens `/tickets`
 - `/tickets` is the summary/detail screen with the hero and ticket list
 - tapping `View Tickets` on that summary screen opens `/tickets/[orderId]`
 - the viewer back action returns to `/tickets`
+
+Saved events, favourites, profile fields, selected location, and permission preferences persist on the device. Home uses discoverable app event records, and opens the existing reservation flow. Account profiles start blank and are editable local preferences, not authenticated sessions.
 
 ## Route History
 

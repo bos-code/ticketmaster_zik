@@ -1,0 +1,122 @@
+{
+  "home-inactive.png": {
+    "width": 1254,
+    "height": 1254,
+    "colorType": 2,
+    "bytes": 439520,
+    "transparentFraction": 0,
+    "opaqueFraction": 0.056363178498660745,
+    "bounds": {
+      "x": 239,
+      "y": 234,
+      "width": 776,
+      "height": 774
+    },
+    "sha256": "e40ea72c0c88f2cf85ca679074d8dc0203bf8413e10e0eadf7c709432040ca21"
+  },
+  "home-active.png": {
+    "width": 1254,
+    "height": 1254,
+    "colorType": 6,
+    "bytes": 696689,
+    "transparentFraction": 0.5489476736643697,
+    "opaqueFraction": 0.4463973657501736,
+    "bounds": {
+      "x": 157,
+      "y": 188,
+      "width": 937,
+      "height": 949
+    },
+    "sha256": "679a8fbbf0b59c4a4ce647aa586e7b5765ecdf105d0662e62e7c96566ffdbf55"
+  },
+  "watchlist-inactive.png": {
+    "width": 1254,
+    "height": 1254,
+    "colorType": 2,
+    "bytes": 352051,
+    "transparentFraction": 0,
+    "opaqueFraction": 0.02984516532741161,
+    "bounds": {
+      "x": 437,
+      "y": 216,
+      "width": 380,
+      "height": 812
+    },
+    "sha256": "9b0d3550f46e34fe31c8cfdb1b110b3b5b44106006f88f83b6b25ed205210fd4"
+  },
+  "watchlist-active.png": {
+    "width": 1254,
+    "height": 1254,
+    "colorType": 6,
+    "bytes": 367689,
+    "transparentFraction": 0.7888765519714903,
+    "opaqueFraction": 0.20778802886584302,
+    "bounds": {
+      "x": 396,
+      "y": 237,
+      "width": 462,
+      "height": 794
+    },
+    "sha256": "ef3cdabec0d9ec120819a4d119ce8554f2d9c606591be12324f1afffb976cead"
+  },
+  "tickets-inactive.png": {
+    "width": 1254,
+    "height": 1254,
+    "colorType": 2,
+    "bytes": 509762,
+    "transparentFraction": 0,
+    "opaqueFraction": 0.06584034757039038,
+    "bounds": {
+      "x": 273,
+      "y": 231,
+      "width": 707,
+      "height": 735
+    },
+    "sha256": "6f583056c97b50b3d7f92d6174f03da72c1c4065b2aa2539d35b3c07deb47e5b"
+  },
+  "tickets-active.png": {
+    "width": 1254,
+    "height": 1254,
+    "colorType": 2,
+    "bytes": 745768,
+    "transparentFraction": 0,
+    "opaqueFraction": 0.2655693169417672,
+    "bounds": {
+      "x": 260,
+      "y": 211,
+      "width": 738,
+      "height": 798
+    },
+    "sha256": "2173f2b8f441c07232c7137aa35fabcf08375df7034a1cdf9c80a59de6c58f57"
+  },
+  "account-inactive.png": {
+    "width": 1254,
+    "height": 1254,
+    "colorType": 2,
+    "bytes": 467153,
+    "transparentFraction": 0,
+    "opaqueFraction": 0.04149973672763902,
+    "bounds": {
+      "x": 222,
+      "y": 220,
+      "width": 805,
+      "height": 799
+    },
+    "sha256": "b8711967482d9d00b71c70c300e17a69dbcea888e80701cd7cce84a40fd09c7e"
+  },
+  "account-active.png": {
+    "width": 1254,
+    "height": 1254,
+    "colorType": 2,
+    "bytes": 813355,
+    "transparentFraction": 0,
+    "opaqueFraction": 0.41901767613175317,
+    "bounds": {
+      "x": 166,
+      "y": 177,
+      "width": 922,
+      "height": 909
+    },
+    "sha256": "0d328d66ce3efdb80542a41ae81c2b32b322165d1df4f2af61d79f8e03b78006"
+  }
+}

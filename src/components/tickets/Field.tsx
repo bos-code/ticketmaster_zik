@@ -1,5 +1,6 @@
+import { Text, TextInput } from '@/components/ui/app-text';
 import React from "react";
-import { Text, TextInput, View } from "react-native";
+import { View } from "react-native";
 import { cx } from "@/components/tickets/cx";
 
 export function Field({

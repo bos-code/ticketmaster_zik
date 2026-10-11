@@ -1,4 +1,5 @@
-import { View, Text } from 'react-native';
+import { Text } from '@/components/ui/app-text';
+import { View } from 'react-native';
 
 export function NativeWindTest() {
   return (

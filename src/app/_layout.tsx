@@ -38,6 +38,8 @@ function RootStack() {
     >
       <Stack.Screen name="index" options={{ animation: "none" }} />
       <Stack.Screen name="(tabs)" />
+      <Stack.Screen name="account/[section]" options={{ animation: "slide_from_right" }} />
+      <Stack.Screen name="browse/[id]" options={{ animation: "slide_from_right" }} />
       <Stack.Screen
         name="admin/index"
         options={{ animation: "slide_from_right" }}
@@ -78,16 +80,11 @@ function RootStack() {
 export default function RootLayout() {
   useFirebaseDataSync();
   const [fontsLoaded, fontError] = useFonts({
-    [fonts.regular]: require("../../assets/fonts/Inter-Regular.ttf"),
-    [fonts.medium]: require("../../assets/fonts/Inter-Medium.ttf"),
-    [fonts.semiBold]: require("../../assets/fonts/Inter-SemiBold.ttf"),
-    [fonts.bold]: require("../../assets/fonts/Inter-Bold.ttf"),
-    [fonts.extraBold]: require("../../assets/fonts/Inter-ExtraBold.ttf"),
-    [fonts.black]: require("../../assets/fonts/Inter-Black.ttf"),
-    [fonts.displayRegular]: require("../../assets/fonts/SpaceGrotesk-Regular.ttf"),
-    [fonts.displayMedium]: require("../../assets/fonts/SpaceGrotesk-Medium.ttf"),
-    [fonts.displaySemiBold]: require("../../assets/fonts/SpaceGrotesk-SemiBold.ttf"),
-    [fonts.displayBold]: require("../../assets/fonts/SpaceGrotesk-Bold.ttf"),
+    [fonts.regular]: require("../../assets/fonts/Averta-Regular.ttf"),
+    [fonts.semiBold]: require("../../assets/fonts/Averta-SemiBold.ttf"),
+    [fonts.bold]: require("../../assets/fonts/Averta-Bold.otf"),
+    [fonts.extraBold]: require("../../assets/fonts/Averta-ExtraBold.ttf"),
+    [fonts.black]: require("../../assets/fonts/Averta-Black.otf"),
     [fonts.monoRegular]: require("../../assets/fonts/JetBrainsMono-Regular.ttf"),
     [fonts.monoBold]: require("../../assets/fonts/JetBrainsMono-Bold.ttf"),
     [fonts.monoExtraBold]: require("../../assets/fonts/JetBrainsMono-ExtraBold.ttf"),
@@ -100,7 +97,8 @@ export default function RootLayout() {
   const appBackgroundColor = hasFinishedStartup
     ? ticketColors.background
     : startupBackgroundColor;
-  const isReady = fontsLoaded || Boolean(fontError);
+  // Web text uses the local CSS font faces and can render while Expo loads fonts.
+  const isReady = Platform.OS === "web" || fontsLoaded || Boolean(fontError);
 
   useEffect(() => {
     if (Platform.OS === "web" && typeof document !== "undefined") {
@@ -114,8 +112,8 @@ export default function RootLayout() {
       () => {},
     );
 
-    if (Platform.OS === "web" && typeof window !== "undefined" && "serviceWorker" in navigator) {
-      navigator.serviceWorker.register("/service-worker.js").catch(() => {
+    if (!__DEV__ && Platform.OS === "web" && typeof window !== "undefined" && "serviceWorker" in navigator) {
+      navigator.serviceWorker.register("/service-worker.js", { updateViaCache: "none" }).catch(() => {
         // Ignore registration errors
       });
     }

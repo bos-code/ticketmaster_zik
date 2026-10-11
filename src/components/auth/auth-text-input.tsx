@@ -1,5 +1,6 @@
+import { Text, TextInput } from '@/components/ui/app-text';
 import React from 'react';
-import { StyleSheet, Text, TextInput, type TextInputProps, View } from 'react-native';
+import { StyleSheet, type TextInputProps, View } from 'react-native';
 
 import { ticketColors, ticketRadii, ticketSpacing } from '@/constants/ticket-theme';
 

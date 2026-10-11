@@ -1,5 +1,6 @@
+import { Text } from '@/components/ui/app-text';
 import React from 'react';
-import { StyleSheet, Text } from 'react-native';
+import { StyleSheet } from 'react-native';
 
 type AuthErrorMessageProps = {
   message?: string | null;

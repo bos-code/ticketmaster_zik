@@ -39,11 +39,11 @@ export function TicketTransferFlow({
         <Head>
           <meta
             name='theme-color'
-            content={flow.isViewerScreen ? '#F9F8F4' : 'transparent'}
+            content='#111111'
           />
           <meta
             name='color-scheme'
-            content={flow.isViewerScreen ? 'light' : 'dark'}
+            content='dark'
           />
           <meta
             name='apple-mobile-web-app-status-bar-style'
@@ -51,8 +51,8 @@ export function TicketTransferFlow({
           />
         </Head>
         <StatusBar
-          backgroundColor={flow.isViewerScreen ? '#F9F8F4' : 'transparent'}
-          style={flow.isViewerScreen ? 'dark' : 'light'}
+          backgroundColor='#111111'
+          style='light'
           translucent={!flow.isViewerScreen}
         />
         <View className=' flex-1 w-full'>
@@ -61,6 +61,7 @@ export function TicketTransferFlow({
           ) ? (
             <SelectTicketsScreen
               activePanel={flow.activePanel}
+              heroCollapseDistance={flow.heroCollapseDistance}
               handleListScroll={flow.handleListScroll}
               isHeroCollapsed={flow.isHeroCollapsed}
               onBack={flow.handleBackToTabs}

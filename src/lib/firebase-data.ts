@@ -1,6 +1,7 @@
 import {
   collection,
   doc,
+  getDocsFromServer,
   onSnapshot,
   runTransaction,
   setDoc,
@@ -22,6 +23,12 @@ const TICKETS_COLLECTION = 'tickets';
 const SEED_VERSION = 1;
 
 let seedPromise: Promise<void> | null = null;
+
+export async function fetchTickets() {
+  const snapshot = await getDocsFromServer(collection(firestore, TICKETS_COLLECTION));
+  return snapshot.docs.map((item) => item.data() as TicketRecord)
+    .sort((left, right) => compareDescending(left.updatedAt, right.updatedAt));
+}
 
 export function subscribeToTickets(onValue: (tickets: TicketRecord[]) => void) {
   return onSnapshot(collection(firestore, TICKETS_COLLECTION), (snapshot) => {

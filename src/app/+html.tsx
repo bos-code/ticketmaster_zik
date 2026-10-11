@@ -26,6 +26,33 @@ export default function RootHtml({ children }: PropsWithChildren) {
         />
         <link rel='manifest' href='/manifest.json' />
         <link rel='apple-touch-icon' href='/apple-touch-icon.png' />
+        {__DEV__ && <script dangerouslySetInnerHTML={{ __html: `
+          (async function () {
+            try {
+              // Runs before the app imports: an old worker can serve a stale
+              // Metro bundle and crash before RootLayout effects ever execute.
+              var removedWorker = false;
+              if ('serviceWorker' in navigator) {
+                var registrations = await navigator.serviceWorker.getRegistrations();
+                for (var registration of registrations) {
+                  var worker = registration.active || registration.waiting || registration.installing;
+                  if (worker && new URL(worker.scriptURL).pathname === '/service-worker.js') {
+                    removedWorker = (await registration.unregister()) || removedWorker;
+                  }
+                }
+              }
+              if ('caches' in window) {
+                var keys = await caches.keys();
+                await Promise.all(keys.filter(function (key) {
+                  return key.indexOf('ticketmaster-zik-') === 0;
+                }).map(function (key) { return caches.delete(key); }));
+              }
+              if (removedWorker && navigator.serviceWorker.controller) {
+                window.location.reload();
+              }
+            } catch (_) {}
+          })();
+        ` }} />}
         <script
           dangerouslySetInnerHTML={{
             __html: `
@@ -62,32 +89,6 @@ export default function RootHtml({ children }: PropsWithChildren) {
                 -webkit-tap-highlight-color: transparent;
               }
 
-                :root {
-                --ios-pwa-bottom-gap: 0px;
-              }
-
-
-              @media (display-mode: standalone), (display-mode: fullscreen) {
-                html,
-                body {
-                  height: 100vh;
-                  height: 100svh;
-                  height: -webkit-fill-available;
-                  min-height: calc(100vh + var(--ios-pwa-bottom-gap)) !important;
-                  overflow: hidden;
-                  width: 100%;
-                }
-
-                #root {
-                  height: calc(100vh + var(--ios-pwa-bottom-gap)) !important;
-                  min-height: calc(100svh + var(--ios-pwa-bottom-gap)) !important;
-                  left: 0;
-                  overflow: hidden;
-                  position: fixed;
-                  top: 0;
-                  width: 100vw;
-                }
-              }
             `,
           }}
         />

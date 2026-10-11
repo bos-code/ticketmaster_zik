@@ -1,9 +1,9 @@
+import { Text } from '@/components/ui/app-text';
 import React from 'react';
 import {
   ActivityIndicator,
   Pressable,
   StyleSheet,
-  Text,
   type PressableProps,
   type StyleProp,
   type ViewStyle,

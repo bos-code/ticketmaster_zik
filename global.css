@@ -3,6 +3,57 @@
 @import "tailwindcss/utilities.css";
 @import "nativewind/theme";
 
+/* Averta weights served by Ticketmaster; bundled locally for offline use. */
+@font-face {
+  font-family: "Averta";
+  src: url("/fonts/averta-regular.woff") format("woff");
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Averta";
+  src: url("/fonts/averta-semibold.woff") format("woff");
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Averta";
+  src: url("/fonts/averta-bold.woff") format("woff");
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Averta";
+  src: url("/fonts/averta-extrabold.woff") format("woff");
+  font-style: normal;
+  font-weight: 800;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Averta";
+  src: url("/fonts/averta-black.woff") format("woff");
+  font-style: normal;
+  font-weight: 900;
+  font-display: swap;
+}
+
+@theme {
+  --font-sans: "Averta", Helvetica, Arial, sans-serif;
+}
+
+@layer base {
+  body, input, textarea, select, button {
+    font-family: "Averta", Helvetica, Arial, sans-serif;
+  }
+}
+
 :root {
   --safe-area-top: 0px;
   --safe-area-right: 0px;
@@ -42,188 +93,37 @@
   padding-top: var(--status-bar-height);
 }
 
-/* ─── Web: constrain to mobile viewport width ─────────────────────────────── */
+/* The app shell fills every viewport; individual content panels may be bounded. */
 @media screen {
-
-  html,
-  body {
-    background-color: var(--app-shell-background, #F8FAFC);
-    /* Neutral surround for desktop visitors */
+  html, body {
+    background-color: var(--app-shell-background, #111111);
+    width: 100%;
+    height: 100vh;
     height: 100dvh;
-    min-height: 100dvh;
-    overflow: hidden;
+    min-height: 100%;
+    margin: 0;
     padding: 0;
-    /* Disable browser auto text-size on mobile browsers */
+    overflow: hidden;
     -webkit-text-size-adjust: 100%;
     text-size-adjust: 100%;
-    /* Prevents the browser from allowing pinch-to-zoom or double-tap-to-zoom */
     touch-action: manipulation;
-    /* Disables pull-to-refresh and overscroll glow on Android */
     overscroll-behavior-y: none;
   }
-
   #root {
-    background-color: var(--app-shell-background, #F8FAFC);
+    background-color: var(--app-shell-background, #111111);
     width: 100%;
+    height: 100vh;
     height: 100dvh;
+    min-height: 100%;
     position: relative;
     overflow: hidden;
   }
-}
-
-@media screen and (display-mode: standalone),
-screen and (display-mode: fullscreen) {
-
-  html,
-  body {
-    background-color: var(--app-shell-background, #050505);
-    height: 100vh;
-    height: 100svh;
-    height: -webkit-fill-available;
-    min-height: 100%;
-    width: 100%;
-  }
-
-  #root {
-    background-color: var(--app-shell-background, #050505);
-    height: 100vh;
-    height: 100svh;
-    height: -webkit-fill-available;
-    left: 0;
-    overflow: hidden;
-    position: fixed;
-    top: 0;
-    width: 100vw;
+  :focus-visible {
+    outline: 2px solid #73A6FF;
+    outline-offset: 3px;
   }
 }
-
-@media screen {
-
-  html.is-standalone-pwa,
-  html.is-standalone-pwa body {
-    background-color: var(--app-shell-background, #050505);
-    height: 100vh;
-    height: 100svh;
-    height: -webkit-fill-available;
-    min-height: 100%;
-    width: 100%;
-  }
-
-  html.is-standalone-pwa #root {
-    background-color: var(--app-shell-background, #050505);
-    height: 100vh;
-    height: 100svh;
-    height: -webkit-fill-available;
-    left: 0;
-    overflow: hidden;
-    position: fixed;
-    top: 0;
-    width: 100vw;
-  }
+@media (display-mode: standalone), (display-mode: fullscreen) {
+  #root { position: fixed; inset: 0; }
 }
-
-@media screen and (max-height: 700px),
-screen and (max-width: 400px) {
-  .ticket-summary-hero-card {
-    padding-top: 10px !important;
-  }
-
-  .ticket-summary-hero-date {
-    padding-top: 6px !important;
-    padding-bottom: 6px !important;
-  }
-
-  .ticket-summary-hero-date-text {
-    font-size: 11px !important;
-    line-height: 12px !important;
-  }
-
-  .ticket-summary-hero-title {
-    font-size: 20px !important;
-    line-height: 22px !important;
-  }
-
-  .ticket-summary-hero-venue {
-    font-size: 12px !important;
-    line-height: 15px !important;
-  }
-
-  .ticket-summary-view-button {
-    min-height: 38px !important;
-  }
-}
-
-@media screen and (max-width: 360px) {
-  .ticket-summary-hero-card {
-    padding-top: 9px !important;
-  }
-
-  .ticket-summary-hero-title {
-    font-size: 19px !important;
-    line-height: 21px !important;
-  }
-
-  .ticket-summary-view-button {
-    min-height: 36px !important;
-  }
-}
-
-@media screen and (max-height: 620px),
-screen and (max-width: 340px) {
-  .ticket-summary-hero-card {
-    padding-top: 8px !important;
-    transform: translateY(6px);
-  }
-
-  .ticket-summary-hero-date {
-    padding-top: 5px !important;
-    padding-bottom: 5px !important;
-    padding-left: 12px !important;
-    padding-right: 12px !important;
-  }
-
-  .ticket-summary-hero-date-text {
-    font-size: 10px !important;
-    line-height: 11px !important;
-  }
-
-  .ticket-summary-hero-title {
-    font-size: 18px !important;
-    line-height: 20px !important;
-  }
-
-  .ticket-summary-hero-venue {
-    font-size: 11px !important;
-    line-height: 14px !important;
-  }
-
-  .ticket-summary-view-button {
-    min-height: 34px !important;
-  }
-
-  .ticket-summary-view-button-text {
-    font-size: 12px !important;
-    line-height: 14px !important;
-  }
-}
-
-@media screen and (max-height: 560px) {
-  .ticket-summary-hero-card {
-    padding-top: 6px !important;
-    transform: translateY(10px);
-  }
-
-  .ticket-summary-hero-date {
-    padding-top: 4px !important;
-    padding-bottom: 4px !important;
-  }
-
-  .ticket-summary-hero-title {
-    font-size: 17px !important;
-    line-height: 19px !important;
-  }
-
-  .ticket-summary-view-button {
-    min-height: 32px !important;
-  }
-}
+html.is-standalone-pwa #root { position: fixed; inset: 0; }

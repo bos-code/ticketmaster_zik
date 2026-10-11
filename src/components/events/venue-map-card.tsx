@@ -1,7 +1,8 @@
+import { Text } from '@/components/ui/app-text';
 import { useRouter } from 'expo-router';
 import { Image } from 'expo-image';
 import React from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Linking, Pressable, StyleSheet, View } from 'react-native';
 
 import VenueMap from '@/components/VenueMap';
 import {
@@ -19,14 +20,16 @@ const FALLBACK_MAP_CENTER = {
 };
 
 export function VenueMapCard({
+  appearance = 'light',
   eventId,
   latitude,
   longitude,
   mapHeight = 560,
   venueAddress,
   venueName,
-}: VenueMapData & { mapHeight?: number }) {
+}: VenueMapData & { mapHeight?: number; appearance?: 'light' | 'dark' }) {
   const router = useRouter();
+  const dark = appearance === 'dark';
   const venueCoordinate = toCoordinate(latitude, longitude);
   const canShowEmbeddedMap = canRenderEmbeddedMap();
   const initialCoordinate = venueCoordinate ?? FALLBACK_MAP_CENTER;
@@ -37,6 +40,14 @@ export function VenueMapCard({
   );
 
   function handleOpenDirections() {
+    if (dark) {
+      if (venueCoordinate) {
+        void openExternalMaps({ destination: venueCoordinate, destinationLabel: venueName, origin: null });
+      } else {
+        void Linking.openURL(`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent([venueName, venueAddress].filter(Boolean).join(', '))}`);
+      }
+      return;
+    }
     if (eventId) {
       router.push({
         pathname: '/event-directions/[id]',
@@ -55,10 +66,14 @@ export function VenueMapCard({
   }
 
   return (
-    <View style={styles.card}>
+    <View style={[styles.card, dark && { backgroundColor: '#242424' }]}>
       <View style={[styles.mapContainer, { height: mapHeight }]}>
-        {canShowEmbeddedMap ? (
+        {dark && !venueCoordinate ? (
+          <View style={{ flex: 1, justifyContent: 'center', padding: 24, backgroundColor: '#25363C' }}><Text style={{ color: '#FFFFFF', fontSize: 23, fontWeight: '700' }}>{venueName}</Text><Text style={{ color: '#CCCCCC', marginTop: 12 }}>{venueAddress || venueName}</Text><Text style={{ color: '#CCCCCC', marginTop: 8 }}>Open directions to locate this venue.</Text></View>
+        ) : canShowEmbeddedMap ? (
           <VenueMap
+            appearance={appearance}
+            preview={dark}
             latitude={initialCoordinate.latitude}
             longitude={initialCoordinate.longitude}
             shouldResolveInitialAddress={shouldResolveInitialAddress}
@@ -76,9 +91,9 @@ export function VenueMapCard({
       <Pressable
         accessibilityRole='button'
         onPress={handleOpenDirections}
-        style={styles.button}
+        style={[styles.button, dark && { backgroundColor: '#242424', minHeight: 48 }]}
       >
-        <Text style={styles.buttonText}>Get Directions</Text>
+        <Text style={[styles.buttonText, dark && { color: '#FFFFFF' }]}>Get Directions</Text>
       </Pressable>
     </View>
   );

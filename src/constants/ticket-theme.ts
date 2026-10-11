@@ -1,4 +1,5 @@
 import { DefaultTheme, type Theme } from '@react-navigation/native';
+import { fonts } from '../../theme/fonts';
 
 export const ticketColors = {
   background: '#F8FAFC',
@@ -44,6 +45,12 @@ export const ticketTypography = {
 export const ticketNavigationTheme: Theme = {
   ...DefaultTheme,
   dark: false,
+  fonts: {
+    regular: { fontFamily: fonts.regular, fontWeight: 'normal' },
+    medium: { fontFamily: fonts.medium, fontWeight: 'normal' },
+    bold: { fontFamily: fonts.bold, fontWeight: 'normal' },
+    heavy: { fontFamily: fonts.extraBold, fontWeight: 'normal' },
+  },
   colors: {
     ...DefaultTheme.colors,
     primary: ticketColors.primary,

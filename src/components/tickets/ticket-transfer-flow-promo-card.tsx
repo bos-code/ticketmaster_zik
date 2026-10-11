@@ -1,10 +1,10 @@
+import { Text } from '@/components/ui/app-text';
 import { Ionicons } from "@expo/vector-icons";
-import React from "react";
-import { Image, Pressable, StyleSheet, Text, View } from "react-native";
+import React, { useState } from "react";
+import { Image, Platform, Pressable, Share, StyleSheet, View } from "react-native";
 import Svg, {
   Defs,
   LinearGradient,
-  RadialGradient,
   Rect,
   Stop,
 } from "react-native-svg";
@@ -14,26 +14,35 @@ import { useTicketFlowData } from "@/components/tickets/useTicketFlowData";
 
 export function PromoCard() {
   const { event } = useTicketFlowData();
+  const featureImage = event.heroImage;
+  const [shareFeedback, setShareFeedback] = useState('');
+  async function shareGoing() {
+    const message = `I'm going to ${event.title}!\n${event.dateTime}\n${event.venue}`;
+    try {
+      if (Platform.OS === 'web' && typeof navigator.share !== 'function') {
+        await navigator.clipboard.writeText(message);
+        setShareFeedback('Event details copied. Paste them into your post.');
+      } else {
+        await Share.share({ title: event.title, message });
+        setShareFeedback('');
+      }
+    } catch (error) {
+      if (!(error instanceof Error && error.name === 'AbortError')) {
+        setShareFeedback('Sharing is unavailable. Please try again.');
+      }
+    }
+  }
   const formattedDate = event.dateTime.replace(
     /, (\d{1,2}:\d{2}\s[AP]M)$/,
     ", / $1",
   );
 
   return (
-    <View className="mx-[22px] mb-5 mt-4 overflow-hidden rounded-[4px] border border-[#f0f0f0]">
-      <View className="relative h-[220px] overflow-hidden justify-end px-4">
+    <View className="mx-4 mb-5 mt-4 overflow-hidden">
+      <View className="relative min-h-[235px] overflow-hidden justify-center bg-[#111111] p-4">
         <Image
-          source={event.heroImage}
-          style={{
-            position: "absolute",
-            top: -30,
-            left: -30,
-            right: -30,
-            bottom: -30,
-            width: "auto",
-            height: "auto",
-          }}
-          blurRadius={100}
+          source={featureImage}
+          style={StyleSheet.absoluteFillObject}
           resizeMode="cover"
         />
         <View
@@ -48,40 +57,12 @@ export function PromoCard() {
                 x2="100%"
                 y2="0%"
               >
-                <Stop offset="0%" stopColor="#000000" stopOpacity="0.1" />
-                <Stop offset="50%" stopColor="#000000" stopOpacity="0.6" />
-                <Stop offset="100%" stopColor="#000000" stopOpacity="0.95" />
+                <Stop offset="0%" stopColor="#000000" stopOpacity="0.15" />
+                <Stop offset="50%" stopColor="#000000" stopOpacity="0.3" />
+                <Stop offset="100%" stopColor="#000000" stopOpacity="0.65" />
               </LinearGradient>
-              <RadialGradient
-                cx="50%"
-                cy="50%"
-                fx="50%"
-                fy="50%"
-                id="ticketPromoVignette"
-                r="75%"
-              >
-                <Stop offset="0%" stopColor="#000000" stopOpacity="0" />
-                <Stop offset="60%" stopColor="#000000" stopOpacity="0.15" />
-                <Stop offset="85%" stopColor="#000000" stopOpacity="0.5" />
-                <Stop offset="100%" stopColor="#000000" stopOpacity="0.85" />
-              </RadialGradient>
-              <RadialGradient
-                cx="50%"
-                cy="50%"
-                fx="50%"
-                fy="50%"
-                id="ticketPromoSmoke"
-                r="70%"
-              >
-                <Stop offset="0%" stopColor="#FFFFFF" stopOpacity="0.11" />
-                <Stop offset="38%" stopColor="#FFFFFF" stopOpacity="0.055" />
-                <Stop offset="70%" stopColor="#000000" stopOpacity="0.45" />
-                <Stop offset="100%" stopColor="#000000" stopOpacity="0.95" />
-              </RadialGradient>
             </Defs>
             <Rect fill="url(#ticketPromoFade)" height="100%" width="100%" />
-            <Rect fill="url(#ticketPromoVignette)" height="100%" width="100%" />
-            <Rect fill="url(#ticketPromoSmoke)" height="100%" width="100%" />
           </Svg>
         </View>
 
@@ -89,7 +70,7 @@ export function PromoCard() {
           <View className="w-[65%] overflow-hidden shadow-2xl rounded-[2px] bg-[#1c1c1e]">
             <View className="relative h-[145px] w-full">
               <Image
-                source={event.heroImage}
+                source={featureImage}
                 style={{ width: "100%", height: "100%" }}
                 resizeMode="cover"
               />
@@ -120,31 +101,32 @@ export function PromoCard() {
             </View>
           </View>
 
-          <View className="flex-1 pl-7 justify-center">
-            <Text className="text-[15px] font-black uppercase  tracking-[1px] text-white">
+          <View className="flex-1 pl-3 justify-center">
+            <Text className="text-[15px] font-black uppercase tracking-[1px] text-white">
               YOU GOT{"\n"}TICKETS!
             </Text>
-            <View className="mt-2 h-[5px] w-[85px] bg-white" />
+            <View className="mt-2 h-[4px] w-full max-w-[85px] bg-[#D8B18B]" />
           </View>
         </View>
       </View>
 
-      <View className="bg-[#f7f7f7]">
+      <View className="bg-[#242424]">
         <View className="px-5 pb-6 pt-5">
-          <Text className="mb-2 text-[15px] font-extrabold text-[#111111]">
+          <Text className="mb-2 text-[16px] font-extrabold text-white">
             Post on Social Media
           </Text>
-          <Text className="text-[12px] pt-2 font-medium leading-[19px] text-[#444444]">
+          <Text className="text-[14px] pt-2 font-medium leading-[21px] text-[#BBBBBB]">
             Build hype for the event, and share that you got tickets with your
             friends and family.
           </Text>
         </View>
-        <Pressable className="flex-row items-center justify-center border-t-2 border-white py-4">
-          <Text className="mr-2 text-[14px] font-medium text-[#111111]">
+        <Pressable accessibilityRole="button" onPress={shareGoing} className="flex-row items-center justify-center border-t border-[#171717] py-4">
+          <Text className="mr-2 text-[15px] font-bold text-white">
             Share You&apos;re Going
           </Text>
-          <Ionicons name="share-outline" size={20} color="#111111" />
+          <Ionicons name="share-outline" size={20} color="#FFFFFF" />
         </Pressable>
+        {!!shareFeedback && <Text accessibilityLiveRegion="polite" className="px-5 pb-4 text-[13px] text-[#CCCCCC]">{shareFeedback}</Text>}
       </View>
     </View>
   );

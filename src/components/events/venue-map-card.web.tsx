@@ -1,8 +1,9 @@
+import { Text } from '@/components/ui/app-text';
 import { useRouter } from 'expo-router';
 import maplibregl, { type Map as MapLibreMap } from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import React, { useEffect, useMemo, useRef } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Linking, Pressable, StyleSheet, View } from 'react-native';
 
 import {
   openExternalMaps,
@@ -16,14 +17,16 @@ const FALLBACK_MAP_CENTER = {
 };
 
 export function VenueMapCard({
+  appearance = 'light',
   eventId,
   latitude,
   longitude,
   mapHeight = 560,
   venueAddress,
   venueName,
-}: VenueMapData & { mapHeight?: number }) {
+}: VenueMapData & { mapHeight?: number; appearance?: 'light' | 'dark' }) {
   const router = useRouter();
+  const dark = appearance === 'dark';
   const mapContainerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<MapLibreMap | null>(null);
   const markerRef = useRef<maplibregl.Marker | null>(null);
@@ -46,7 +49,7 @@ export function VenueMapCard({
     ensureAppleMarkerStyles();
 
     const map = new maplibregl.Map({
-      attributionControl: false,
+      attributionControl: { compact: true },
       bearing: 0,
       center: mapCenter,
       container: mapContainerRef.current,
@@ -59,21 +62,32 @@ export function VenueMapCard({
     mapRef.current = map;
 
     map.on('load', () => {
-      applyAppleMapsPaint(map);
-      markerRef.current = createVenueMarker(venueName)
+      applyAppleMapsPaint(map, dark);
+      markerRef.current = createVenueMarker(venueName, dark)
         .setLngLat(mapCenter)
         .addTo(map);
     });
 
+    const resizeObserver = new ResizeObserver(() => map.resize());
+    resizeObserver.observe(mapContainerRef.current);
     return () => {
+      resizeObserver.disconnect();
       markerRef.current?.remove();
       map.remove();
       mapRef.current = null;
       markerRef.current = null;
     };
-  }, [mapCenter, venueName]);
+  }, [dark, mapCenter, venueName]);
 
   function handleOpenDirections() {
+    if (dark) {
+      if (venueCoordinate) {
+        void openExternalMaps({ destination: venueCoordinate, destinationLabel: venueName, origin: null });
+      } else {
+        void Linking.openURL(`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent([venueName, venueAddress].filter(Boolean).join(', '))}`);
+      }
+      return;
+    }
     if (eventId) {
       router.push({
         pathname: '/event-directions/[id]',
@@ -97,36 +111,39 @@ export function VenueMapCard({
   }
 
   return (
-    <View style={styles.card}>
-      <View style={[styles.mapFrame, { height: mapHeight }]}>
-        {React.createElement('div', {
+    <View style={[styles.card, dark && { backgroundColor: '#242424' }]}>
+      <View style={[styles.mapFrame, { height: mapHeight }, dark && { backgroundColor: '#25363C' }]}>
+        {(!dark || venueCoordinate) && React.createElement('div', {
           ref: mapContainerRef,
           style: domMapStyle,
         })}
-        <View pointerEvents='none' style={styles.mapAttribution}>
+        {dark && <View pointerEvents='none' style={{ position: 'absolute', top: 14, left: 16, right: 16 }}><Text style={{ color: '#FFFFFF', fontSize: 23, fontWeight: '700', textShadowColor: '#111111', textShadowRadius: 4 }}>{venueName}</Text></View>}
+        {dark && !venueCoordinate && <View style={{ flex: 1, justifyContent: 'center', padding: 24 }}><Text style={{ color: '#CCCCCC', fontSize: 16, lineHeight: 23 }}>{venueAddress || venueName}</Text><Text style={{ color: '#CCCCCC', marginTop: 8 }}>Open directions to locate this venue.</Text></View>}
+        {!dark && <View pointerEvents='none' style={styles.mapAttribution}>
           <Text style={styles.mapsText}>Maps</Text>
           <Text style={styles.legalText}>Legal</Text>
-        </View>
+        </View>}
       </View>
 
       <Pressable
         accessibilityRole='button'
         onPress={handleOpenDirections}
-        style={styles.button}
+        style={[styles.button, dark && { backgroundColor: '#242424', minHeight: 48 }]}
       >
-        <Text style={styles.buttonText}>Get Directions</Text>
+        <Text style={[styles.buttonText, dark && { color: '#FFFFFF' }]}>Get Directions</Text>
       </Pressable>
     </View>
   );
 }
 
-function createVenueMarker(venueName: string) {
+function createVenueMarker(venueName: string, dark: boolean) {
   const markerWrap = document.createElement('div');
   markerWrap.className = 'apple-venue-marker';
 
   const markerLabel = document.createElement('div');
   markerLabel.className = 'apple-venue-label';
   markerLabel.textContent = venueName;
+  if (dark) { markerLabel.style.color = '#FFFFFF'; markerLabel.style.textShadow = '0 1px 3px #111111'; }
 
   const markerElement = document.createElement('div');
   markerElement.className = 'apple-venue-pin';
@@ -204,7 +221,7 @@ function ensureAppleMarkerStyles() {
   document.head.appendChild(style);
 }
 
-function applyAppleMapsPaint(map: MapLibreMap) {
+function applyAppleMapsPaint(map: MapLibreMap, dark: boolean) {
   const loadedStyle = map.getStyle();
 
   (loadedStyle.layers || []).forEach((layer) => {
@@ -216,16 +233,16 @@ function applyAppleMapsPaint(map: MapLibreMap) {
 
     try {
       if (layer.type === 'background') {
-        map.setPaintProperty(layer.id, 'background-color', '#F6F5F1');
+        map.setPaintProperty(layer.id, 'background-color', (dark ? '#28343B' : '#F6F5F1'));
       } else if (layer.type === 'fill' && name.includes('water')) {
-        map.setPaintProperty(layer.id, 'fill-color', '#B7DDEA');
+        map.setPaintProperty(layer.id, 'fill-color', (dark ? '#174C73' : '#B7DDEA'));
       } else if (
         layer.type === 'fill' &&
         /(park|landcover|wood|grass|green)/.test(name)
       ) {
-        map.setPaintProperty(layer.id, 'fill-color', '#DCECC9');
+        map.setPaintProperty(layer.id, 'fill-color', (dark ? '#17493C' : '#DCECC9'));
       } else if (layer.type === 'fill' && name.includes('building')) {
-        map.setPaintProperty(layer.id, 'fill-color', '#EAE8E2');
+        map.setPaintProperty(layer.id, 'fill-color', (dark ? '#3A4850' : '#EAE8E2'));
       } else if (
         layer.type === 'line' &&
         /(road|transport|highway|street)/.test(name)
@@ -233,19 +250,19 @@ function applyAppleMapsPaint(map: MapLibreMap) {
         map.setPaintProperty(
           layer.id,
           'line-color',
-          /(case|outline|border)/.test(name) ? '#D1D2CF' : '#FFFCF7',
+          /(case|outline|border)/.test(name) ? (dark ? '#34434D' : '#D1D2CF') : (dark ? '#68777F' : '#FFFCF7'),
         );
         map.setPaintProperty(layer.id, 'line-opacity', 0.96);
       } else if (layer.type === 'line' && name.includes('boundary')) {
-        map.setPaintProperty(layer.id, 'line-color', '#D4D0CA');
+        map.setPaintProperty(layer.id, 'line-color', (dark ? '#65747C' : '#D4D0CA'));
         map.setPaintProperty(layer.id, 'line-opacity', 0.32);
       } else if (layer.type === 'symbol') {
         map.setPaintProperty(
           layer.id,
           'text-color',
-          /(place|city|town)/.test(name) ? '#4D4742' : '#827E79',
+          /(place|city|town)/.test(name) ? (dark ? '#FFFFFF' : '#4D4742') : (dark ? '#C0CBCF' : '#827E79'),
         );
-        map.setPaintProperty(layer.id, 'text-halo-color', '#F6F5F1');
+        map.setPaintProperty(layer.id, 'text-halo-color', (dark ? '#28343B' : '#F6F5F1'));
         map.setPaintProperty(layer.id, 'text-halo-width', 1.9);
       }
     } catch {

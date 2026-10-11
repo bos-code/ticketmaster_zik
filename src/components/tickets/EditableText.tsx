@@ -1,7 +1,6 @@
+import { Text, TextInput } from '@/components/ui/app-text';
 import React from 'react';
 import {
-  Text,
-  TextInput,
   View,
   type StyleProp,
   type TextStyle,
