@@ -44,6 +44,7 @@ export function PromoCard() {
           source={featureImage}
           style={StyleSheet.absoluteFillObject}
           resizeMode="cover"
+          blurRadius={24}
         />
         <View
           style={[StyleSheet.absoluteFillObject, { pointerEvents: "none" }]}

@@ -15,6 +15,7 @@ export const TicketBarcodeSvg = memo(function TicketBarcodeSvg({
       <BarcodeArtwork
         height="100%"
         preserveAspectRatio="xMidYMid meet"
+        viewBox="40 124 1524 264"
         width="100%"
       />
     </View>
@@ -23,7 +24,9 @@ export const TicketBarcodeSvg = memo(function TicketBarcodeSvg({
 
 const styles = StyleSheet.create({
   artwork: {
-    height: 90,
+    // The source SVG includes large white margins above and below the code.
+    // Use the ink's viewport so the complete code fills its responsive band.
+    aspectRatio: 1524 / 264,
     width: "100%",
   },
 });

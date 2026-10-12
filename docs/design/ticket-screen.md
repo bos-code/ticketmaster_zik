@@ -13,6 +13,10 @@ viewer measures its available width, keeps each seat centered after resizing,
 and permits vertical scrolling on short screens. Its Ticket Info drawer reads
 the currently selected seat. Previous/next controls supplement horizontal swipe.
 The barcode sweep respects reduced motion and stops when its card unmounts.
+Its artwork viewport trims the source SVG's empty margins so the code spans
+the white panel, with proportional height. The sweep measures that displayed
+width instead of using a fixed travel distance. The social card keeps its
+foreground artwork sharp and softly blurs the same event image behind it.
 
 Directions use the selected venue's coordinates or an address search when those
 coordinates are absent. The map preview has a dark palette and a fixed venue

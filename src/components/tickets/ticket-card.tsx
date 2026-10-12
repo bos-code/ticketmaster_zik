@@ -1,6 +1,7 @@
 import { Text } from '@/components/ui/app-text';
 import { Ionicons } from "@expo/vector-icons";
 import { Image } from "expo-image";
+import { LinearGradient } from "expo-linear-gradient";
 import React, { useEffect } from "react";
 import { View, type LayoutChangeEvent } from "react-native";
 import Animated, {
@@ -64,7 +65,7 @@ export function TicketCard({
         <View className="absolute top-3 left-0 right-0 px-5">
           <View className="bg-white rounded-sm py-0 shadow-lg items-center">
             <View className="flex-row items-center justify-center gap-1 py-2">
-              <Text className="text-[12px] font-bold text-[#6B6B6B]">
+              <Text className="text-[13px] font-bold text-[#6B6B6B]">
                 Ticket barcode preview
               </Text>
               <Ionicons name="refresh" size={10} color="#6B6B6B" />
@@ -124,6 +125,7 @@ export function TicketCard({
 
 function TicketBarcodeBand() {
   const beamProgress = useSharedValue(0);
+  const bandWidth = useSharedValue(0);
   const reduceMotion = useReducedMotion();
 
   useEffect(() => {
@@ -143,33 +145,47 @@ function TicketBarcodeBand() {
     return {
       transform: [
         {
-          translateX: interpolate(beamProgress.value, [0, 1], [-160, 160]),
+          translateX: interpolate(beamProgress.value, [0, 1], [
+            -Math.max(0, bandWidth.value - 6) / 2,
+            Math.max(0, bandWidth.value - 6) / 2,
+          ]),
         },
       ],
     };
   });
 
   return (
-    <View accessibilityElementsHidden importantForAccessibility="no-hide-descendants" className="relative h-[68px] w-full items-center justify-center overflow-hidden bg-white px-2 pb-2">
-      <TicketBarcodeSvg style={{ height: 60 }} />
-
-      <Animated.View
-        className="absolute rounded-t-lg w-[6px] bg-[#026CDF]"
-        style={[
-          {
-            height: "100%",
-            top: 0,
-            left: "50%",
-            opacity: 1,
-            shadowColor: "#026CDF",
-            shadowOffset: { width: 0, height: 0 },
-            shadowOpacity: 1,
-            shadowRadius: 10,
-            elevation: 5,
-          },
-          beamAnimatedStyle,
-        ]}
-      />
+    <View accessibilityElementsHidden importantForAccessibility="no-hide-descendants" className="relative w-full items-center justify-center overflow-hidden bg-white px-2 pb-2">
+      <View
+        onLayout={({ nativeEvent }) => {
+          bandWidth.value = nativeEvent.layout.width;
+        }}
+        style={{ width: "100%", aspectRatio: 1524 / 264, overflow: "hidden" }}
+      >
+        <TicketBarcodeSvg />
+        <Animated.View
+          pointerEvents="none"
+          style={[
+            {
+              position: "absolute",
+              width: 26,
+              marginLeft: -13,
+              height: "100%",
+              top: 0,
+              left: "50%",
+            },
+            beamAnimatedStyle,
+          ]}
+        >
+          <LinearGradient
+            colors={["rgba(2,108,223,0)", "rgba(2,108,223,0.45)", "rgba(2,108,223,0)"]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={{ width: "100%", height: "100%" }}
+          />
+          <View style={{ position: "absolute", top: 0, bottom: 0, left: 10, width: 6, backgroundColor: "#026CDF" }} />
+        </Animated.View>
+      </View>
     </View>
   );
 }
