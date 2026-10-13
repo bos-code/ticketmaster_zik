@@ -44,12 +44,12 @@
       [
         "expo-splash-screen",
         {
-          "backgroundColor": "#007AFF",
+          "backgroundColor": "#050505",
           "android": {
-            "backgroundColor": "#007AFF"
+            "backgroundColor": "#050505"
           },
           "ios": {
-            "backgroundColor": "#007AFF"
+            "backgroundColor": "#050505"
           }
         }
       ],

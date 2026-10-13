@@ -2,19 +2,15 @@ import { Text } from '@/components/ui/app-text';
 import { useRouter } from 'expo-router';
 import maplibregl, { type Map as MapLibreMap } from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
-import React, { useEffect, useMemo, useRef } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Linking, Pressable, StyleSheet, View } from 'react-native';
 
 import {
   openExternalMaps,
-  toCoordinate,
   type VenueMapData,
 } from '@/lib/map-utils';
-
-const FALLBACK_MAP_CENTER = {
-  latitude: 6.42674716,
-  longitude: 3.43009885,
-};
+import { useVenueCoordinate } from '@/hooks/use-venue-coordinate';
+import { VenueMapPlaceholder } from '@/components/events/venue-map-placeholder';
 
 export function VenueMapCard({
   appearance = 'light',
@@ -30,43 +26,51 @@ export function VenueMapCard({
   const mapContainerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<MapLibreMap | null>(null);
   const markerRef = useRef<maplibregl.Marker | null>(null);
-  const venueCoordinate = toCoordinate(latitude, longitude);
-  const initialCoordinate = venueCoordinate ?? FALLBACK_MAP_CENTER;
+  const { coordinate: venueCoordinate, isLoading, retry } = useVenueCoordinate({ latitude, longitude, venueName, venueAddress });
+  const [mapFailed, setMapFailed] = useState(false);
+  const [mapAttempt, setMapAttempt] = useState(0);
+  const resolvedLatitude = venueCoordinate?.latitude;
+  const resolvedLongitude = venueCoordinate?.longitude;
   const mapCenter = useMemo(
     () =>
-      [initialCoordinate.longitude, initialCoordinate.latitude] as [
-        number,
-        number,
-      ],
-    [initialCoordinate.latitude, initialCoordinate.longitude],
+      resolvedLatitude !== undefined && resolvedLongitude !== undefined ? [resolvedLongitude, resolvedLatitude] as [number, number] : null,
+    [resolvedLatitude, resolvedLongitude],
   );
 
   useEffect(() => {
-    if (!mapContainerRef.current || mapRef.current) {
+    if (!mapCenter || !mapContainerRef.current || mapRef.current) {
       return;
     }
 
     ensureAppleMarkerStyles();
 
-    const map = new maplibregl.Map({
-      attributionControl: { compact: true },
-      bearing: 0,
-      center: mapCenter,
-      container: mapContainerRef.current,
-      maxPitch: 45,
-      pitch: 0,
-      style: 'https://tiles.openfreemap.org/styles/bright',
-      zoom: 14.65,
-    });
+    let map: MapLibreMap;
+    try {
+      map = new maplibregl.Map({
+        attributionControl: { compact: true },
+        bearing: 0,
+        center: mapCenter,
+        container: mapContainerRef.current,
+        maxPitch: 45,
+        pitch: 0,
+        style: 'https://tiles.openfreemap.org/styles/bright',
+        zoom: 14.65,
+      });
+    } catch {
+      setMapFailed(true);
+      return;
+    }
 
     mapRef.current = map;
 
     map.on('load', () => {
+      setMapFailed(false);
       applyAppleMapsPaint(map, dark);
       markerRef.current = createVenueMarker(venueName, dark)
         .setLngLat(mapCenter)
         .addTo(map);
     });
+    map.on('error', () => setMapFailed(true));
 
     const resizeObserver = new ResizeObserver(() => map.resize());
     resizeObserver.observe(mapContainerRef.current);
@@ -77,7 +81,13 @@ export function VenueMapCard({
       mapRef.current = null;
       markerRef.current = null;
     };
-  }, [dark, mapCenter, venueName]);
+  }, [dark, mapCenter, venueName, mapAttempt]);
+
+  function handleRetry() {
+    setMapFailed(false);
+    setMapAttempt((attempt) => attempt + 1);
+    if (!venueCoordinate) retry();
+  }
 
   function handleOpenDirections() {
     if (dark) {
@@ -100,11 +110,12 @@ export function VenueMapCard({
   }
 
   async function handleOpenExternalMaps() {
+    if (!venueCoordinate) {
+      await Linking.openURL(`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent([venueName, venueAddress].filter(Boolean).join(', '))}`);
+      return;
+    }
     await openExternalMaps({
-      destination: {
-        latitude: initialCoordinate.latitude,
-        longitude: initialCoordinate.longitude,
-      },
+      destination: venueCoordinate,
       destinationLabel: venueName,
       origin: null,
     });
@@ -113,12 +124,14 @@ export function VenueMapCard({
   return (
     <View style={[styles.card, dark && { backgroundColor: '#242424' }]}>
       <View style={[styles.mapFrame, { height: mapHeight }, dark && { backgroundColor: '#25363C' }]}>
-        {(!dark || venueCoordinate) && React.createElement('div', {
+        {venueCoordinate && React.createElement('div', {
           ref: mapContainerRef,
+          role: 'region',
+          'aria-label': `${venueName} map`,
           style: domMapStyle,
         })}
         {dark && <View pointerEvents='none' style={{ position: 'absolute', top: 14, left: 16, right: 16 }}><Text style={{ color: '#FFFFFF', fontSize: 23, fontWeight: '700', textShadowColor: '#111111', textShadowRadius: 4 }}>{venueName}</Text></View>}
-        {dark && !venueCoordinate && <View style={{ flex: 1, justifyContent: 'center', padding: 24 }}><Text style={{ color: '#CCCCCC', fontSize: 16, lineHeight: 23 }}>{venueAddress || venueName}</Text><Text style={{ color: '#CCCCCC', marginTop: 8 }}>Open directions to locate this venue.</Text></View>}
+        {(!venueCoordinate || mapFailed) && <VenueMapPlaceholder dark={dark} isLoading={isLoading} onRetry={handleRetry} venueAddress={venueAddress || venueName} />}
         {!dark && <View pointerEvents='none' style={styles.mapAttribution}>
           <Text style={styles.mapsText}>Maps</Text>
           <Text style={styles.legalText}>Legal</Text>

@@ -31,7 +31,7 @@ import {
   useTicketStore,
 } from '@/store/ticketStore';
 
-type FormState = Record<keyof TicketInput, string>;
+type FormState = Record<Exclude<keyof TicketInput, 'latitude' | 'longitude'>, string>;
 type FieldKey = keyof FormState;
 
 const fieldLabels: Record<FieldKey, string> = {
@@ -168,6 +168,11 @@ export function AddEventAdminScreen() {
     }
 
     const payload = toTicketInput(form);
+    if (selectedTicket && (['venue', 'city', 'state', 'country'] as const).some((field) => form[field] !== selectedTicket[field])) {
+      // A changed address must be looked up again rather than reusing an old pin.
+      payload.latitude = null;
+      payload.longitude = null;
+    }
 
     try {
       setIsSaving(true);
@@ -562,7 +567,7 @@ function validateForm(form: FormState) {
 }
 
 function toFormState(ticket: TicketInput): FormState {
-  return { ...ticket };
+  return Object.fromEntries(Object.keys(EMPTY_CREATE_FORM).map((key) => [key, ticket[key as FieldKey] ?? ''])) as FormState;
 }
 
 function toTicketInput(form: FormState): TicketInput {

@@ -79,7 +79,7 @@ export default function RootHtml({ children }: PropsWithChildren) {
             __html: `
               html, body, #root {
                 background: ${APP_THEME_COLOR};
-                min-height: 100%;
+                min-height: 0;
                 overscroll-behavior: none;
                 touch-action: manipulation;
               }

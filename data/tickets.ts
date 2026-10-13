@@ -11,6 +11,8 @@ export type TicketRecord = {
   city: string;
   state: string;
   country: string;
+  latitude?: number | null;
+  longitude?: number | null;
   date: string;
   time: string;
   purchaseDate: string;

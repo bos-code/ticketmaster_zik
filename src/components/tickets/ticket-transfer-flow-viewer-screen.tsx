@@ -11,13 +11,13 @@ import { useTicketFlowData } from '@/components/tickets/useTicketFlowData';
 import type { Seat } from '@/components/tickets/ticketFlowTypes';
 import { useResponsiveLayout } from '@/hooks/use-responsive-layout';
 import { getViewerLayout } from '@/lib/fan-layout';
+import { getTicketPositionLabel } from '@/utils/ticketUtils';
 
-export function TicketTransferViewerScreen({ onBack, onViewerIndexChange, positionLabel, seats, viewerIndex }: {
+export function TicketTransferViewerScreen({ onBack, onViewerIndexChange, seats, viewerIndex }: {
   carouselCardWidth: number;
   carouselSnapInterval: number;
   onBack: () => void;
   onViewerIndexChange: (index: number) => void;
-  positionLabel?: string;
   seats: Seat[];
   viewerIndex: number;
 }) {
@@ -26,17 +26,33 @@ export function TicketTransferViewerScreen({ onBack, onViewerIndexChange, positi
   const layout = useResponsiveLayout();
   const { cardWidth, sidePadding, snapInterval } = getViewerLayout(layout.width);
   const viewerListRef = useRef<FlatList<Seat>>(null);
+  const scrollIndexRef = useRef(viewerIndex);
+  const alignedIntervalRef = useRef<number | null>(null);
   const [cardHeight, setCardHeight] = useState(550);
   const [isTicketInfoOpen, setIsTicketInfoOpen] = useState(false);
   const [isWalletInfoOpen, setIsWalletInfoOpen] = useState(false);
-  const activeSeat = seats[viewerIndex];
+  const activeIndex = Math.max(0, Math.min(seats.length - 1, viewerIndex));
+  const activeSeat = seats[activeIndex];
   useEffect(() => {
-    const frame = requestAnimationFrame(() => viewerListRef.current?.scrollToOffset({ animated: false, offset: viewerIndex * snapInterval }));
+    // A swipe already moved the list. Only align for external navigation or
+    // changed geometry; scrolling again on every swipe would interrupt it.
+    if (alignedIntervalRef.current === snapInterval && scrollIndexRef.current === activeIndex) return;
+    const frame = requestAnimationFrame(() => {
+      alignedIntervalRef.current = snapInterval;
+      scrollIndexRef.current = activeIndex;
+      viewerListRef.current?.scrollToOffset({ animated: false, offset: activeIndex * snapInterval });
+    });
     return () => cancelAnimationFrame(frame);
-  }, [snapInterval, viewerIndex]);
+  }, [snapInterval, activeIndex]);
   function updateIndex(event: NativeSyntheticEvent<NativeScrollEvent>) {
+    // Ignore offsets from the old geometry until the resized list is aligned.
+    if (!seats.length || alignedIntervalRef.current !== snapInterval ||
+      Math.abs(event.nativeEvent.layoutMeasurement.width - layout.width) > 1) return;
     const index = Math.max(0, Math.min(seats.length - 1, Math.round(event.nativeEvent.contentOffset.x / snapInterval)));
-    if (index !== viewerIndex) onViewerIndexChange(index);
+    if (index !== scrollIndexRef.current) {
+      scrollIndexRef.current = index;
+      onViewerIndexChange(index);
+    }
   }
   return <View style={[styles.root, { paddingTop: Math.max(insets.top, 12), paddingLeft: insets.left, paddingRight: insets.right }]}>
     <Head><meta name="theme-color" content="#111111" /><meta name="color-scheme" content="dark" /></Head>
@@ -53,14 +69,15 @@ export function TicketTransferViewerScreen({ onBack, onViewerIndexChange, positi
           keyExtractor={(seat) => seat.id}
           getItemLayout={(_, index) => ({ index, length: snapInterval, offset: snapInterval * index })}
           renderItem={({ item, index }) => <TicketCard cardWidth={cardWidth} seat={item} index={index} onLayout={(e) => setCardHeight((current) => Math.max(index === 0 ? 0 : current, e.nativeEvent.layout.height))} />}
+          onScroll={updateIndex} scrollEventThrottle={16}
           onMomentumScrollEnd={updateIndex} onScrollEndDrag={updateIndex} decelerationRate="fast"
           showsHorizontalScrollIndicator={false} snapToInterval={snapInterval} snapToAlignment="start" />
       </View>
       <View style={styles.footer}>
         <View style={styles.pagination}>
-          <Pressable accessibilityRole="button" accessibilityLabel="Previous ticket" disabled={viewerIndex === 0} onPress={() => onViewerIndexChange(viewerIndex - 1)} style={styles.iconButton}><Ionicons name="chevron-back" size={22} color={viewerIndex === 0 ? '#666666' : '#FFFFFF'} /></Pressable>
-          <Text accessibilityLiveRegion="polite" style={styles.position}>{positionLabel ?? `${viewerIndex + 1} of ${seats.length}`}</Text>
-          <Pressable accessibilityRole="button" accessibilityLabel="Next ticket" disabled={viewerIndex >= seats.length - 1} onPress={() => onViewerIndexChange(viewerIndex + 1)} style={styles.iconButton}><Ionicons name="chevron-forward" size={22} color={viewerIndex >= seats.length - 1 ? '#666666' : '#FFFFFF'} /></Pressable>
+          <Pressable accessibilityRole="button" accessibilityLabel="Previous ticket" disabled={!seats.length || activeIndex === 0} onPress={() => onViewerIndexChange(activeIndex - 1)} style={styles.iconButton}><Ionicons name="chevron-back" size={22} color={activeIndex === 0 ? '#666666' : '#FFFFFF'} /></Pressable>
+          <Text accessibilityLiveRegion="polite" style={styles.position}>{getTicketPositionLabel(activeIndex, seats.length)}</Text>
+          <Pressable accessibilityRole="button" accessibilityLabel="Next ticket" disabled={activeIndex >= seats.length - 1} onPress={() => onViewerIndexChange(activeIndex + 1)} style={styles.iconButton}><Ionicons name="chevron-forward" size={22} color={activeIndex >= seats.length - 1 ? '#666666' : '#FFFFFF'} /></Pressable>
         </View>
         <View style={styles.footerActions}>
           <Pressable accessibilityRole="button" accessibilityLabel="Apple Wallet availability" onPress={() => setIsWalletInfoOpen(true)} style={styles.walletButton}>
