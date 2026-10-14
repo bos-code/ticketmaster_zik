@@ -1,4 +1,4 @@
-const CACHE_NAME = "ticketmaster-zik-v10";
+const CACHE_NAME = "ticketmaster-zik-v11";
 const IS_LOCAL_PREVIEW = ["localhost", "127.0.0.1", "[::1]"].includes(self.location.hostname);
 const APP_SHELL_ASSETS = [
   "/",
@@ -40,6 +40,11 @@ self.addEventListener("fetch", (event) => {
 
   const url = new URL(request.url);
   if (url.origin !== self.location.origin) {
+    return;
+  }
+  // Ticket lists and mutations must always use the live API, never an offline
+  // snapshot that could hide a ticket immediately after it was created.
+  if (url.pathname.startsWith('/api/')) {
     return;
   }
   if (url.pathname.endsWith(".bundle") || url.pathname.includes("hot-update") || url.pathname === "/symbolicate") {
