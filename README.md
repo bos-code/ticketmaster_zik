@@ -7,3 +7,6 @@ A full-featured event ticketing platform that allows organizers to create events
 ## 🚀 Overview
 
 This application is a **Ticketmaster-inspired system** built for modern mobile-first usage. It focuses on:
+
+heffers
+
