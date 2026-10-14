@@ -2,7 +2,10 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "buildCommand": "pnpm exec expo export --platform web",
   "outputDirectory": "dist",
+  "functions": {
+    "api/tickets.js": { "maxDuration": 30 }
+  },
   "rewrites": [
-    { "source": "/(.*)", "destination": "/index.html" }
+    { "source": "/((?!api/).*)", "destination": "/index.html" }
   ]
 }

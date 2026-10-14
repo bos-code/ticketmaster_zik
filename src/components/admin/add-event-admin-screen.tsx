@@ -597,6 +597,10 @@ function toTicketInput(form: FormState): TicketInput {
 function getTicketSaveErrorMessage(error: unknown) {
   const message = error instanceof Error ? error.message : '';
 
+  if (error instanceof Error && error.name === 'TicketApiError') {
+    return message;
+  }
+
   if (
     message.toLowerCase().includes('cloudinary') ||
     message.includes('storage/') ||
