@@ -281,15 +281,22 @@ async function writeTicketDocumentWithRest(
   ticketId: string,
   fields: Partial<TicketRecord>,
 ) {
-  const fieldNames = Object.keys(fields);
-  const updateMask = fieldNames
-    .map((fieldName) => `updateMask.fieldPaths=${encodeURIComponent(fieldName)}`)
-    .join('&');
-  const separator = updateMask ? '&' : '';
-  const response = await fetch(`${buildTicketDocumentUrl(ticketId)}${separator}${updateMask}`, {
-    body: JSON.stringify({ fields: toFirestoreRestFields(fields) }),
+  const database = `projects/${firebaseConfig.projectId}/databases/(default)`;
+  // Use Firestore's commit endpoint for both creates and partial updates. Keep
+  // the field mask in the body instead of sending the cross-origin PATCH that
+  // failed in the web app. The mask preserves fields omitted by an edit.
+  const response = await fetch(`https://firestore.googleapis.com/v1/${database}/documents:commit?key=${encodeURIComponent(firebaseConfig.apiKey)}`, {
+    body: JSON.stringify({
+      writes: [{
+        update: {
+          name: `${database}/documents/${TICKETS_COLLECTION}/${ticketId}`,
+          fields: toFirestoreRestFields(fields),
+        },
+        updateMask: { fieldPaths: Object.keys(fields) },
+      }],
+    }),
     headers: { 'content-type': 'application/json' },
-    method: 'PATCH',
+    method: 'POST',
   });
 
   if (!response.ok) {
