@@ -81,8 +81,8 @@ export const useTicketStore = create<TicketStore>((set, get) => ({
 
     await createTicketDocument(nextTicket);
     set((state) => ({
-      events: [nextTicket, ...state.events],
-      tickets: [nextTicket, ...state.tickets],
+      events: [nextTicket, ...state.events.filter((event) => event.id !== nextTicket.id)],
+      tickets: [nextTicket, ...state.tickets.filter((event) => event.id !== nextTicket.id)],
     }));
 
     return nextTicket;

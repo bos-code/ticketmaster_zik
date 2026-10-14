@@ -2,6 +2,7 @@ import type { TicketRecord } from "../../data/tickets";
 
 import { getSimpleTicketSeatNumbers } from "@/store/ticketStore";
 import type { TicketItem, TicketOrderData } from "@/types/ticket";
+import { toCoordinate } from "@/lib/map-utils";
 
 export const ticketOrder: TicketOrderData = {
   event: {
@@ -88,7 +89,8 @@ export function mapTicketRecordToTicketOrderData(
         ticketRecord.time,
       ),
       heroImage: { uri: ticketRecord.image },
-      ...resolveKnownVenueCoordinate(ticketRecord.venue),
+      ...(toCoordinate(ticketRecord.latitude, ticketRecord.longitude) ??
+        resolveKnownVenueCoordinate(ticketRecord.venue)),
     },
     order: {
       id: ticketRecord.id,

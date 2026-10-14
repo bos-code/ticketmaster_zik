@@ -25,12 +25,42 @@ const SEED_VERSION = 1;
 let seedPromise: Promise<void> | null = null;
 
 export async function fetchTickets() {
+  if (usesHostedTicketApi()) {
+    const tickets = await requestHostedTickets() as TicketRecord[];
+    return tickets.sort((left, right) => compareDescending(left.updatedAt, right.updatedAt));
+  }
   const snapshot = await getDocsFromServer(collection(firestore, TICKETS_COLLECTION));
   return snapshot.docs.map((item) => item.data() as TicketRecord)
     .sort((left, right) => compareDescending(left.updatedAt, right.updatedAt));
 }
 
 export function subscribeToTickets(onValue: (tickets: TicketRecord[]) => void) {
+  if (usesHostedTicketApi()) {
+    let disposed = false;
+    let pending = false;
+    const refresh = async () => {
+      if (disposed || pending) return;
+      pending = true;
+      try {
+        const tickets = await fetchTickets();
+        if (!disposed) onValue(tickets);
+      } catch (error) {
+        console.warn('Ticket sync failed.', error);
+      } finally {
+        pending = false;
+      }
+    };
+    void refresh();
+    const interval = setInterval(() => {
+      if (!document.hidden) void refresh();
+    }, 30000);
+    window.addEventListener('focus', refresh);
+    return () => {
+      disposed = true;
+      clearInterval(interval);
+      window.removeEventListener('focus', refresh);
+    };
+  }
   return onSnapshot(collection(firestore, TICKETS_COLLECTION), (snapshot) => {
     const tickets = snapshot.docs
       .map((documentSnapshot) => documentSnapshot.data() as TicketRecord)
@@ -281,12 +311,14 @@ async function writeTicketDocumentWithRest(
   ticketId: string,
   fields: Partial<TicketRecord>,
 ) {
-  const fieldNames = Object.keys(fields);
-  const updateMask = fieldNames
+  if (usesHostedTicketApi()) {
+    await requestHostedTickets(ticketId, fields);
+    return;
+  }
+  const updateMask = Object.keys(fields)
     .map((fieldName) => `updateMask.fieldPaths=${encodeURIComponent(fieldName)}`)
     .join('&');
-  const separator = updateMask ? '&' : '';
-  const response = await fetch(`${buildTicketDocumentUrl(ticketId)}${separator}${updateMask}`, {
+  const response = await fetch(`${buildTicketDocumentUrl(ticketId)}${updateMask ? '&' : ''}${updateMask}`, {
     body: JSON.stringify({ fields: toFirestoreRestFields(fields) }),
     headers: { 'content-type': 'application/json' },
     method: 'PATCH',
@@ -297,7 +329,39 @@ async function writeTicketDocumentWithRest(
   }
 }
 
+function usesHostedTicketApi() {
+  return typeof window !== 'undefined' && window.location?.protocol === 'https:';
+}
+
+async function requestHostedTickets(ticketId?: string, fields?: Partial<TicketRecord>, method = fields ? 'POST' : 'GET') {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 20000);
+  try {
+    const response = await fetch(ticketId ? `/api/tickets?id=${encodeURIComponent(ticketId)}` : '/api/tickets', {
+      method,
+      ...(fields ? {
+        body: JSON.stringify(fields),
+        headers: { 'content-type': 'application/json' },
+      } : {}),
+      cache: 'no-store', signal: controller.signal,
+    });
+    const payload = await response.json();
+    if (!response.ok) {
+      const error = new Error(payload.error || 'We could not save this ticket. Please try again.');
+      error.name = 'TicketApiError';
+      throw error;
+    }
+    return payload;
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
 async function deleteTicketDocumentWithRest(ticketId: string) {
+  if (usesHostedTicketApi()) {
+    await requestHostedTickets(ticketId, undefined, 'DELETE');
+    return;
+  }
   const response = await fetch(buildTicketDocumentUrl(ticketId), {
     method: 'DELETE',
   });

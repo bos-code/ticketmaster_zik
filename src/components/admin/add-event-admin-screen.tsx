@@ -31,7 +31,7 @@ import {
   useTicketStore,
 } from '@/store/ticketStore';
 
-type FormState = Record<keyof TicketInput, string>;
+type FormState = Record<Exclude<keyof TicketInput, 'latitude' | 'longitude'>, string>;
 type FieldKey = keyof FormState;
 
 const fieldLabels: Record<FieldKey, string> = {
@@ -106,6 +106,7 @@ export function AddEventAdminScreen() {
   const [errors, setErrors] = useState<Partial<Record<FieldKey, string>>>({});
   const [isPickingImage, setIsPickingImage] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [formError, setFormError] = useState<{ title: string; message: string } | null>(null);
   const [toast, setToast] = useState<string | null>(null);
   const screenTitle = mode === 'edit' ? 'Edit Ticket' : 'Create New Ticket';
   const screenSubtitle =
@@ -159,15 +160,22 @@ export function AddEventAdminScreen() {
       return;
     }
 
+    setFormError(null);
+
     const nextErrors = validateForm(form);
     setErrors(nextErrors);
 
     if (Object.keys(nextErrors).length > 0) {
-      Alert.alert('Review ticket fields', 'Please fix the highlighted ticket fields.');
+      reportFormError('Review ticket fields', 'Please fix the highlighted ticket fields.');
       return;
     }
 
     const payload = toTicketInput(form);
+    if (selectedTicket && (['venue', 'city', 'state', 'country'] as const).some((field) => form[field] !== selectedTicket[field])) {
+      // A changed address must be looked up again rather than reusing an old pin.
+      payload.latitude = null;
+      payload.longitude = null;
+    }
 
     try {
       setIsSaving(true);
@@ -184,12 +192,19 @@ export function AddEventAdminScreen() {
       router.replace({ pathname: '/admin', params: { toast: 'created' } });
     } catch (error) {
       console.warn('Ticket save failed.', error);
-      Alert.alert(
+      reportFormError(
         'Save failed',
         getTicketSaveErrorMessage(error),
       );
     } finally {
       setIsSaving(false);
+    }
+  }
+
+  function reportFormError(title: string, message: string) {
+    setFormError({ title, message });
+    if (Platform.OS !== 'web') {
+      Alert.alert(title, message);
     }
   }
 
@@ -259,7 +274,7 @@ export function AddEventAdminScreen() {
         style={styles.flex}
       >
         <ScrollView
-          contentContainerStyle={[styles.content, { paddingBottom: 128 + insets.bottom }]}
+          contentContainerStyle={[styles.content, { paddingBottom: (formError ? 224 : 128) + insets.bottom }]}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
@@ -414,6 +429,12 @@ export function AddEventAdminScreen() {
       </KeyboardAvoidingView>
 
       <View style={[styles.footer, { paddingBottom: Math.max(insets.bottom, 12) }]}>
+        {formError ? (
+          <View accessibilityRole="alert" accessibilityLiveRegion="assertive" style={styles.formError}>
+            <Text style={styles.formErrorTitle}>{formError.title}</Text>
+            <Text style={styles.formErrorMessage}>{formError.message}</Text>
+          </View>
+        ) : null}
         <Pressable
           disabled={isSaving}
           onPress={handleLeaveAdminForm}
@@ -451,7 +472,7 @@ export function AddEventAdminScreen() {
       <WebImageCropper
         aspect={16 / 9}
         onCroppedImage={(imageUri) => updateField('image', imageUri)}
-        onError={(message) => Alert.alert('Could not crop image', message)}
+        onError={(message) => reportFormError('Could not crop image', message)}
         onProcessingChange={setIsPickingImage}
         outputHeight={788}
         outputWidth={1400}
@@ -562,7 +583,7 @@ function validateForm(form: FormState) {
 }
 
 function toFormState(ticket: TicketInput): FormState {
-  return { ...ticket };
+  return Object.fromEntries(Object.keys(EMPTY_CREATE_FORM).map((key) => [key, ticket[key as FieldKey] ?? ''])) as FormState;
 }
 
 function toTicketInput(form: FormState): TicketInput {
@@ -575,6 +596,10 @@ function toTicketInput(form: FormState): TicketInput {
 
 function getTicketSaveErrorMessage(error: unknown) {
   const message = error instanceof Error ? error.message : '';
+
+  if (error instanceof Error && error.name === 'TicketApiError') {
+    return message;
+  }
 
   if (
     message.toLowerCase().includes('cloudinary') ||
@@ -717,6 +742,9 @@ const styles = StyleSheet.create({
   multilineInput: { minHeight: 80, paddingTop: 12, textAlignVertical: 'top' },
   inputError: { borderColor: '#EF4444' },
   errorText: { color: '#EF4444', fontSize: 11, fontWeight: '600', lineHeight: 15 },
+  formError: { width: '100%', padding: 12, borderRadius: 10, backgroundColor: '#FEF2F2', borderColor: '#FECACA', borderWidth: 1, gap: 4 },
+  formErrorTitle: { color: '#991B1B', fontSize: 13, fontWeight: '700' },
+  formErrorMessage: { color: '#991B1B', fontSize: 12, lineHeight: 17 },
   imageUploadRow: { alignItems: 'center', flexDirection: 'row', gap: 10 },
   uploadButton: {
     alignItems: 'center',
@@ -781,6 +809,7 @@ const styles = StyleSheet.create({
     borderTopWidth: StyleSheet.hairlineWidth,
     bottom: 0,
     flexDirection: 'row',
+    flexWrap: 'wrap',
     gap: 10,
     left: 0,
     paddingHorizontal: 16,

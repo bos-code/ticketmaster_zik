@@ -33,8 +33,9 @@ export function TicketCard({
   onLayout?: (event: LayoutChangeEvent) => void;
 }) {
   const { event } = useTicketFlowData();
-  const seatLabel =
+  const rawSeatLabel =
     seat.label?.trim() || seat.note?.trim() || "Standard seating";
+  const seatLabel = rawSeatLabel.replace(/^artist presale$/i, 'Artist Presale');
   const ticketNote =
     seat.note?.trim() || seat.label?.trim() || "Standard seating";
 
@@ -66,9 +67,9 @@ export function TicketCard({
           <View className="bg-white rounded-sm py-0 shadow-lg items-center">
             <View className="flex-row items-center justify-center gap-1 py-2">
               <Text className="text-[13px] font-bold text-[#6B6B6B]">
-                Ticket barcode preview
+                Screenshots won&apos;t get you in
               </Text>
-              <Ionicons name="refresh" size={10} color="#6B6B6B" />
+              <Ionicons name="refresh" size={18} color="#6B6B6B" />
             </View>
             <TicketBarcodeBand />
           </View>

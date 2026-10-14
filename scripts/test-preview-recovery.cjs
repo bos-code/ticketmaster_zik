@@ -77,3 +77,21 @@ test('early HTML recovery removes the stale worker, preserves other caches, and 
   assert.equal(reloads, 1);
   assert.deepEqual([...keys], ['unrelated-cache']);
 });
+
+test('hosted ticket API requests bypass the offline app cache', () => {
+  const { listeners } = worker('tickets.example.com');
+  for (const method of ['GET', 'POST', 'DELETE']) {
+    listeners.fetch({
+      request: { method, mode: 'cors', url: 'http://tickets.example.com:8082/api/tickets?id=ticket-test' },
+      respondWith() { assert.fail('Live ticket data was intercepted by the offline cache'); },
+    });
+  }
+});
+
+test('the new worker removes existing caches that may contain stale API responses', async () => {
+  const { listeners, keys } = worker('tickets.example.com');
+  let activation;
+  listeners.activate({ waitUntil: promise => { activation = promise; } });
+  await activation;
+  assert.deepEqual([...keys], ['unrelated-cache']);
+});

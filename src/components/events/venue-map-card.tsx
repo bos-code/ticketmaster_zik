@@ -8,16 +8,12 @@ import VenueMap from '@/components/VenueMap';
 import {
   buildStaticMapPreviewUrl,
   canRenderEmbeddedMap,
-  hasValidCoordinates,
   openExternalMaps,
-  toCoordinate,
   type VenueMapData,
 } from '@/lib/map-utils';
 
-const FALLBACK_MAP_CENTER = {
-  latitude: 6.42674716,
-  longitude: 3.43009885,
-};
+import { useVenueCoordinate } from '@/hooks/use-venue-coordinate';
+import { VenueMapPlaceholder } from '@/components/events/venue-map-placeholder';
 
 export function VenueMapCard({
   appearance = 'light',
@@ -30,14 +26,12 @@ export function VenueMapCard({
 }: VenueMapData & { mapHeight?: number; appearance?: 'light' | 'dark' }) {
   const router = useRouter();
   const dark = appearance === 'dark';
-  const venueCoordinate = toCoordinate(latitude, longitude);
+  const { coordinate: venueCoordinate, isLoading, retry } = useVenueCoordinate({ latitude, longitude, venueName, venueAddress });
   const canShowEmbeddedMap = canRenderEmbeddedMap();
-  const initialCoordinate = venueCoordinate ?? FALLBACK_MAP_CENTER;
-  const shouldResolveInitialAddress = !hasValidCoordinates(latitude, longitude);
-  const staticMapUrl = buildStaticMapPreviewUrl(
-    initialCoordinate.longitude,
-    initialCoordinate.latitude,
-  );
+  const staticMapUrl = venueCoordinate ? buildStaticMapPreviewUrl(
+    venueCoordinate.longitude,
+    venueCoordinate.latitude,
+  ) : null;
 
   function handleOpenDirections() {
     if (dark) {
@@ -62,21 +56,22 @@ export function VenueMapCard({
         destinationLabel: venueName,
         origin: null,
       });
+    } else {
+      void Linking.openURL(`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent([venueName, venueAddress].filter(Boolean).join(', '))}`);
     }
   }
 
   return (
     <View style={[styles.card, dark && { backgroundColor: '#242424' }]}>
-      <View style={[styles.mapContainer, { height: mapHeight }]}>
-        {dark && !venueCoordinate ? (
-          <View style={{ flex: 1, justifyContent: 'center', padding: 24, backgroundColor: '#25363C' }}><Text style={{ color: '#FFFFFF', fontSize: 23, fontWeight: '700' }}>{venueName}</Text><Text style={{ color: '#CCCCCC', marginTop: 12 }}>{venueAddress || venueName}</Text><Text style={{ color: '#CCCCCC', marginTop: 8 }}>Open directions to locate this venue.</Text></View>
+      <View style={[styles.mapContainer, { height: mapHeight }, dark && { backgroundColor: '#25363C' }]}>
+        {!venueCoordinate ? (
+          <VenueMapPlaceholder dark={dark} isLoading={isLoading} onRetry={retry} venueAddress={venueAddress || venueName} />
         ) : canShowEmbeddedMap ? (
           <VenueMap
             appearance={appearance}
             preview={dark}
-            latitude={initialCoordinate.latitude}
-            longitude={initialCoordinate.longitude}
-            shouldResolveInitialAddress={shouldResolveInitialAddress}
+            latitude={venueCoordinate.latitude}
+            longitude={venueCoordinate.longitude}
             venueAddress={venueAddress}
             venueName={venueName}
           />
