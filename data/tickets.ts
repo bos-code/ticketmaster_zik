@@ -29,6 +29,7 @@ export type TicketRecord = {
   backgroundColor: string;
   seatLabel: string;
   ticketNote: string;
+  entryInstructions?: string;
   createdAt: string;
   updatedAt: string;
 };

@@ -20,6 +20,7 @@ export type Seat = {
   row: string;
   section: string;
   barcodeValue?: string;
+  entryInstructions?: string;
   canTransfer: boolean;
   canSell: boolean;
 };

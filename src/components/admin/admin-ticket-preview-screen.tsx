@@ -102,6 +102,7 @@ export function AdminTicketPreviewScreen() {
       seat,
       section: editedTicket.section,
       barcodeValue: editedTicket.barcode,
+      entryInstructions: editedTicket.entryInstructions,
       canTransfer: true,
       canSell: false,
     }));
@@ -172,6 +173,7 @@ export function AdminTicketPreviewScreen() {
         backgroundColor: editedTicket.backgroundColor,
         seatLabel: editedTicket.seatLabel,
         ticketNote: editedTicket.ticketNote,
+        entryInstructions: editedTicket.entryInstructions ?? '',
       };
 
       await updateEvent(ticketId, payload);

@@ -3,7 +3,7 @@ const TICKET_FIELDS = new Set([
   'country', 'date', 'time', 'purchaseDate', 'section', 'row', 'seatRange',
   'barcode', 'orderNumber', 'ticketType', 'status', 'perks', 'transferRules',
   'image', 'backgroundColor', 'seatLabel', 'ticketNote', 'latitude',
-  'longitude', 'createdAt', 'updatedAt',
+  'longitude', 'createdAt', 'updatedAt', 'entryInstructions',
 ]);
 
 module.exports = async function handler(request, response) {

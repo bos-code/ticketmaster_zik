@@ -9,15 +9,16 @@ import { TicketStackIcon } from '@/components/ticketmaster-tab-icon';
 import { HERO_COLLAPSED_HEIGHT, HERO_EXPANDED_HEIGHT } from '@/components/tickets/ticketFlowConstants';
 import { useTicketFlowData } from '@/components/tickets/useTicketFlowData';
 
-export function CollapsibleEventHero({ isHeroCollapsed, onBack, onOpenViewer, scrollY, collapseDistance, onHeightChange, height = HERO_EXPANDED_HEIGHT }: { isHeroCollapsed: boolean; onBack: () => void; onOpenViewer: () => void; scrollY: SharedValue<number>; collapseDistance: SharedValue<number>; onHeightChange?: (height: number) => void; height?: number }) {
+export function CollapsibleEventHero({ isHeroCollapsed, onBack, onOpenViewer, scrollY, collapseDistance, onHeightChange, height = HERO_EXPANDED_HEIGHT, topInset = 0 }: { isHeroCollapsed: boolean; onBack: () => void; onOpenViewer: () => void; scrollY: SharedValue<number>; collapseDistance: SharedValue<number>; onHeightChange?: (height: number) => void; height?: number; topInset?: number }) {
   const { event, order } = useTicketFlowData();
   const router = useRouter();
   const { width, height: windowHeight } = useWindowDimensions();
-  const imageHeight = Math.max(100, Math.min(360, width * 0.435, windowHeight * 0.4));
+  // Artwork fills the status-bar area; only interactive content avoids the notch.
+  const imageHeight = topInset + Math.max(100, Math.min(360, width * 0.435, windowHeight * 0.4));
   const expandedStyle = useAnimatedStyle(() => ({ opacity: interpolate(scrollY.value, [0, collapseDistance.value], [1, 0], Extrapolation.CLAMP), transform: [{ translateY: -Math.min(Math.max(0, scrollY.value), collapseDistance.value) }] }));
   const collapsedStyle = useAnimatedStyle(() => ({ opacity: interpolate(scrollY.value, [collapseDistance.value * 0.3, collapseDistance.value * 0.8], [0, 1], Extrapolation.CLAMP) }));
   return <View pointerEvents="box-none" style={[styles.hero, { height }]}>
-    <Animated.View pointerEvents={isHeroCollapsed ? 'box-none' : 'none'} style={[styles.collapsed, collapsedStyle]}>
+    <Animated.View pointerEvents={isHeroCollapsed ? 'box-none' : 'none'} style={[styles.collapsed, { height: HERO_COLLAPSED_HEIGHT + topInset, paddingTop: topInset }, collapsedStyle]}>
       <Image source={event.heroImage} contentFit="cover" style={StyleSheet.absoluteFillObject} />
       <View pointerEvents="none" style={[StyleSheet.absoluteFillObject, { backgroundColor: 'rgba(0,0,0,0.48)' }]} />
       <Pressable accessibilityRole="button" accessibilityLabel="Back to My Tickets" onPress={onBack} style={styles.back}><Ionicons name="arrow-back" color="white" size={23} /></Pressable>
@@ -26,7 +27,7 @@ export function CollapsibleEventHero({ isHeroCollapsed, onBack, onOpenViewer, sc
     </Animated.View>
     <Animated.View pointerEvents={isHeroCollapsed ? 'none' : 'box-none'} style={[styles.expanded, { height }, expandedStyle]}>
       <Image source={event.heroImage} contentFit="cover" style={[styles.image, { height: imageHeight }]} />
-      <View style={styles.heroActions}><Pressable accessibilityRole="button" accessibilityLabel="Back to My Tickets" onPress={onBack} style={styles.back}><Ionicons name="arrow-back" color="white" size={23} /></Pressable><Pressable accessibilityRole="button" onPress={() => router.push('/account/help')} style={styles.help}><Text style={styles.helpText}>Help</Text></Pressable></View>
+      <View style={[styles.heroActions, { top: topInset + 8 }]}><Pressable accessibilityRole="button" accessibilityLabel="Back to My Tickets" onPress={onBack} style={styles.back}><Ionicons name="arrow-back" color="white" size={23} /></Pressable><Pressable accessibilityRole="button" onPress={() => router.push('/account/help')} style={styles.help}><Text style={styles.helpText}>Help</Text></Pressable></View>
       <View style={[styles.eventCard, { top: imageHeight }]} onLayout={(event) => onHeightChange?.(imageHeight + event.nativeEvent.layout.height)}>
         <View style={styles.date}><Text style={styles.dateText}>{event.dateTime.toUpperCase()}</Text></View>
         <View style={styles.eventInfo}><Text numberOfLines={2} style={styles.title}>{event.title.toUpperCase()}</Text><View style={styles.venueRow}><Text numberOfLines={1} style={styles.venue}>{event.venue}</Text><TicketStackIcon size={19} color="#CCCCCC" /><Text style={styles.count}>x{order.ticketCount}</Text></View></View>
