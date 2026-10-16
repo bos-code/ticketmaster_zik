@@ -12,6 +12,8 @@ import type { Seat } from '@/components/tickets/ticketFlowTypes';
 import { useResponsiveLayout } from '@/hooks/use-responsive-layout';
 import { getViewerLayout } from '@/lib/fan-layout';
 import { getTicketPositionLabel } from '@/utils/ticketUtils';
+import { useIsFocused } from '@react-navigation/native';
+import { useTicketTilt } from '@/hooks/use-ticket-tilt';
 
 export function TicketTransferViewerScreen({ onBack, onViewerIndexChange, seats, viewerIndex }: {
   carouselCardWidth: number;
@@ -31,6 +33,8 @@ export function TicketTransferViewerScreen({ onBack, onViewerIndexChange, seats,
   const [cardHeight, setCardHeight] = useState(550);
   const [isTicketInfoOpen, setIsTicketInfoOpen] = useState(false);
   const [isWalletInfoOpen, setIsWalletInfoOpen] = useState(false);
+  const focused = useIsFocused();
+  const motion = useTicketTilt(focused && !isTicketInfoOpen && !isWalletInfoOpen);
   const activeIndex = Math.max(0, Math.min(seats.length - 1, viewerIndex));
   const activeSeat = seats[activeIndex];
   useEffect(() => {
@@ -69,7 +73,7 @@ export function TicketTransferViewerScreen({ onBack, onViewerIndexChange, seats,
           contentContainerStyle={{ paddingLeft: sidePadding, paddingRight: Math.max(0, sidePadding - 12), paddingTop: 12, paddingBottom: 12, alignItems: 'flex-start' }}
           keyExtractor={(seat) => seat.id}
           getItemLayout={(_, index) => ({ index, length: snapInterval, offset: snapInterval * index })}
-          renderItem={({ item, index }) => <TicketCard cardWidth={cardWidth} seat={item} index={index} onLayout={(e) => setCardHeight((current) => Math.max(index === 0 ? 0 : current, e.nativeEvent.layout.height))} />}
+          renderItem={({ item, index }) => <TicketCard cardWidth={cardWidth} seat={item} index={index} motion={motion} onLayout={(e) => setCardHeight((current) => Math.max(index === 0 ? 0 : current, e.nativeEvent.layout.height))} />}
           onScroll={updateIndex} scrollEventThrottle={16}
           onMomentumScrollEnd={updateIndex} onScrollEndDrag={updateIndex} decelerationRate="fast"
           showsHorizontalScrollIndicator={false} snapToInterval={snapInterval} snapToAlignment="start" />
