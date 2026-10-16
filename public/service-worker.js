@@ -1,4 +1,4 @@
-const CACHE_NAME = "ticketmaster-zik-v12";
+const CACHE_NAME = "ticketmaster-zik-v14";
 const IS_LOCAL_PREVIEW = ["localhost", "127.0.0.1", "[::1]"].includes(self.location.hostname);
 const APP_SHELL_ASSETS = [
   "/",
