@@ -1,192 +1,89 @@
+import { Image } from 'expo-image';
+import { LinearGradient } from 'expo-linear-gradient';
+import React, { useEffect } from 'react';
+import { StyleSheet, View, type LayoutChangeEvent } from 'react-native';
+import Animated, { cancelAnimation, Easing, useAnimatedStyle, useReducedMotion, useSharedValue, withRepeat, withTiming } from 'react-native-reanimated';
+import Svg, { Defs, Path, Pattern, Rect } from 'react-native-svg';
+
+import { EditableText } from '@/components/tickets/EditableText';
+import { TicketAztecCode } from '@/components/tickets/ticket-aztec-code';
+import type { Seat } from '@/components/tickets/ticketFlowTypes';
+import { useTicketFlowData } from '@/components/tickets/useTicketFlowData';
 import { Text } from '@/components/ui/app-text';
-import { Ionicons } from "@expo/vector-icons";
-import { Image } from "expo-image";
-import { LinearGradient } from "expo-linear-gradient";
-import React, { useEffect } from "react";
-import { View, type LayoutChangeEvent } from "react-native";
-import Animated, {
-  Easing,
-  FadeInDown,
-  interpolate,
-  useAnimatedStyle,
-  useSharedValue,
-  useReducedMotion,
-  cancelAnimation,
-  withRepeat,
-  withTiming,
-} from "react-native-reanimated";
 
-import { EditableText } from "@/components/tickets/EditableText";
-import { TicketBarcodeSvg } from "@/components/tickets/ticket-barcode-svg";
-import type { Seat } from "@/components/tickets/ticketFlowTypes";
-import { useTicketFlowData } from "@/components/tickets/useTicketFlowData";
-
-export function TicketCard({
-  cardWidth,
-  index,
-  seat,
-  onLayout,
-}: {
+export function TicketCard({ cardWidth, seat, onLayout }: {
   cardWidth: number;
   index: number;
   seat: Seat;
   onLayout?: (event: LayoutChangeEvent) => void;
 }) {
   const { event } = useTicketFlowData();
-  const rawSeatLabel =
-    seat.label?.trim() || seat.note?.trim() || "Standard seating";
-  const seatLabel = rawSeatLabel.replace(/^artist presale$/i, 'Artist Presale');
-  const ticketNote =
-    seat.note?.trim() || seat.label?.trim() || "Standard seating";
-
+  const seatLabel = (seat.label?.trim() || 'Standard Seat Ticket').replace(/^artist presale$/i, 'Artist Presale');
+  const entryInstructions = seat.entryInstructions?.trim();
   return (
-    <Animated.View
-      onLayout={onLayout}
-      entering={FadeInDown.duration(280).delay(40 + index * 70)}
-      className="mr-[12px] relative overflow-hidden rounded-[12px] bg-[#242424] flex-none"
-      style={{
-        width: cardWidth,
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 8 },
-        shadowOpacity: 0.2,
-        shadowRadius: 24,
-        elevation: 8,
-      }}
-    >
-      <View className="h-[15px] w-full bg-[#0452FF]" />
-
-      <View className="relative w-full" style={{ height: Math.min(320, cardWidth * 0.95) }}>
-        <Image
-          contentFit="cover"
-          source={event.heroImage}
-          style={{ height: "100%", width: "100%" }}
-        />
-        <View className="absolute inset-0 bg-black/10" />
-
-        <View className="absolute top-3 left-0 right-0 px-5">
-          <View className="bg-white rounded-sm py-0 shadow-lg items-center">
-            <View className="flex-row items-center justify-center gap-1 py-2">
-              <Text className="text-[13px] font-bold text-[#6B6B6B]">
-                Screenshots won&apos;t get you in
-              </Text>
-              <Ionicons name="refresh" size={18} color="#6B6B6B" />
-            </View>
-            <TicketBarcodeBand />
-          </View>
+    <View onLayout={onLayout} style={[styles.card, { width: cardWidth }]}>
+      <View style={styles.brandBar}><Text style={styles.brand}>ticketmaster</Text></View>
+      <View style={[styles.media, { height: cardWidth * 1.16 }]}>
+        <View style={styles.artwork}>
+          <Image source={event.heroImage} contentFit="cover" contentPosition="center" style={StyleSheet.absoluteFillObject} />
+          <LinearGradient pointerEvents="none" colors={['#08090E', 'transparent']} style={styles.artworkFade} />
         </View>
-
-        <View className="absolute bottom-0 left-0 w-full">
-          <View
-            className="bg-[#242424] pt-2 pl-3 pb-2"
-            style={{ width: "80%", minHeight: 56 }}
-          >
-            <EditableText
-              field="seatLabel"
-              value={seatLabel}
-              className="text-[17px] mb-1 font-bold text-white leading-[23px]"
-            />
-            <EditableText
-              field="ticketNote"
-              value={ticketNote}
-              className="text-[14px] text-[#AAAAAA] uppercase leading-[20px]"
-            />
-          </View>
-        </View>
+        <TicketHologram />
+        <View style={styles.codePosition}><TicketAztecCode value={seat.barcodeValue?.trim() ? seat.barcodeValue : seat.id} size={cardWidth * 0.64} isReference={!seat.barcodeValue?.trim()} /></View>
       </View>
-
-      <View className="bg-[#242424] px-5 pt-3 pb-3">
-        <View className="mt-1">
-          <Text className="text-xs font-bold tracking-[1.5px] text-[#93969c] uppercase">
-            SECTION
-          </Text>
-          <EditableText
-            field="section"
-            value={seat.section}
-            className="text-[19px] pt-1 mb-3 font-bold leading-[26px] text-white"
-          />
+      <View style={styles.details}>
+        <EditableText field="seatLabel" value={seatLabel} style={styles.ticketType} />
+        <EditableText field="ticketNote" value={seat.note?.trim() || 'Standard seating'} style={styles.ticketNote} />
+        <View style={styles.seatRow}>
+          <SeatDetail label="SECTION" field="section" value={seat.section} />
+          <SeatDetail label="ROW" field="row" value={seat.row} />
+          <SeatDetail label="SEAT" value={seat.seat} />
         </View>
-
-        <View className="mt-1 min-h-[40px] w-full items-center justify-center bg-[#111111] px-2 py-2">
-          <EditableText
-            field="ticketNote"
-            value={ticketNote}
-            className="text-[16px] font-bold uppercase text-white tracking-[1px] text-center"
-          />
+        <View style={styles.entryStrip}>
+          <EditableText field="entryInstructions" value={entryInstructions || 'See Ticket Info for entry details'} style={styles.entryText} />
         </View>
-
-        <View className="mt-3 mb-4">
-          <Text className="text-[14px] font-medium text-[#AAAAAA] uppercase">
-            {`ROW ${seat.row}  •  SEAT ${seat.seat}`}
-          </Text>
-        </View>
-      </View>
-    </Animated.View>
-  );
-}
-
-function TicketBarcodeBand() {
-  const beamProgress = useSharedValue(0);
-  const bandWidth = useSharedValue(0);
-  const reduceMotion = useReducedMotion();
-
-  useEffect(() => {
-    if (reduceMotion) {
-      beamProgress.value = 0.5;
-      return;
-    }
-    beamProgress.value = withRepeat(
-      withTiming(1, { duration: 1800, easing: Easing.inOut(Easing.ease) }),
-      -1,
-      true,
-    );
-    return () => cancelAnimation(beamProgress);
-  }, [beamProgress, reduceMotion]);
-
-  const beamAnimatedStyle = useAnimatedStyle(() => {
-    return {
-      transform: [
-        {
-          translateX: interpolate(beamProgress.value, [0, 1], [
-            -Math.max(0, bandWidth.value - 6) / 2,
-            Math.max(0, bandWidth.value - 6) / 2,
-          ]),
-        },
-      ],
-    };
-  });
-
-  return (
-    <View accessibilityElementsHidden importantForAccessibility="no-hide-descendants" className="relative w-full items-center justify-center overflow-hidden bg-white px-2 pb-2">
-      <View
-        onLayout={({ nativeEvent }) => {
-          bandWidth.value = nativeEvent.layout.width;
-        }}
-        style={{ width: "100%", aspectRatio: 1524 / 264, overflow: "hidden" }}
-      >
-        <TicketBarcodeSvg />
-        <Animated.View
-          pointerEvents="none"
-          style={[
-            {
-              position: "absolute",
-              width: 26,
-              marginLeft: -13,
-              height: "100%",
-              top: 0,
-              left: "50%",
-            },
-            beamAnimatedStyle,
-          ]}
-        >
-          <LinearGradient
-            colors={["rgba(2,108,223,0)", "rgba(2,108,223,0.45)", "rgba(2,108,223,0)"]}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 0 }}
-            style={{ width: "100%", height: "100%" }}
-          />
-          <View style={{ position: "absolute", top: 0, bottom: 0, left: 10, width: 6, backgroundColor: "#026CDF" }} />
-        </Animated.View>
       </View>
     </View>
   );
 }
+
+function SeatDetail({ label, field, value }: { label: string; field?: 'section' | 'row'; value: string }) {
+  return <View style={styles.seatDetail}><Text style={styles.seatLabel}>{label}</Text><EditableText field={field} value={value || '—'} style={styles.seatValue} /></View>;
+}
+
+function TicketHologram() {
+  const opacity = useSharedValue(0.25);
+  const reduceMotion = useReducedMotion();
+  useEffect(() => {
+    opacity.value = reduceMotion ? 0.3 : withRepeat(withTiming(0.55, { duration: 2400, easing: Easing.inOut(Easing.ease) }), -1, true);
+    return () => cancelAnimation(opacity);
+  }, [opacity, reduceMotion]);
+  const animatedStyle = useAnimatedStyle(() => ({ opacity: opacity.value }));
+  return <Animated.View pointerEvents="none" accessibilityElementsHidden importantForAccessibility="no-hide-descendants" style={[styles.hologram, animatedStyle]}>
+    <Svg width="100%" height="100%">
+      <Defs><Pattern id="ticket-hologram" width="24" height="24" patternUnits="userSpaceOnUse"><Path d="M12 0Q12 12 24 12Q12 12 12 24Q12 12 0 12Q12 12 12 0" fill="#BBC0CE" /></Pattern></Defs>
+      <Rect width="100%" height="100%" fill="url(#ticket-hologram)" />
+    </Svg>
+    <LinearGradient colors={['transparent', '#08090E']} style={StyleSheet.absoluteFillObject} />
+  </Animated.View>;
+}
+
+const styles = StyleSheet.create({
+  card: { marginRight: 12, overflow: 'hidden', backgroundColor: '#242225', borderRadius: 2 },
+  brandBar: { height: 18, alignItems: 'center', justifyContent: 'center', backgroundColor: '#0452FF' },
+  brand: { color: '#FFFFFF', fontSize: 12, lineHeight: 16, fontStyle: 'italic', fontWeight: '700', letterSpacing: -0.5 },
+  media: { backgroundColor: '#08090E', overflow: 'hidden' },
+  artwork: { position: 'absolute', bottom: 0, left: 0, right: 0, height: '40%' },
+  artworkFade: { position: 'absolute', top: 0, left: 0, right: 0, height: '24%' },
+  codePosition: { position: 'absolute', top: 12, left: 0, right: 0, alignItems: 'center' },
+  hologram: { position: 'absolute', top: 0, left: 0, width: '35%', height: '48%' },
+  details: { paddingHorizontal: 16, paddingTop: 12, paddingBottom: 16 },
+  ticketType: { color: '#FFFFFF', fontSize: 17, lineHeight: 23, fontWeight: '700' },
+  ticketNote: { color: '#B8B5BA', fontSize: 13, lineHeight: 19, marginTop: 1 },
+  seatRow: { flexDirection: 'row', gap: 12, borderTopWidth: 1, borderTopColor: '#777279', marginTop: 14, paddingTop: 12, paddingBottom: 14 },
+  seatDetail: { flex: 1, minWidth: 0, gap: 3 },
+  seatLabel: { color: '#B8B5BA', fontSize: 10, lineHeight: 15, fontWeight: '700', letterSpacing: 0.4 },
+  seatValue: { color: '#FFFFFF', fontSize: 22, lineHeight: 28, fontWeight: '700' },
+  entryStrip: { minHeight: 44, backgroundColor: '#FFFFFF', alignItems: 'center', justifyContent: 'center', paddingHorizontal: 10, paddingVertical: 10 },
+  entryText: { color: '#151316', fontSize: 13, lineHeight: 18, fontWeight: '800', textTransform: 'uppercase', textAlign: 'center' },
+});

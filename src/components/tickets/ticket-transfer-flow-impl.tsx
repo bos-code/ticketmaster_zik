@@ -51,7 +51,7 @@ export function TicketTransferFlow({
           />
         </Head>
         <StatusBar
-          backgroundColor='#111111'
+          backgroundColor={flow.isViewerScreen ? '#111111' : 'transparent'}
           style='light'
           translucent={!flow.isViewerScreen}
         />

@@ -39,6 +39,7 @@ export function buildTicketFlowDataFromOrder(
       seat: ticket.seat,
       section: ticket.section,
       barcodeValue: ticket.barcodeValue,
+      entryInstructions: ticket.entryInstructions,
       canTransfer: ticket.canTransfer,
       canSell: ticket.canSell,
     })),

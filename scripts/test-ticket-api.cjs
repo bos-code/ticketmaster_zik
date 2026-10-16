@@ -27,10 +27,11 @@ test('ticket writes are scoped to the tickets collection and preserve partial-up
     return Response.json({ writeResults: [{}] });
   };
   const res = response();
-  await handler({ method: 'POST', query: { id: 'ticket-test' }, body: { venue: 'New venue', latitude: null, longitude: 29.5 } }, res);
+  await handler({ method: 'POST', query: { id: 'ticket-test' }, body: { venue: 'New venue', latitude: null, longitude: 29.5, entryInstructions: 'Enter through Gate A' } }, res);
   assert.equal(res.code, 200);
   assert.equal(write.update.name, 'projects/test-project/databases/(default)/documents/tickets/ticket-test');
-  assert.deepEqual(write.updateMask.fieldPaths, ['venue', 'latitude', 'longitude']);
+  assert.deepEqual(write.updateMask.fieldPaths, ['venue', 'latitude', 'longitude', 'entryInstructions']);
+  assert.deepEqual(write.update.fields.entryInstructions, { stringValue: 'Enter through Gate A' });
   assert.deepEqual(write.update.fields.latitude, { nullValue: null });
   assert.deepEqual(write.update.fields.longitude, { doubleValue: 29.5 });
   assert.equal('image' in write.update.fields, false);

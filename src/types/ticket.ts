@@ -26,6 +26,7 @@ export interface TicketItem {
   row: string;
   seat: string;
   barcodeValue?: string;
+  entryInstructions?: string;
   canTransfer: boolean;
   canSell: boolean;
 }

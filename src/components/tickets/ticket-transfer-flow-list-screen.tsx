@@ -41,17 +41,18 @@ export function TicketTransferListScreen({
   const insets = useImmersiveSafeAreaInsets();
   const previewCollapseDistance = useSharedValue(HERO_EXPANDED_HEIGHT - HERO_COLLAPSED_HEIGHT);
   const collapseDistance = heroCollapseDistance ?? previewCollapseDistance;
-  const [heroHeight, setHeroHeight] = useState(HERO_EXPANDED_HEIGHT);
+  const [heroHeight, setHeroHeight] = useState(HERO_EXPANDED_HEIGHT + insets.top);
   const [tabsHeight, setTabsHeight] = useState(60);
   const tabsStyle = useAnimatedStyle(() => ({
     top: heroHeight - Math.min(Math.max(0, scrollY.value), collapseDistance.value),
   }));
   return (
-    <View style={{ backgroundColor: '#111111', flex: 1, paddingTop: insets.top, paddingLeft: insets.left, paddingRight: insets.right }}>
+    <View style={{ backgroundColor: '#111111', flex: 1, paddingLeft: insets.left, paddingRight: insets.right }}>
       <View className='flex-1 overflow-hidden bg-[#111111]'>
         <CollapsibleEventHero
           height={heroHeight}
-          onHeightChange={(height) => { setHeroHeight(height); collapseDistance.value = Math.max(1, height - HERO_COLLAPSED_HEIGHT); }}
+          topInset={insets.top}
+          onHeightChange={(height) => { setHeroHeight(height); collapseDistance.value = Math.max(1, height - HERO_COLLAPSED_HEIGHT - insets.top); }}
           collapseDistance={collapseDistance}
           isHeroCollapsed={isHeroCollapsed}
           onBack={onBack}

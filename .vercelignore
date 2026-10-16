@@ -1,0 +1,18 @@
+# Upload source files; Vercel installs dependencies and builds the web output.
+.git/
+.vercel/
+.expo/
+node_modules/
+ios/
+android/
+dist/
+dist-web-check/
+web-build/
+.playwright-mcp/
+.firebase/
+.env
+.env.*
+!.env.example
+*.log
+*.tsbuildinfo
+.DS_Store

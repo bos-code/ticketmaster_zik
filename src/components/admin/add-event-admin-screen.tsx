@@ -58,6 +58,7 @@ const fieldLabels: Record<FieldKey, string> = {
   backgroundColor: 'Accent Color',
   seatLabel: 'Seat Label',
   ticketNote: 'Ticket Note',
+  entryInstructions: 'Entry Instructions',
 };
 
 const requiredFields: FieldKey[] = [];
@@ -86,6 +87,7 @@ const EMPTY_CREATE_FORM: FormState = {
   backgroundColor: '#B79E6A',
   seatLabel: '',
   ticketNote: '',
+  entryInstructions: '',
 };
 
 export function AddEventAdminScreen() {
@@ -406,6 +408,7 @@ export function AddEventAdminScreen() {
             <TicketTextField error={errors.orderNumber} label="Order Number" onChangeText={(value) => updateField('orderNumber', value)} placeholder="e.g. 19-12465/DAL" value={form.orderNumber} />
             <TicketTextField error={errors.seatLabel} label="Seat Label" onChangeText={(value) => updateField('seatLabel', value)} placeholder="e.g. Artist presale, Fan verified" value={form.seatLabel} />
             <TicketTextField error={errors.ticketNote} label="Ticket Note" onChangeText={(value) => updateField('ticketNote', value)} placeholder="e.g. Lower bowl seating" value={form.ticketNote} />
+            <TicketTextField error={errors.entryInstructions} label="Entry Instructions (optional)" onChangeText={(value) => updateField('entryInstructions', value)} placeholder="e.g. Enter through Gate A" value={form.entryInstructions} />
           </FormSection>
 
           <FormSection title="Ticket Info">

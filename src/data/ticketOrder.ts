@@ -120,6 +120,7 @@ function createTicketItem(
     row: ticketRecord.row,
     seat,
     barcodeValue: ticketRecord.barcode || undefined,
+    entryInstructions: ticketRecord.entryInstructions,
     canTransfer: ticketRecord.status === "upcoming",
     canSell: false,
   };
