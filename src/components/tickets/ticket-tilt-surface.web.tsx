@@ -4,7 +4,7 @@ import type { TicketTiltSurfaceProps } from './ticket-tilt-surface';
 export function TicketTiltSurface({ children, height, motion }: TicketTiltSurfaceProps) {
   const keyboardPoint = useRef({ x: 0, y: 0 });
   const preview = motion?.status === 'pointer';
-  const needsGesture = motion?.status === 'ready';
+  const needsGesture = motion?.status === 'ready' || motion?.status === 'unavailable';
   return <div style={{ height, position: 'relative', width: '100%', overflow: 'hidden' }}
     role={needsGesture ? 'button' : preview ? 'group' : undefined} aria-label={needsGesture ? 'Allow ticket motion' : preview ? 'Ticket lighting preview' : undefined}
     aria-description={preview ? 'Move the pointer or use arrow keys to shift the light. Escape resets it.' : undefined}

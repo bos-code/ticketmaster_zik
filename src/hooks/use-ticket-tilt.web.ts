@@ -1,9 +1,15 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useSharedValue } from 'react-native-reanimated';
-import { createTicketTilt, type TiltPoint, type TiltStatus } from '@/lib/ticket-tilt';
+import { createTicketTilt, createTiltPermissionManager, type TiltPoint, type TiltStatus } from '@/lib/ticket-tilt';
 import type { TicketTilt } from './ticket-tilt-types';
 
 type OrientationConstructor = { requestPermission?: () => Promise<string> };
+
+// Share decisions and pending prompts across ticket viewers and route remounts.
+const motionPermission = createTiltPermissionManager({
+  getItem: key => window.localStorage.getItem(key),
+  setItem: (key, value) => window.localStorage.setItem(key, value),
+});
 
 export function useTicketTilt(enabled = true): TicketTilt {
   const x = useSharedValue(0);
@@ -20,7 +26,8 @@ export function useTicketTilt(enabled = true): TicketTilt {
       sensorSupported: Boolean(orientation),
       pointerSupported: window.matchMedia('(hover: hover) and (pointer: fine)').matches,
       secure: window.isSecureContext,
-      requestPermission: orientation?.requestPermission ? () => orientation.requestPermission!() : undefined,
+      requestPermission: orientation?.requestPermission ? () => motionPermission.request(() => orientation.requestPermission!()) : undefined,
+      permissionDecision: orientation?.requestPermission ? motionPermission.getDecision : undefined,
       subscribe(listener) {
         const handler = (event: DeviceOrientationEvent) => listener({ beta: event.beta, gamma: event.gamma });
         window.addEventListener('deviceorientation', handler, { passive: true });
