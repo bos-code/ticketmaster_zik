@@ -1,12 +1,48 @@
 export type TiltPoint = { x: number; y: number };
 export type TiltStatus = 'unsupported' | 'ready' | 'requesting' | 'waiting' | 'active' | 'pointer' | 'denied' | 'unavailable' | 'reduced-motion';
 export type OrientationSample = { beta: number | null; gamma: number | null };
+type TiltPermissionDecision = 'granted' | 'denied';
+type PermissionStorage = { getItem: (key: string) => string | null; setItem: (key: string, value: string) => void };
+
+// This remembers the user's choice, not a browser permission grant. After a
+// reload, the controller must receive real sensor data before tilt is active.
+export function createTiltPermissionManager(storage?: PermissionStorage) {
+  const key = 'ticketmaster:motion-permission:v1';
+  let decision: TiltPermissionDecision | undefined;
+  let pending: Promise<string> | undefined;
+  function getDecision(): TiltPermissionDecision | undefined {
+    if (decision) return decision;
+    try {
+      const saved = storage?.getItem(key);
+      return saved === 'granted' || saved === 'denied' ? saved : undefined;
+    } catch { return undefined; }
+  }
+  return {
+    getDecision,
+    request(requestPermission: () => Promise<string>): Promise<string> {
+      // Only a result received in this document can skip another browser call.
+      if (decision) return Promise.resolve(decision);
+      if (pending) return pending;
+      const request = requestPermission();
+      pending = request.then(result => {
+        pending = undefined;
+        if (result === 'granted' || result === 'denied') {
+          decision = result;
+          try { storage?.setItem(key, result); } catch { /* In-memory decisions still work without storage. */ }
+        }
+        return result;
+      }, error => { pending = undefined; throw error; });
+      return pending;
+    },
+  };
+}
 
 export type TiltEnvironment = {
   sensorSupported: boolean;
   pointerSupported: boolean;
   secure: boolean;
   requestPermission?: () => Promise<string>;
+  permissionDecision?: () => TiltPermissionDecision | undefined;
   subscribe: (listener: (sample: OrientationSample) => void) => () => void;
   screenAngle: () => number;
   now: () => number;
@@ -49,7 +85,12 @@ export function createTicketTilt(environment: TiltEnvironment, onPoint: (point: 
   const setStatus = (next: TiltStatus) => {
     if (!disposed && next !== status) { status = next; onStatus(next); }
   };
-  const restingStatus = (): TiltStatus => reducedMotion ? 'reduced-motion' : environment.pointerSupported ? 'pointer' : environment.secure && environment.sensorSupported ? 'ready' : 'unsupported';
+  const restingStatus = (): TiltStatus => {
+    if (reducedMotion) return 'reduced-motion';
+    if (environment.pointerSupported) return 'pointer';
+    if (!environment.secure || !environment.sensorSupported) return 'unsupported';
+    return environment.permissionDecision?.() === 'denied' ? 'denied' : 'ready';
+  };
   function clearTimer() {
     if (timer !== undefined) environment.clearTimer(timer);
     timer = undefined;
@@ -128,6 +169,15 @@ export function createTicketTilt(environment: TiltEnvironment, onPoint: (point: 
     startAutomatically() {
       if (automaticAttempted || disposed || !visible || reducedMotion || environment.pointerSupported || !environment.secure || !environment.sensorSupported) return;
       automaticAttempted = true;
+      const remembered = environment.permissionDecision?.();
+      if (remembered === 'denied') { setStatus('denied'); return; }
+      if (remembered === 'granted') {
+        // Safari may retain the grant across reloads. Listen quietly first;
+        // a stored choice cannot authorize sensors or cause another prompt.
+        consent = true;
+        start();
+        return;
+      }
       return enable(true);
     },
     disable() { generation++; consent = false; stop(); setStatus(restingStatus()); },

@@ -9,7 +9,12 @@ const moduleValue = { exports: {} };
 vm.runInNewContext(ts.transpileModule(fs.readFileSync(path.resolve(__dirname, '../src/lib/ticket-tilt.ts'), 'utf8'), {
   compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2020 },
 }).outputText, { module: moduleValue, exports: moduleValue.exports });
-const { createTicketTilt, orientationToTilt } = moduleValue.exports;
+const { createTicketTilt, createTiltPermissionManager, orientationToTilt } = moduleValue.exports;
+
+function permissionStorage() {
+  const values = new Map();
+  return { getItem: key => values.get(key) ?? null, setItem: (key, value) => values.set(key, value) };
+}
 
 function rig(overrides = {}) {
   let now = 0, serial = 0, requested = 0, listener;
@@ -114,6 +119,103 @@ test('Safari without a prior grant falls back to the first ticket gesture', asyn
   assert.equal(calls, 2, 'gesture requests permission synchronously');
   await permission; assert.equal(r.listening, true);
   r.controller.dispose();
+});
+
+test('granted motion access survives viewer remounts without another browser request', async () => {
+  const permission = createTiltPermissionManager(permissionStorage());
+  let requests = 0;
+  const environment = {
+    requestPermission: () => permission.request(() => { requests++; return Promise.resolve('granted'); }),
+    permissionDecision: permission.getDecision,
+  };
+  const first = rig(environment); await first.controller.startAutomatically(); first.controller.dispose();
+  const second = rig(environment); await second.controller.startAutomatically();
+  second.sample(70, 10); second.sample(82.5, 35); second.advance(1000);
+  assert.equal(requests, 1); assert.equal(second.states.at(-1), 'active');
+  assert.equal(second.points.at(-1).x, 1);
+  second.controller.dispose();
+});
+
+test('refreshing after Allow listens silently and verifies the browser still supplies sensor data', async () => {
+  const storage = permissionStorage();
+  await createTiltPermissionManager(storage).request(() => Promise.resolve('granted'));
+  const reloaded = createTiltPermissionManager(storage);
+  let requests = 0;
+  const r = rig({
+    requestPermission: () => reloaded.request(() => { requests++; return Promise.resolve('granted'); }),
+    permissionDecision: reloaded.getDecision,
+  });
+  await r.controller.startAutomatically();
+  assert.equal(requests, 0); assert.equal(r.states.at(-1), 'waiting');
+  r.sample(70, 10); r.sample(82.5, 35); r.advance(1000);
+  assert.equal(r.states.at(-1), 'active'); assert.equal(r.points.at(-1).x, 1);
+  r.controller.dispose();
+});
+
+test('a stored Allow cannot fabricate sensor access or prompt again after Safari clears its grant', async () => {
+  const storage = permissionStorage();
+  await createTiltPermissionManager(storage).request(() => Promise.resolve('granted'));
+  const reloaded = createTiltPermissionManager(storage);
+  let requests = 0;
+  const r = rig({
+    requestPermission: () => reloaded.request(() => { requests++; return Promise.resolve('granted'); }),
+    permissionDecision: reloaded.getDecision,
+  });
+  await r.controller.startAutomatically(); r.sample(null, null); r.advance(3100);
+  assert.equal(requests, 0); assert.equal(r.states.at(-1), 'unavailable');
+  assert.equal(r.listening, false); assert.equal(r.points.at(-1).x, 0);
+  r.controller.setVisible(false); r.controller.setVisible(true); r.controller.startAutomatically();
+  assert.equal(requests, 0, 'returning to the page does not trigger a prompt');
+  const tapped = r.controller.enable();
+  assert.equal(requests, 1, 'only an explicit ticket gesture can request access again');
+  await tapped; r.sample(70, 10);
+  assert.equal(r.states.at(-1), 'active');
+  r.controller.dispose();
+});
+
+test('Cancel is respected across page reloads without another automatic request', async () => {
+  const storage = permissionStorage();
+  await createTiltPermissionManager(storage).request(() => Promise.resolve('denied'));
+  const reloaded = createTiltPermissionManager(storage);
+  let requests = 0;
+  const r = rig({
+    requestPermission: () => reloaded.request(() => { requests++; return Promise.resolve('granted'); }),
+    permissionDecision: reloaded.getDecision,
+  });
+  await r.controller.startAutomatically(); r.controller.setVisible(false); r.controller.setVisible(true); r.controller.startAutomatically();
+  assert.equal(requests, 0); assert.equal(r.listening, false); assert.equal(r.frames.size, 0);
+  assert.equal(r.states.at(-1), 'denied', 'returning to the page cannot enable an accidental permission tap after Cancel');
+  r.controller.dispose();
+});
+
+test('simultaneous viewers share one pending prompt and its result', async () => {
+  const permission = createTiltPermissionManager();
+  let resolve, requests = 0;
+  const request = () => { requests++; return new Promise(done => { resolve = done; }); };
+  const first = permission.request(request), second = permission.request(request);
+  assert.equal(requests, 1); assert.equal(first, second);
+  resolve('granted'); await Promise.all([first, second]);
+  await permission.request(request); assert.equal(requests, 1);
+});
+
+test('activation errors are not saved as denials and the next gesture can still ask', async () => {
+  const permission = createTiltPermissionManager(permissionStorage());
+  await assert.rejects(permission.request(() => Promise.reject(new Error('A user gesture is required'))));
+  assert.equal(permission.getDecision(), undefined);
+  let called = false;
+  const result = permission.request(() => { called = true; return Promise.resolve('granted'); });
+  assert.equal(called, true, 'permission API runs synchronously inside the gesture');
+  await result; assert.equal(permission.getDecision(), 'granted');
+});
+
+test('storage failures retain the decision for route remounts without crashing', async () => {
+  const permission = createTiltPermissionManager({ getItem() { throw new Error('unavailable'); }, setItem() { throw new Error('unavailable'); } });
+  assert.equal(permission.getDecision(), undefined);
+  await permission.request(() => Promise.resolve('granted'));
+  assert.equal(permission.getDecision(), 'granted');
+  let calls = 0;
+  await permission.request(() => { calls++; return Promise.resolve('granted'); });
+  assert.equal(calls, 0);
 });
 
 test('automatic startup respects reduced motion, visibility and desktop pointer preview', () => {
