@@ -1,7 +1,5 @@
 import React from 'react';
 import { View } from 'react-native';
-import { CustomSpinner } from '@/components/tickets/custom-spinner';
-import { HERO_EXPANDED_HEIGHT } from '@/components/tickets/ticketFlowConstants';
 
 import { ChooseRecipientTypeScreen } from '@/components/tickets/ChooseRecipientTypeScreen';
 import { ChooseTransferMethodScreen } from '@/components/tickets/ChooseTransferMethodScreen';
@@ -16,11 +14,6 @@ import { TicketTransferUnavailableModal } from '@/components/tickets/TicketTrans
 import { useTicketTransferFlowController } from '@/components/tickets/use-ticket-transfer-flow-controller';
 import Head from 'expo-router/head';
 import { StatusBar } from 'expo-status-bar';
-
-const TRANSFER_LOADING_CONTENT_OPACITY = 0.55;
-const TRANSFER_LOADING_SPINNER_COLOR = '#2B72D7';
-const TRANSFER_LOADING_SPINNER_SIZE = 52;
-const TRANSFER_LOADING_SPINNER_TOP_OFFSET = 45;
 
 export function TicketTransferFlow({
   initialScreen = 'list',
@@ -63,13 +56,7 @@ export function TicketTransferFlow({
           style='light'
           translucent={!flow.isViewerScreen}
         />
-        <View
-          className=' flex-1 w-full'
-          pointerEvents={flow.isListLoading ? 'none' : 'auto'}
-          style={{
-            opacity: flow.isListLoading ? TRANSFER_LOADING_CONTENT_OPACITY : 1,
-          }}
-        >
+        <View className=' flex-1 w-full'>
           {['list', 'select', 'recipientChoice', 'recipientForm'].includes(
             flow.screen,
           ) ? (
@@ -78,6 +65,7 @@ export function TicketTransferFlow({
               heroCollapseDistance={flow.heroCollapseDistance}
               handleListScroll={flow.handleListScroll}
               isHeroCollapsed={flow.isHeroCollapsed}
+              isLoading={flow.isListLoading}
               onBack={flow.handleBackToTabs}
               onOpenTicket={flow.openTicketDetailsRoute}
               onOpenViewer={flow.handleOpenViewer}
@@ -177,26 +165,6 @@ export function TicketTransferFlow({
           onClose={() => flow.setTransferModal('none')}
           ticketCount={flow.seats.length}
         />
-
-        {flow.isListLoading && (
-          <View
-            pointerEvents='none'
-            style={{
-              position: 'absolute',
-              top: HERO_EXPANDED_HEIGHT + TRANSFER_LOADING_SPINNER_TOP_OFFSET,
-              left: 0,
-              right: 0,
-              alignItems: 'center',
-              zIndex: 999,
-              backgroundColor: 'transparent',
-            }}
-          >
-            <CustomSpinner
-              color={TRANSFER_LOADING_SPINNER_COLOR}
-              size={TRANSFER_LOADING_SPINNER_SIZE}
-            />
-          </View>
-        )}
       </View>
     </TicketFlowContext.Provider>
   );

@@ -1,13 +1,18 @@
-import type { TextInput as NativeTextInput } from 'react-native';
 import { Text, TextInput } from '@/components/ui/app-text';
 import React from "react";
-import { Keyboard, Platform, Pressable, View } from "react-native";
+import { Keyboard, Platform, Pressable, StyleSheet, View, type TextInput as NativeTextInput, type TextStyle } from "react-native";
 
-import { Image } from "expo-image";
-
-import { cx } from "@/components/tickets/cx";
+import { useImmersiveSafeAreaInsets } from "@/components/immersive/edge-to-edge-hero";
 import { BottomDrawer } from "@/components/ui/bottom-drawer";
+import { useKeyboardLayout } from "@/hooks/use-keyboard-height";
 import { normalizeOtp, OTP_LENGTH } from "@/lib/auth/otp";
+
+// Measured from the reference recording (390 pt wide phone).
+const SHEET_TOP_GAP = 4;
+const HEADER_HEIGHT = 52;
+const CARD_HEIGHT = 331;
+// Spacing removed by the compact card (see the *Compact styles).
+const COMPACT_SPACE_SAVED = 51;
 
 export function TicketTransferAuthModal({
   authPhoneNumber,
@@ -29,6 +34,21 @@ export function TicketTransferAuthModal({
   visible: boolean;
 }) {
   const inputRef = React.useRef<NativeTextInput | null>(null);
+  const insets = useImmersiveSafeAreaInsets();
+  const { keyboard, visibleHeight, windowHeight } = useKeyboardLayout();
+  const [isFocused, setIsFocused] = React.useState(false);
+  // Full-spacing card height; the message can wrap to more lines on narrow phones.
+  const [cardHeight, setCardHeight] = React.useState(CARD_HEIGHT);
+  const isKeyboardOpen = keyboard.height > 0;
+  const canConfirm = confirmCodeReady && !isSubmitting;
+  const sheetHeight = windowHeight - insets.top - SHEET_TOP_GAP;
+  // Space between the header and the keyboard (or the bottom safe area).
+  const bodySpace =
+    (isKeyboardOpen
+      ? Math.min(sheetHeight - keyboard.height, visibleHeight - insets.top)
+      : sheetHeight - insets.bottom) - HEADER_HEIGHT;
+  // Tighten the card's spacing on short screens so the input and button stay above the keyboard.
+  const isCompact = bodySpace < cardHeight;
 
   React.useEffect(() => {
     if (!visible) {
@@ -42,119 +62,243 @@ export function TicketTransferAuthModal({
     return () => clearTimeout(focusTimer);
   }, [visible]);
 
-  React.useEffect(() => {
-    if (otpCode.length === OTP_LENGTH) {
-      Keyboard.dismiss();
+  function handleConfirm() {
+    if (!canConfirm) {
+      return;
     }
-  }, [otpCode]);
+
+    Keyboard.dismiss();
+    onConfirm();
+  }
 
   return (
-    <BottomDrawer minHeight="93%" onClose={onCancel} visible={visible} className="bg-[#007AFF] rounded-t-2xl" >
-      {/* Header Inside Drawer */}
-      <View className="bg-[#007AFF] h-[54px] w-full flex-row rounded-t-2xl items-center px-[18px]">
-        <Pressable accessibilityRole="button" hitSlop={12} onPress={onCancel}>
-          <Text className="text-[14px] font-normal text-white">
-            Cancel
-          </Text>
-        </Pressable>
-        <Text className="flex-1 text-center text-[15px] font-bold text-white">
-          Authentication
-        </Text>
-        <View style={{ minWidth: 44 }} />
-      </View>
-
-      <View className="grow shrink-0 w-full bg-white">
-        {/* Hero Illustration Section */}
-        <View className="bg-[#111111] py-12 items-center justify-center">
-          <Image
-            source={require("@/assets/tickets/otp_auth_hero.jpg")}
-            style={{ width: 180, height: 120 }}
-            contentFit="contain"
-          />
+    <BottomDrawer
+      header={
+        <View style={styles.header}>
+          <View pointerEvents="none" style={styles.headerTitleWrap}>
+            <Text accessibilityRole="header" style={styles.headerTitle}>
+              Authentication
+            </Text>
+          </View>
+          <Pressable accessibilityRole="button" hitSlop={12} onPress={onCancel}>
+            <Text style={styles.headerAction}>Cancel</Text>
+          </Pressable>
         </View>
+      }
+      keepTopOnKeyboard
+      minHeight={sheetHeight}
+      onClose={onCancel}
+      panelStyle={styles.sheet}
+      scrollToEndOnKeyboard
+      visible={visible}
+    >
+      <View style={[styles.body, isKeyboardOpen ? styles.bodyBelowHeader : styles.bodyCentered]}>
+        <View
+          onLayout={(event) => setCardHeight(Math.round(event.nativeEvent.layout.height) + (isCompact ? COMPACT_SPACE_SAVED : 0))}
+          style={[styles.card, isCompact && styles.cardCompact]}
+        >
+          <Text style={styles.title}>{"Authenticate Your\nAccount"}</Text>
+          <Text style={[styles.message, isCompact && styles.messageCompact]}>
+            A one-time code has been sent to{" "}
+            <Text style={styles.maskedNumber}>{formatAuthPhoneNumber(authPhoneNumber)}</Text>
+            . Please enter your code below to continue.
+          </Text>
 
-        <View className="px-5 pt-6">
-          <Text className="text-xl font-bold leading-[22px] tracking-wider text-[#111111]">
-            Authenticate Your Account
-          </Text>
-          <Text className="mt-[8px] text-[13.5px] font-normal leading-[18px] text-[#4E5561]">
-            A one-time code has been sent to {formatAuthPhoneNumber(authPhoneNumber)}. Please enter your code below to continue.
-          </Text>
-        </View>
-
-        <View className="gap-2 px-[18px] pt-6">
-          <Text className="text-[11px] font-bold leading-[13px] text-[#4A4F58]">
-            One-Time Code
-          </Text>
+          <Text style={[styles.label, isCompact && styles.labelCompact]}>One-Time Code</Text>
           <TextInput
             ref={inputRef}
+            accessibilityLabel="One-Time Code"
             autoComplete={Platform.OS === "android" ? "sms-otp" : "one-time-code"}
             autoFocus={visible}
             inputMode="numeric"
             keyboardType="number-pad"
             maxLength={OTP_LENGTH}
+            onBlur={() => setIsFocused(false)}
             onChangeText={(value) => onOtpChange(normalizeOtp(value))}
-            onSubmitEditing={() => {
-              if (confirmCodeReady) {
-                onConfirm();
-              }
-            }}
-            placeholder={`Enter ${OTP_LENGTH}-digit code`}
-            placeholderTextColor="#80858E"
+            onFocus={() => setIsFocused(true)}
+            onSubmitEditing={handleConfirm}
             returnKeyType="done"
-            selectionColor="#2F88F3"
-            style={[
-              {
-                minHeight: 46,
-                borderRadius: 8,
-                borderWidth: 1,
-                borderColor: otpCode.length ? "#2F88F3" : "#D1D5DB",
-                paddingHorizontal: 16,
-                backgroundColor: "#FFFFFF",
-                color: "#111111",
-                fontSize: 20,
-                fontWeight: "500",
-                letterSpacing: 4,
-              },
-            ]}
+            selectionColor="#13318A"
+            style={[styles.input, isFocused ? styles.inputFocused : styles.inputIdle, WEB_NO_FOCUS_RING]}
             textContentType="oneTimeCode"
             value={otpCode}
           />
-          <Text className="text-[11px] font-normal leading-[13px] text-[#80858E]">
-            It may take a minute to receive your code.
-          </Text>
-        </View>
+          <Text style={styles.helper}>It may take a minute to receive your code.</Text>
 
-        <View className="mt-auto">
-          <View className="px-2 pb-6 pt-2 h-[68px]">
-            <Pressable
-              accessibilityRole="button"
-              disabled={!confirmCodeReady || isSubmitting}
-              onPress={onConfirm}
-              className={cx(
-                "h-[44px] items-center justify-center rounded-[4px]",
-                confirmCodeReady && !isSubmitting ? "bg-[#0863D9]" : "bg-[#B8D8F6]"
-              )}
-            >
-              <Text className="text-[14px] font-black text-white uppercase">
-                {isSubmitting ? "Confirming..." : "Confirm Code"}
-              </Text>
-            </Pressable>
-          </View>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityState={{ disabled: !canConfirm }}
+            disabled={!canConfirm}
+            onPress={handleConfirm}
+            style={[styles.button, isCompact && styles.buttonCompact, canConfirm ? styles.buttonEnabled : styles.buttonDisabled]}
+          >
+            <Text style={[styles.buttonLabel, canConfirm ? styles.buttonLabelEnabled : styles.buttonLabelDisabled]}>
+              Confirm Code
+            </Text>
+          </Pressable>
         </View>
       </View>
     </BottomDrawer>
   );
 }
 
-const DEFAULT_AUTH_PHONE_NUMBER = "******2970";
+// The focused border is the focus indicator here, as in the reference; drop the
+// app-wide :focus-visible ring (inline so it wins over global.css).
+const WEB_NO_FOCUS_RING = Platform.OS === "web" ? ({ outlineStyle: "none" } as unknown as TextStyle) : null;
+
+const DEFAULT_AUTH_PHONE_NUMBER = "*******1886";
 
 function formatAuthPhoneNumber(phoneNumber?: string) {
   const lastFourDigits = phoneNumber?.match(/\d{4}$/)?.[0];
 
   if (lastFourDigits) {
-    return `******${lastFourDigits}`;
+    return `*******${lastFourDigits}`;
   }
 
   return phoneNumber?.trim() || DEFAULT_AUTH_PHONE_NUMBER;
 }
+
+const styles = StyleSheet.create({
+  sheet: {
+    backgroundColor: "#2C2C2C",
+    borderTopLeftRadius: 6,
+    borderTopRightRadius: 6,
+    // The sheet's height is computed above; the drawer's default 95% cap would
+    // move its top edge when the keyboard opens.
+    maxHeight: "100%",
+    overflow: "hidden",
+  },
+  header: {
+    alignItems: "center",
+    backgroundColor: "#0E62D5",
+    flexDirection: "row",
+    height: HEADER_HEIGHT,
+    paddingHorizontal: 18,
+  },
+  headerTitleWrap: {
+    ...StyleSheet.absoluteFillObject,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  headerTitle: {
+    color: "#FFFFFF",
+    fontSize: 16,
+    fontWeight: "600",
+    lineHeight: 20,
+  },
+  headerAction: {
+    color: "#FFFFFF",
+    fontSize: 16,
+    fontWeight: "400",
+    lineHeight: 20,
+  },
+  body: {
+    flex: 1,
+    paddingHorizontal: 12.5,
+  },
+  bodyCentered: {
+    justifyContent: "center",
+  },
+  bodyBelowHeader: {
+    justifyContent: "flex-start",
+  },
+  card: {
+    alignSelf: "stretch",
+    backgroundColor: "#FFFFFF",
+    borderBottomLeftRadius: 2,
+    borderBottomRightRadius: 2,
+    paddingBottom: 22,
+    paddingHorizontal: 22,
+    paddingTop: 18,
+  },
+  cardCompact: {
+    paddingBottom: 12,
+    paddingTop: 10,
+  },
+  title: {
+    color: "#000000",
+    fontSize: 22,
+    fontWeight: "700",
+    lineHeight: 28,
+  },
+  message: {
+    color: "#0A0A0A",
+    fontSize: 15,
+    fontWeight: "400",
+    lineHeight: 20,
+    marginTop: 15,
+  },
+  messageCompact: {
+    marginTop: 6,
+  },
+  maskedNumber: {
+    color: "#000000",
+    fontWeight: "700",
+  },
+  label: {
+    color: "#0A0A0A",
+    fontSize: 13,
+    fontWeight: "400",
+    lineHeight: 17,
+    marginTop: 14,
+  },
+  labelCompact: {
+    marginTop: 8,
+  },
+  input: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 2,
+    color: "#000000",
+    // iOS Safari zooms the page when a focused input is smaller than 16px.
+    fontSize: Platform.OS === "web" ? 16 : 14,
+    fontWeight: "400",
+    height: 40,
+    letterSpacing: 0,
+    marginTop: 8,
+    paddingVertical: 0,
+  },
+  inputIdle: {
+    borderColor: "#C6C6C6",
+    borderWidth: 1,
+    paddingHorizontal: 15,
+  },
+  inputFocused: {
+    borderColor: "#13318A",
+    borderWidth: 1.5,
+    paddingHorizontal: 14.5,
+  },
+  helper: {
+    color: "#0A0A0A",
+    fontSize: 12,
+    fontWeight: "400",
+    lineHeight: 16,
+    marginTop: 15,
+  },
+  button: {
+    alignItems: "center",
+    borderRadius: 2,
+    height: 40,
+    justifyContent: "center",
+    marginTop: 30,
+  },
+  buttonCompact: {
+    marginTop: 12,
+  },
+  buttonEnabled: {
+    backgroundColor: "#0B40D4",
+  },
+  buttonDisabled: {
+    backgroundColor: "#E6E6E6",
+  },
+  buttonLabel: {
+    fontSize: 16,
+    fontWeight: "400",
+    lineHeight: 20,
+  },
+  buttonLabelEnabled: {
+    color: "#FFFFFF",
+  },
+  buttonLabelDisabled: {
+    color: "#757575",
+  },
+});
