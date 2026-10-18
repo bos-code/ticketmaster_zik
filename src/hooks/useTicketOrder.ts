@@ -17,7 +17,11 @@ import {
 } from "@/utils/ticketUtils";
 
 export function useTicketOrder(orderId?: string) {
-  const storeTickets = useTicketStore((state) => state.tickets);
+  const allStoreTickets = useTicketStore((state) => state.tickets);
+  const storeTickets = useMemo(
+    () => allStoreTickets.filter((ticket) => !ticket.isHidden),
+    [allStoreTickets],
+  );
   const hasSyncedTickets = useTicketStore((state) => state.isSynced);
   const ticketOrders = useMemo(
     () =>

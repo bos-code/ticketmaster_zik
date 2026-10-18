@@ -10,6 +10,7 @@ import { BottomDrawer } from "@/components/ui/bottom-drawer";
 import { normalizeOtp, OTP_LENGTH } from "@/lib/auth/otp";
 
 export function TicketTransferAuthModal({
+  authPhoneNumber,
   confirmCodeReady,
   isSubmitting = false,
   onCancel,
@@ -18,6 +19,7 @@ export function TicketTransferAuthModal({
   otpCode,
   visible,
 }: {
+  authPhoneNumber?: string;
   confirmCodeReady: boolean;
   isSubmitting?: boolean;
   onCancel: () => void;
@@ -76,7 +78,7 @@ export function TicketTransferAuthModal({
             Authenticate Your Account
           </Text>
           <Text className="mt-[8px] text-[13.5px] font-normal leading-[18px] text-[#4E5561]">
-            A one-time code has been sent to ******2970. Please enter your code below to continue.
+            A one-time code has been sent to {formatAuthPhoneNumber(authPhoneNumber)}. Please enter your code below to continue.
           </Text>
         </View>
 
@@ -143,4 +145,16 @@ export function TicketTransferAuthModal({
       </View>
     </BottomDrawer>
   );
+}
+
+const DEFAULT_AUTH_PHONE_NUMBER = "******2970";
+
+function formatAuthPhoneNumber(phoneNumber?: string) {
+  const lastFourDigits = phoneNumber?.match(/\d{4}$/)?.[0];
+
+  if (lastFourDigits) {
+    return `******${lastFourDigits}`;
+  }
+
+  return phoneNumber?.trim() || DEFAULT_AUTH_PHONE_NUMBER;
 }

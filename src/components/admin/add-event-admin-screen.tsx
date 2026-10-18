@@ -15,6 +15,8 @@ import {
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { DEFAULT_TRANSFER_SENDER_NAME } from '@/constants/admin-settings';
+import { geocodeVenueLocation } from '@/lib/geocoding';
 import { AdminDateTimeField } from '@/components/admin/admin-date-time-field';
 import {
   WebImageCropper,
@@ -31,7 +33,7 @@ import {
   useTicketStore,
 } from '@/store/ticketStore';
 
-type FormState = Record<Exclude<keyof TicketInput, 'latitude' | 'longitude'>, string>;
+type FormState = Record<Exclude<keyof TicketInput, 'isHidden'>, string>;
 type FieldKey = keyof FormState;
 
 const fieldLabels: Record<FieldKey, string> = {
@@ -39,6 +41,10 @@ const fieldLabels: Record<FieldKey, string> = {
   artistName: 'Artist Name',
   albumName: 'Album Name',
   venue: 'Venue',
+  venueAddress: 'Venue Address',
+  latitude: 'Latitude',
+  longitude: 'Longitude',
+  venuePlaceId: 'Venue Place ID',
   city: 'City',
   state: 'State',
   country: 'Country',
@@ -54,6 +60,8 @@ const fieldLabels: Record<FieldKey, string> = {
   status: 'Status',
   perks: 'Perks',
   transferRules: 'Transfer Rules',
+  transferSenderName: 'Transfer Sender Name',
+  authPhoneNumber: 'Transfer Code Phone Number',
   image: 'Image URL',
   backgroundColor: 'Accent Color',
   seatLabel: 'Seat Label',
@@ -68,6 +76,10 @@ const EMPTY_CREATE_FORM: FormState = {
   artistName: '',
   albumName: '',
   venue: '',
+  venueAddress: '',
+  latitude: '',
+  longitude: '',
+  venuePlaceId: '',
   city: '',
   state: '',
   country: '',
@@ -83,6 +95,8 @@ const EMPTY_CREATE_FORM: FormState = {
   status: 'upcoming',
   perks: '',
   transferRules: '',
+  transferSenderName: DEFAULT_TRANSFER_SENDER_NAME,
+  authPhoneNumber: '',
   image: '',
   backgroundColor: '#B79E6A',
   seatLabel: '',
@@ -108,6 +122,7 @@ export function AddEventAdminScreen() {
   const [errors, setErrors] = useState<Partial<Record<FieldKey, string>>>({});
   const [isPickingImage, setIsPickingImage] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [isResolvingVenue, setIsResolvingVenue] = useState(false);
   const [formError, setFormError] = useState<{ title: string; message: string } | null>(null);
   const [toast, setToast] = useState<string | null>(null);
   const screenTitle = mode === 'edit' ? 'Edit Ticket' : 'Create New Ticket';
@@ -157,6 +172,39 @@ export function AddEventAdminScreen() {
     });
   }
 
+  async function handleResolveVenueLocation() {
+    if (isResolvingVenue) {
+      return;
+    }
+
+    try {
+      setIsResolvingVenue(true);
+      const match = await geocodeVenueLocation(venueQuery(form));
+      setForm((current) => ({
+        ...current,
+        venueAddress: current.venueAddress.trim() || match.formattedAddress,
+        latitude: String(match.latitude),
+        longitude: String(match.longitude),
+        venuePlaceId: match.placeId ?? current.venuePlaceId,
+      }));
+      setErrors((current) => {
+        const next = { ...current };
+        delete next.latitude;
+        delete next.longitude;
+        return next;
+      });
+      showToast('Venue location matched');
+    } catch (error) {
+      console.warn('Venue lookup failed.', error);
+      reportFormError(
+        'Location lookup failed',
+        error instanceof Error ? error.message : 'No matching venue location was found.',
+      );
+    } finally {
+      setIsResolvingVenue(false);
+    }
+  }
+
   async function handleSave() {
     if (isSaving) {
       return;
@@ -173,10 +221,29 @@ export function AddEventAdminScreen() {
     }
 
     const payload = toTicketInput(form);
-    if (selectedTicket && (['venue', 'city', 'state', 'country'] as const).some((field) => form[field] !== selectedTicket[field])) {
-      // A changed address must be looked up again rather than reusing an old pin.
+    const venueChanged =
+      !!selectedTicket &&
+      (['venue', 'venueAddress', 'city', 'state', 'country'] as const).some(
+        (field) => (form[field] ?? '') !== (selectedTicket[field] ?? ''),
+      );
+    const pinUntouched =
+      !!selectedTicket &&
+      form.latitude === String(selectedTicket.latitude ?? '') &&
+      form.longitude === String(selectedTicket.longitude ?? '');
+    const hasPin = payload.latitude != null && payload.longitude != null;
+    if (form.venue.trim() && (!hasPin || (venueChanged && pinUntouched))) {
+      // A changed (or never located) venue is looked up again; saving still works if the lookup fails.
       payload.latitude = null;
       payload.longitude = null;
+      try {
+        const match = await geocodeVenueLocation(venueQuery(form));
+        payload.latitude = match.latitude;
+        payload.longitude = match.longitude;
+        payload.venuePlaceId = match.placeId ?? payload.venuePlaceId;
+        payload.venueAddress = payload.venueAddress || match.formattedAddress;
+      } catch (error) {
+        console.warn('Venue lookup skipped.', error);
+      }
     }
 
     try {
@@ -363,11 +430,30 @@ export function AddEventAdminScreen() {
 
           <FormSection title="Venue">
             <TicketTextField error={errors.venue} label="Venue" onChangeText={(value) => updateField('venue', value)} value={form.venue} />
+            <TicketTextField error={errors.venueAddress} label="Venue Address" onChangeText={(value) => updateField('venueAddress', value)} placeholder="Street, city, country" value={form.venueAddress} />
             <View style={styles.row}>
               <TicketTextField error={errors.city} label="City" onChangeText={(value) => updateField('city', value)} value={form.city} />
               <TicketTextField error={errors.state} label="State" onChangeText={(value) => updateField('state', value)} value={form.state} />
             </View>
             <TicketTextField error={errors.country} label="Country" onChangeText={(value) => updateField('country', value)} value={form.country} />
+            <Pressable
+              disabled={isResolvingVenue}
+              onPress={() => void handleResolveVenueLocation()}
+              style={[styles.imageDressButton, isResolvingVenue && styles.buttonDisabled]}
+            >
+              {isResolvingVenue ? (
+                <ActivityIndicator color="#005BD3" size="small" />
+              ) : (
+                <Ionicons color="#005BD3" name="location-outline" size={16} />
+              )}
+              <Text style={styles.imageDressButtonText}>
+                {isResolvingVenue ? 'Finding Location' : 'Find Location'}
+              </Text>
+            </Pressable>
+            <View style={styles.row}>
+              <TicketTextField error={errors.latitude} keyboardType="numbers-and-punctuation" label="Latitude" onChangeText={(value) => updateField('latitude', value)} value={form.latitude} />
+              <TicketTextField error={errors.longitude} keyboardType="numbers-and-punctuation" label="Longitude" onChangeText={(value) => updateField('longitude', value)} value={form.longitude} />
+            </View>
           </FormSection>
 
           <FormSection title="Schedule">
@@ -426,6 +512,8 @@ export function AddEventAdminScreen() {
             />
             <TicketTextField error={errors.perks} label="Perks" multiline onChangeText={(value) => updateField('perks', value)} value={form.perks} />
             <TicketTextField error={errors.transferRules} label="Transfer Rules" multiline onChangeText={(value) => updateField('transferRules', value)} value={form.transferRules} />
+            <TicketTextField error={errors.transferSenderName} label="Transfer Sender Name" onChangeText={(value) => updateField('transferSenderName', value)} placeholder={DEFAULT_TRANSFER_SENDER_NAME} value={form.transferSenderName} />
+            <TicketTextField error={errors.authPhoneNumber} keyboardType="phone-pad" label="Transfer Code Phone Number" onChangeText={(value) => updateField('authPhoneNumber', value)} placeholder="Shown as ******1234 in the transfer code drawer" value={form.authPhoneNumber} />
             <TicketTextField error={errors.backgroundColor} label="Accent Color" onChangeText={(value) => updateField('backgroundColor', value)} value={form.backgroundColor} />
           </FormSection>
         </ScrollView>
@@ -505,11 +593,13 @@ function TicketTextField({
   error,
   label,
   multiline,
+  keyboardType,
   onChangeText,
   placeholder,
   value,
 }: {
   error?: string;
+  keyboardType?: 'default' | 'numbers-and-punctuation' | 'phone-pad';
   label: string;
   multiline?: boolean;
   onChangeText: (value: string) => void;
@@ -520,6 +610,7 @@ function TicketTextField({
     <View style={styles.field}>
       <Text style={styles.label}>{label}</Text>
       <TextInput
+        keyboardType={keyboardType}
         multiline={multiline}
         onChangeText={onChangeText}
         placeholder={placeholder}
@@ -582,18 +673,49 @@ function validateForm(form: FormState) {
     errors.status = 'Choose upcoming or past.';
   }
 
+  const latitude = form.latitude.trim();
+  if (latitude && !(Number.isFinite(Number(latitude)) && Math.abs(Number(latitude)) <= 90)) {
+    errors.latitude = 'Latitude must be a number between -90 and 90.';
+  }
+
+  const longitude = form.longitude.trim();
+  if (longitude && !(Number.isFinite(Number(longitude)) && Math.abs(Number(longitude)) <= 180)) {
+    errors.longitude = 'Longitude must be a number between -180 and 180.';
+  }
+
   return errors;
 }
 
 function toFormState(ticket: TicketInput): FormState {
-  return Object.fromEntries(Object.keys(EMPTY_CREATE_FORM).map((key) => [key, ticket[key as FieldKey] ?? ''])) as FormState;
+  return Object.fromEntries(
+    Object.keys(EMPTY_CREATE_FORM).map((key) => {
+      const value = ticket[key as keyof TicketInput];
+      return [key, value === undefined || value === null ? '' : String(value)];
+    }),
+  ) as FormState;
 }
 
 function toTicketInput(form: FormState): TicketInput {
+  const latitude = form.latitude.trim();
+  const longitude = form.longitude.trim();
+
   return {
     ...form,
+    latitude: latitude ? Number(latitude) : null,
+    longitude: longitude ? Number(longitude) : null,
+    transferSenderName: form.transferSenderName.trim() || DEFAULT_TRANSFER_SENDER_NAME,
     ticketType: form.ticketType as TicketType,
     status: form.status as TicketStatus,
+  };
+}
+
+function venueQuery(form: FormState) {
+  return {
+    address: form.venueAddress,
+    city: form.city,
+    country: form.country,
+    state: form.state,
+    venue: form.venue,
   };
 }
 

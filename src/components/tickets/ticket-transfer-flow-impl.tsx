@@ -151,6 +151,7 @@ export function TicketTransferFlow({
         </View>
 
         <TicketTransferAuthModal
+          authPhoneNumber={flow.ticketFlowData.event.authPhoneNumber}
           confirmCodeReady={flow.confirmCodeReady}
           isSubmitting={flow.transferModal === 'authLoading'}
           onCancel={flow.handleCancelAuth}
@@ -165,6 +166,7 @@ export function TicketTransferFlow({
 
         <TicketTransferStatusModal
           frameWidth={flow.frameWidth}
+          senderName={flow.ticketFlowData.event.transferSenderName}
           status={flow.transferModal}
           onRetry={flow.handleRetryTransfer}
           onClose={() => flow.setTransferModal('none')}
