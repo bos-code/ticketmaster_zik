@@ -91,7 +91,10 @@ export function TicketTransferFlow({
             <ChooseTransferMethodScreen
               onBack={() => flow.setScreen('list')}
               onContinue={() => {
-                if (flow.seats.length === 3 && flow.selectedSeatIds.length < 3) {
+                if (
+                  flow.seats.length > 1 &&
+                  flow.selectedSeatIds.length < flow.seats.length
+                ) {
                   flow.setTransferModal('unavailable');
                 } else {
                   flow.setScreen('recipientChoice');

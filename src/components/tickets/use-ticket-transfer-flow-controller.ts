@@ -29,9 +29,9 @@ import type {
 } from "@/components/tickets/ticketFlowTypes";
 import { useTicketOrder } from "@/hooks/useTicketOrder";
 
-const TRANSFER_SUMMARY_LOADING_MS = 420;
+const TRANSFER_SUMMARY_LOADING_MS = 920;
 const TRANSFER_CONFIRM_BUTTON_LOADING_MS = 620;
-const TRANSFER_POST_AUTH_LOADING_MS = 520;
+const TRANSFER_POST_AUTH_LOADING_MS = 1020;
 
 export function useTicketTransferFlowController({
   initialScreen,
