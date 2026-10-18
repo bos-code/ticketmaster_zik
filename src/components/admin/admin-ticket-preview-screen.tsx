@@ -294,6 +294,20 @@ export function AdminTicketPreviewScreen() {
           <Text style={styles.cancelButtonText}>Cancel</Text>
         </Pressable>
 
+        {/* The toolbar covers the ticket page's Transfer button, so open the code drawer here. */}
+        <Pressable
+          accessibilityLabel="Edit code drawer"
+          accessibilityRole="button"
+          onPress={() => {
+            setPreviewOtp("");
+            setIsAuthPreviewOpen(true);
+          }}
+          style={styles.codeDrawerButton}
+        >
+          <Ionicons color="#0E62D5" name="keypad-outline" size={16} />
+          <Text style={styles.codeDrawerButtonText}>Code drawer</Text>
+        </Pressable>
+
         <Pressable
           disabled={!isDirty || isSaving}
           onPress={() => {
@@ -429,6 +443,24 @@ const styles = StyleSheet.create({
   },
   cancelButtonText: {
     color: "#374151",
+    fontSize: 12,
+    fontWeight: "800",
+    letterSpacing: 1.1,
+    textTransform: "uppercase",
+  },
+  codeDrawerButton: {
+    alignItems: "center",
+    borderColor: "#0E62D5",
+    borderRadius: 8,
+    borderWidth: 1,
+    flex: 1,
+    flexDirection: "row",
+    gap: 6,
+    justifyContent: "center",
+    minHeight: 48,
+  },
+  codeDrawerButtonText: {
+    color: "#0E62D5",
     fontSize: 12,
     fontWeight: "800",
     letterSpacing: 1.1,

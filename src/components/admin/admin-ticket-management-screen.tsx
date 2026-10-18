@@ -346,18 +346,20 @@ function AdminTicketCard({
         <Text style={styles.visibilityToggleText}>{ticket.isHidden ? 'Hidden' : 'Visible'}</Text>
       </Pressable>
 
-      <View style={[styles.cardBody, ticket.isHidden && styles.hiddenContent]}>
-        <Text style={styles.cardTitle}>{ticket.eventName}</Text>
-        <Text style={styles.cardArtist}>{ticket.artistName} / {ticket.albumName}</Text>
-        <View style={styles.divider} />
-        <Text style={styles.cardMeta}>{ticket.venue}</Text>
-        <Text style={styles.cardMeta}>{ticket.city}, {ticket.state}, {ticket.country}</Text>
-        <Text style={styles.cardDate}>{formatTicketDate(ticket)}</Text>
+      <View style={styles.cardBody}>
+        <View style={ticket.isHidden ? styles.hiddenContent : undefined}>
+          <Text style={styles.cardTitle}>{ticket.eventName}</Text>
+          <Text style={styles.cardArtist}>{ticket.artistName} / {ticket.albumName}</Text>
+          <View style={styles.divider} />
+          <Text style={styles.cardMeta}>{ticket.venue}</Text>
+          <Text style={styles.cardMeta}>{ticket.city}, {ticket.state}, {ticket.country}</Text>
+          <Text style={styles.cardDate}>{formatTicketDate(ticket)}</Text>
 
-        <View style={styles.seatGrid}>
-          <SeatFact label="Section" value={ticket.section} />
-          <SeatFact label="Row" value={ticket.row} />
-          <SeatFact label="Seats" value={ticket.seatRange} />
+          <View style={styles.seatGrid}>
+            <SeatFact label="Section" value={ticket.section} />
+            <SeatFact label="Row" value={ticket.row} />
+            <SeatFact label="Seats" value={ticket.seatRange} />
+          </View>
         </View>
 
         <View style={styles.actionRow}>
