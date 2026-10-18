@@ -11,8 +11,8 @@ import { normalizeOtp, OTP_LENGTH } from "@/lib/auth/otp";
 
 // Measured from the reference recording (390 pt wide phone).
 const SHEET_TOP_GAP = 4;
-// The sheet is 13% shorter than the full height below the status bar.
-const SHEET_HEIGHT_RATIO = 0.87;
+// The sheet is 90% of the full height below the status bar.
+const SHEET_HEIGHT_RATIO = 0.9;
 const HEADER_HEIGHT = 52;
 const CARD_HEIGHT = 331;
 // Spacing removed by the compact card (see the *Compact styles).
