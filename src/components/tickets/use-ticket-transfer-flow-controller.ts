@@ -29,6 +29,10 @@ import type {
 } from "@/components/tickets/ticketFlowTypes";
 import { useTicketOrder } from "@/hooks/useTicketOrder";
 
+const TRANSFER_SUMMARY_LOADING_MS = 420;
+const TRANSFER_CONFIRM_BUTTON_LOADING_MS = 620;
+const TRANSFER_POST_AUTH_LOADING_MS = 520;
+
 export function useTicketTransferFlowController({
   initialScreen,
   initialTicketIndex,
@@ -59,6 +63,7 @@ export function useTicketTransferFlowController({
   const [screen, setScreen] = useState<FlowScreen>(initialScreen);
   const [activePanel, setActivePanel] = useState<PanelTab>("tickets");
   const [isHeroCollapsed, setIsHeroCollapsed] = useState(false);
+  const [isListLoading, setIsListLoading] = useState(false);
   const [transferModal, setTransferModal] = useState<TransferModal>("none");
   const [deliveryMode, setDeliveryMode] = useState<DeliveryMode>("email");
   const [selectedSeatIds, setSelectedSeatIds] = useState<string[]>([]);
@@ -191,7 +196,28 @@ export function useTicketTransferFlowController({
 
   const handleTransferStart = () => {
     setSelectedSeatIds([]);
-    setScreen("select");
+    setTransferModal("none");
+    setOtpCode("");
+    setIsListLoading(true);
+
+    if (loadingTimerRef.current) {
+      clearTimeout(loadingTimerRef.current);
+    }
+
+    loadingTimerRef.current = setTimeout(() => {
+      setIsListLoading(false);
+      setTransferModal("auth");
+    }, TRANSFER_SUMMARY_LOADING_MS);
+  };
+
+  const handleCancelAuth = () => {
+    if (loadingTimerRef.current) {
+      clearTimeout(loadingTimerRef.current);
+      loadingTimerRef.current = null;
+    }
+
+    setIsListLoading(false);
+    setTransferModal("none");
   };
 
   const handleOpenViewer = () => {
@@ -284,6 +310,27 @@ export function useTicketTransferFlowController({
     updateRecipientForm("destination", "");
   };
 
+  function startTransferProcessing() {
+    setTransferModal("loading");
+
+    if (loadingTimerRef.current) {
+      clearTimeout(loadingTimerRef.current);
+    }
+
+    loadingTimerRef.current = setTimeout(() => {
+      const isSuccess = Math.random() > 0.1;
+
+      if (isSuccess) {
+        setViewerIndex(0);
+        setSelectedSeatIds([]);
+        setScreen("list");
+        setTransferModal("success");
+      } else {
+        setTransferModal("error");
+      }
+    }, 1500);
+  }
+
   const handleRequestTransfer = () => {
     const errors = validateRecipientForm(recipientForm);
 
@@ -293,7 +340,8 @@ export function useTicketTransferFlowController({
     }
 
     setOtpCode("");
-    setTransferModal("auth");
+    setFormErrors({});
+    startTransferProcessing();
   };
 
   const handleConfirmCode = () => {
@@ -301,30 +349,32 @@ export function useTicketTransferFlowController({
       return;
     }
 
-    setTransferModal("loading");
+    setTransferModal("authLoading");
     if (loadingTimerRef.current) {
       clearTimeout(loadingTimerRef.current);
     }
 
-    loadingTimerRef.current = setTimeout(() => {
-      const isSuccess = Math.random() > 0.1;
+    if (screen === "list") {
+      loadingTimerRef.current = setTimeout(() => {
+        setTransferModal("none");
+        setIsListLoading(true);
 
-      if (isSuccess) {
-        setTransferModal("success");
-        setTimeout(() => {
-          setTransferModal("none");
+        loadingTimerRef.current = setTimeout(() => {
+          setIsListLoading(false);
+          setSelectedSeatIds([]);
           setViewerIndex(0);
-          setScreen("viewer");
-        }, 1500);
-      } else {
-        setTransferModal("error");
-      }
-    }, 1500);
+          setScreen("select");
+        }, TRANSFER_POST_AUTH_LOADING_MS);
+      }, TRANSFER_CONFIRM_BUTTON_LOADING_MS);
+      return;
+    }
+
+    startTransferProcessing();
   };
 
   const handleRetryTransfer = () => {
-    setTransferModal("auth");
     setOtpCode("");
+    startTransferProcessing();
   };
 
   return {
@@ -337,6 +387,7 @@ export function useTicketTransferFlowController({
     formErrors,
     frameWidth,
     handleBackToTabs,
+    handleCancelAuth,
     handleConfirmCode,
     heroCollapseDistance,
     handleListScroll,
@@ -349,6 +400,7 @@ export function useTicketTransferFlowController({
     handleTransferStart,
     handleViewerBack,
     isHeroCollapsed,
+    isListLoading,
     isViewerScreen,
     openTicketDetailsRoute,
     otpCode,

@@ -1,5 +1,7 @@
 import React from 'react';
 import { View } from 'react-native';
+import { CustomSpinner } from '@/components/tickets/custom-spinner';
+import { HERO_EXPANDED_HEIGHT } from '@/components/tickets/ticketFlowConstants';
 
 import { ChooseRecipientTypeScreen } from '@/components/tickets/ChooseRecipientTypeScreen';
 import { ChooseTransferMethodScreen } from '@/components/tickets/ChooseTransferMethodScreen';
@@ -10,9 +12,15 @@ import { TicketTransferAuthModal } from '@/components/tickets/ticket-transfer-fl
 import { TicketsUnavailable } from '@/components/tickets/ticket-transfer-flow-components';
 import { TicketFlowContext } from '@/components/tickets/TicketFlowContext';
 import { TicketTransferStatusModal } from '@/components/tickets/TicketTransferStatusModal';
+import { TicketTransferUnavailableModal } from '@/components/tickets/TicketTransferUnavailableModal';
 import { useTicketTransferFlowController } from '@/components/tickets/use-ticket-transfer-flow-controller';
 import Head from 'expo-router/head';
 import { StatusBar } from 'expo-status-bar';
+
+const TRANSFER_LOADING_CONTENT_OPACITY = 0.55;
+const TRANSFER_LOADING_SPINNER_COLOR = '#2B72D7';
+const TRANSFER_LOADING_SPINNER_SIZE = 52;
+const TRANSFER_LOADING_SPINNER_TOP_OFFSET = 45;
 
 export function TicketTransferFlow({
   initialScreen = 'list',
@@ -55,7 +63,13 @@ export function TicketTransferFlow({
           style='light'
           translucent={!flow.isViewerScreen}
         />
-        <View className=' flex-1 w-full'>
+        <View
+          className=' flex-1 w-full'
+          pointerEvents={flow.isListLoading ? 'none' : 'auto'}
+          style={{
+            opacity: flow.isListLoading ? TRANSFER_LOADING_CONTENT_OPACITY : 1,
+          }}
+        >
           {['list', 'select', 'recipientChoice', 'recipientForm'].includes(
             flow.screen,
           ) ? (
@@ -76,7 +90,13 @@ export function TicketTransferFlow({
           {flow.screen === 'select' ? (
             <ChooseTransferMethodScreen
               onBack={() => flow.setScreen('list')}
-              onContinue={() => flow.setScreen('recipientChoice')}
+              onContinue={() => {
+                if (flow.seats.length === 3 && flow.selectedSeatIds.length < 3) {
+                  flow.setTransferModal('unavailable');
+                } else {
+                  flow.setScreen('recipientChoice');
+                }
+              }}
               onToggleSeat={flow.toggleSeat}
               seatSummary={flow.seatSummary}
               seats={flow.seats}
@@ -129,11 +149,15 @@ export function TicketTransferFlow({
 
         <TicketTransferAuthModal
           confirmCodeReady={flow.confirmCodeReady}
-          onCancel={() => flow.setTransferModal('none')}
+          isSubmitting={flow.transferModal === 'authLoading'}
+          onCancel={flow.handleCancelAuth}
           onConfirm={flow.handleConfirmCode}
           onOtpChange={flow.setOtpCode}
           otpCode={flow.otpCode}
-          visible={flow.transferModal === 'auth'}
+          visible={
+            flow.transferModal === 'auth' ||
+            flow.transferModal === 'authLoading'
+          }
         />
 
         <TicketTransferStatusModal
@@ -142,6 +166,32 @@ export function TicketTransferFlow({
           onRetry={flow.handleRetryTransfer}
           onClose={() => flow.setTransferModal('none')}
         />
+
+        <TicketTransferUnavailableModal
+          visible={flow.transferModal === 'unavailable'}
+          onClose={() => flow.setTransferModal('none')}
+          ticketCount={flow.seats.length}
+        />
+
+        {flow.isListLoading && (
+          <View
+            pointerEvents='none'
+            style={{
+              position: 'absolute',
+              top: HERO_EXPANDED_HEIGHT + TRANSFER_LOADING_SPINNER_TOP_OFFSET,
+              left: 0,
+              right: 0,
+              alignItems: 'center',
+              zIndex: 999,
+              backgroundColor: 'transparent',
+            }}
+          >
+            <CustomSpinner
+              color={TRANSFER_LOADING_SPINNER_COLOR}
+              size={TRANSFER_LOADING_SPINNER_SIZE}
+            />
+          </View>
+        )}
       </View>
     </TicketFlowContext.Provider>
   );

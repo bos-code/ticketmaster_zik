@@ -17,7 +17,8 @@ export function TicketTransferStatusModal({
   onClose?: () => void;
   status: TransferModal;
 }) {
-  const isVisible = status !== "none" && status !== "auth";
+  const isVisible =
+    status === "loading" || status === "success" || status === "error";
 
   return (
     <Modal animationType="fade" transparent={false} visible={isVisible}>
