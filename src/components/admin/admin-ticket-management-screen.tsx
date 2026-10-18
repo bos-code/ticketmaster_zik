@@ -202,6 +202,14 @@ export function AdminTicketManagementScreen() {
       </ScrollView>
 
       <Pressable
+        onPress={() => router.push('/admin/ticketmaster')}
+        style={[styles.fab, styles.fabSecondary, { bottom: Math.max(insets.bottom, 18) + 12 + 56 }]}
+      >
+        <Ionicons color="#FFFFFF" name="search" size={20} />
+        <Text style={styles.fabText}>From Ticketmaster</Text>
+      </Pressable>
+
+      <Pressable
         onPress={() => router.push({ pathname: '/add-event', params: { mode: 'create' } })}
         style={[styles.fab, { bottom: Math.max(insets.bottom, 18) + 12 }]}
       >
@@ -511,6 +519,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     position: 'absolute',
   },
+  fabSecondary: { backgroundColor: '#222222' },
   fabText: { color: '#FFFFFF', fontSize: 13, fontWeight: '800', letterSpacing: 0.8, textTransform: 'uppercase' },
   toast: {
     alignItems: 'center',
