@@ -1,5 +1,8 @@
 import { Text } from '@/components/ui/app-text';
 import React from "react";
+
+import { LAYER_MODAL } from "@/constants/layers";
+import { useOverlaySlot } from "@/lib/overlay-manager";
 import { ActivityIndicator, Modal, Pressable, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
@@ -10,19 +13,23 @@ export function TicketTransferStatusModal({
   frameWidth,
   onRetry,
   onClose,
+  senderName,
   status,
 }: {
   frameWidth: number;
   onRetry?: () => void;
   onClose?: () => void;
+  senderName?: string;
   status: TransferModal;
 }) {
-  const isVisible =
-    status === "loading" || status === "success" || status === "error";
+  const isVisible = useOverlaySlot(
+    "modal",
+    status === "loading" || status === "success" || status === "error",
+  );
 
   return (
     <Modal animationType="fade" transparent={false} visible={isVisible}>
-      <View className="flex-1 items-center bg-white">
+      <View className="flex-1 items-center bg-white" style={{ zIndex: LAYER_MODAL }}>
         <SafeAreaView
           edges={["top"]}
           style={{ width: "100%", backgroundColor: status === "error" ? "#D93025" : "#0863D9" }}
@@ -67,7 +74,9 @@ export function TicketTransferStatusModal({
                 Tickets Transferred!
               </Text>
               <Text className="mt-2 text-[14px] text-gray-500 text-center">
-                Your tickets have been sent to the recipient.
+                {senderName?.trim()
+                  ? `${senderName.trim()} sent your tickets to the recipient.`
+                  : "Your tickets have been sent to the recipient."}
               </Text>
 
               <Pressable

@@ -41,6 +41,7 @@ export type RecipientFormState = {
 
 export type TicketFlowContextValue = {
   event: {
+    authPhoneNumber?: string;
     dateTime: string;
     directionsEventId?: string;
     headerSubtitle: string;
@@ -51,6 +52,7 @@ export type TicketFlowContextValue = {
     mapImageUrl: string;
     shortTitle: string;
     title: string;
+    transferSenderName?: string;
     venue: string;
     venueAddress?: string;
     venueSummary?: string;

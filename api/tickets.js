@@ -3,7 +3,8 @@ const TICKET_FIELDS = new Set([
   'country', 'date', 'time', 'purchaseDate', 'section', 'row', 'seatRange',
   'barcode', 'orderNumber', 'ticketType', 'status', 'perks', 'transferRules',
   'image', 'backgroundColor', 'seatLabel', 'ticketNote', 'latitude',
-  'longitude', 'createdAt', 'updatedAt', 'entryInstructions',
+  'longitude', 'createdAt', 'updatedAt', 'entryInstructions', 'venueAddress',
+  'venuePlaceId', 'transferSenderName', 'authPhoneNumber', 'isHidden',
 ]);
 
 module.exports = async function handler(request, response) {
@@ -54,7 +55,7 @@ module.exports = async function handler(request, response) {
         !Object.keys(fields).length || Object.keys(fields).some(key => !TICKET_FIELDS.has(key)) ||
         (fields.id !== undefined && fields.id !== id) ||
         Object.values(fields).some(value => value !== null && typeof value !== 'string' &&
-          !(typeof value === 'number' && Number.isFinite(value)))) {
+          typeof value !== 'boolean' && !(typeof value === 'number' && Number.isFinite(value)))) {
       return response.status(400).json({ error: 'Some ticket details are invalid. Please review them and try again.' });
     }
     const upstream = await fetch(`${base}:commit?key=${encodeURIComponent(apiKey)}`, {
@@ -87,6 +88,7 @@ function rejectUpstream(response, status) {
 
 function toValue(value) {
   if (value === null) return { nullValue: null };
+  if (typeof value === 'boolean') return { booleanValue: value };
   if (typeof value === 'number') return Number.isInteger(value) ? { integerValue: String(value) } : { doubleValue: value };
   return { stringValue: value };
 }

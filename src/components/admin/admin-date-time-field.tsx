@@ -1,4 +1,6 @@
 import { Text } from '@/components/ui/app-text';
+import { LAYER_MODAL } from '@/constants/layers';
+import { useOverlaySlot } from '@/lib/overlay-manager';
 import { Ionicons } from '@expo/vector-icons';
 import DateTimePicker, { DateTimePickerAndroid } from '@react-native-community/datetimepicker';
 import React, { useState } from 'react';
@@ -28,6 +30,7 @@ export function AdminDateTimeField({
   value,
 }: AdminDateTimeFieldProps) {
   const [isPickerVisible, setIsPickerVisible] = useState(false);
+  const isPickerShown = useOverlaySlot('modal', isPickerVisible);
   const [draftValue, setDraftValue] = useState<Date>(() => resolvePickerValue(value, mode));
 
   function openPicker() {
@@ -90,9 +93,9 @@ export function AdminDateTimeField({
           onRequestClose={closePicker}
           presentationStyle="overFullScreen"
           transparent
-          visible={isPickerVisible}
+          visible={isPickerShown}
         >
-          <View style={styles.modalBackdrop}>
+          <View style={[styles.modalBackdrop, { zIndex: LAYER_MODAL }]}>
             <Pressable onPress={closePicker} style={styles.modalDismissArea} />
             <View style={styles.modalCard}>
               <View style={styles.modalHeader}>

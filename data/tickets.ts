@@ -8,11 +8,13 @@ export type TicketRecord = {
   artistName: string;
   albumName: string;
   venue: string;
+  venueAddress?: string;
   city: string;
   state: string;
   country: string;
   latitude?: number | null;
   longitude?: number | null;
+  venuePlaceId?: string;
   date: string;
   time: string;
   purchaseDate: string;
@@ -25,11 +27,14 @@ export type TicketRecord = {
   status: TicketStatus;
   perks: string;
   transferRules: string;
+  transferSenderName?: string;
   image: string;
   backgroundColor: string;
   seatLabel: string;
   ticketNote: string;
   entryInstructions?: string;
+  authPhoneNumber?: string;
+  isHidden?: boolean;
   createdAt: string;
   updatedAt: string;
 };

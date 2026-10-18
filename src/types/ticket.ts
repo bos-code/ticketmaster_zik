@@ -9,6 +9,8 @@ export interface EventInfo {
   heroImage: any;
   latitude?: number | null;
   longitude?: number | null;
+  authPhoneNumber?: string;
+  transferSenderName?: string;
 }
 
 export interface TicketOrderInfo {

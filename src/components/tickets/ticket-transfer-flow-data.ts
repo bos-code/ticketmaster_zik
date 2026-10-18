@@ -9,6 +9,8 @@ export function buildTicketFlowDataFromOrder(
 ): TicketFlowContextValue {
   return {
     event: {
+      authPhoneNumber: order.event.authPhoneNumber,
+      transferSenderName: order.event.transferSenderName,
       directionsEventId: order.event.id,
       id: order.event.id,
       title: summaryViewModel.eventTitle,

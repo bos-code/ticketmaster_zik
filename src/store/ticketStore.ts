@@ -1,5 +1,7 @@
 import { create } from 'zustand';
 
+import { DEFAULT_TRANSFER_SENDER_NAME } from '@/constants/admin-settings';
+
 import {
   mockTickets,
   type TicketRecord,
@@ -73,6 +75,9 @@ export const useTicketStore = create<TicketStore>((set, get) => ({
     const image = await persistTicketImage(nextTicketId, ticket.image);
     const nextTicket: TicketRecord = {
       ...ticket,
+      transferSenderName:
+        ticket.transferSenderName?.trim() || DEFAULT_TRANSFER_SENDER_NAME,
+      isHidden: ticket.isHidden ?? false,
       id: nextTicketId,
       image,
       createdAt: now,

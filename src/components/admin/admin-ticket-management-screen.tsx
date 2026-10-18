@@ -1,3 +1,5 @@
+import { LAYER_MODAL } from '@/constants/layers';
+import { useOverlaySlot } from '@/lib/overlay-manager';
 import { Text } from '@/components/ui/app-text';
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
@@ -25,9 +27,9 @@ import {
   useTicketStore,
 } from '@/store/ticketStore';
 
-type TicketFilter = 'All' | 'Upcoming' | TicketType | 'Past';
+type TicketFilter = 'All' | 'Upcoming' | TicketType | 'Past' | 'Hidden';
 
-const filters: TicketFilter[] = ['All', 'Upcoming', 'VIP', 'Standard', 'General', 'Past'];
+const filters: TicketFilter[] = ['All', 'Upcoming', 'VIP', 'Standard', 'General', 'Past', 'Hidden'];
 
 export function AdminTicketManagementScreen() {
   const router = useRouter();
@@ -35,6 +37,8 @@ export function AdminTicketManagementScreen() {
   const params = useLocalSearchParams<{ toast?: string }>();
   const tickets = useTicketStore((state) => state.tickets);
   const removeEvent = useTicketStore((state) => state.removeEvent);
+  const updateEvent = useTicketStore((state) => state.updateEvent);
+  const [visibilityUpdatingId, setVisibilityUpdatingId] = useState<string | null>(null);
   const [activeFilter, setActiveFilter] = useState<TicketFilter>('All');
   const [deleteTarget, setDeleteTarget] = useState<TicketRecord | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -65,6 +69,10 @@ export function AdminTicketManagementScreen() {
           return ticket.status === 'past';
         }
 
+        if (activeFilter === 'Hidden') {
+          return Boolean(ticket.isHidden);
+        }
+
         return ticket.ticketType === activeFilter;
       }),
     [activeFilter, tickets],
@@ -76,6 +84,27 @@ export function AdminTicketManagementScreen() {
   function showToast(message: string) {
     setToast(message);
     setTimeout(() => setToast(null), 1800);
+  }
+
+  async function handleToggleHidden(ticket: TicketRecord) {
+    if (visibilityUpdatingId) {
+      return;
+    }
+
+    const nextHidden = !ticket.isHidden;
+
+    try {
+      setVisibilityUpdatingId(ticket.id);
+      await updateEvent(ticket.id, { isHidden: nextHidden });
+      showToast(nextHidden ? 'Ticket hidden from users' : 'Ticket visible to users');
+    } catch {
+      Alert.alert(
+        'Update failed',
+        'We could not change this ticket\'s visibility right now. Please try again.',
+      );
+    } finally {
+      setVisibilityUpdatingId(null);
+    }
   }
 
   async function handleConfirmDelete() {
@@ -159,6 +188,8 @@ export function AdminTicketManagementScreen() {
           <>
             <TicketSection
               onDelete={setDeleteTarget}
+              onToggleHidden={handleToggleHidden}
+              visibilityUpdatingId={visibilityUpdatingId}
               onEdit={(ticket) =>
                 router.push({
                   pathname: '/add-event',
@@ -176,6 +207,8 @@ export function AdminTicketManagementScreen() {
             />
             <TicketSection
               onDelete={setDeleteTarget}
+              onToggleHidden={handleToggleHidden}
+              visibilityUpdatingId={visibilityUpdatingId}
               onEdit={(ticket) =>
                 router.push({
                   pathname: '/add-event',
@@ -240,14 +273,18 @@ function TicketSection({
   onDelete,
   onEdit,
   onPreview,
+  onToggleHidden,
   tickets,
   title,
+  visibilityUpdatingId,
 }: {
   onDelete: (ticket: TicketRecord) => void;
   onEdit: (ticket: TicketRecord) => void;
   onPreview: (ticket: TicketRecord) => void;
+  onToggleHidden: (ticket: TicketRecord) => void;
   tickets: TicketRecord[];
   title: string;
+  visibilityUpdatingId: string | null;
 }) {
   if (!tickets.length) {
     return null;
@@ -260,21 +297,25 @@ function TicketSection({
         <Text style={styles.sectionCount}>{tickets.length}</Text>
       </View>
       {tickets.map((ticket) => (
-        <AdminTicketCard key={ticket.id} onDelete={() => onDelete(ticket)} onEdit={() => onEdit(ticket)} onPreview={() => onPreview(ticket)} ticket={ticket} />
+        <AdminTicketCard key={ticket.id} isUpdatingVisibility={visibilityUpdatingId === ticket.id} onDelete={() => onDelete(ticket)} onEdit={() => onEdit(ticket)} onPreview={() => onPreview(ticket)} onToggleHidden={() => onToggleHidden(ticket)} ticket={ticket} />
       ))}
     </View>
   );
 }
 
 function AdminTicketCard({
+  isUpdatingVisibility,
   onDelete,
   onEdit,
   onPreview,
+  onToggleHidden,
   ticket,
 }: {
+  isUpdatingVisibility: boolean;
   onDelete: () => void;
   onEdit: () => void;
   onPreview: () => void;
+  onToggleHidden: () => void;
   ticket: TicketRecord;
 }) {
   return (
@@ -286,6 +327,7 @@ function AdminTicketCard({
         <View style={styles.badgeRow}>
           <Badge label={ticket.ticketType} tone="gold" />
           <Badge label={ticket.status} tone={ticket.status === 'upcoming' ? 'blue' : 'muted'} />
+          {ticket.isHidden ? <Badge label="Hidden" tone="muted" /> : null}
         </View>
       </View>
 
@@ -311,6 +353,14 @@ function AdminTicketCard({
           <Pressable onPress={onEdit} style={styles.editButton}>
             <Ionicons color="#FFFFFF" name="create-outline" size={16} />
             <Text style={styles.editButtonText}>Edit</Text>
+          </Pressable>
+          <Pressable
+            accessibilityLabel={ticket.isHidden ? 'Show ticket to users' : 'Hide ticket from users'}
+            disabled={isUpdatingVisibility}
+            onPress={onToggleHidden}
+            style={[styles.visibilityButton, isUpdatingVisibility && { opacity: 0.5 }]}
+          >
+            <Ionicons color="#374151" name={ticket.isHidden ? 'eye-off-outline' : 'eye-outline'} size={16} />
           </Pressable>
           <Pressable onPress={onDelete} style={styles.deleteButton}>
             <Ionicons color="#FF6B5A" name="trash-outline" size={16} />
@@ -349,9 +399,11 @@ function DeleteSheet({
   onConfirm: () => void;
   ticket: TicketRecord | null;
 }) {
+  const isShown = useOverlaySlot('modal', Boolean(ticket));
+
   return (
-    <Modal animationType="slide" onRequestClose={onCancel} transparent visible={Boolean(ticket)}>
-      <View style={styles.sheetBackdrop}>
+    <Modal animationType="slide" onRequestClose={onCancel} transparent visible={isShown}>
+      <View style={[styles.sheetBackdrop, { zIndex: LAYER_MODAL }]}>
         <Pressable style={StyleSheet.absoluteFill} onPress={onCancel} />
         <View style={styles.sheet}>
           <View style={styles.sheetHandle} />
@@ -485,6 +537,15 @@ const styles = StyleSheet.create({
     minHeight: 40,
   },
   previewButtonText: { color: '#374151', fontSize: 12, fontWeight: '800', textTransform: 'uppercase' },
+  visibilityButton: {
+    alignItems: 'center',
+    borderColor: '#D1D5DB',
+    borderRadius: 7,
+    borderWidth: 1,
+    justifyContent: 'center',
+    minHeight: 40,
+    width: 40,
+  },
   deleteButton: {
     alignItems: 'center',
     borderColor: '#FCA5A5',
