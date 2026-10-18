@@ -10,6 +10,8 @@ import {
   View,
 } from 'react-native';
 
+import { createAdminStyles } from '@/components/admin/admin-theme';
+
 type AdminDateTimeFieldProps = {
   error?: string;
   label: string;
@@ -32,6 +34,7 @@ export function AdminDateTimeField({
   placeholder,
   value,
 }: AdminDateTimeFieldProps) {
+  const styles = useStyles();
   const [isOpen, setIsOpen] = useState(false);
   const isShown = useOverlaySlot('modal', isOpen);
 
@@ -82,6 +85,7 @@ export function AdminDateTimeField({
 }
 
 function CalendarCard({ label, onClose, onSelect, value }: { label: string; onClose: () => void; onSelect: (value: string) => void; value: string }) {
+  const styles = useStyles();
   const selected = parseDate(value);
   const today = new Date();
   const [view, setView] = useState(() => ({
@@ -165,6 +169,7 @@ function CalendarCard({ label, onClose, onSelect, value }: { label: string; onCl
 }
 
 function TimeCard({ label, onClose, onSelect, value }: { label: string; onClose: () => void; onSelect: (value: string) => void; value: string }) {
+  const styles = useStyles();
   const parsed = parseTime(value);
   const [hour, setHour] = useState(parsed.hour);
   const [minute, setMinute] = useState(parsed.minute);
@@ -241,10 +246,10 @@ function formatTime(hour: number, minute: number, meridiem: 'AM' | 'PM') {
   return `${hour}:${String(minute).padStart(2, '0')} ${meridiem}`;
 }
 
-const styles = StyleSheet.create({
+const useStyles = createAdminStyles((c) => ({
   field: { flex: 1, gap: 6 },
   label: {
-    color: '#6B7280',
+    color: c.textMuted,
     fontSize: 10,
     fontWeight: '700',
     letterSpacing: 1.2,
@@ -252,11 +257,11 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
   },
   input: {
-    backgroundColor: '#F9FAFB',
-    borderColor: '#E5E7EB',
+    backgroundColor: c.surfaceMuted,
+    borderColor: c.border,
     borderRadius: 8,
     borderWidth: 1,
-    color: '#111827',
+    color: c.text,
     fontSize: 14,
     fontWeight: '600',
     minHeight: 48,
@@ -264,8 +269,8 @@ const styles = StyleSheet.create({
   },
   inputButton: {
     alignItems: 'center',
-    backgroundColor: '#F9FAFB',
-    borderColor: '#E5E7EB',
+    backgroundColor: c.surfaceMuted,
+    borderColor: c.border,
     borderRadius: 8,
     borderWidth: 1,
     flexDirection: 'row',
@@ -274,24 +279,24 @@ const styles = StyleSheet.create({
     paddingHorizontal: 13,
   },
   inputText: {
-    color: '#111827',
+    color: c.text,
     flex: 1,
     fontSize: 14,
     fontWeight: '600',
   },
-  placeholderText: { color: 'rgba(17, 24, 39, 0.32)' },
-  inputIcon: { color: '#6B7280', fontSize: 18, fontWeight: '800' },
-  inputError: { borderColor: '#EF4444' },
-  errorText: { color: '#EF4444', fontSize: 11, fontWeight: '600', lineHeight: 15 },
+  placeholderText: { color: c.textSubtle },
+  inputIcon: { color: c.textMuted, fontSize: 18, fontWeight: '800' },
+  inputError: { borderColor: c.danger },
+  errorText: { color: c.danger, fontSize: 11, fontWeight: '600', lineHeight: 15 },
   modalBackdrop: {
     alignItems: 'center',
-    backgroundColor: 'rgba(0,0,0,0.35)',
+    backgroundColor: c.overlay,
     flex: 1,
     justifyContent: 'center',
     padding: 20,
   },
   modalCard: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: c.surface,
     borderRadius: 10,
     maxHeight: 420,
     maxWidth: 360,
@@ -300,15 +305,15 @@ const styles = StyleSheet.create({
   },
   modalHeader: {
     alignItems: 'center',
-    borderBottomColor: '#E5E7EB',
+    borderBottomColor: c.border,
     borderBottomWidth: 1,
     flexDirection: 'row',
     justifyContent: 'space-between',
     minHeight: 52,
     paddingHorizontal: 16,
   },
-  modalTitle: { color: '#111827', fontSize: 15, fontWeight: '800' },
-  modalClose: { color: '#005BD3', fontSize: 14, fontWeight: '800' },
+  modalTitle: { color: c.text, fontSize: 15, fontWeight: '800' },
+  modalClose: { color: c.primaryText, fontSize: 14, fontWeight: '800' },
   timeGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -317,8 +322,8 @@ const styles = StyleSheet.create({
   },
   timeOption: {
     alignItems: 'center',
-    backgroundColor: '#F9FAFB',
-    borderColor: '#E5E7EB',
+    backgroundColor: c.surfaceMuted,
+    borderColor: c.border,
     borderRadius: 8,
     borderWidth: 1,
     minHeight: 38,
@@ -327,29 +332,29 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
   },
   timeOptionActive: {
-    backgroundColor: '#005BD3',
-    borderColor: '#005BD3',
+    backgroundColor: c.primary,
+    borderColor: c.primary,
   },
-  timeOptionText: { color: '#374151', fontSize: 12, fontWeight: '700' },
-  timeOptionTextActive: { color: '#FFFFFF' },
+  timeOptionText: { color: c.textSecondary, fontSize: 12, fontWeight: '700' },
+  timeOptionTextActive: { color: c.onPrimary },
   monthRow: { alignItems: 'center', flexDirection: 'row', gap: 4, paddingHorizontal: 10, paddingTop: 10 },
   navButton: { alignItems: 'center', height: 34, justifyContent: 'center', width: 34 },
-  navText: { color: '#005BD3', fontSize: 20, fontWeight: '800' },
-  monthLabel: { color: '#111827', flex: 1, fontSize: 14, fontWeight: '800', textAlign: 'center' },
+  navText: { color: c.primaryText, fontSize: 20, fontWeight: '800' },
+  monthLabel: { color: c.text, flex: 1, fontSize: 14, fontWeight: '800', textAlign: 'center' },
   weekRow: { flexDirection: 'row', paddingHorizontal: 10, paddingTop: 6 },
-  weekday: { color: '#9CA3AF', flex: 1, fontSize: 11, fontWeight: '700', textAlign: 'center' },
+  weekday: { color: c.textSubtle, flex: 1, fontSize: 11, fontWeight: '700', textAlign: 'center' },
   dayGrid: { flexDirection: 'row', flexWrap: 'wrap', paddingHorizontal: 10, paddingVertical: 4 },
   dayCell: { alignItems: 'center', height: 40, justifyContent: 'center', width: `${100 / 7}%` },
   dayButton: { borderRadius: 20 },
-  dayToday: { borderColor: '#005BD3', borderWidth: 1 },
-  daySelected: { backgroundColor: '#005BD3' },
-  dayText: { color: '#111827', fontSize: 13, fontWeight: '600' },
-  dayTextSelected: { color: '#FFFFFF', fontWeight: '800' },
-  footerRow: { alignItems: 'flex-end', borderTopColor: '#E5E7EB', borderTopWidth: 1, padding: 12 },
-  timePreview: { color: '#111827', fontSize: 24, fontWeight: '800', paddingTop: 12, textAlign: 'center' },
+  dayToday: { borderColor: c.primaryText, borderWidth: 1 },
+  daySelected: { backgroundColor: c.primary },
+  dayText: { color: c.text, fontSize: 13, fontWeight: '600' },
+  dayTextSelected: { color: c.onPrimary, fontWeight: '800' },
+  footerRow: { alignItems: 'flex-end', borderTopColor: c.border, borderTopWidth: 1, padding: 12 },
+  timePreview: { color: c.text, fontSize: 24, fontWeight: '800', paddingTop: 12, textAlign: 'center' },
   timeColumns: { flexDirection: 'row', gap: 8, height: 220, padding: 12 },
   column: { flex: 1 },
   columnContent: { flex: 1, gap: 6 },
-  confirmButton: { alignItems: 'center', backgroundColor: '#005BD3', borderRadius: 8, justifyContent: 'center', margin: 12, marginTop: 0, minHeight: 44 },
-  confirmText: { color: '#FFFFFF', fontSize: 14, fontWeight: '800' },
-});
+  confirmButton: { alignItems: 'center', backgroundColor: c.primary, borderRadius: 8, justifyContent: 'center', margin: 12, marginTop: 0, minHeight: 44 },
+  confirmText: { color: c.onPrimary, fontSize: 14, fontWeight: '800' },
+}));

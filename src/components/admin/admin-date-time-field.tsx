@@ -8,9 +8,10 @@ import {
   Modal,
   Platform,
   Pressable,
-  StyleSheet,
   View,
 } from 'react-native';
+
+import { createAdminStyles, useAdminTheme } from '@/components/admin/admin-theme';
 
 type AdminDateTimeFieldProps = {
   error?: string;
@@ -29,6 +30,8 @@ export function AdminDateTimeField({
   placeholder,
   value,
 }: AdminDateTimeFieldProps) {
+  const styles = useStyles();
+  const { colors, scheme } = useAdminTheme();
   const [isPickerVisible, setIsPickerVisible] = useState(false);
   const isPickerShown = useOverlaySlot('modal', isPickerVisible);
   const [draftValue, setDraftValue] = useState<Date>(() => resolvePickerValue(value, mode));
@@ -79,7 +82,7 @@ export function AdminDateTimeField({
             {value || placeholder || (mode === 'date' ? 'Select date' : 'Select time')}
           </Text>
           <Ionicons
-            color="#9CA3AF"
+            color={colors.textSubtle}
             name={mode === 'date' ? 'calendar-outline' : 'time-outline'}
             size={18}
           />
@@ -118,8 +121,8 @@ export function AdminDateTimeField({
 
                   setDraftValue(selectedDate);
                 }}
-                textColor="#111827"
-                themeVariant="light"
+                textColor={colors.text}
+                themeVariant={scheme}
                 value={draftValue}
               />
             </View>
@@ -195,10 +198,10 @@ function formatPickerValue(value: Date, mode: 'date' | 'time') {
   }).format(value);
 }
 
-const styles = StyleSheet.create({
+const useStyles = createAdminStyles((c) => ({
   field: { flex: 1, gap: 6 },
   label: {
-    color: '#6B7280',
+    color: c.textMuted,
     fontSize: 10,
     fontWeight: '700',
     letterSpacing: 1.2,
@@ -207,8 +210,8 @@ const styles = StyleSheet.create({
   },
   inputButton: {
     alignItems: 'center',
-    backgroundColor: '#F9FAFB',
-    borderColor: '#E5E7EB',
+    backgroundColor: c.surfaceMuted,
+    borderColor: c.border,
     borderRadius: 8,
     borderWidth: 1,
     flexDirection: 'row',
@@ -217,19 +220,19 @@ const styles = StyleSheet.create({
     paddingHorizontal: 13,
   },
   inputText: {
-    color: '#111827',
+    color: c.text,
     flex: 1,
     fontSize: 14,
     fontWeight: '600',
     paddingRight: 12,
   },
   placeholderText: {
-    color: 'rgba(17, 24, 39, 0.32)',
+    color: c.textSubtle,
   },
-  inputError: { borderColor: '#EF4444' },
-  errorText: { color: '#EF4444', fontSize: 11, fontWeight: '600', lineHeight: 15 },
+  inputError: { borderColor: c.danger },
+  errorText: { color: c.danger, fontSize: 11, fontWeight: '600', lineHeight: 15 },
   modalBackdrop: {
-    backgroundColor: 'rgba(0, 0, 0, 0.4)',
+    backgroundColor: c.overlay,
     flex: 1,
     justifyContent: 'flex-end',
   },
@@ -237,7 +240,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   modalCard: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: c.surface,
     borderTopLeftRadius: 16,
     borderTopRightRadius: 16,
     overflow: 'hidden',
@@ -245,7 +248,7 @@ const styles = StyleSheet.create({
   },
   modalHeader: {
     alignItems: 'center',
-    borderBottomColor: '#F3F4F6',
+    borderBottomColor: c.border,
     borderBottomWidth: 1,
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -257,13 +260,13 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
   },
   modalActionText: {
-    color: '#005BD3',
+    color: c.primaryText,
     fontSize: 15,
     fontWeight: '700',
   },
   modalTitle: {
-    color: '#111827',
+    color: c.text,
     fontSize: 15,
     fontWeight: '800',
   },
-});
+}));

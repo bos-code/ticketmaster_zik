@@ -3,13 +3,13 @@ import React from 'react';
 import {
   ActivityIndicator,
   Pressable,
-  StyleSheet,
   type PressableProps,
   type StyleProp,
   type ViewStyle,
 } from 'react-native';
 
-import { ticketColors, ticketRadii, ticketSpacing } from '@/constants/ticket-theme';
+import { createAdminStyles, useAdminTheme } from '@/components/admin/admin-theme';
+import { ticketRadii, ticketSpacing } from '@/constants/ticket-theme';
 
 type AuthButtonVariant = 'primary' | 'secondary' | 'ghost';
 
@@ -29,6 +29,8 @@ export function AuthButton({
   ...props
 }: AuthButtonProps) {
   const isDisabled = disabled || loading;
+  const styles = useStyles();
+  const { colors } = useAdminTheme();
 
   return (
     <Pressable
@@ -43,7 +45,7 @@ export function AuthButton({
       ]}
       {...props}>
       {loading ? (
-        <ActivityIndicator color={variant === 'primary' ? '#FFFFFF' : ticketColors.primary} />
+        <ActivityIndicator color={variant === 'primary' ? colors.onPrimary : colors.primaryText} />
       ) : (
         <Text style={[styles.label, styles[`${variant}Label`]]}>{label}</Text>
       )}
@@ -51,7 +53,7 @@ export function AuthButton({
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = createAdminStyles((c) => ({
   base: {
     alignItems: 'center',
     borderRadius: ticketRadii.md,
@@ -61,12 +63,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: ticketSpacing.md,
   },
   primary: {
-    backgroundColor: ticketColors.primary,
-    borderColor: ticketColors.primary,
+    backgroundColor: c.primary,
+    borderColor: c.primary,
   },
   secondary: {
-    backgroundColor: ticketColors.chrome,
-    borderColor: ticketColors.borderStrong,
+    backgroundColor: c.surface,
+    borderColor: c.borderStrong,
   },
   ghost: {
     backgroundColor: 'transparent',
@@ -85,12 +87,12 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
   primaryLabel: {
-    color: '#FFFFFF',
+    color: c.onPrimary,
   },
   secondaryLabel: {
-    color: ticketColors.text,
+    color: c.text,
   },
   ghostLabel: {
-    color: ticketColors.primaryBright,
+    color: c.primaryText,
   },
-});
+}));
