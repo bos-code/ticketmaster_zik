@@ -20,9 +20,11 @@ export default function RootHtml({ children }: PropsWithChildren) {
         <meta name='format-detection' content='telephone=no' />
         <meta name='application-name' content='Tickets' />
         <meta name='apple-mobile-web-app-title' content='Tickets' />
+        {/* maximum-scale stops iOS Safari zooming into inputs with text under 16px
+            (pinch-to-zoom still works on iOS). */}
         <meta
           name='viewport'
-          content='width=device-width, initial-scale=1.0, viewport-fit=cover'
+          content='width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover'
         />
         <link rel='manifest' href='/manifest.json' />
         <link rel='apple-touch-icon' href='/apple-touch-icon.png' />
