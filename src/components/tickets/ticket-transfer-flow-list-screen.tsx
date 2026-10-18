@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { View } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue } from 'react-native-reanimated';
 
 import { useImmersiveSafeAreaInsets } from '@/components/immersive/edge-to-edge-hero';
 import { BottomDock } from '@/components/tickets/ticket-transfer-flow-bottom-dock';
+import { TransferLoadingOverlay } from '@/components/tickets/ticket-transfer-flow-loading-overlay';
 import {
   CollapsibleEventHero,
   ExtrasPanel,
@@ -18,6 +19,7 @@ export function TicketTransferListScreen({
   heroCollapseDistance,
   handleListScroll,
   isHeroCollapsed,
+  isLoading = false,
   onBack,
   onOpenTicket,
   onOpenViewer,
@@ -31,6 +33,7 @@ export function TicketTransferListScreen({
     typeof Animated.ScrollView
   >['onScroll'];
   isHeroCollapsed: boolean;
+  isLoading?: boolean;
   onBack: () => void;
   onOpenTicket: (ticketIndex: number) => void;
   onOpenViewer: () => void;
@@ -43,6 +46,7 @@ export function TicketTransferListScreen({
   const collapseDistance = heroCollapseDistance ?? previewCollapseDistance;
   const [heroHeight, setHeroHeight] = useState(HERO_EXPANDED_HEIGHT + insets.top);
   const [tabsHeight, setTabsHeight] = useState(60);
+  const tabsRef = useRef<View>(null);
   const tabsStyle = useAnimatedStyle(() => ({
     top: heroHeight - Math.min(Math.max(0, scrollY.value), collapseDistance.value),
   }));
@@ -77,9 +81,12 @@ export function TicketTransferListScreen({
         </Animated.ScrollView>
 
         <Animated.View onLayout={(event) => setTabsHeight(event.nativeEvent.layout.height)} style={[{ position: 'absolute', left: 0, right: 0, zIndex: 21 }, tabsStyle]}>
-          <PanelTabs activePanel={activePanel} onChange={onPanelChange} />
+          <View ref={tabsRef} collapsable={false}>
+            <PanelTabs activePanel={activePanel} onChange={onPanelChange} />
+          </View>
         </Animated.View>
         <BottomDock onTransfer={onTransfer} />
+        <TransferLoadingOverlay anchorRef={tabsRef} visible={isLoading} />
       </View>
     </View>
   );

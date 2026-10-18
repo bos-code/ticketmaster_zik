@@ -30,7 +30,7 @@ export function TicketListPanel({
       <View style={styles.orderHeader}>
         <View style={styles.orderHeaderRow}>
           <View style={styles.orderTextGroup}>
-            <Text style={styles.orderId}>{`Order ${order.orderNumber}`}</Text>
+            <Text style={styles.orderId}>{`Order #${order.orderNumber.replace(/^#/, '')}`}</Text>
             <Text style={styles.ticketCount}>{order.ticketCountLabel}</Text>
           </View>
 
