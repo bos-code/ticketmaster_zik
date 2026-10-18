@@ -1,6 +1,6 @@
 module.exports = async function handler(request, response) {
   response.setHeader('Cache-Control', 'no-store');
-  const apiKey = process.env.TICKETMASTER_API_KEY;
+  const apiKey = process.env.TICKETMASTER_API_KEY || process.env.EXPO_PUBLIC_TICKETMASTER_API_KEY;
   if (!apiKey) return response.status(503).json({ error: 'Ticketmaster lookup is not configured.' });
   if (request.method !== 'GET') {
     response.setHeader('Allow', 'GET');
