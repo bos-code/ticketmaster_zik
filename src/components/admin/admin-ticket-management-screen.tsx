@@ -181,7 +181,7 @@ export function AdminTicketManagementScreen() {
       </View>
 
       <ScrollView
-        contentContainerStyle={[styles.content, { paddingBottom: 112 + insets.bottom }]}
+        contentContainerStyle={[styles.content, { paddingBottom: 172 + insets.bottom }]}
         showsVerticalScrollIndicator={false}
       >
         {visibleTickets.length ? (
@@ -320,47 +320,56 @@ function AdminTicketCard({
 }) {
   return (
     <View style={styles.card}>
-      <View style={styles.artPanel}>
+      <View style={[styles.artPanel, ticket.isHidden && styles.hiddenContent]}>
         <Image contentFit="cover" source={{ uri: ticket.image }} style={styles.cardImage} />
         <LinearGradient colors={['transparent', 'rgba(0,0,0,0.82)']} style={styles.imageGradient} />
         <View style={[styles.artAccent, { backgroundColor: ticket.backgroundColor }]} />
         <View style={styles.badgeRow}>
           <Badge label={ticket.ticketType} tone="gold" />
           <Badge label={ticket.status} tone={ticket.status === 'upcoming' ? 'blue' : 'muted'} />
-          {ticket.isHidden ? <Badge label="Hidden" tone="muted" /> : null}
         </View>
       </View>
+      <Pressable
+        accessibilityLabel={ticket.isHidden ? 'Hidden from users. Tap to show this ticket.' : 'Visible to users. Tap to hide this ticket.'}
+        accessibilityRole="switch"
+        accessibilityState={{ checked: !ticket.isHidden, disabled: isUpdatingVisibility }}
+        disabled={isUpdatingVisibility}
+        hitSlop={8}
+        onPress={onToggleHidden}
+        style={[styles.visibilityToggle, ticket.isHidden ? styles.visibilityToggleHidden : styles.visibilityToggleVisible]}
+      >
+        {isUpdatingVisibility ? (
+          <ActivityIndicator color="#FFFFFF" size="small" />
+        ) : (
+          <Ionicons color="#FFFFFF" name={ticket.isHidden ? 'eye-off-outline' : 'eye-outline'} size={16} />
+        )}
+        <Text style={styles.visibilityToggleText}>{ticket.isHidden ? 'Hidden' : 'Visible'}</Text>
+      </Pressable>
 
       <View style={styles.cardBody}>
-        <Text style={styles.cardTitle}>{ticket.eventName}</Text>
-        <Text style={styles.cardArtist}>{ticket.artistName} / {ticket.albumName}</Text>
-        <View style={styles.divider} />
-        <Text style={styles.cardMeta}>{ticket.venue}</Text>
-        <Text style={styles.cardMeta}>{ticket.city}, {ticket.state}, {ticket.country}</Text>
-        <Text style={styles.cardDate}>{formatTicketDate(ticket)}</Text>
+        <View style={ticket.isHidden ? styles.hiddenContent : undefined}>
+          <Text style={styles.cardTitle}>{ticket.eventName}</Text>
+          <Text style={styles.cardArtist}>{ticket.artistName} / {ticket.albumName}</Text>
+          <View style={styles.divider} />
+          <Text style={styles.cardMeta}>{ticket.venue}</Text>
+          <Text style={styles.cardMeta}>{ticket.city}, {ticket.state}, {ticket.country}</Text>
+          <Text style={styles.cardDate}>{formatTicketDate(ticket)}</Text>
 
-        <View style={styles.seatGrid}>
-          <SeatFact label="Section" value={ticket.section} />
-          <SeatFact label="Row" value={ticket.row} />
-          <SeatFact label="Seats" value={ticket.seatRange} />
+          <View style={styles.seatGrid}>
+            <SeatFact label="Section" value={ticket.section} />
+            <SeatFact label="Row" value={ticket.row} />
+            <SeatFact label="Seats" value={ticket.seatRange} />
+          </View>
         </View>
 
         <View style={styles.actionRow}>
           <Pressable onPress={onPreview} style={styles.previewButton}>
-            <Ionicons color="#FFFFFF" name="eye-outline" size={16} />
+            <Ionicons color="#374151" name="eye-outline" size={16} />
             <Text style={styles.previewButtonText}>Preview</Text>
           </Pressable>
           <Pressable onPress={onEdit} style={styles.editButton}>
             <Ionicons color="#FFFFFF" name="create-outline" size={16} />
             <Text style={styles.editButtonText}>Edit</Text>
-          </Pressable>
-          <Pressable
-            accessibilityLabel={ticket.isHidden ? 'Show ticket to users' : 'Hide ticket from users'}
-            disabled={isUpdatingVisibility}
-            onPress={onToggleHidden}
-            style={[styles.visibilityButton, isUpdatingVisibility && { opacity: 0.5 }]}
-          >
-            <Ionicons color="#374151" name={ticket.isHidden ? 'eye-off-outline' : 'eye-outline'} size={16} />
           </Pressable>
           <Pressable onPress={onDelete} style={styles.deleteButton}>
             <Ionicons color="#FF6B5A" name="trash-outline" size={16} />
@@ -537,15 +546,21 @@ const styles = StyleSheet.create({
     minHeight: 40,
   },
   previewButtonText: { color: '#374151', fontSize: 12, fontWeight: '800', textTransform: 'uppercase' },
-  visibilityButton: {
+  visibilityToggle: {
     alignItems: 'center',
-    borderColor: '#D1D5DB',
-    borderRadius: 7,
-    borderWidth: 1,
-    justifyContent: 'center',
-    minHeight: 40,
-    width: 40,
+    borderRadius: 999,
+    flexDirection: 'row',
+    gap: 6,
+    minHeight: 36,
+    paddingHorizontal: 12,
+    position: 'absolute',
+    right: 12,
+    top: 12,
   },
+  visibilityToggleVisible: { backgroundColor: '#15803D' },
+  visibilityToggleHidden: { backgroundColor: '#374151' },
+  visibilityToggleText: { color: '#FFFFFF', fontSize: 12, fontWeight: '800', letterSpacing: 0.4 },
+  hiddenContent: { opacity: 0.5 },
   deleteButton: {
     alignItems: 'center',
     borderColor: '#FCA5A5',

@@ -3,12 +3,16 @@ import React from "react";
 import { Keyboard, Platform, Pressable, StyleSheet, View, type TextInput as NativeTextInput, type TextStyle } from "react-native";
 
 import { useImmersiveSafeAreaInsets } from "@/components/immersive/edge-to-edge-hero";
+import { useEditable } from "@/components/tickets/EditableContext";
+import { EditableText } from "@/components/tickets/EditableText";
 import { BottomDrawer } from "@/components/ui/bottom-drawer";
 import { useKeyboardLayout } from "@/hooks/use-keyboard-height";
 import { normalizeOtp, OTP_LENGTH } from "@/lib/auth/otp";
 
 // Measured from the reference recording (390 pt wide phone).
 const SHEET_TOP_GAP = 4;
+// The sheet is 13% shorter than the full height below the status bar.
+const SHEET_HEIGHT_RATIO = 0.87;
 const HEADER_HEIGHT = 52;
 const CARD_HEIGHT = 331;
 // Spacing removed by the compact card (see the *Compact styles).
@@ -36,16 +40,20 @@ export function TicketTransferAuthModal({
   const inputRef = React.useRef<NativeTextInput | null>(null);
   const insets = useImmersiveSafeAreaInsets();
   const { keyboard, visibleHeight, windowHeight } = useKeyboardLayout();
+  // Admin Live Preview: the phone number becomes editable in place.
+  const editable = useEditable();
   const [isFocused, setIsFocused] = React.useState(false);
   // Full-spacing card height; the message can wrap to more lines on narrow phones.
   const [cardHeight, setCardHeight] = React.useState(CARD_HEIGHT);
   const isKeyboardOpen = keyboard.height > 0;
   const canConfirm = confirmCodeReady && !isSubmitting;
-  const sheetHeight = windowHeight - insets.top - SHEET_TOP_GAP;
+  const sheetHeight = Math.round((windowHeight - insets.top - SHEET_TOP_GAP) * SHEET_HEIGHT_RATIO);
+  // With the keyboard open the sheet grows upward only as far as the card needs.
+  const minOpenHeight = HEADER_HEIGHT + cardHeight;
   // Space between the header and the keyboard (or the bottom safe area).
   const bodySpace =
     (isKeyboardOpen
-      ? Math.min(sheetHeight - keyboard.height, visibleHeight - insets.top)
+      ? Math.min(Math.max(sheetHeight - keyboard.height, minOpenHeight), visibleHeight - insets.top)
       : sheetHeight - insets.bottom) - HEADER_HEIGHT;
   // Tighten the card's spacing on short screens so the input and button stay above the keyboard.
   const isCompact = bodySpace < cardHeight;
@@ -87,6 +95,7 @@ export function TicketTransferAuthModal({
       }
       keepTopOnKeyboard
       minHeight={sheetHeight}
+      minLiftedHeight={minOpenHeight}
       onClose={onCancel}
       panelStyle={styles.sheet}
       scrollToEndOnKeyboard
@@ -103,6 +112,12 @@ export function TicketTransferAuthModal({
             <Text style={styles.maskedNumber}>{formatAuthPhoneNumber(authPhoneNumber)}</Text>
             . Please enter your code below to continue.
           </Text>
+          {editable ? (
+            <View style={styles.adminNumber}>
+              <Text style={styles.adminNumberLabel}>Phone number shown above (type the number or its last 4 digits)</Text>
+              <EditableText field="authPhoneNumber" style={styles.adminNumberInput} value={editable.ticket.authPhoneNumber ?? ""} />
+            </View>
+          ) : null}
 
           <Text style={[styles.label, isCompact && styles.labelCompact]}>One-Time Code</Text>
           <TextInput
@@ -230,6 +245,28 @@ const styles = StyleSheet.create({
   },
   messageCompact: {
     marginTop: 6,
+  },
+  adminNumber: {
+    borderColor: "#0E62D5",
+    borderRadius: 4,
+    borderStyle: "dashed",
+    borderWidth: 1,
+    gap: 4,
+    marginTop: 10,
+    padding: 8,
+  },
+  adminNumberLabel: {
+    color: "#0E62D5",
+    fontSize: 11,
+    fontWeight: "700",
+    lineHeight: 14,
+  },
+  adminNumberInput: {
+    color: "#000000",
+    fontSize: 16,
+    fontWeight: "700",
+    lineHeight: 22,
+    minHeight: 22,
   },
   maskedNumber: {
     color: "#000000",

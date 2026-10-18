@@ -5,7 +5,7 @@ import { LAYER_DRAWER } from '@/constants/layers';
 import { useKeyboardLayout, type useKeyboardFrame } from '@/hooks/use-keyboard-height';
 import { useOverlaySlot } from '@/lib/overlay-manager';
 
-export function BottomDrawer({ children, className, header, keepTopOnKeyboard = false, minHeight = '75%', onClose, panelStyle, scrollToEndOnKeyboard = false, visible }: {
+export function BottomDrawer({ children, className, header, keepTopOnKeyboard = false, minHeight = '75%', minLiftedHeight = 0, onClose, panelStyle, scrollToEndOnKeyboard = false, visible }: {
   children: React.ReactNode;
   className?: string;
   // Fixed above the scrolling content.
@@ -13,6 +13,8 @@ export function BottomDrawer({ children, className, header, keepTopOnKeyboard = 
   // Shrink from the bottom when the keyboard opens instead of growing to the top of the screen.
   keepTopOnKeyboard?: boolean;
   minHeight?: number | `${number}%`;
+  // With keepTopOnKeyboard, let the panel grow upward to at least this height when the keyboard opens.
+  minLiftedHeight?: number;
   onClose: () => void;
   panelStyle?: StyleProp<ViewStyle>;
   // When the keyboard opens and the content no longer fits, show its bottom (e.g. the submit button).
@@ -30,7 +32,7 @@ export function BottomDrawer({ children, className, header, keepTopOnKeyboard = 
   const closedHeight = Math.min(height - insets.top, Math.max(360, requestedHeight));
   // With the keyboard open the panel never reaches above the visible area.
   const liftedMaxHeight = height - keyboard.offsetTop - liftedBy - insets.top;
-  const panelHeight = !liftedBy ? closedHeight : Math.min(liftedMaxHeight, keepTopOnKeyboard ? closedHeight - liftedBy : liftedMaxHeight);
+  const panelHeight = !liftedBy ? closedHeight : Math.min(liftedMaxHeight, keepTopOnKeyboard ? Math.max(closedHeight - liftedBy, minLiftedHeight) : liftedMaxHeight);
   useEffect(() => {
     if (!scrollToEndOnKeyboard || !keyboard.height) return;
     // Wait a frame for the content to lay out at its new size.

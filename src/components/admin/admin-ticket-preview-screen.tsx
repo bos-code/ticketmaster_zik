@@ -22,6 +22,7 @@ import {
   type EditableContextValue,
 } from "@/components/tickets/EditableContext";
 import { TicketFlowContext } from "@/components/tickets/TicketFlowContext";
+import { TicketTransferAuthModal } from "@/components/tickets/ticket-transfer-flow-auth-modal";
 import { TicketTransferListScreen } from "@/components/tickets/ticket-transfer-flow-list-screen";
 import type {
   PanelTab,
@@ -55,6 +56,9 @@ export function AdminTicketPreviewScreen() {
 
   // List screen state
   const [activePanel, setActivePanel] = useState<PanelTab>("tickets");
+  // Transfer opens the code drawer so its phone number can be edited in place.
+  const [isAuthPreviewOpen, setIsAuthPreviewOpen] = useState(false);
+  const [previewOtp, setPreviewOtp] = useState("");
   const scrollY = useSharedValue(0);
 
   const handleListScroll = useAnimatedScrollHandler({
@@ -66,8 +70,14 @@ export function AdminTicketPreviewScreen() {
   const isDirty = useMemo(() => {
     if (!originalTicket || !editedTicket) return false;
 
-    const keys = Object.keys(originalTicket) as (keyof TicketRecord)[];
-    return keys.some((key) => originalTicket[key] !== editedTicket[key]);
+    // Include fields an older ticket may not have yet (e.g. authPhoneNumber).
+    const keys = new Set([
+      ...Object.keys(originalTicket),
+      ...Object.keys(editedTicket),
+    ]) as Set<keyof TicketRecord>;
+    return [...keys].some(
+      (key) => (originalTicket[key] ?? "") !== (editedTicket[key] ?? ""),
+    );
   }, [originalTicket, editedTicket]);
 
   const handleFieldChange = useCallback(
@@ -109,6 +119,8 @@ export function AdminTicketPreviewScreen() {
 
     return {
       event: {
+        authPhoneNumber: editedTicket.authPhoneNumber,
+        transferSenderName: editedTicket.transferSenderName,
         dateTime: `${editedTicket.date} • ${editedTicket.time}`,
         directionsEventId: undefined,
         headerSubtitle: `${editedTicket.time} - ${editedTicket.venue}`,
@@ -174,6 +186,8 @@ export function AdminTicketPreviewScreen() {
         seatLabel: editedTicket.seatLabel,
         ticketNote: editedTicket.ticketNote,
         entryInstructions: editedTicket.entryInstructions ?? '',
+        transferSenderName: editedTicket.transferSenderName,
+        authPhoneNumber: editedTicket.authPhoneNumber ?? '',
       };
 
       await updateEvent(ticketId, payload);
@@ -250,10 +264,22 @@ export function AdminTicketPreviewScreen() {
             onOpenTicket={() => {}}
             onOpenViewer={() => {}}
             onPanelChange={setActivePanel}
-            onTransfer={() => {}}
+            onTransfer={() => {
+              setPreviewOtp("");
+              setIsAuthPreviewOpen(true);
+            }}
             scrollY={scrollY}
           />
         </TicketFlowContext.Provider>
+        <TicketTransferAuthModal
+          authPhoneNumber={editedTicket.authPhoneNumber}
+          confirmCodeReady={previewOtp.length === 6}
+          onCancel={() => setIsAuthPreviewOpen(false)}
+          onConfirm={() => setIsAuthPreviewOpen(false)}
+          onOtpChange={setPreviewOtp}
+          otpCode={previewOtp}
+          visible={isAuthPreviewOpen}
+        />
       </EditableProvider>
 
       {/* Floating admin toolbar */}
@@ -266,6 +292,20 @@ export function AdminTicketPreviewScreen() {
       >
         <Pressable onPress={handleCancel} style={styles.cancelButton}>
           <Text style={styles.cancelButtonText}>Cancel</Text>
+        </Pressable>
+
+        {/* The toolbar covers the ticket page's Transfer button, so open the code drawer here. */}
+        <Pressable
+          accessibilityLabel="Edit code drawer"
+          accessibilityRole="button"
+          onPress={() => {
+            setPreviewOtp("");
+            setIsAuthPreviewOpen(true);
+          }}
+          style={styles.codeDrawerButton}
+        >
+          <Ionicons color="#0E62D5" name="keypad-outline" size={16} />
+          <Text style={styles.codeDrawerButtonText}>Code drawer</Text>
         </Pressable>
 
         <Pressable
@@ -403,6 +443,24 @@ const styles = StyleSheet.create({
   },
   cancelButtonText: {
     color: "#374151",
+    fontSize: 12,
+    fontWeight: "800",
+    letterSpacing: 1.1,
+    textTransform: "uppercase",
+  },
+  codeDrawerButton: {
+    alignItems: "center",
+    borderColor: "#0E62D5",
+    borderRadius: 8,
+    borderWidth: 1,
+    flex: 1,
+    flexDirection: "row",
+    gap: 6,
+    justifyContent: "center",
+    minHeight: 48,
+  },
+  codeDrawerButtonText: {
+    color: "#0E62D5",
     fontSize: 12,
     fontWeight: "800",
     letterSpacing: 1.1,

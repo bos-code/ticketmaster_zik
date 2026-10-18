@@ -513,7 +513,7 @@ export function AddEventAdminScreen() {
             <TicketTextField error={errors.perks} label="Perks" multiline onChangeText={(value) => updateField('perks', value)} value={form.perks} />
             <TicketTextField error={errors.transferRules} label="Transfer Rules" multiline onChangeText={(value) => updateField('transferRules', value)} value={form.transferRules} />
             <TicketTextField error={errors.transferSenderName} label="Transfer Sender Name" onChangeText={(value) => updateField('transferSenderName', value)} placeholder={DEFAULT_TRANSFER_SENDER_NAME} value={form.transferSenderName} />
-            <TicketTextField error={errors.authPhoneNumber} keyboardType="phone-pad" label="Transfer Code Phone Number" onChangeText={(value) => updateField('authPhoneNumber', value)} placeholder="Shown as ******1234 in the transfer code drawer" value={form.authPhoneNumber} />
+            <TicketTextField error={errors.authPhoneNumber} keyboardType="phone-pad" label="Transfer Code Phone Number" onChangeText={(value) => updateField('authPhoneNumber', value)} placeholder="Shown as *******1234 in the transfer code drawer" value={form.authPhoneNumber} />
             <TicketTextField error={errors.backgroundColor} label="Accent Color" onChangeText={(value) => updateField('backgroundColor', value)} value={form.backgroundColor} />
           </FormSection>
         </ScrollView>
