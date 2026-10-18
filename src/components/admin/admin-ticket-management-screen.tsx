@@ -181,7 +181,7 @@ export function AdminTicketManagementScreen() {
       </View>
 
       <ScrollView
-        contentContainerStyle={[styles.content, { paddingBottom: 172 + insets.bottom }]}
+        contentContainerStyle={[styles.content, { paddingBottom: 240 + insets.bottom }]}
         showsVerticalScrollIndicator={false}
       >
         {visibleTickets.length ? (

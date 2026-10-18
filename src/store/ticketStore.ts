@@ -99,15 +99,21 @@ export const useTicketStore = create<TicketStore>((set, get) => ({
       return;
     }
 
+    const image = await resolveUpdatedTicketImage(id, updatedFields, currentTicket);
+    const updatedAt = new Date().toISOString();
     const nextTicket = {
       ...currentTicket,
       ...updatedFields,
-      image: await resolveUpdatedTicketImage(id, updatedFields, currentTicket),
-      updatedAt: new Date().toISOString(),
+      image,
+      updatedAt,
     };
 
+    // Write only what changed: older records carry fields the hosted ticket API
+    // does not accept, and resending them would reject the whole update.
     await updateTicketDocument(id, {
-      ...nextTicket,
+      ...updatedFields,
+      ...('image' in updatedFields ? { image } : {}),
+      updatedAt,
     });
     set((state) => ({
       events: state.events.map((ticket) =>

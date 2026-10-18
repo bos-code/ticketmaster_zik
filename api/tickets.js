@@ -5,6 +5,7 @@ const TICKET_FIELDS = new Set([
   'image', 'backgroundColor', 'seatLabel', 'ticketNote', 'latitude',
   'longitude', 'createdAt', 'updatedAt', 'entryInstructions', 'venueAddress',
   'venuePlaceId', 'transferSenderName', 'authPhoneNumber', 'isHidden',
+  'ticketmasterEventId', 'ticketmasterEventUrl', 'ticketmasterVenueId',
 ]);
 
 module.exports = async function handler(request, response) {
