@@ -11,6 +11,7 @@ import { normalizeOtp, OTP_LENGTH } from "@/lib/auth/otp";
 
 export function TicketTransferAuthModal({
   confirmCodeReady,
+  isSubmitting = false,
   onCancel,
   onConfirm,
   onOtpChange,
@@ -18,6 +19,7 @@ export function TicketTransferAuthModal({
   visible,
 }: {
   confirmCodeReady: boolean;
+  isSubmitting?: boolean;
   onCancel: () => void;
   onConfirm: () => void;
   onOtpChange: (value: string) => void;
@@ -125,15 +127,15 @@ export function TicketTransferAuthModal({
           <View className="px-2 pb-6 pt-2 h-[68px]">
             <Pressable
               accessibilityRole="button"
-              disabled={!confirmCodeReady}
+              disabled={!confirmCodeReady || isSubmitting}
               onPress={onConfirm}
               className={cx(
                 "h-[44px] items-center justify-center rounded-[4px]",
-                confirmCodeReady ? "bg-[#0863D9]" : "bg-[#B8D8F6]"
+                confirmCodeReady && !isSubmitting ? "bg-[#0863D9]" : "bg-[#B8D8F6]"
               )}
             >
               <Text className="text-[14px] font-black text-white uppercase">
-                Confirm Code
+                {isSubmitting ? "Confirming..." : "Confirm Code"}
               </Text>
             </Pressable>
           </View>
