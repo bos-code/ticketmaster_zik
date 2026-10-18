@@ -56,6 +56,10 @@ function RootStack() {
         options={{ animation: 'slide_from_right' }}
       />
       <Stack.Screen
+        name='admin/ticketmaster'
+        options={{ animation: 'slide_from_right' }}
+      />
+      <Stack.Screen
         name='tickets/index'
         options={{ animation: 'slide_from_right' }}
       />
