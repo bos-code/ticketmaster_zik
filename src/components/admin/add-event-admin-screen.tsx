@@ -15,6 +15,7 @@ import {
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { createAdminStyles, useAdminTheme } from '@/components/admin/admin-theme';
 import { DEFAULT_TRANSFER_SENDER_NAME } from '@/constants/admin-settings';
 import { geocodeVenueLocation } from '@/lib/geocoding';
 import { AdminDateTimeField } from '@/components/admin/admin-date-time-field';
@@ -107,6 +108,8 @@ const EMPTY_CREATE_FORM: FormState = {
 export function AddEventAdminScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const styles = useStyles();
+  const { colors, scheme } = useAdminTheme();
   const imageCropperRef = useRef<WebImageCropperHandle | null>(null);
   const params = useLocalSearchParams<{ mode?: string; ticketId?: string }>();
   const mode = params.mode === 'edit' ? 'edit' : 'create';
@@ -303,10 +306,10 @@ export function AddEventAdminScreen() {
     return (
       <SafeAreaView style={styles.root}>
       <Head>
-        <meta name="theme-color" content="#F5F6F8" />
-        <meta name="color-scheme" content="light" />
+        <meta name="theme-color" content={colors.background} />
+        <meta name="color-scheme" content={scheme} />
       </Head>
-      <StatusBar style="dark" backgroundColor="#F5F6F8" />
+      <StatusBar style={scheme === 'dark' ? 'light' : 'dark'} backgroundColor={colors.background} />
         <View style={styles.notFound}>
           <Text style={styles.notFoundTitle}>Ticket not found</Text>
           <Pressable onPress={handleLeaveAdminForm} style={styles.primaryButton}>
@@ -320,14 +323,14 @@ export function AddEventAdminScreen() {
   return (
     <View style={styles.root}>
       <Head>
-        <meta name="theme-color" content="#F5F6F8" />
-        <meta name="color-scheme" content="light" />
+        <meta name="theme-color" content={colors.background} />
+        <meta name="color-scheme" content={scheme} />
       </Head>
-      <StatusBar style="dark" backgroundColor="#F5F6F8" />
+      <StatusBar style={scheme === 'dark' ? 'light' : 'dark'} backgroundColor={colors.background} />
       <SafeAreaView edges={['top', 'left', 'right']} style={styles.headerSafe}>
         <View style={styles.header}>
           <Pressable onPress={handleLeaveAdminForm} style={styles.iconButton}>
-            <Ionicons color="#374151" name="chevron-back" size={20} />
+            <Ionicons color={colors.textSecondary} name="chevron-back" size={20} />
           </Pressable>
           <View style={styles.headerCopy}>
             <Text style={styles.eyebrow}>ADMIN TICKETS</Text>
@@ -350,7 +353,7 @@ export function AddEventAdminScreen() {
           <View style={styles.modeBanner}>
             <View style={styles.modeIcon}>
               <Ionicons
-                color="#B79E6A"
+                color={colors.accent}
                 name={mode === 'edit' ? 'create-outline' : 'add-circle-outline'}
                 size={20}
               />
@@ -372,7 +375,7 @@ export function AddEventAdminScreen() {
               <Image contentFit="cover" source={{ uri: form.image }} style={styles.previewImage} />
             ) : (
               <View style={styles.previewPlaceholder}>
-                <Ionicons color="rgba(255,255,255,0.5)" name="image-outline" size={32} />
+                <Ionicons color={colors.textSubtle} name="image-outline" size={32} />
                 <Text style={styles.previewPlaceholderText}>Upload ticket artwork</Text>
               </View>
             )}
@@ -399,9 +402,9 @@ export function AddEventAdminScreen() {
                 style={[styles.uploadButton, isPickingImage && styles.uploadButtonDisabled]}
               >
                 {isPickingImage ? (
-                  <ActivityIndicator color="#FFFFFF" size="small" />
+                  <ActivityIndicator color={colors.onPrimary} size="small" />
                 ) : (
-                  <Ionicons color="#FFFFFF" name="cloud-upload-outline" size={16} />
+                  <Ionicons color={colors.onPrimary} name="cloud-upload-outline" size={16} />
                 )}
                 <Text style={styles.uploadButtonText}>
                   {form.image ? 'Replace Image' : 'Upload Image'}
@@ -409,13 +412,13 @@ export function AddEventAdminScreen() {
               </Pressable>
               {form.image ? (
                 <Pressable onPress={() => updateField('image', '')} style={styles.clearImageButton}>
-                  <Ionicons color="rgba(255,255,255,0.72)" name="close" size={16} />
+                  <Ionicons color={colors.textMuted} name="close" size={16} />
                 </Pressable>
               ) : null}
             </View>
             {Platform.OS === 'web' && form.image ? (
               <Pressable onPress={() => openImageCropper()} style={styles.imageDressButton}>
-                <Ionicons color="#005BD3" name="crop-outline" size={16} />
+                <Ionicons color={colors.primaryText} name="crop-outline" size={16} />
                 <Text style={styles.imageDressButtonText}>Crop Image</Text>
               </Pressable>
             ) : null}
@@ -442,9 +445,9 @@ export function AddEventAdminScreen() {
               style={[styles.imageDressButton, isResolvingVenue && styles.buttonDisabled]}
             >
               {isResolvingVenue ? (
-                <ActivityIndicator color="#005BD3" size="small" />
+                <ActivityIndicator color={colors.primaryText} size="small" />
               ) : (
-                <Ionicons color="#005BD3" name="location-outline" size={16} />
+                <Ionicons color={colors.primaryText} name="location-outline" size={16} />
               )}
               <Text style={styles.imageDressButtonText}>
                 {isResolvingVenue ? 'Finding Location' : 'Find Location'}
@@ -539,7 +542,7 @@ export function AddEventAdminScreen() {
             onPress={() => router.push({ pathname: '/admin/preview', params: { ticketId } })}
             style={[styles.previewFooterButton, isSaving && styles.buttonDisabled]}
           >
-            <Ionicons color="#B79E6A" name="eye-outline" size={17} />
+            <Ionicons color={colors.accent} name="eye-outline" size={17} />
           </Pressable>
         ) : null}
         <Pressable
@@ -550,10 +553,10 @@ export function AddEventAdminScreen() {
           style={[styles.primaryButton, isSaving && styles.buttonDisabled]}
         >
           {isSaving ? (
-            <ActivityIndicator color="#FFFFFF" size="small" />
+            <ActivityIndicator color={colors.onPrimary} size="small" />
           ) : (
             <>
-              <Ionicons color="#FFFFFF" name={mode === 'edit' ? 'save-outline' : 'add'} size={17} />
+              <Ionicons color={colors.onPrimary} name={mode === 'edit' ? 'save-outline' : 'add'} size={17} />
               <Text style={styles.primaryButtonText}>{submitLabel}</Text>
             </>
           )}
@@ -572,7 +575,7 @@ export function AddEventAdminScreen() {
 
       {toast ? (
         <View style={styles.toast}>
-          <Ionicons color="#FFFFFF" name="checkmark-circle" size={16} />
+          <Ionicons color={colors.onToast} name="checkmark-circle" size={16} />
           <Text style={styles.toastText}>{toast}</Text>
         </View>
       ) : null}
@@ -581,6 +584,8 @@ export function AddEventAdminScreen() {
 }
 
 function FormSection({ children, title }: { children: React.ReactNode; title: string }) {
+  const styles = useStyles();
+
   return (
     <View style={styles.section}>
       <Text style={styles.sectionTitle}>{title}</Text>
@@ -606,6 +611,9 @@ function TicketTextField({
   placeholder?: string;
   value: string;
 }) {
+  const styles = useStyles();
+  const { colors } = useAdminTheme();
+
   return (
     <View style={styles.field}>
       <Text style={styles.label}>{label}</Text>
@@ -614,7 +622,7 @@ function TicketTextField({
         multiline={multiline}
         onChangeText={onChangeText}
         placeholder={placeholder}
-        placeholderTextColor="rgba(255,255,255,0.32)"
+        placeholderTextColor={colors.textSubtle}
         style={[styles.input, multiline && styles.multilineInput, error && styles.inputError]}
         value={value}
       />
@@ -634,6 +642,8 @@ function SegmentedOptions<T extends string>({
   options: readonly T[];
   selected: string;
 }) {
+  const styles = useStyles();
+
   return (
     <View style={styles.field}>
       <Text style={styles.label}>{label}</Text>
@@ -737,10 +747,10 @@ function getTicketSaveErrorMessage(error: unknown) {
   return 'We could not save this ticket to Firebase right now. Please try again.';
 }
 
-const styles = StyleSheet.create({
-  root: { backgroundColor: '#F5F6F8', flex: 1 },
+const useStyles = createAdminStyles((c) => ({
+  root: { backgroundColor: c.background, flex: 1 },
   flex: { flex: 1 },
-  headerSafe: { backgroundColor: '#F5F6F8' },
+  headerSafe: { backgroundColor: c.background },
   header: {
     alignItems: 'center',
     flexDirection: 'row',
@@ -751,8 +761,8 @@ const styles = StyleSheet.create({
   },
   iconButton: {
     alignItems: 'center',
-    backgroundColor: '#FFFFFF',
-    borderColor: '#E5E7EB',
+    backgroundColor: c.surface,
+    borderColor: c.border,
     borderRadius: 20,
     borderWidth: 1,
     height: 40,
@@ -761,15 +771,15 @@ const styles = StyleSheet.create({
   },
   headerCopy: { alignItems: 'center', flex: 1 },
   eyebrow: {
-    color: '#005BD3',
+    color: c.primaryText,
     fontSize: 10,
     fontWeight: '900',
     letterSpacing: 2,
     lineHeight: 13,
   },
-  title: { color: '#111827', fontSize: 18, fontWeight: '800', lineHeight: 23 },
+  title: { color: c.text, fontSize: 18, fontWeight: '800', lineHeight: 23 },
   headerSubtitle: {
-    color: '#6B7280',
+    color: c.textMuted,
     fontSize: 11,
     fontWeight: '500',
     lineHeight: 15,
@@ -780,8 +790,8 @@ const styles = StyleSheet.create({
   content: { gap: 20, paddingHorizontal: 16, paddingTop: 12 },
   modeBanner: {
     alignItems: 'center',
-    backgroundColor: '#EFF6FF',
-    borderColor: '#BFDBFE',
+    backgroundColor: c.primarySoft,
+    borderColor: c.primaryBorder,
     borderRadius: 8,
     borderWidth: 1,
     flexDirection: 'row',
@@ -790,33 +800,33 @@ const styles = StyleSheet.create({
   },
   modeIcon: {
     alignItems: 'center',
-    backgroundColor: '#DBEAFE',
+    backgroundColor: c.primaryBorder,
     borderRadius: 18,
     height: 36,
     justifyContent: 'center',
     width: 36,
   },
   modeCopy: { flex: 1 },
-  modeTitle: { color: '#1E40AF', fontSize: 13, fontWeight: '800', lineHeight: 18 },
+  modeTitle: { color: c.primaryText, fontSize: 13, fontWeight: '800', lineHeight: 18 },
   modeText: {
-    color: '#3B82F6',
+    color: c.primaryText,
     fontSize: 12,
     fontWeight: '500',
     lineHeight: 17,
     marginTop: 3,
   },
-  previewCard: { backgroundColor: '#FFFFFF', borderColor: '#E5E7EB', borderRadius: 10, borderWidth: 1, overflow: 'hidden' },
-  previewImage: { aspectRatio: 16 / 9, backgroundColor: '#F3F4F6', width: '100%' },
+  previewCard: { backgroundColor: c.surface, borderColor: c.border, borderRadius: 10, borderWidth: 1, overflow: 'hidden' },
+  previewImage: { aspectRatio: 16 / 9, backgroundColor: c.surfaceStrong, width: '100%' },
   previewPlaceholder: {
     alignItems: 'center',
-    backgroundColor: '#F9FAFB',
+    backgroundColor: c.surfaceMuted,
     gap: 8,
     aspectRatio: 16 / 9,
     justifyContent: 'center',
     width: '100%',
   },
   previewPlaceholderText: {
-    color: '#9CA3AF',
+    color: c.textSubtle,
     fontSize: 13,
     fontWeight: '600',
     lineHeight: 17,
@@ -824,29 +834,29 @@ const styles = StyleSheet.create({
   previewAccent: { height: 3 },
   previewBody: { padding: 14 },
   previewKicker: {
-    color: '#6B7280',
+    color: c.textMuted,
     fontSize: 11,
     fontWeight: '700',
     letterSpacing: 1.2,
     lineHeight: 14,
     textTransform: 'uppercase',
   },
-  previewName: { color: '#111827', fontSize: 20, fontWeight: '800', lineHeight: 25, marginTop: 3 },
-  previewMeta: { color: '#6B7280', fontSize: 13, fontWeight: '500', lineHeight: 18, marginTop: 5 },
+  previewName: { color: c.text, fontSize: 20, fontWeight: '800', lineHeight: 25, marginTop: 3 },
+  previewMeta: { color: c.textMuted, fontSize: 13, fontWeight: '500', lineHeight: 18, marginTop: 5 },
   section: { gap: 8 },
   sectionTitle: {
-    color: '#374151',
+    color: c.textSecondary,
     fontSize: 11,
     fontWeight: '700',
     letterSpacing: 2,
     lineHeight: 14,
     textTransform: 'uppercase',
   },
-  sectionBody: { backgroundColor: '#FFFFFF', borderColor: '#E5E7EB', borderRadius: 10, borderWidth: 1, gap: 14, padding: 14 },
+  sectionBody: { backgroundColor: c.surface, borderColor: c.border, borderRadius: 10, borderWidth: 1, gap: 14, padding: 14 },
   row: { flexDirection: 'row', gap: 10 },
   field: { flex: 1, gap: 6 },
   label: {
-    color: '#6B7280',
+    color: c.textMuted,
     fontSize: 10,
     fontWeight: '700',
     letterSpacing: 1.2,
@@ -854,26 +864,26 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
   },
   input: {
-    backgroundColor: '#F9FAFB',
-    borderColor: '#E5E7EB',
+    backgroundColor: c.surfaceMuted,
+    borderColor: c.border,
     borderRadius: 8,
     borderWidth: 1,
-    color: '#111827',
+    color: c.text,
     fontSize: 14,
     fontWeight: '600',
     minHeight: 48,
     paddingHorizontal: 13,
   },
   multilineInput: { minHeight: 80, paddingTop: 12, textAlignVertical: 'top' },
-  inputError: { borderColor: '#EF4444' },
-  errorText: { color: '#EF4444', fontSize: 11, fontWeight: '600', lineHeight: 15 },
-  formError: { width: '100%', padding: 12, borderRadius: 10, backgroundColor: '#FEF2F2', borderColor: '#FECACA', borderWidth: 1, gap: 4 },
-  formErrorTitle: { color: '#991B1B', fontSize: 13, fontWeight: '700' },
-  formErrorMessage: { color: '#991B1B', fontSize: 12, lineHeight: 17 },
+  inputError: { borderColor: c.danger },
+  errorText: { color: c.danger, fontSize: 11, fontWeight: '600', lineHeight: 15 },
+  formError: { width: '100%', padding: 12, borderRadius: 10, backgroundColor: c.dangerSoft, borderColor: c.dangerBorder, borderWidth: 1, gap: 4 },
+  formErrorTitle: { color: c.dangerText, fontSize: 13, fontWeight: '700' },
+  formErrorMessage: { color: c.dangerText, fontSize: 12, lineHeight: 17 },
   imageUploadRow: { alignItems: 'center', flexDirection: 'row', gap: 10 },
   uploadButton: {
     alignItems: 'center',
-    backgroundColor: '#005BD3',
+    backgroundColor: c.primary,
     borderRadius: 8,
     flex: 1,
     flexDirection: 'row',
@@ -883,7 +893,7 @@ const styles = StyleSheet.create({
   },
   uploadButtonDisabled: { opacity: 0.62 },
   uploadButtonText: {
-    color: '#FFFFFF',
+    color: c.onPrimary,
     fontSize: 12,
     fontWeight: '800',
     letterSpacing: 0.8,
@@ -891,7 +901,7 @@ const styles = StyleSheet.create({
   },
   clearImageButton: {
     alignItems: 'center',
-    borderColor: '#E5E7EB',
+    borderColor: c.border,
     borderRadius: 8,
     borderWidth: 1,
     height: 44,
@@ -900,7 +910,7 @@ const styles = StyleSheet.create({
   },
   imageDressButton: {
     alignItems: 'center',
-    borderColor: '#BFDBFE',
+    borderColor: c.primaryBorder,
     borderRadius: 8,
     borderWidth: 1,
     flexDirection: 'row',
@@ -909,7 +919,7 @@ const styles = StyleSheet.create({
     minHeight: 42,
   },
   imageDressButtonText: {
-    color: '#005BD3',
+    color: c.primaryText,
     fontSize: 12,
     fontWeight: '800',
     letterSpacing: 0.8,
@@ -917,20 +927,20 @@ const styles = StyleSheet.create({
   },
   segmentRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   segment: {
-    backgroundColor: '#F9FAFB',
-    borderColor: '#E5E7EB',
+    backgroundColor: c.surfaceMuted,
+    borderColor: c.border,
     borderRadius: 999,
     borderWidth: 1,
     paddingHorizontal: 13,
     paddingVertical: 9,
   },
-  segmentActive: { backgroundColor: '#005BD3', borderColor: '#005BD3' },
-  segmentText: { color: '#374151', fontSize: 12, fontWeight: '700' },
-  segmentTextActive: { color: '#FFFFFF' },
+  segmentActive: { backgroundColor: c.primary, borderColor: c.primary },
+  segmentText: { color: c.textSecondary, fontSize: 12, fontWeight: '700' },
+  segmentTextActive: { color: c.onPrimary },
   footer: {
     alignItems: 'center',
-    backgroundColor: '#FFFFFF',
-    borderTopColor: '#E5E7EB',
+    backgroundColor: c.surface,
+    borderTopColor: c.border,
     borderTopWidth: StyleSheet.hairlineWidth,
     bottom: 0,
     flexDirection: 'row',
@@ -944,7 +954,7 @@ const styles = StyleSheet.create({
   },
   primaryButton: {
     alignItems: 'center',
-    backgroundColor: '#005BD3',
+    backgroundColor: c.primary,
     borderRadius: 8,
     flex: 1,
     flexDirection: 'row',
@@ -954,7 +964,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
   },
   primaryButtonText: {
-    color: '#FFFFFF',
+    color: c.onPrimary,
     fontSize: 12,
     fontWeight: '800',
     letterSpacing: 0.8,
@@ -962,7 +972,7 @@ const styles = StyleSheet.create({
   },
   secondaryButton: {
     alignItems: 'center',
-    borderColor: '#E5E7EB',
+    borderColor: c.border,
     borderRadius: 8,
     borderWidth: 1,
     flex: 1,
@@ -971,7 +981,7 @@ const styles = StyleSheet.create({
   },
   buttonDisabled: { opacity: 0.62 },
   secondaryButtonText: {
-    color: '#374151',
+    color: c.textSecondary,
     fontSize: 12,
     fontWeight: '700',
     letterSpacing: 0.8,
@@ -979,7 +989,7 @@ const styles = StyleSheet.create({
   },
   previewFooterButton: {
     alignItems: 'center',
-    borderColor: '#E5E7EB',
+    borderColor: c.border,
     borderRadius: 8,
     borderWidth: 1,
     justifyContent: 'center',
@@ -989,7 +999,7 @@ const styles = StyleSheet.create({
   toast: {
     alignItems: 'center',
     alignSelf: 'center',
-    backgroundColor: '#111827',
+    backgroundColor: c.toast,
     borderRadius: 999,
     bottom: 96,
     flexDirection: 'row',
@@ -998,7 +1008,7 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     position: 'absolute',
   },
-  toastText: { color: '#FFFFFF', fontSize: 13, fontWeight: '700' },
+  toastText: { color: c.onToast, fontSize: 13, fontWeight: '700' },
   notFound: { alignItems: 'center', flex: 1, gap: 16, justifyContent: 'center', padding: 24 },
-  notFoundTitle: { color: '#111827', fontSize: 20, fontWeight: '800' },
-});
+  notFoundTitle: { color: c.text, fontSize: 20, fontWeight: '800' },
+}));

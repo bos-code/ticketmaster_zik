@@ -4,12 +4,13 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
-  StyleSheet,
   View,
 } from 'react-native';
+
+import { createAdminStyles } from '@/components/admin/admin-theme';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { ticketColors, ticketRadii, ticketSpacing } from '@/constants/ticket-theme';
+import { ticketRadii, ticketSpacing } from '@/constants/ticket-theme';
 
 type AuthScreenProps = {
   children: ReactNode;
@@ -20,6 +21,7 @@ type AuthScreenProps = {
 };
 
 export function AuthScreen({ children, eyebrow, footer, subtitle, title }: AuthScreenProps) {
+  const styles = useStyles();
   return (
     <SafeAreaView style={styles.root}>
       <KeyboardAvoidingView
@@ -51,10 +53,10 @@ export function AuthScreen({ children, eyebrow, footer, subtitle, title }: AuthS
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = createAdminStyles((c) => ({
   root: {
     flex: 1,
-    backgroundColor: ticketColors.background,
+    backgroundColor: c.background,
   },
   keyboard: {
     flex: 1,
@@ -73,20 +75,20 @@ const styles = StyleSheet.create({
   },
   brandMark: {
     alignItems: 'center',
-    backgroundColor: ticketColors.primary,
+    backgroundColor: c.primary,
     borderRadius: ticketRadii.md,
     height: 40,
     justifyContent: 'center',
     width: 40,
   },
   brandText: {
-    color: '#FFFFFF',
+    color: c.onPrimary,
     fontSize: 24,
     fontWeight: '900',
     lineHeight: 30,
   },
   brandName: {
-    color: ticketColors.text,
+    color: c.text,
     fontSize: 16,
     fontWeight: '800',
     lineHeight: 22,
@@ -96,7 +98,7 @@ const styles = StyleSheet.create({
     marginBottom: ticketSpacing.xl,
   },
   eyebrow: {
-    color: ticketColors.primaryBright,
+    color: c.primaryText,
     fontSize: 12,
     fontWeight: '800',
     letterSpacing: 0,
@@ -104,14 +106,14 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
   },
   title: {
-    color: ticketColors.text,
+    color: c.text,
     fontSize: 36,
     fontWeight: '900',
     letterSpacing: 0,
     lineHeight: 42,
   },
   subtitle: {
-    color: ticketColors.textMuted,
+    color: c.textMuted,
     fontSize: 16,
     fontWeight: '500',
     letterSpacing: 0,
@@ -123,4 +125,4 @@ const styles = StyleSheet.create({
   footer: {
     marginTop: ticketSpacing.xl,
   },
-});
+}));

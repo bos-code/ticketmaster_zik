@@ -1,12 +1,14 @@
 import { Text } from '@/components/ui/app-text';
 import React from 'react';
-import { StyleSheet } from 'react-native';
+
+import { createAdminStyles } from '@/components/admin/admin-theme';
 
 type AuthErrorMessageProps = {
   message?: string | null;
 };
 
 export function AuthErrorMessage({ message }: AuthErrorMessageProps) {
+  const styles = useStyles();
   if (!message) {
     return null;
   }
@@ -14,12 +16,12 @@ export function AuthErrorMessage({ message }: AuthErrorMessageProps) {
   return <Text style={styles.error}>{message}</Text>;
 }
 
-const styles = StyleSheet.create({
+const useStyles = createAdminStyles((c) => ({
   error: {
-    color: '#B42318',
+    color: c.dangerText,
     fontSize: 13,
     fontWeight: '700',
     letterSpacing: 0,
     lineHeight: 18,
   },
-});
+}));

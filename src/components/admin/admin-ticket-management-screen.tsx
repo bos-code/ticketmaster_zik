@@ -20,6 +20,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import Head from 'expo-router/head';
 import { StatusBar } from 'expo-status-bar';
+import { createAdminStyles, useAdminTheme, type AdminThemePreference } from '@/components/admin/admin-theme';
 import {
   formatTicketDate,
   type TicketRecord,
@@ -31,8 +32,29 @@ type TicketFilter = 'All' | 'Upcoming' | TicketType | 'Past' | 'Hidden';
 
 const filters: TicketFilter[] = ['All', 'Upcoming', 'VIP', 'Standard', 'General', 'Past', 'Hidden'];
 
+const themeLabels: Record<AdminThemePreference, string> = {
+  system: 'Auto (phone setting)',
+  dark: 'Dark',
+  light: 'Light',
+};
+
+const themeIcons: Record<AdminThemePreference, React.ComponentProps<typeof Ionicons>['name']> = {
+  system: 'contrast-outline',
+  dark: 'moon',
+  light: 'sunny',
+};
+
+// Same order as cyclePreference: System -> Dark -> Light -> System.
+const nextThemePreference: Record<AdminThemePreference, AdminThemePreference> = {
+  system: 'dark',
+  dark: 'light',
+  light: 'system',
+};
+
 export function AdminTicketManagementScreen() {
   const router = useRouter();
+  const styles = useStyles();
+  const { colors, scheme, preference, cyclePreference } = useAdminTheme();
   const insets = useSafeAreaInsets();
   const params = useLocalSearchParams<{ toast?: string }>();
   const tickets = useTicketStore((state) => state.tickets);
@@ -136,17 +158,32 @@ export function AdminTicketManagementScreen() {
     router.replace('/my-tickets');
   }
 
+  function handleCycleTheme() {
+    cyclePreference();
+    showToast(`Theme: ${themeLabels[nextThemePreference[preference]]}`);
+  }
+
   return (
-    <ScreenWrapper backgroundColor="#F5F6F8">
+    <ScreenWrapper backgroundColor={colors.background}>
       <Head>
-        <meta name="theme-color" content="#F5F6F8" />
-        <meta name="color-scheme" content="light" />
+        <meta name="theme-color" content={colors.background} />
+        <meta name="color-scheme" content={scheme} />
       </Head>
-      <StatusBar style="dark" backgroundColor="#F5F6F8" />
+      <StatusBar style={scheme === 'dark' ? 'light' : 'dark'} backgroundColor={colors.background} />
       <View style={styles.header}>
-          <Pressable onPress={handleExitAdmin} style={styles.iconButton}>
-            <Ionicons color="#374151" name="chevron-back" size={20} />
-          </Pressable>
+          <View style={styles.headerButtons}>
+            <Pressable onPress={handleExitAdmin} style={styles.iconButton}>
+              <Ionicons color={colors.textSecondary} name="chevron-back" size={20} />
+            </Pressable>
+            <Pressable
+              accessibilityLabel={`Theme: ${themeLabels[preference]}`}
+              accessibilityRole="button"
+              onPress={handleCycleTheme}
+              style={styles.iconButton}
+            >
+              <Ionicons color={colors.textSecondary} name={themeIcons[preference]} size={20} />
+            </Pressable>
+          </View>
           <View style={styles.headerCopy}>
             <Text style={styles.eyebrow}>STARBOY ADMIN</Text>
             <Text style={styles.title}>Ticket Management</Text>
@@ -227,7 +264,7 @@ export function AdminTicketManagementScreen() {
           </>
         ) : (
           <View style={styles.emptyState}>
-            <Ionicons color="#B79E6A" name="ticket-outline" size={34} />
+            <Ionicons color={colors.accent} name="ticket-outline" size={34} />
             <Text style={styles.emptyTitle}>No tickets match this filter</Text>
             <Text style={styles.emptyBody}>Try another ticket type or create a new Wizkid ticket.</Text>
           </View>
@@ -238,15 +275,15 @@ export function AdminTicketManagementScreen() {
         onPress={() => router.push('/admin/ticketmaster')}
         style={[styles.fab, styles.fabSecondary, { bottom: Math.max(insets.bottom, 18) + 12 + 56 }]}
       >
-        <Ionicons color="#FFFFFF" name="search" size={20} />
-        <Text style={styles.fabText}>From Ticketmaster</Text>
+        <Ionicons color={colors.onInverse} name="search" size={20} />
+        <Text style={[styles.fabText, styles.fabSecondaryText]}>From Ticketmaster</Text>
       </Pressable>
 
       <Pressable
         onPress={() => router.push({ pathname: '/add-event', params: { mode: 'create' } })}
         style={[styles.fab, { bottom: Math.max(insets.bottom, 18) + 12 }]}
       >
-        <Ionicons color="#FFFFFF" name="add" size={20} />
+        <Ionicons color={colors.onPrimary} name="add" size={20} />
         <Text style={styles.fabText}>New Ticket</Text>
       </Pressable>
 
@@ -261,7 +298,7 @@ export function AdminTicketManagementScreen() {
 
       {toast ? (
         <View style={[styles.toast, { bottom: Math.max(insets.bottom, 18) + 78 }]}>
-          <Ionicons color="#FFFFFF" name="checkmark-circle" size={16} />
+          <Ionicons color={colors.onToast} name="checkmark-circle" size={16} />
           <Text style={styles.toastText}>{toast}</Text>
         </View>
       ) : null}
@@ -286,6 +323,8 @@ function TicketSection({
   title: string;
   visibilityUpdatingId: string | null;
 }) {
+  const styles = useStyles();
+
   if (!tickets.length) {
     return null;
   }
@@ -318,6 +357,9 @@ function AdminTicketCard({
   onToggleHidden: () => void;
   ticket: TicketRecord;
 }) {
+  const styles = useStyles();
+  const { colors } = useAdminTheme();
+
   return (
     <View style={styles.card}>
       <View style={[styles.artPanel, ticket.isHidden && styles.hiddenContent]}>
@@ -364,15 +406,15 @@ function AdminTicketCard({
 
         <View style={styles.actionRow}>
           <Pressable onPress={onPreview} style={styles.previewButton}>
-            <Ionicons color="#374151" name="eye-outline" size={16} />
+            <Ionicons color={colors.textSecondary} name="eye-outline" size={16} />
             <Text style={styles.previewButtonText}>Preview</Text>
           </Pressable>
           <Pressable onPress={onEdit} style={styles.editButton}>
-            <Ionicons color="#FFFFFF" name="create-outline" size={16} />
+            <Ionicons color={colors.onPrimary} name="create-outline" size={16} />
             <Text style={styles.editButtonText}>Edit</Text>
           </Pressable>
           <Pressable onPress={onDelete} style={styles.deleteButton}>
-            <Ionicons color="#FF6B5A" name="trash-outline" size={16} />
+            <Ionicons color={colors.danger} name="trash-outline" size={16} />
           </Pressable>
         </View>
       </View>
@@ -381,6 +423,8 @@ function AdminTicketCard({
 }
 
 function Badge({ label, tone }: { label: string; tone: 'blue' | 'gold' | 'muted' }) {
+  const styles = useStyles();
+
   return (
     <View style={[styles.badge, styles[`${tone}Badge`]]}>
       <Text style={styles.badgeText}>{label}</Text>
@@ -389,6 +433,8 @@ function Badge({ label, tone }: { label: string; tone: 'blue' | 'gold' | 'muted'
 }
 
 function SeatFact({ label, value }: { label: string; value: string }) {
+  const styles = useStyles();
+
   return (
     <View style={styles.seatFact}>
       <Text style={styles.seatLabel}>{label}</Text>
@@ -408,6 +454,8 @@ function DeleteSheet({
   onConfirm: () => void;
   ticket: TicketRecord | null;
 }) {
+  const styles = useStyles();
+  const { colors } = useAdminTheme();
   const isShown = useOverlaySlot('modal', Boolean(ticket));
 
   return (
@@ -430,7 +478,7 @@ function DeleteSheet({
               style={[styles.sheetDelete, isDeleting && styles.sheetDeleteDisabled]}
             >
               {isDeleting ? (
-                <ActivityIndicator color="#FFFFFF" size="small" />
+                <ActivityIndicator color={colors.onPrimary} size="small" />
               ) : (
                 <Text style={styles.sheetDeleteText}>Delete</Text>
               )}
@@ -442,9 +490,9 @@ function DeleteSheet({
   );
 }
 
-const styles = StyleSheet.create({
-  root: { backgroundColor: '#F5F6F8', flex: 1 },
-  safe: { backgroundColor: '#F5F6F8' },
+const useStyles = createAdminStyles((c) => ({
+  root: { backgroundColor: c.background, flex: 1 },
+  safe: { backgroundColor: c.background },
   header: {
     alignItems: 'center',
     flexDirection: 'row',
@@ -452,10 +500,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingTop: 8,
   },
+  headerButtons: { gap: 8 },
   iconButton: {
     alignItems: 'center',
-    backgroundColor: '#FFFFFF',
-    borderColor: '#E5E7EB',
+    backgroundColor: c.surface,
+    borderColor: c.border,
     borderRadius: 20,
     borderWidth: 1,
     height: 40,
@@ -467,64 +516,65 @@ const styles = StyleSheet.create({
     marginLeft: 12,
     marginRight: 12,
   },
-  eyebrow: { color: '#005BD3', fontSize: 10, fontWeight: '900', letterSpacing: 2.2, lineHeight: 13 },
-  title: { color: '#111827', fontSize: 22, fontWeight: '900', lineHeight: 27, marginTop: 3 },
-  subtitle: { color: '#6B7280', fontSize: 12, fontWeight: '600', lineHeight: 16, marginTop: 2 },
+  eyebrow: { color: c.primaryText, fontSize: 10, fontWeight: '900', letterSpacing: 2.2, lineHeight: 13 },
+  title: { color: c.text, fontSize: 22, fontWeight: '900', lineHeight: 27, marginTop: 3 },
+  subtitle: { color: c.textMuted, fontSize: 12, fontWeight: '600', lineHeight: 16, marginTop: 2 },
   countBadge: {
     alignItems: 'center',
-    backgroundColor: '#FFFFFF',
-    borderColor: '#E5E7EB',
+    backgroundColor: c.surface,
+    borderColor: c.border,
     borderRadius: 8,
     borderWidth: 1,
     minWidth: 68,
     paddingHorizontal: 10,
     paddingVertical: 8,
   },
-  countNumber: { color: '#111827', fontSize: 20, fontWeight: '900', lineHeight: 23 },
-  countLabel: { color: '#6B7280', fontSize: 10, fontWeight: '700', letterSpacing: 1, textTransform: 'uppercase' },
-  filterWrap: { borderBottomColor: '#E5E7EB', borderBottomWidth: 1, paddingBottom: 12 },
+  countNumber: { color: c.text, fontSize: 20, fontWeight: '900', lineHeight: 23 },
+  countLabel: { color: c.textMuted, fontSize: 10, fontWeight: '700', letterSpacing: 1, textTransform: 'uppercase' },
+  filterWrap: { borderBottomColor: c.border, borderBottomWidth: 1, paddingBottom: 12 },
   filterRow: { flexDirection: 'row', gap: 8, paddingHorizontal: 16 },
   filterChip: {
-    backgroundColor: '#FFFFFF',
-    borderColor: '#E5E7EB',
+    backgroundColor: c.surface,
+    borderColor: c.border,
     borderRadius: 999,
     borderWidth: 1,
     paddingHorizontal: 14,
     paddingVertical: 8,
   },
-  filterChipActive: { backgroundColor: '#005BD3', borderColor: '#005BD3' },
-  filterText: { color: '#374151', fontSize: 12, fontWeight: '700' },
-  filterTextActive: { color: '#FFFFFF' },
+  filterChipActive: { backgroundColor: c.primary, borderColor: c.primary },
+  filterText: { color: c.textSecondary, fontSize: 12, fontWeight: '700' },
+  filterTextActive: { color: c.onPrimary },
   content: { gap: 24, paddingHorizontal: 16, paddingTop: 20 },
   section: { gap: 10 },
   sectionHeader: { alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between' },
-  sectionTitle: { color: '#374151', fontSize: 11, fontWeight: '900', letterSpacing: 1.3, textTransform: 'uppercase' },
-  sectionCount: { color: '#9CA3AF', fontSize: 12, fontWeight: '700' },
-  card: { backgroundColor: '#FFFFFF', borderColor: '#E5E7EB', borderRadius: 10, borderWidth: 1, marginBottom: 12, overflow: 'hidden' },
+  sectionTitle: { color: c.textSecondary, fontSize: 11, fontWeight: '900', letterSpacing: 1.3, textTransform: 'uppercase' },
+  sectionCount: { color: c.textSubtle, fontSize: 12, fontWeight: '700' },
+  card: { backgroundColor: c.surface, borderColor: c.border, borderRadius: 10, borderWidth: 1, marginBottom: 12, overflow: 'hidden' },
   artPanel: { height: 180, overflow: 'hidden' },
-  cardImage: { backgroundColor: '#F3F4F6', height: '100%', width: '100%' },
+  cardImage: { backgroundColor: c.surfaceStrong, height: '100%', width: '100%' },
   imageGradient: { bottom: 0, height: 80, left: 0, position: 'absolute', right: 0 },
   artAccent: { bottom: 0, height: 3, left: 0, position: 'absolute', right: 0 },
   badgeRow: { bottom: 12, flexDirection: 'row', gap: 6, left: 12, position: 'absolute' },
   badge: { borderRadius: 999, paddingHorizontal: 9, paddingVertical: 5 },
+  // Badges sit on the ticket art, so they keep fixed colours in both schemes.
   goldBadge: { backgroundColor: '#92400E' },
   blueBadge: { backgroundColor: '#005BD3' },
   mutedBadge: { backgroundColor: '#6B7280' },
   badgeText: { color: '#FFFFFF', fontSize: 10, fontWeight: '900', letterSpacing: 0.8, textTransform: 'uppercase' },
   cardBody: { padding: 12 },
-  cardTitle: { color: '#111827', fontSize: 17, fontWeight: '800', lineHeight: 22 },
-  cardArtist: { color: '#6B7280', fontSize: 12, fontWeight: '600', lineHeight: 16, marginTop: 3 },
-  divider: { backgroundColor: '#E5E7EB', height: 1, marginBottom: 10, marginTop: 10, width: '100%' },
-  cardMeta: { color: '#374151', fontSize: 12, fontWeight: '600', lineHeight: 17 },
-  cardDate: { color: '#111827', fontSize: 12, fontWeight: '700', lineHeight: 17, marginTop: 6 },
+  cardTitle: { color: c.text, fontSize: 17, fontWeight: '800', lineHeight: 22 },
+  cardArtist: { color: c.textMuted, fontSize: 12, fontWeight: '600', lineHeight: 16, marginTop: 3 },
+  divider: { backgroundColor: c.border, height: 1, marginBottom: 10, marginTop: 10, width: '100%' },
+  cardMeta: { color: c.textSecondary, fontSize: 12, fontWeight: '600', lineHeight: 17 },
+  cardDate: { color: c.text, fontSize: 12, fontWeight: '700', lineHeight: 17, marginTop: 6 },
   seatGrid: { flexDirection: 'row', gap: 6, marginTop: 10 },
-  seatFact: { backgroundColor: '#F9FAFB', borderColor: '#E5E7EB', borderRadius: 6, borderWidth: 1, flex: 1, minHeight: 52, padding: 8 },
-  seatLabel: { color: '#9CA3AF', fontSize: 9, fontWeight: '700', letterSpacing: 1, textTransform: 'uppercase' },
-  seatValue: { color: '#111827', fontSize: 12, fontWeight: '800', lineHeight: 16, marginTop: 3 },
+  seatFact: { backgroundColor: c.surfaceMuted, borderColor: c.border, borderRadius: 6, borderWidth: 1, flex: 1, minHeight: 52, padding: 8 },
+  seatLabel: { color: c.textSubtle, fontSize: 9, fontWeight: '700', letterSpacing: 1, textTransform: 'uppercase' },
+  seatValue: { color: c.text, fontSize: 12, fontWeight: '800', lineHeight: 16, marginTop: 3 },
   actionRow: { flexDirection: 'row', gap: 8, marginTop: 12 },
   editButton: {
     alignItems: 'center',
-    backgroundColor: '#005BD3',
+    backgroundColor: c.primary,
     borderRadius: 7,
     flex: 1,
     flexDirection: 'row',
@@ -532,11 +582,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     minHeight: 40,
   },
-  editButtonText: { color: '#FFFFFF', fontSize: 12, fontWeight: '800', textTransform: 'uppercase' },
+  editButtonText: { color: c.onPrimary, fontSize: 12, fontWeight: '800', textTransform: 'uppercase' },
   previewButton: {
     alignItems: 'center',
-    backgroundColor: '#F9FAFB',
-    borderColor: '#E5E7EB',
+    backgroundColor: c.surfaceMuted,
+    borderColor: c.border,
     borderRadius: 7,
     borderWidth: 1,
     flex: 1,
@@ -545,7 +595,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     minHeight: 40,
   },
-  previewButtonText: { color: '#374151', fontSize: 12, fontWeight: '800', textTransform: 'uppercase' },
+  previewButtonText: { color: c.textSecondary, fontSize: 12, fontWeight: '800', textTransform: 'uppercase' },
   visibilityToggle: {
     alignItems: 'center',
     borderRadius: 999,
@@ -557,24 +607,25 @@ const styles = StyleSheet.create({
     right: 12,
     top: 12,
   },
+  // The Visible/Hidden pill sits on the ticket art, so it keeps fixed colours in both schemes.
   visibilityToggleVisible: { backgroundColor: '#15803D' },
   visibilityToggleHidden: { backgroundColor: '#374151' },
   visibilityToggleText: { color: '#FFFFFF', fontSize: 12, fontWeight: '800', letterSpacing: 0.4 },
   hiddenContent: { opacity: 0.5 },
   deleteButton: {
     alignItems: 'center',
-    borderColor: '#FCA5A5',
+    borderColor: c.dangerBorder,
     borderRadius: 7,
     borderWidth: 1,
     justifyContent: 'center',
     minHeight: 40,
     width: 40,
   },
-  deleteButtonText: { color: '#EF4444', fontSize: 12, fontWeight: '800', textTransform: 'uppercase' },
+  deleteButtonText: { color: c.danger, fontSize: 12, fontWeight: '800', textTransform: 'uppercase' },
   emptyState: {
     alignItems: 'center',
-    backgroundColor: '#FFFFFF',
-    borderColor: '#E5E7EB',
+    backgroundColor: c.surface,
+    borderColor: c.border,
     borderRadius: 10,
     borderWidth: 1,
     gap: 8,
@@ -582,12 +633,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     paddingVertical: 32,
   },
-  emptyTitle: { color: '#111827', fontSize: 16, fontWeight: '800', lineHeight: 21, textAlign: 'center' },
-  emptyBody: { color: '#6B7280', fontSize: 13, fontWeight: '500', lineHeight: 18, textAlign: 'center' },
+  emptyTitle: { color: c.text, fontSize: 16, fontWeight: '800', lineHeight: 21, textAlign: 'center' },
+  emptyBody: { color: c.textMuted, fontSize: 13, fontWeight: '500', lineHeight: 18, textAlign: 'center' },
   fab: {
     alignItems: 'center',
     alignSelf: 'center',
-    backgroundColor: '#005BD3',
+    backgroundColor: c.primary,
     borderRadius: 999,
     flexDirection: 'row',
     gap: 7,
@@ -595,12 +646,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     position: 'absolute',
   },
-  fabSecondary: { backgroundColor: '#222222' },
-  fabText: { color: '#FFFFFF', fontSize: 13, fontWeight: '800', letterSpacing: 0.8, textTransform: 'uppercase' },
+  fabSecondary: { backgroundColor: c.inverse },
+  fabText: { color: c.onPrimary, fontSize: 13, fontWeight: '800', letterSpacing: 0.8, textTransform: 'uppercase' },
+  fabSecondaryText: { color: c.onInverse },
   toast: {
     alignItems: 'center',
     alignSelf: 'center',
-    backgroundColor: '#111827',
+    backgroundColor: c.toast,
     borderRadius: 999,
     flexDirection: 'row',
     gap: 8,
@@ -608,24 +660,24 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     position: 'absolute',
   },
-  toastText: { color: '#FFFFFF', fontSize: 13, fontWeight: '700' },
-  sheetBackdrop: { backgroundColor: 'rgba(0,0,0,0.4)', flex: 1, justifyContent: 'flex-end' },
-  sheet: { backgroundColor: '#FFFFFF', borderTopLeftRadius: 20, borderTopRightRadius: 20, padding: 20 },
-  sheetHandle: { alignSelf: 'center', backgroundColor: '#D1D5DB', borderRadius: 999, height: 4, marginBottom: 18, width: 40 },
-  sheetTitle: { color: '#111827', fontSize: 19, fontWeight: '800', lineHeight: 24 },
-  sheetBody: { color: '#6B7280', fontSize: 14, fontWeight: '500', lineHeight: 20, marginTop: 8 },
+  toastText: { color: c.onToast, fontSize: 13, fontWeight: '700' },
+  sheetBackdrop: { backgroundColor: c.overlay, flex: 1, justifyContent: 'flex-end' },
+  sheet: { backgroundColor: c.surface, borderTopLeftRadius: 20, borderTopRightRadius: 20, padding: 20 },
+  sheetHandle: { alignSelf: 'center', backgroundColor: c.borderStrong, borderRadius: 999, height: 4, marginBottom: 18, width: 40 },
+  sheetTitle: { color: c.text, fontSize: 19, fontWeight: '800', lineHeight: 24 },
+  sheetBody: { color: c.textMuted, fontSize: 14, fontWeight: '500', lineHeight: 20, marginTop: 8 },
   sheetActions: { flexDirection: 'row', gap: 10, marginTop: 20 },
   sheetCancel: {
     alignItems: 'center',
-    borderColor: '#E5E7EB',
+    borderColor: c.border,
     borderRadius: 8,
     borderWidth: 1,
     flex: 1,
     justifyContent: 'center',
     minHeight: 46,
   },
-  sheetDelete: { alignItems: 'center', backgroundColor: '#DC2626', borderRadius: 8, flex: 1, justifyContent: 'center', minHeight: 46 },
+  sheetDelete: { alignItems: 'center', backgroundColor: c.dangerStrong, borderRadius: 8, flex: 1, justifyContent: 'center', minHeight: 46 },
   sheetDeleteDisabled: { opacity: 0.7 },
-  sheetCancelText: { color: '#374151', fontSize: 12, fontWeight: '800', textTransform: 'uppercase' },
-  sheetDeleteText: { color: '#FFFFFF', fontSize: 12, fontWeight: '800', textTransform: 'uppercase' },
-});
+  sheetCancelText: { color: c.textSecondary, fontSize: 12, fontWeight: '800', textTransform: 'uppercase' },
+  sheetDeleteText: { color: c.onPrimary, fontSize: 12, fontWeight: '800', textTransform: 'uppercase' },
+}));

@@ -3,8 +3,9 @@ import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, Pressable, ScrollView, View } from 'react-native';
 
+import { createAdminStyles, useAdminTheme } from '@/components/admin/admin-theme';
 import { ScreenWrapper } from '@/components/ui/screen-wrapper';
 import { searchTicketmasterEvents } from '@/lib/ticketmaster-admin-api';
 import { TICKET_TYPE_OPTIONS, useTicketStore, type TicketInput, type TicketType } from '@/store/ticketStore';
@@ -16,6 +17,8 @@ const DEFAULT_PLACEMENT: Placement = { section: 'GA', row: '1', seatFrom: '1', s
 
 export function TicketmasterSearchScreen() {
   const router = useRouter();
+  const styles = useStyles();
+  const { colors } = useAdminTheme();
   const addEvent = useTicketStore((state) => state.addEvent);
   const [query, setQuery] = useState('');
   const [events, setEvents] = useState<TicketmasterEvent[]>([]);
@@ -92,10 +95,10 @@ export function TicketmasterSearchScreen() {
   }
 
   return (
-    <ScreenWrapper backgroundColor="#F5F6F8">
+    <ScreenWrapper backgroundColor={colors.background}>
       <View style={styles.header}>
         <Pressable accessibilityLabel="Back" onPress={handleBack} style={styles.iconButton}>
-          <Ionicons color="#374151" name="chevron-back" size={20} />
+          <Ionicons color={colors.textSecondary} name="chevron-back" size={20} />
         </Pressable>
         <View style={styles.headerCopy}>
           <Text style={styles.eyebrow}>ADMIN</Text>
@@ -120,13 +123,13 @@ export function TicketmasterSearchScreen() {
               autoCorrect={false}
               onChangeText={setQuery}
               placeholder="Search artist, event, or tour"
-              placeholderTextColor="#7B7B7B"
+              placeholderTextColor={colors.textMuted}
               returnKeyType="search"
               style={styles.input}
               value={query}
             />
             <Text style={styles.help}>Tap an event to preview it before it is added to your tickets.</Text>
-            {loading ? <ActivityIndicator color="#0875DA" style={styles.spinner} /> : null}
+            {loading ? <ActivityIndicator color={colors.primaryText} style={styles.spinner} /> : null}
             {error ? <Text style={styles.error}>{error}</Text> : null}
             {!loading && !error && query.trim().length >= 2 && !events.length ? <Text style={styles.help}>No matching events found.</Text> : null}
             {events.map((event) => (
@@ -136,7 +139,7 @@ export function TicketmasterSearchScreen() {
                   <Text numberOfLines={2} style={styles.resultTitle}>{event.name}</Text>
                   <Text numberOfLines={2} style={styles.meta}>{[formatDate(event), event.venue?.name, event.venue?.city].filter(Boolean).join(' · ')}</Text>
                 </View>
-                <Ionicons color="#9CA3AF" name="chevron-forward" size={18} />
+                <Ionicons color={colors.textSubtle} name="chevron-forward" size={18} />
               </Pressable>
             ))}
           </>
@@ -154,6 +157,8 @@ function Preview({ error, event, onAdd, onChange, placement, saving }: {
   placement: Placement;
   saving: boolean;
 }) {
+  const styles = useStyles();
+  const { colors } = useAdminTheme();
   const venue = event.venue;
   const warning = getStatusWarning(event);
   const location = [venue?.name, venue?.address, [venue?.city, venue?.state].filter(Boolean).join(', '), venue?.country].filter(Boolean).join('\n');
@@ -191,7 +196,7 @@ function Preview({ error, event, onAdd, onChange, placement, saving }: {
 
         {error ? <Text style={styles.error}>{error}</Text> : null}
         <Pressable accessibilityLabel="Add to my tickets" disabled={saving} onPress={onAdd} style={[styles.addButton, saving && styles.addDisabled]}>
-          {saving ? <ActivityIndicator color="#FFFFFF" size="small" /> : <Text style={styles.addText}>Add to my tickets</Text>}
+          {saving ? <ActivityIndicator color={colors.onPrimary} size="small" /> : <Text style={styles.addText}>Add to my tickets</Text>}
         </Pressable>
       </View>
     </View>
@@ -199,6 +204,8 @@ function Preview({ error, event, onAdd, onChange, placement, saving }: {
 }
 
 function Field({ keyboardType, label, onChangeText, value }: { keyboardType?: 'number-pad'; label: string; onChangeText: (value: string) => void; value: string }) {
+  const styles = useStyles();
+
   return (
     <View style={styles.field}>
       <Text style={styles.fieldLabel}>{label}</Text>
@@ -273,40 +280,40 @@ function formatTime(value: string) {
   return `${hours % 12 || 12}:${String(minutes).padStart(2, '0')} ${hours >= 12 ? 'PM' : 'AM'}`;
 }
 
-const styles = StyleSheet.create({
+const useStyles = createAdminStyles((c) => ({
   header: { alignItems: 'center', flexDirection: 'row', gap: 12, minHeight: 62, paddingHorizontal: 16 },
-  iconButton: { alignItems: 'center', backgroundColor: '#FFFFFF', borderRadius: 18, height: 36, justifyContent: 'center', width: 36 },
+  iconButton: { alignItems: 'center', backgroundColor: c.surface, borderRadius: 18, height: 36, justifyContent: 'center', width: 36 },
   headerCopy: { flex: 1 },
-  eyebrow: { color: '#6B7280', fontSize: 11, letterSpacing: 1 },
-  title: { color: '#111827', fontSize: 20, fontWeight: '700' },
+  eyebrow: { color: c.textMuted, fontSize: 11, letterSpacing: 1 },
+  title: { color: c.text, fontSize: 20, fontWeight: '700' },
   content: { gap: 10, padding: 16, paddingBottom: 40 },
-  input: { backgroundColor: '#FFFFFF', borderColor: '#0875DA', borderRadius: 8, borderWidth: 3, color: '#161616', fontSize: 18, minHeight: 54, paddingHorizontal: 14 },
-  help: { color: '#69717C', fontSize: 13, lineHeight: 18 },
+  input: { backgroundColor: c.surface, borderColor: c.primary, borderRadius: 8, borderWidth: 3, color: c.text, fontSize: 18, minHeight: 54, paddingHorizontal: 14 },
+  help: { color: c.textMuted, fontSize: 13, lineHeight: 18 },
   spinner: { marginVertical: 12 },
-  error: { color: '#B42318', fontSize: 13, lineHeight: 18 },
-  result: { alignItems: 'center', backgroundColor: '#FFFFFF', borderColor: '#E1E4E8', borderRadius: 6, borderWidth: 1, flexDirection: 'row', gap: 10, minHeight: 76, padding: 8 },
-  thumb: { backgroundColor: '#E5E7EB', borderRadius: 4, height: 58, width: 58 },
+  error: { color: c.dangerText, fontSize: 13, lineHeight: 18 },
+  result: { alignItems: 'center', backgroundColor: c.surface, borderColor: c.border, borderRadius: 6, borderWidth: 1, flexDirection: 'row', gap: 10, minHeight: 76, padding: 8 },
+  thumb: { backgroundColor: c.border, borderRadius: 4, height: 58, width: 58 },
   copy: { flex: 1 },
-  resultTitle: { color: '#171717', fontSize: 14, fontWeight: '700', lineHeight: 19 },
-  meta: { color: '#737373', fontSize: 12, lineHeight: 17, marginTop: 3 },
-  previewCard: { backgroundColor: '#FFFFFF', borderColor: '#E1E4E8', borderRadius: 10, borderWidth: 1, overflow: 'hidden' },
-  poster: { aspectRatio: 16 / 9, backgroundColor: '#E5E7EB', width: '100%' },
+  resultTitle: { color: c.text, fontSize: 14, fontWeight: '700', lineHeight: 19 },
+  meta: { color: c.textMuted, fontSize: 12, lineHeight: 17, marginTop: 3 },
+  previewCard: { backgroundColor: c.surface, borderColor: c.border, borderRadius: 10, borderWidth: 1, overflow: 'hidden' },
+  poster: { aspectRatio: 16 / 9, backgroundColor: c.border, width: '100%' },
   previewBody: { gap: 8, padding: 14 },
-  previewTitle: { color: '#111827', fontSize: 18, fontWeight: '700', lineHeight: 24 },
-  chip: { alignSelf: 'flex-start', backgroundColor: '#E8F1FB', borderRadius: 999, color: '#0B5CAD', fontSize: 12, overflow: 'hidden', paddingHorizontal: 10, paddingVertical: 3 },
-  previewLine: { color: '#374151', fontSize: 14, lineHeight: 20 },
-  warning: { backgroundColor: '#FFF4E5', borderRadius: 6, color: '#9A6700', fontSize: 13, lineHeight: 18, overflow: 'hidden', padding: 8 },
-  sectionLabel: { color: '#111827', fontSize: 13, fontWeight: '700', letterSpacing: 0.6, marginTop: 8, textTransform: 'uppercase' },
+  previewTitle: { color: c.text, fontSize: 18, fontWeight: '700', lineHeight: 24 },
+  chip: { alignSelf: 'flex-start', backgroundColor: c.primarySoft, borderRadius: 999, color: c.primaryText, fontSize: 12, overflow: 'hidden', paddingHorizontal: 10, paddingVertical: 3 },
+  previewLine: { color: c.textSecondary, fontSize: 14, lineHeight: 20 },
+  warning: { backgroundColor: c.warningSoft, borderRadius: 6, color: c.warningText, fontSize: 13, lineHeight: 18, overflow: 'hidden', padding: 8 },
+  sectionLabel: { color: c.text, fontSize: 13, fontWeight: '700', letterSpacing: 0.6, marginTop: 8, textTransform: 'uppercase' },
   chipRow: { flexDirection: 'row', gap: 8 },
-  typeChip: { alignItems: 'center', backgroundColor: '#F3F4F6', borderRadius: 999, flex: 1, justifyContent: 'center', minHeight: 40 },
-  typeChipActive: { backgroundColor: '#222222' },
-  typeChipText: { color: '#374151', fontSize: 13, fontWeight: '600' },
-  typeChipTextActive: { color: '#FFFFFF' },
+  typeChip: { alignItems: 'center', backgroundColor: c.surfaceStrong, borderRadius: 999, flex: 1, justifyContent: 'center', minHeight: 40 },
+  typeChipActive: { backgroundColor: c.inverse },
+  typeChipText: { color: c.textSecondary, fontSize: 13, fontWeight: '600' },
+  typeChipTextActive: { color: c.onInverse },
   fieldRow: { flexDirection: 'row', gap: 10 },
   field: { flex: 1, gap: 4 },
-  fieldLabel: { color: '#6B7280', fontSize: 12 },
-  fieldInput: { backgroundColor: '#F9FAFB', borderColor: '#D8DDE4', borderRadius: 8, borderWidth: 1, color: '#111827', fontSize: 16, minHeight: 44, paddingHorizontal: 12 },
-  addButton: { alignItems: 'center', backgroundColor: '#005BD3', borderRadius: 999, justifyContent: 'center', marginTop: 6, minHeight: 50 },
+  fieldLabel: { color: c.textMuted, fontSize: 12 },
+  fieldInput: { backgroundColor: c.surfaceMuted, borderColor: c.border, borderRadius: 8, borderWidth: 1, color: c.text, fontSize: 16, minHeight: 44, paddingHorizontal: 12 },
+  addButton: { alignItems: 'center', backgroundColor: c.primary, borderRadius: 999, justifyContent: 'center', marginTop: 6, minHeight: 50 },
   addDisabled: { opacity: 0.5 },
-  addText: { color: '#FFFFFF', fontSize: 14, fontWeight: '700' },
-});
+  addText: { color: c.onPrimary, fontSize: 14, fontWeight: '700' },
+}));

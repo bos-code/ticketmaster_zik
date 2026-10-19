@@ -1,7 +1,8 @@
 import { useRouter } from 'expo-router';
 import React, { useState, type ReactNode } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { Text, View } from 'react-native';
 
+import { createAdminStyles } from '@/components/admin/admin-theme';
 import { AuthButton } from '@/components/auth/auth-button';
 import { AuthErrorMessage } from '@/components/auth/auth-error-message';
 import { AuthScreen } from '@/components/auth/auth-screen';
@@ -19,6 +20,7 @@ type ProtectedAdminRouteProps = {
 
 export function ProtectedAdminRoute({ children }: ProtectedAdminRouteProps) {
   const router = useRouter();
+  const styles = useStyles();
   const [isUnlocked, setIsUnlocked] = useState(isAdminSessionUnlocked);
   const [passKey, setPassKey] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -107,17 +109,17 @@ export function ProtectedAdminRoute({ children }: ProtectedAdminRouteProps) {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = createAdminStyles((c) => ({
   lockBadge: {
     alignItems: 'center',
-    backgroundColor: '#005BD3',
+    backgroundColor: c.primary,
     borderRadius: 8,
     height: 48,
     justifyContent: 'center',
     width: 48,
   },
   lockBadgeText: {
-    color: '#FFFFFF',
+    color: c.onPrimary,
     fontSize: 12,
     fontWeight: '900',
     lineHeight: 17,
@@ -128,8 +130,8 @@ const styles = StyleSheet.create({
   },
   lockPanel: {
     alignItems: 'center',
-    backgroundColor: '#EFF6FF',
-    borderColor: '#BFDBFE',
+    backgroundColor: c.primarySoft,
+    borderColor: c.primaryBorder,
     borderRadius: 8,
     borderWidth: 1,
     flexDirection: 'row',
@@ -137,25 +139,25 @@ const styles = StyleSheet.create({
     padding: 14,
   },
   lockSubtitle: {
-    color: '#475569',
+    color: c.textMuted,
     fontSize: 13,
     fontWeight: '700',
     lineHeight: 18,
   },
   lockTitle: {
-    color: '#0F172A',
+    color: c.text,
     fontSize: 15,
     fontWeight: '900',
     lineHeight: 20,
   },
   passKeyDot: {
-    backgroundColor: '#CBD5E1',
+    backgroundColor: c.borderStrong,
     borderRadius: 999,
     height: 10,
     width: 10,
   },
   passKeyDotActive: {
-    backgroundColor: '#005BD3',
+    backgroundColor: c.primary,
   },
   passKeyDots: {
     alignItems: 'center',
@@ -164,4 +166,4 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     minHeight: 24,
   },
-});
+}));

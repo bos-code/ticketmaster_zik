@@ -17,6 +17,7 @@ import Animated, {
 } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { createAdminStyles, useAdminTheme } from "@/components/admin/admin-theme";
 import {
   EditableProvider,
   type EditableContextValue,
@@ -39,6 +40,8 @@ import {
 export function AdminTicketPreviewScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const styles = useStyles();
+  const { colors } = useAdminTheme();
   const params = useLocalSearchParams<{ ticketId?: string }>();
   const ticketId =
     typeof params.ticketId === "string" ? params.ticketId : undefined;
@@ -223,9 +226,9 @@ export function AdminTicketPreviewScreen() {
   // Not found state
   if (!originalTicket || !editedTicket || !flowData || !editableCtx) {
     return (
-      <View style={styles.root}>
+      <View style={[styles.root, styles.notFoundRoot]}>
         <View style={styles.centered}>
-          <Ionicons color="#B79E6A" name="ticket-outline" size={34} />
+          <Ionicons color={colors.accent} name="ticket-outline" size={34} />
           <Text style={styles.notFoundTitle}>Ticket not found</Text>
           <Text style={styles.notFoundBody}>
             This ticket may have been deleted.
@@ -304,7 +307,7 @@ export function AdminTicketPreviewScreen() {
           }}
           style={styles.codeDrawerButton}
         >
-          <Ionicons color="#0E62D5" name="keypad-outline" size={16} />
+          <Ionicons color={colors.primaryText} name="keypad-outline" size={16} />
           <Text style={styles.codeDrawerButtonText}>Code drawer</Text>
         </Pressable>
 
@@ -319,10 +322,10 @@ export function AdminTicketPreviewScreen() {
           ]}
         >
           {isSaving ? (
-            <ActivityIndicator color="#FFFFFF" size="small" />
+            <ActivityIndicator color={colors.onPrimary} size="small" />
           ) : (
             <>
-              <Ionicons color="#FFFFFF" name="save-outline" size={16} />
+              <Ionicons color={colors.onPrimary} name="save-outline" size={16} />
               <Text style={styles.saveButtonText}>Save</Text>
             </>
           )}
@@ -336,7 +339,7 @@ export function AdminTicketPreviewScreen() {
           exiting={FadeOut.duration(200)}
           style={[styles.toast, { bottom: Math.max(insets.bottom, 12) + 80 }]}
         >
-          <Ionicons color="#FFFFFF" name="checkmark-circle" size={16} />
+          <Ionicons color={colors.onToast} name="checkmark-circle" size={16} />
           <Text style={styles.toastText}>{toast}</Text>
         </Animated.View>
       ) : null}
@@ -344,10 +347,15 @@ export function AdminTicketPreviewScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = createAdminStyles((c) => ({
   root: {
+    // Sits behind the replica ticket screen (which paints its own page), so it
+    // keeps the replica's colour instead of following the admin theme.
     backgroundColor: "#FFFFFF",
     flex: 1,
+  },
+  notFoundRoot: {
+    backgroundColor: c.background,
   },
   centered: {
     alignItems: "center",
@@ -357,19 +365,19 @@ const styles = StyleSheet.create({
     padding: 24,
   },
   notFoundTitle: {
-    color: "#111111",
+    color: c.text,
     fontSize: 20,
     fontWeight: "900",
   },
   notFoundBody: {
-    color: "#70757E",
+    color: c.textMuted,
     fontSize: 14,
     fontWeight: "600",
     textAlign: "center",
   },
   backButton: {
     alignItems: "center",
-    backgroundColor: "#005BD3",
+    backgroundColor: c.primary,
     borderRadius: 8,
     marginTop: 8,
     minHeight: 44,
@@ -377,7 +385,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 28,
   },
   backButtonText: {
-    color: "#FFFFFF",
+    color: c.onPrimary,
     fontSize: 13,
     fontWeight: "900",
     letterSpacing: 1,
@@ -386,7 +394,7 @@ const styles = StyleSheet.create({
   adminBadge: {
     alignItems: "center",
     alignSelf: "center",
-    backgroundColor: "rgba(11, 85, 245, 0.88)",
+    backgroundColor: c.primary,
     borderRadius: 999,
     flexDirection: "row",
     gap: 6,
@@ -396,17 +404,20 @@ const styles = StyleSheet.create({
     zIndex: 100,
   },
   adminBadgeDot: {
+    // "Live" indicator on the primary-blue badge, which is the same blue in
+    // both schemes; no admin token for a bright status green.
     backgroundColor: "#7CFC00",
     borderRadius: 4,
     height: 7,
     width: 7,
   },
   adminBadgeText: {
-    color: "#FFFFFF",
+    color: c.onPrimary,
     fontSize: 10,
     fontWeight: "900",
     letterSpacing: 1.8,
   },
+  // Floats over the replica ticket, which looks the same in both schemes.
   backButtonFloating: {
     alignItems: "center",
     backgroundColor: "rgba(17, 24, 39, 0.84)",
@@ -420,8 +431,8 @@ const styles = StyleSheet.create({
   },
   toolbar: {
     alignItems: "center",
-    backgroundColor: "#FFFFFF",
-    borderTopColor: "#E5E7EB",
+    backgroundColor: c.surface,
+    borderTopColor: c.border,
     borderTopWidth: StyleSheet.hairlineWidth,
     bottom: 0,
     flexDirection: "row",
@@ -434,7 +445,7 @@ const styles = StyleSheet.create({
   },
   cancelButton: {
     alignItems: "center",
-    borderColor: "#E5E7EB",
+    borderColor: c.border,
     borderRadius: 8,
     borderWidth: 1,
     flex: 1,
@@ -442,7 +453,7 @@ const styles = StyleSheet.create({
     minHeight: 48,
   },
   cancelButtonText: {
-    color: "#374151",
+    color: c.textSecondary,
     fontSize: 12,
     fontWeight: "800",
     letterSpacing: 1.1,
@@ -450,7 +461,7 @@ const styles = StyleSheet.create({
   },
   codeDrawerButton: {
     alignItems: "center",
-    borderColor: "#0E62D5",
+    borderColor: c.primaryText,
     borderRadius: 8,
     borderWidth: 1,
     flex: 1,
@@ -460,7 +471,7 @@ const styles = StyleSheet.create({
     minHeight: 48,
   },
   codeDrawerButtonText: {
-    color: "#0E62D5",
+    color: c.primaryText,
     fontSize: 12,
     fontWeight: "800",
     letterSpacing: 1.1,
@@ -468,7 +479,7 @@ const styles = StyleSheet.create({
   },
   saveButton: {
     alignItems: "center",
-    backgroundColor: "#005BD3",
+    backgroundColor: c.primary,
     borderRadius: 8,
     flex: 1,
     flexDirection: "row",
@@ -480,7 +491,7 @@ const styles = StyleSheet.create({
     opacity: 0.4,
   },
   saveButtonText: {
-    color: "#FFFFFF",
+    color: c.onPrimary,
     fontSize: 12,
     fontWeight: "900",
     letterSpacing: 1.1,
@@ -489,7 +500,7 @@ const styles = StyleSheet.create({
   toast: {
     alignItems: "center",
     alignSelf: "center",
-    backgroundColor: "#111827",
+    backgroundColor: c.toast,
     borderRadius: 999,
     flexDirection: "row",
     gap: 8,
@@ -498,8 +509,8 @@ const styles = StyleSheet.create({
     position: "absolute",
   },
   toastText: {
-    color: "#FFFFFF",
+    color: c.onToast,
     fontSize: 13,
     fontWeight: "700",
   },
-});
+}));
