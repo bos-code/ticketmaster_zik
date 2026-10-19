@@ -1,6 +1,6 @@
 import { Text, TextInput } from '@/components/ui/app-text';
 import React from "react";
-import { Keyboard, Platform, Pressable, StyleSheet, View, type TextInput as NativeTextInput, type TextStyle } from "react-native";
+import { ActivityIndicator, Keyboard, Platform, Pressable, StyleSheet, View, type TextInput as NativeTextInput, type TextStyle } from "react-native";
 
 import { useImmersiveSafeAreaInsets } from "@/components/immersive/edge-to-edge-hero";
 import { useEditable } from "@/components/tickets/EditableContext";
@@ -47,6 +47,8 @@ export function TicketTransferAuthModal({
   const [cardHeight, setCardHeight] = React.useState(CARD_HEIGHT);
   const isKeyboardOpen = keyboard.height > 0;
   const canConfirm = confirmCodeReady && !isSubmitting;
+  // While submitting, the button stays blue and shows a spinner instead of its label.
+  const isButtonActive = canConfirm || isSubmitting;
   const sheetHeight = Math.round((windowHeight - insets.top - SHEET_TOP_GAP) * SHEET_HEIGHT_RATIO);
   // With the keyboard open the sheet grows upward only as far as the card needs.
   const minOpenHeight = HEADER_HEIGHT + cardHeight;
@@ -141,15 +143,20 @@ export function TicketTransferAuthModal({
           <Text style={styles.helper}>It may take a minute to receive your code.</Text>
 
           <Pressable
+            accessibilityLabel="Confirm Code"
             accessibilityRole="button"
-            accessibilityState={{ disabled: !canConfirm }}
+            accessibilityState={{ busy: isSubmitting, disabled: !canConfirm }}
             disabled={!canConfirm}
             onPress={handleConfirm}
-            style={[styles.button, isCompact && styles.buttonCompact, canConfirm ? styles.buttonEnabled : styles.buttonDisabled]}
+            style={[styles.button, isCompact && styles.buttonCompact, isButtonActive ? styles.buttonEnabled : styles.buttonDisabled]}
           >
-            <Text style={[styles.buttonLabel, canConfirm ? styles.buttonLabelEnabled : styles.buttonLabelDisabled]}>
-              Confirm Code
-            </Text>
+            {isSubmitting ? (
+              <ActivityIndicator color="#FFFFFF" size="small" />
+            ) : (
+              <Text style={[styles.buttonLabel, canConfirm ? styles.buttonLabelEnabled : styles.buttonLabelDisabled]}>
+                Confirm Code
+              </Text>
+            )}
           </Pressable>
         </View>
       </View>
