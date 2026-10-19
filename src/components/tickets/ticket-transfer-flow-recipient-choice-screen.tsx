@@ -6,6 +6,7 @@ import { Pressable, View } from "react-native";
 
 import { BackLink } from "@/components/tickets/BackLink";
 import { BottomDrawer } from "@/components/ui/bottom-drawer";
+import { useDrawerTheme } from "@/components/ui/drawer-theme";
 import { ticketTransferChoiceIconSources } from "../../../asset-sources";
 
 export function TicketTransferRecipientChoiceScreen({
@@ -19,10 +20,12 @@ export function TicketTransferRecipientChoiceScreen({
   onOpenViewer: () => void;
   onSelectContact: () => void;
 }) {
+  const { colors } = useDrawerTheme();
+
   return (
     <BottomDrawer minHeight="62%" onClose={onBack} visible={true}>
       <View className="grow shrink-0 items-center px-[24px] pt-4">
-        <Text className="mb-6 text-center text-sm font-semibold tracking-[0.5px] text-[#4F5966]">
+        <Text className="mb-6 text-center text-sm font-semibold tracking-[0.5px]" style={{ color: colors.textCaption }}>
           TRANSFER TO
         </Text>
 
@@ -46,11 +49,11 @@ export function TicketTransferRecipientChoiceScreen({
           />
         </View>
 
-        <Text className="mt-6 text-center text-sm font-bold leading-6 text-[#111111]">
+        <Text className="mt-6 text-center text-sm font-bold leading-6" style={{ color: colors.text }}>
           Transfer Ticket Via Email or Text
           {"\n"}Message
         </Text>
-        <Text className="mt-3 max-w-[230px] text-center  font-normal leading-[19px] text-[#4F5966]">
+        <Text className="mt-3 max-w-[230px] text-center  font-normal leading-[19px]" style={{ color: colors.textCaption }}>
           Select an Email or mobile number to transfer tickets to your recipient
         </Text>
       </View>
@@ -73,13 +76,19 @@ function RecipientChoiceButton({
   label: string;
   onPress: () => void;
 }) {
+  const { colors } = useDrawerTheme();
+  const [pressed, setPressed] = React.useState(false);
+
   return (
     <Pressable
       accessibilityRole="button"
       onPress={onPress}
-      className="mb-[12px] w-[90%] min-h-[48px] py-2 flex-row items-center justify-center gap-3 border border-[#86B7D5] bg-white active:bg-gray-50"
+      onPressIn={() => setPressed(true)}
+      onPressOut={() => setPressed(false)}
+      className="mb-[12px] w-[90%] min-h-[48px] py-2 flex-row items-center justify-center gap-3 border"
+      style={{ backgroundColor: pressed ? colors.sheetPressed : colors.sheetRaised, borderColor: colors.actionBorder }}
     >
-      <Text className="text-[15px] font-semibold leading-[22px] text-[#026CDF]">
+      <Text className="text-[15px] font-semibold leading-[22px]" style={{ color: colors.action }}>
         {label}
       </Text>
       {iconSource ? (
@@ -87,10 +96,10 @@ function RecipientChoiceButton({
           source={iconSource}
           style={{ width: 18, height: 18 }}
           contentFit="contain"
-          tintColor="#026CDF"
+          tintColor={colors.action}
         />
       ) : (
-        <Ionicons color="#026CDF" name={iconName} size={20} />
+        <Ionicons color={colors.action} name={iconName} size={20} />
       )}
     </Pressable>
   );

@@ -4,9 +4,9 @@ import React from 'react';
 import { Pressable, View } from 'react-native';
 import Animated, { LinearTransition } from 'react-native-reanimated';
 
-import { cx } from '@/components/tickets/cx';
 import type { Seat } from '@/components/tickets/ticketFlowTypes';
 import { BottomDrawer } from '@/components/ui/bottom-drawer';
+import { useDrawerTheme } from '@/components/ui/drawer-theme';
 
 export function TicketTransferSelectScreen({
   onBack,
@@ -25,20 +25,23 @@ export function TicketTransferSelectScreen({
   selectedSeatIds: string[];
   ticketCount: string;
 }) {
+  const { colors } = useDrawerTheme();
+  const canContinue = selectedSeatIds.length > 0;
+
   return (
     <BottomDrawer minHeight='62%' onClose={onBack} visible={true}>
-      <View className='border-b border-[#F0F0F0] py-4'>
-        <Text className='text-center text-[12px] font-medium leading-[15px] text-[#70757E]'>
+      <View className='border-b py-4' style={{ borderColor: colors.divider }}>
+        <Text className='text-center text-[12px] font-medium leading-[15px]' style={{ color: colors.textMuted }}>
           SELECT TICKETS TRANSFER TICKET
         </Text>
       </View>
 
-      <View className='border-b border-[#F0F0F0] px-[16px] pb-[16px] pt-[24px]'>
+      <View className='border-b px-[16px] pb-[16px] pt-[24px]' style={{ borderColor: colors.divider }}>
         <View className='flex-row items-center justify-between'>
-          <Text className='text-[13px] font-medium leading-[15px] text-[#444B55]'>
+          <Text className='text-[13px] font-medium leading-[15px]' style={{ color: colors.textSecondary }}>
             {seatSummary}
           </Text>
-          <Text className='text-[12px] font-normal leading-[15px] text-[#70757E]'>
+          <Text className='text-[12px] font-normal leading-[15px]' style={{ color: colors.textMuted }}>
             {ticketCount.replace(/^x/, '')}
           </Text>
         </View>
@@ -55,20 +58,21 @@ export function TicketTransferSelectScreen({
                 <Pressable
                   accessibilityRole='button'
                   onPress={() => onToggleSeat(seat.id)}
-                  className='min-h-[88px] w-[80px] overflow-hidden rounded-[8px] border border-[#D7DCE4] bg-white shadow-[0_1px_1.5px] shadow-black/60'
+                  className='min-h-[88px] w-[80px] overflow-hidden rounded-[8px] border shadow-[0_1px_1.5px] shadow-black/60'
+                  style={{ backgroundColor: colors.sheetRaised, borderColor: colors.seatBorder }}
                 >
                   <View className='py-2 items-center justify-center bg-[#1977F3]'>
                     <Text className='text-[11px] font-semibold leading-[14px] text-white'>
                       {`SEAT ${seat.seat}`}
                     </Text>
                   </View>
-                  <View className='flex-1 items-center justify-center bg-[#fcf2fc]'>
+                  <View className='flex-1 items-center justify-center' style={{ backgroundColor: colors.seatBody }}>
                     {selected ? (
                       <View className='h-[24px] w-[24px] items-center justify-center rounded-full bg-[#1977F3]'>
                         <Ionicons name='checkmark' size={15} color='#FFFFFF' />
                       </View>
                     ) : (
-                      <View className='size-6 rounded-full border border-[#DBE0E6] bg-white' />
+                      <View className='size-6 rounded-full border' style={{ backgroundColor: colors.sheetRaised, borderColor: colors.checkBorder }} />
                     )}
                   </View>
                 </Pressable>
@@ -78,29 +82,27 @@ export function TicketTransferSelectScreen({
         </View>
       </View>
 
-      <View className='flex-1 bg-white' />
+      <View className='flex-1' style={{ backgroundColor: colors.sheet }} />
 
-      <View className='flex-row items-center justify-between bg-[#F9F9F9] px-[16px] pb-[40px] pt-[20px]'>
-        <Text className='text-[12px] font-normal leading-[14px] text-[#5D6773]'>
+      <View className='flex-row items-center justify-between px-[16px] pb-[40px] pt-[20px]' style={{ backgroundColor: colors.sheetFooter }}>
+        <Text className='text-[12px] font-normal leading-[14px]' style={{ color: colors.textHint }}>
           {`${selectedSeatIds.length} Selected`}
         </Text>
 
         <Pressable
           accessibilityRole='button'
-          disabled={!selectedSeatIds.length}
+          disabled={!canContinue}
           onPress={onContinue}
           className='min-h-[44px] flex-row items-center gap-[2px]'
         >
           <Text
-            className={cx(
-              'text-[14px] font-bold leading-[18px]',
-              selectedSeatIds.length ? 'text-[#2A84C6]' : 'text-[#A9C9E6]',
-            )}
+            className='text-[14px] font-bold leading-[18px]'
+            style={{ color: canContinue ? colors.link : colors.linkDisabled }}
           >
             TRANSFER TO
           </Text>
           <Ionicons
-            color={selectedSeatIds.length ? '#2A84C6' : '#A9C9E6'}
+            color={canContinue ? colors.link : colors.linkDisabled}
             name='chevron-forward'
             size={17}
           />

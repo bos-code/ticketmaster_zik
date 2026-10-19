@@ -6,6 +6,7 @@ import { FlatList, Pressable, ScrollView, StyleSheet, View, type NativeScrollEve
 import { useImmersiveSafeAreaInsets } from '@/components/immersive/edge-to-edge-hero';
 import { Text } from '@/components/ui/app-text';
 import { BottomDrawer } from '@/components/ui/bottom-drawer';
+import { useDrawerTheme } from '@/components/ui/drawer-theme';
 import { TicketCard } from '@/components/tickets/ticket-card';
 import { useTicketFlowData } from '@/components/tickets/useTicketFlowData';
 import type { Seat } from '@/components/tickets/ticketFlowTypes';
@@ -33,6 +34,7 @@ export function TicketTransferViewerScreen({ onBack, onViewerIndexChange, seats,
   const [cardHeight, setCardHeight] = useState(550);
   const [isTicketInfoOpen, setIsTicketInfoOpen] = useState(false);
   const [isWalletInfoOpen, setIsWalletInfoOpen] = useState(false);
+  const { colors: drawerColors } = useDrawerTheme();
   const focused = useIsFocused();
   const motion = useTicketTilt(focused && !isTicketInfoOpen && !isWalletInfoOpen);
   const activeIndex = Math.max(0, Math.min(seats.length - 1, viewerIndex));
@@ -94,25 +96,25 @@ export function TicketTransferViewerScreen({ onBack, onViewerIndexChange, seats,
     </ScrollView>
     <BottomDrawer minHeight="55%" onClose={() => setIsTicketInfoOpen(false)} visible={isTicketInfoOpen}>
       <View style={styles.drawer}>
-        <Text style={styles.drawerTitle}>Ticket Info</Text>
-        <Text style={styles.drawerEvent}>{event.title}</Text>
-        <Text style={styles.drawerBody}>{event.dateTime}{String.fromCharCode(10)}{event.venue}</Text>
-        <Text style={styles.drawerBody}>{`Order ${order.orderNumber}`}</Text>
+        <Text style={[styles.drawerTitle, { color: drawerColors.text }]}>Ticket Info</Text>
+        <Text style={[styles.drawerEvent, { color: drawerColors.text }]}>{event.title}</Text>
+        <Text style={[styles.drawerBody, { color: drawerColors.textBody }]}>{event.dateTime}{String.fromCharCode(10)}{event.venue}</Text>
+        <Text style={[styles.drawerBody, { color: drawerColors.textBody }]}>{`Order ${order.orderNumber}`}</Text>
         {activeSeat && <>
-          <Text style={styles.drawerEvent}>{activeSeat.label || 'Standard seating'}</Text>
-          <Text style={styles.drawerBody}>{`Section ${activeSeat.section} • Row ${activeSeat.row} • Seat ${activeSeat.seat}`}</Text>
-          <Text style={styles.drawerBody}>{activeSeat.note}</Text>
-          {activeSeat.entryInstructions?.trim() ? <Text style={styles.drawerBody}>{activeSeat.entryInstructions}</Text> : null}
-          <Text style={styles.drawerBody}>{activeSeat.canTransfer ? 'Eligible for transfer' : 'Transfer unavailable'}</Text>
+          <Text style={[styles.drawerEvent, { color: drawerColors.text }]}>{activeSeat.label || 'Standard seating'}</Text>
+          <Text style={[styles.drawerBody, { color: drawerColors.textBody }]}>{`Section ${activeSeat.section} • Row ${activeSeat.row} • Seat ${activeSeat.seat}`}</Text>
+          <Text style={[styles.drawerBody, { color: drawerColors.textBody }]}>{activeSeat.note}</Text>
+          {activeSeat.entryInstructions?.trim() ? <Text style={[styles.drawerBody, { color: drawerColors.textBody }]}>{activeSeat.entryInstructions}</Text> : null}
+          <Text style={[styles.drawerBody, { color: drawerColors.textBody }]}>{activeSeat.canTransfer ? 'Eligible for transfer' : 'Transfer unavailable'}</Text>
         </>}
-        <Pressable accessibilityRole="button" style={styles.closeButton} onPress={() => setIsTicketInfoOpen(false)}><Text style={styles.closeLabel}>Close</Text></Pressable>
+        <Pressable accessibilityRole="button" style={styles.closeButton} onPress={() => setIsTicketInfoOpen(false)}><Text style={[styles.closeLabel, { color: drawerColors.actionStrong }]}>Close</Text></Pressable>
       </View>
     </BottomDrawer>
     <BottomDrawer minHeight="40%" onClose={() => setIsWalletInfoOpen(false)} visible={isWalletInfoOpen}>
       <View style={styles.drawer}>
-        <Text style={styles.drawerTitle}>Apple Wallet</Text>
-        <Text style={styles.drawerBody}>Wallet passes aren&apos;t available in this app. You can view your tickets here.</Text>
-        <Pressable accessibilityRole="button" style={styles.closeButton} onPress={() => setIsWalletInfoOpen(false)}><Text style={styles.closeLabel}>Back to Tickets</Text></Pressable>
+        <Text style={[styles.drawerTitle, { color: drawerColors.text }]}>Apple Wallet</Text>
+        <Text style={[styles.drawerBody, { color: drawerColors.textBody }]}>Wallet passes aren&apos;t available in this app. You can view your tickets here.</Text>
+        <Pressable accessibilityRole="button" style={styles.closeButton} onPress={() => setIsWalletInfoOpen(false)}><Text style={[styles.closeLabel, { color: drawerColors.actionStrong }]}>Back to Tickets</Text></Pressable>
       </View>
     </BottomDrawer>
   </View>;
@@ -136,9 +138,9 @@ const styles = StyleSheet.create({
   walletSmall: { color: '#FFFFFF', fontSize: 10, lineHeight: 12 },
   walletMark: { width: 28, height: 23, borderRadius: 3, borderWidth: 1, borderColor: '#B8B5BA', overflow: 'hidden', backgroundColor: '#ECE7DA' },
   drawer: { padding: 24, gap: 14 },
-  drawerTitle: { fontSize: 22, fontWeight: '700', color: '#111111' },
-  drawerEvent: { fontSize: 17, fontWeight: '700', color: '#111111' },
-  drawerBody: { fontSize: 15, lineHeight: 23, color: '#626262' },
+  drawerTitle: { fontSize: 22, fontWeight: '700' },
+  drawerEvent: { fontSize: 17, fontWeight: '700' },
+  drawerBody: { fontSize: 15, lineHeight: 23 },
   closeButton: { minHeight: 48, alignItems: 'center', justifyContent: 'center' },
-  closeLabel: { fontSize: 16, fontWeight: '700', color: '#0452D5' },
+  closeLabel: { fontSize: 16, fontWeight: '700' },
 });

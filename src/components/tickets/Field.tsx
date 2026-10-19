@@ -1,7 +1,7 @@
 import { Text, TextInput } from '@/components/ui/app-text';
 import React from "react";
 import { View } from "react-native";
-import { cx } from "@/components/tickets/cx";
+import { useDrawerTheme } from "@/components/ui/drawer-theme";
 
 export function Field({
   error,
@@ -18,24 +18,24 @@ export function Field({
   placeholder: string;
   value: string;
 }) {
+  const { colors } = useDrawerTheme();
+
   return (
     <View className="mb-[10px] gap-[2px]">
-      <Text className="text-[10.5px] font-bold leading-[12px] text-[#111111]">
+      <Text className="text-[10.5px] font-bold leading-[12px]" style={{ color: colors.text }}>
         {label}
       </Text>
       <TextInput
-        className={cx(
-          "min-h-[32px] border border-[#333333] px-[8px] py-1 text-[13px] font-medium text-[#111111] bg-white",
-          error && "border-[#FF0000]"
-        )}
+        className="min-h-[32px] border px-[8px] py-1 text-[13px] font-medium"
+        style={{ backgroundColor: colors.sheetRaised, borderColor: error ? colors.error : colors.inputBorder, color: colors.text }}
         keyboardType={keyboardType}
         onChangeText={onChangeText}
         placeholder={placeholder}
-        placeholderTextColor="#999999"
+        placeholderTextColor={colors.placeholder}
         value={value}
       />
       {error ? (
-        <Text className="text-[10px] font-medium text-[#FF0000]">
+        <Text className="text-[10px] font-medium" style={{ color: colors.error }}>
           {error}
         </Text>
       ) : null}
