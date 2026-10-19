@@ -135,17 +135,23 @@ export function AddEventAdminScreen() {
       : 'Add the event details, ticket info, and artwork for a brand-new ticket.';
   const submitLabel = mode === 'edit' ? 'Update Ticket' : 'Create New Ticket';
 
+  // The ticket list refreshes in the background (every 30 s and on window
+  // focus). Fill the form once per ticket so a refresh can't wipe unsaved edits.
+  const loadedTicketIdRef = useRef<string | null>(null);
+
   useEffect(() => {
-    if (mode === 'edit' && selectedTicket) {
-      setForm(toFormState(selectedTicket));
-      setErrors({});
+    if (mode === 'edit') {
+      if (selectedTicket && loadedTicketIdRef.current !== selectedTicket.id) {
+        loadedTicketIdRef.current = selectedTicket.id;
+        setForm(toFormState(selectedTicket));
+        setErrors({});
+      }
       return;
     }
 
-    if (mode === 'create') {
-      setForm(EMPTY_CREATE_FORM);
-      setErrors({});
-    }
+    loadedTicketIdRef.current = null;
+    setForm(EMPTY_CREATE_FORM);
+    setErrors({});
   }, [mode, selectedTicket]);
 
   const previewTitle = useMemo(

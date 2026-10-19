@@ -23,6 +23,9 @@ const TICKETS_COLLECTION = 'tickets';
 const SEED_VERSION = 1;
 
 let seedPromise: Promise<void> | null = null;
+// Bumped when a hosted ticket write starts and again when it finishes, so a
+// list fetch that overlapped a write is known to be stale.
+let ticketWriteVersion = 0;
 
 export async function fetchTickets() {
   if (usesHostedTicketApi()) {
@@ -41,14 +44,19 @@ export function subscribeToTickets(onValue: (tickets: TicketRecord[]) => void) {
     const refresh = async () => {
       if (disposed || pending) return;
       pending = true;
+      let stale = false;
       try {
+        const writeVersion = ticketWriteVersion;
         const tickets = await fetchTickets();
-        if (!disposed) onValue(tickets);
+        // A save made while this was loading would be overwritten by the older list.
+        stale = writeVersion !== ticketWriteVersion;
+        if (!disposed && !stale) onValue(tickets);
       } catch (error) {
         console.warn('Ticket sync failed.', error);
       } finally {
         pending = false;
       }
+      if (stale) void refresh();
     };
     void refresh();
     const interval = setInterval(() => {
@@ -336,6 +344,8 @@ function usesHostedTicketApi() {
 async function requestHostedTickets(ticketId?: string, fields?: Partial<TicketRecord>, method = fields ? 'POST' : 'GET') {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 20000);
+  const isWrite = method !== 'GET';
+  if (isWrite) ticketWriteVersion += 1;
   try {
     const response = await fetch(ticketId ? `/api/tickets?id=${encodeURIComponent(ticketId)}` : '/api/tickets', {
       method,
@@ -354,6 +364,7 @@ async function requestHostedTickets(ticketId?: string, fields?: Partial<TicketRe
     return payload;
   } finally {
     clearTimeout(timeout);
+    if (isWrite) ticketWriteVersion += 1;
   }
 }
 
