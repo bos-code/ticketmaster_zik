@@ -2,6 +2,7 @@ import React from "react";
 import { Pressable, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { BottomDrawer } from "@/components/ui/bottom-drawer";
+import { useDrawerTheme } from "@/components/ui/drawer-theme";
 import { fonts } from "../../../theme/fonts";
 
 interface TicketTransferUnavailableModalProps {
@@ -15,12 +16,14 @@ export function TicketTransferUnavailableModal({
   onClose,
   ticketCount = 3,
 }: TicketTransferUnavailableModalProps) {
+  const { colors } = useDrawerTheme();
+
   return (
     <BottomDrawer
       minHeight="62%"
       onClose={onClose}
       visible={visible}
-      className="bg-white rounded-t-[20px] overflow-hidden"
+      className="rounded-t-[20px] overflow-hidden"
     >
       {/* Top Header with Close Button */}
       <View className="w-full flex-row justify-end px-[18px] pt-[18px]">
@@ -30,7 +33,7 @@ export function TicketTransferUnavailableModal({
           onPress={onClose}
           className="items-center justify-center w-[32px] h-[32px]"
         >
-          <Ionicons name="close" size={26} color="#70757E" />
+          <Ionicons name="close" size={26} color={colors.textMuted} />
         </Pressable>
       </View>
 
@@ -48,16 +51,16 @@ export function TicketTransferUnavailableModal({
 
         {/* Title */}
         <Text 
-          style={{ fontFamily: fonts.bold }}
-          className="text-[20px] text-[#111111] text-center tracking-tight mb-3"
+          style={{ fontFamily: fonts.bold, color: colors.text }}
+          className="text-[20px] text-center tracking-tight mb-3"
         >
           Transfer Unavailable
         </Text>
 
         {/* Message */}
         <Text 
-          style={{ fontFamily: fonts.medium }}
-          className="text-[14px] leading-[20px] text-[#444B55] text-center mb-8 px-2"
+          style={{ fontFamily: fonts.medium, color: colors.textSecondary }}
+          className="text-[14px] leading-[20px] text-center mb-8 px-2"
         >
           Unfortunately, Transfer is not available at the moment. To make your transfer successful, you need to transfer all {ticketCount} tickets at once.
         </Text>

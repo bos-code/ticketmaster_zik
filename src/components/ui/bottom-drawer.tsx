@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Modal, Platform, Pressable, ScrollView, StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
 import { useImmersiveSafeAreaInsets } from '@/components/immersive/edge-to-edge-hero';
+import { useDrawerTheme } from '@/components/ui/drawer-theme';
 import { LAYER_DRAWER } from '@/constants/layers';
 import { useKeyboardLayout, type useKeyboardFrame } from '@/hooks/use-keyboard-height';
 import { useOverlaySlot } from '@/lib/overlay-manager';
@@ -22,6 +23,7 @@ export function BottomDrawer({ children, className, header, keepTopOnKeyboard = 
   visible: boolean;
 }) {
   const insets = useImmersiveSafeAreaInsets();
+  const { colors } = useDrawerTheme();
   const isActive = useOverlaySlot('drawer', visible);
   const { keyboard, windowHeight: height } = useKeyboardLayout();
   const backdropRef = useRef<View>(null);
@@ -46,7 +48,7 @@ export function BottomDrawer({ children, className, header, keepTopOnKeyboard = 
       style={[styles.backdrop, { paddingBottom: liftedBy, zIndex: LAYER_DRAWER }]}
     >
       <Pressable accessibilityRole="button" accessibilityLabel="Close dialog" style={StyleSheet.absoluteFill} onPress={onClose} />
-      <View className={className} style={[styles.panel, { height: panelHeight, paddingBottom: liftedBy ? 0 : insets.bottom, paddingLeft: insets.left, paddingRight: insets.right }, panelStyle]}>
+      <View className={className} style={[styles.panel, { backgroundColor: colors.sheet, height: panelHeight, paddingBottom: liftedBy ? 0 : insets.bottom, paddingLeft: insets.left, paddingRight: insets.right }, panelStyle]}>
         {header}
         <ScrollView ref={scrollRef} keyboardShouldPersistTaps="handled" style={{ flex: 1 }} contentContainerStyle={{ flexGrow: 1 }}>
           {children}
@@ -68,5 +70,5 @@ function getKeyboardOverlap(keyboard: ReturnType<typeof useKeyboardFrame>, backd
 
 const styles = StyleSheet.create({
   backdrop: { flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(0,0,0,0.6)' },
-  panel: { width: '100%', maxWidth: 680, maxHeight: '95%', alignSelf: 'center', backgroundColor: 'white', shadowColor: '#000000', shadowOffset: { width: 0, height: -4 }, shadowOpacity: 0.1, shadowRadius: 12, elevation: 10 },
+  panel: { width: '100%', maxWidth: 680, maxHeight: '95%', alignSelf: 'center', shadowColor: '#000000', shadowOffset: { width: 0, height: -4 }, shadowOpacity: 0.1, shadowRadius: 12, elevation: 10 },
 });
